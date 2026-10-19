@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Šikmý vrh</title>
+<meta name="description" content="Interaktivní model šikmého vrhu: trajektorie, vektory rychlosti, doba letu, dostřel a maximální výška.">
+<meta property="og:title" content="Šikmý vrh">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+/* Layout: laboratorní pracoviště – velké měřítkové plátno vlevo, ovládací panel vpravo, pod tím vzorce */
+:root {
+  --bg: #eef1f5;
+  --paper: #ffffff;
+  --grid: #dde3ec;
+  --grid-strong: #b9c3d2;
+  --fg: #16202e;
+  --muted: #5b6878;
+  --line: #d3dae4;
+  --accent: #1f4fd6;
+  --accent-soft: #e3eafc;
+  --vec: #e0661b;
+  --vec-x: #0e9a7b;
+  --vec-y: #c2335e;
+  --ground: #8a7356;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141c; --paper: #151c27; --grid: #1f2836; --grid-strong: #2e3a4c;
+    --fg: #e6ebf2; --muted: #93a0b2; --line: #2a3444;
+    --accent: #6f95ff; --accent-soft: #1d2a4a;
+    --vec: #ff9a4d; --vec-x: #3fd3ae; --vec-y: #ff6f96; --ground: #b39a78;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141c; --paper: #151c27; --grid: #1f2836; --grid-strong: #2e3a4c;
+  --fg: #e6ebf2; --muted: #93a0b2; --line: #2a3444;
+  --accent: #6f95ff; --accent-soft: #1d2a4a;
+  --vec: #ff9a4d; --vec-x: #3fd3ae; --vec-y: #ff6f96; --ground: #b39a78;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+.back { font-weight: 600; font-size: 14px; color: var(--muted); text-decoration: none; }
+.back:hover { color: var(--accent); }
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+footer a { color: inherit; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px;
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(28px, 4vw, 40px); margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+h1 span { color: var(--accent); }
+header p { margin: 0; color: var(--muted); max-width: 60ch; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 18px; margin: 0; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
+@media (max-width: 920px) { .main { grid-template-columns: minmax(0, 1fr); } }
+
+.stage { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: grid; min-width: 0; }
+.canvas-box { position: relative; width: 100%; aspect-ratio: 16 / 10; max-width: 100%; }
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.live { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+.live div { padding: 10px 12px; border-right: 1px solid var(--line); min-width: 0; }
+.live div:last-child { border-right: 0; }
+.live b { display: block; font-family: var(--mono); font-weight: 500; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 600px) { .live { grid-template-columns: repeat(3, minmax(0, 1fr)); } .live div:nth-child(3) { border-right: 0; } .live div:nth-child(-n+3) { border-bottom: 1px solid var(--line); } }
+
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 18px; }
+.ctrl { display: grid; gap: 6px; }
+.ctrl-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ctrl-head label { font-weight: 600; }
+.ctrl-head output { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 500; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+select { width: 100%; font: inherit; padding: 7px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--paper); color: var(--fg); }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+button {
+  font: inherit; font-weight: 600; cursor: pointer; border-radius: 7px; padding: 10px 12px;
+  border: 1px solid var(--line); background: var(--paper); color: var(--fg);
+}
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { grid-column: 1 / -1; background: var(--accent); color: #fff; border-color: var(--accent); font-size: 16px; padding: 12px; }
+button.primary:hover { filter: brightness(1.08); }
+.checks { display: grid; gap: 6px; }
+.checks label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.checks input { accent-color: var(--accent); width: 16px; height: 16px; }
+.swatch { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.presets button { padding: 6px 10px; font-size: 13px; font-weight: 500; background: var(--accent-soft); border-color: transparent; }
+
+.results { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.results div { background: var(--paper); padding: 14px 16px; display: grid; gap: 2px; min-width: 0; }
+.results b { font-family: var(--display); font-weight: 600; font-size: 24px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.results small { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+@media (max-width: 760px) { .results { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.traces { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 28px; }
+.trace-chip { display: inline-flex; gap: 6px; align-items: center; font-family: var(--mono); font-size: 12px; padding: 4px 9px; border-radius: 99px; border: 1px solid var(--line); background: var(--paper); }
+.trace-chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+.theory { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.card p { margin: 0; color: var(--muted); max-width: 65ch; }
+.eq { font-family: var(--mono); font-size: 14px; background: var(--bg); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: nowrap; line-height: 1.9; }
+.eq sub, .eq sup { font-size: 0.75em; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <header>
+    <h1>Šikmý <span>vrh</span></h1>
+    <p>Interaktivní model pohybu tělesa vrženého pod úhlem α počáteční rychlostí v₀, bez odporu vzduchu.</p>
+  </header>
+
+  <div class="main">
+    <section class="stage" aria-label="Simulace">
+      <div class="canvas-box"><canvas id="cv" role="img" aria-label="Graf trajektorie šikmého vrhu"></canvas></div>
+      <div class="live" aria-live="off">
+        <div><span class="label">t</span><b id="lt">0,00 s</b></div>
+        <div><span class="label">x</span><b id="lx">0,0 m</b></div>
+        <div><span class="label">y</span><b id="ly">0,0 m</b></div>
+        <div><span class="label">v<sub>x</sub></span><b id="lvx">–</b></div>
+        <div><span class="label">v<sub>y</sub></span><b id="lvy">–</b></div>
+        <div><span class="label">|v|</span><b id="lv">–</b></div>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Ovládání">
+      <div class="ctrl">
+        <div class="ctrl-head"><label for="v0">Počáteční rychlost v₀</label><output id="v0o"></output></div>
+        <input type="range" id="v0" min="1" max="50" step="0.5" value="20">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-head"><label for="al">Elevační úhel α</label><output id="alo"></output></div>
+        <input type="range" id="al" min="0" max="90" step="1" value="45">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-head"><label for="h0">Počáteční výška h₀</label><output id="h0o"></output></div>
+        <input type="range" id="h0" min="0" max="50" step="0.5" value="0">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-head"><label for="gs">Tíhové zrychlení g</label><output id="go"></output></div>
+        <select id="gs">
+          <option value="9.81" selected>Země</option>
+          <option value="1.62">Měsíc</option>
+          <option value="3.71">Mars</option>
+          <option value="24.79">Jupiter</option>
+        </select>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-head"><label for="sp">Rychlost přehrávání</label><output id="spo"></output></div>
+        <input type="range" id="sp" min="0" max="4" step="1" value="2">
+      </div>
+
+      <div class="btns">
+        <button class="primary" id="fire">▶ Vystřelit</button>
+        <button id="pause">Pauza</button>
+        <button id="clear">Smazat stopy</button>
+      </div>
+
+      <div class="checks">
+        <label><input type="checkbox" id="cbV" checked> <span class="swatch" style="background:var(--vec)"></span> Vektor rychlosti v</label>
+        <label><input type="checkbox" id="cbC" checked> <span class="swatch" style="background:var(--vec-x)"></span> Složky v<sub>x</sub>, v<sub>y</sub></label>
+        <label><input type="checkbox" id="cbP" checked> <span class="swatch" style="background:var(--accent)"></span> Předpověď dráhy</label>
+        <label><input type="checkbox" id="cbM" checked> Značky po 0,5 s</label>
+      </div>
+
+      <div class="ctrl">
+        <span class="label">Vyzkoušej</span>
+        <div class="presets">
+          <button data-p="20,30,0">30°</button>
+          <button data-p="20,45,0">45°</button>
+          <button data-p="20,60,0">60°</button>
+          <button data-p="15,0,30">Vodorovný vrh</button>
+          <button data-p="20,90,0">Svislý vrh</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="results" aria-label="Vypočtené hodnoty">
+    <div><span class="label">Doba letu T</span><b id="rT"></b><small>dopad na zem</small></div>
+    <div><span class="label">Dostřel d</span><b id="rD"></b><small>vodorovná vzdálenost</small></div>
+    <div><span class="label">Max. výška H</span><b id="rH"></b><small id="rHt"></small></div>
+    <div><span class="label">Rychlost dopadu</span><b id="rV"></b><small>velikost |v|</small></div>
+    <div><span class="label">Úhel dopadu</span><b id="rA"></b><small>pod vodorovnou</small></div>
+  </section>
+
+  <div class="traces" id="traces"><span class="label">Uložené dráhy:</span><span id="noTr" style="color:var(--muted)">po dopadu se dráha uloží pro porovnání</span></div>
+
+  <section class="theory">
+    <div class="card">
+      <h2>Rozklad pohybu</h2>
+      <p>Šikmý vrh je složením rovnoměrného přímočarého pohybu ve vodorovném směru a svislého vrhu vzhůru ve směru svislém.</p>
+      <div class="eq">v<sub>x</sub> = v₀ · cos α &nbsp;(stálá)<br>v<sub>y</sub> = v₀ · sin α − g · t</div>
+    </div>
+    <div class="card">
+      <h2>Souřadnice tělesa</h2>
+      <p>Trajektorií je parabola. Těleso se pohybuje se zrychlením g, které míří svisle dolů.</p>
+      <div class="eq">x = v₀ · t · cos α<br>y = h₀ + v₀ · t · sin α − ½ · g · t²</div>
+    </div>
+    <div class="card">
+      <h2>Vrchol a dostřel (h₀ = 0)</h2>
+      <p>Ve vrcholu je v<sub>y</sub> = 0. Největší dostřel nastává pro α = 45°; úhly α a 90° − α dávají stejný dostřel.</p>
+      <div class="eq">t<sub>H</sub> = v₀ sin α / g &nbsp;&nbsp; H = v₀² sin² α / (2g)<br>T = 2 v₀ sin α / g &nbsp;&nbsp; d = v₀² sin 2α / g</div>
+    </div>
+  </section>
+  <footer>Model bez odporu vzduchu, s konstantním tíhovým zrychlením. Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 19. 10. 2026</footer>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  const fmt = (n, d = 1) => n.toLocaleString('cs-CZ', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const SPEEDS = [0.25, 0.5, 1, 2, 4];
+  const TRACE_COLORS = ['#7b61ff', '#0e9a7b', '#d4892a', '#c2335e', '#2b8fd6', '#6b8e23'];
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const params = () => ({ v0: +$('v0').value, a: +$('al').value, h0: +$('h0').value, g: +$('gs').value });
+
+  function solve(p) {
+    const r = p.a * Math.PI / 180;
+    const vx = p.v0 * Math.cos(r), vy0 = p.v0 * Math.sin(r);
+    const T = (vy0 + Math.sqrt(vy0 * vy0 + 2 * p.g * p.h0)) / p.g;
+    const tH = Math.max(0, vy0 / p.g);
+    const H = p.h0 + (vy0 > 0 ? vy0 * vy0 / (2 * p.g) : 0);
+    const vyT = vy0 - p.g * T;
+    return { ...p, vx, vy0, T, tH, H, D: vx * T, vImpact: Math.hypot(vx, vyT), aImpact: Math.atan2(-vyT, vx) * 180 / Math.PI };
+  }
+  const posAt = (s, t) => ({ x: s.vx * t, y: s.h0 + s.vy0 * t - 0.5 * s.g * t * t, vx: s.vx, vy: s.vy0 - s.g * t });
+
+  let shot = null, simT = 0, running = false, paused = false, last = 0;
+  let traces = [];
+
+  // --- Kreslení ---
+  let W = 0, Hh = 0, dpr = 1;
+  function resize() {
+    const r = cv.getBoundingClientRect();
+    dpr = window.devicePixelRatio || 1;
+    W = r.width; Hh = r.height;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(Hh * dpr);
+    draw();
+  }
+  new ResizeObserver(resize).observe(cv.parentElement);
+
+  function niceStep(range) {
+    const raw = range / 6, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+    return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p;
+  }
+
+  function draw() {
+    if (!W) return;
+    const css = getComputedStyle(document.documentElement);
+    const C = k => css.getPropertyValue(k).trim();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, Hh);
+
+    const cur = solve(params());
+    const all = [cur, ...traces.map(t => t.s)];
+    if (shot) all.push(shot);
+    let maxX = Math.max(...all.map(s => s.D)), maxY = Math.max(...all.map(s => s.H));
+    maxX = Math.max(maxX, maxY * 0.6, 5); maxY = Math.max(maxY, 3);
+
+    const mL = 46, mB = 34, mT = 16, mR = 18;
+    const aw = W - mL - mR, ah = Hh - mT - mB;
+    const k = Math.min(aw / (maxX * 1.06), ah / (maxY * 1.12)); // stejné měřítko v obou osách
+    const X = x => mL + x * k, Y = y => Hh - mB - y * k;
+
+    // mřížka
+    const step = niceStep(Math.max(aw, ah) / k);
+    ctx.font = '11px ' + C('--mono'); ctx.lineWidth = 1;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (let x = 0; X(x) <= W - mR + 0.5; x += step) {
+      ctx.strokeStyle = C('--grid'); ctx.beginPath(); ctx.moveTo(X(x) + .5, mT); ctx.lineTo(X(x) + .5, Y(0)); ctx.stroke();
+      ctx.fillStyle = C('--muted'); ctx.fillText(fmt(x, step < 1 ? 1 : 0), X(x), Y(0) + 6);
+    }
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let y = step; Y(y) >= mT - 0.5; y += step) {
+      ctx.strokeStyle = C('--grid'); ctx.beginPath(); ctx.moveTo(mL, Y(y) + .5); ctx.lineTo(W - mR, Y(y) + .5); ctx.stroke();
+      ctx.fillStyle = C('--muted'); ctx.fillText(fmt(y, step < 1 ? 1 : 0), mL - 6, Y(y));
+    }
+    ctx.fillStyle = C('--muted'); ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText('y [m]', 6, 2);
+    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.fillText('x [m]', W - mR, Y(0) - 4);
+
+    // zem
+    ctx.strokeStyle = C('--ground'); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(mL - 6, Y(0)); ctx.lineTo(W - 4, Y(0)); ctx.stroke();
+
+    // věž
+    if (cur.h0 > 0) {
+      ctx.fillStyle = C('--grid-strong'); ctx.strokeStyle = C('--ground'); ctx.lineWidth = 1;
+      const tw = Math.max(8, Math.min(22, 1.2 * k));
+      ctx.fillRect(X(0) - tw, Y(cur.h0), tw, Y(0) - Y(cur.h0));
+      ctx.strokeRect(X(0) - tw + .5, Y(cur.h0) + .5, tw - 1, Y(0) - Y(cur.h0) - 1);
+    }
+
+    const path = (s, t1) => {
+      ctx.beginPath();
+      const n = 120;
+      for (let i = 0; i <= n; i++) { const p = posAt(s, t1 * i / n); i ? ctx.lineTo(X(p.x), Y(p.y)) : ctx.moveTo(X(p.x), Y(p.y)); }
+    };
+
+    // uložené dráhy
+    traces.forEach(tr => { ctx.strokeStyle = tr.color; ctx.lineWidth = 2; ctx.setLineDash([]); path(tr.s, tr.s.T); ctx.stroke(); });
+
+    // předpověď
+    if ($('cbP').checked) {
+      ctx.strokeStyle = C('--accent'); ctx.globalAlpha = 0.55; ctx.lineWidth = 1.5; ctx.setLineDash([6, 5]);
+      path(cur, cur.T); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      // vrchol
+      if (cur.vy0 > 0.01) {
+        const pk = posAt(cur, cur.tH);
+        ctx.fillStyle = C('--accent'); ctx.globalAlpha = 0.6;
+        ctx.beginPath(); ctx.arc(X(pk.x), Y(pk.y), 3, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+      }
+    }
+
+    // hlaveň
+    const r = cur.a * Math.PI / 180, bl = 26;
+    ctx.save(); ctx.translate(X(0), Y(cur.h0)); ctx.rotate(-r);
+    ctx.fillStyle = C('--fg'); ctx.fillRect(-4, -5, bl, 10); ctx.restore();
+    ctx.fillStyle = C('--fg'); ctx.beginPath(); ctx.arc(X(0), Y(cur.h0), 8, 0, 7); ctx.fill();
+    // oblouk úhlu
+    if (cur.a > 0) {
+      ctx.strokeStyle = C('--muted'); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(X(0), Y(cur.h0), 40, -r, 0); ctx.stroke();
+      ctx.fillStyle = C('--muted'); ctx.font = '12px ' + C('--mono'); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText('α', X(0) + 46 * Math.cos(r / 2), Y(cur.h0) - 46 * Math.sin(r / 2));
+    }
+
+    // aktuální let
+    if (shot) {
+      ctx.strokeStyle = C('--accent'); ctx.lineWidth = 2.5; path(shot, simT); ctx.stroke();
+      if ($('cbM').checked) {
+        ctx.fillStyle = C('--accent');
+        for (let t = 0.5; t < simT; t += 0.5) { const p = posAt(shot, t); ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), 2.5, 0, 7); ctx.fill(); }
+      }
+      const p = posAt(shot, simT);
+      const px = X(p.x), py = Y(p.y);
+      const vs = 2.2; // px na m/s
+      const arrow = (x1, y1, dx, dy, col, w) => {
+        const L = Math.hypot(dx, dy); if (L < 2) return;
+        ctx.strokeStyle = ctx.fillStyle = col; ctx.lineWidth = w;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1 + dx, y1 + dy); ctx.stroke();
+        const ang = Math.atan2(dy, dx), h = 8;
+        ctx.beginPath(); ctx.moveTo(x1 + dx, y1 + dy);
+        ctx.lineTo(x1 + dx - h * Math.cos(ang - .4), y1 + dy - h * Math.sin(ang - .4));
+        ctx.lineTo(x1 + dx - h * Math.cos(ang + .4), y1 + dy - h * Math.sin(ang + .4)); ctx.closePath(); ctx.fill();
+      };
+      if ($('cbC').checked) {
+        arrow(px, py, p.vx * vs, 0, C('--vec-x'), 2);
+        arrow(px, py, 0, -p.vy * vs, C('--vec-y'), 2);
+        ctx.setLineDash([3, 3]); ctx.strokeStyle = C('--muted'); ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(px + p.vx * vs, py); ctx.lineTo(px + p.vx * vs, py - p.vy * vs); ctx.lineTo(px, py - p.vy * vs); ctx.stroke(); ctx.setLineDash([]);
+      }
+      if ($('cbV').checked) arrow(px, py, p.vx * vs, -p.vy * vs, C('--vec'), 2.5);
+      ctx.fillStyle = C('--fg'); ctx.beginPath(); ctx.arc(px, py, 6, 0, 7); ctx.fill();
+      ctx.fillStyle = C('--paper'); ctx.beginPath(); ctx.arc(px - 1.5, py - 1.5, 2, 0, 7); ctx.fill();
+      updateLive(p);
+    }
+  }
+
+  function updateLive(p) {
+    $('lt').textContent = fmt(simT, 2) + ' s';
+    $('lx').textContent = fmt(p.x) + ' m';
+    $('ly').textContent = fmt(Math.max(0, p.y)) + ' m';
+    $('lvx').textContent = fmt(p.vx) + ' m/s';
+    $('lvy').textContent = fmt(p.vy) + ' m/s';
+    $('lv').textContent = fmt(Math.hypot(p.vx, p.vy)) + ' m/s';
+  }
+
+  function updateUI() {
+    const p = params(), s = solve(p);
+    $('v0o').textContent = fmt(p.v0) + ' m/s';
+    $('alo').textContent = p.a + '°';
+    $('h0o').textContent = fmt(p.h0) + ' m';
+    $('go').textContent = fmt(p.g, 2) + ' m/s²';
+    $('spo').textContent = fmt(SPEEDS[+$('sp').value], 2).replace(/,?0+$/, '') + '×';
+    $('rT').textContent = fmt(s.T, 2) + ' s';
+    $('rD').textContent = fmt(s.D) + ' m';
+    $('rH').textContent = fmt(s.H) + ' m';
+    $('rHt').textContent = s.vy0 > 0.01 ? 'v čase ' + fmt(s.tH, 2) + ' s' : 'v místě výstřelu';
+    $('rV').textContent = fmt(s.vImpact) + ' m/s';
+    $('rA').textContent = fmt(s.aImpact) + '°';
+    if (!running) draw();
+  }
+
+  function frame(now) {
+    if (!running) return;
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (!paused) simT += dt * SPEEDS[+$('sp').value];
+    if (simT >= shot.T) {
+      simT = shot.T; running = false; draw();
+      addTrace(shot); shot = null;
+      $('fire').textContent = '▶ Vystřelit znovu';
+      return;
+    }
+    draw(); requestAnimationFrame(frame);
+  }
+
+  function fire() {
+    shot = solve(params()); simT = 0; paused = false; $('pause').textContent = 'Pauza';
+    if (reduceMotion) { simT = shot.T; draw(); addTrace(shot); shot = null; return; }
+    running = true; last = performance.now();
+    $('fire').textContent = '↻ Vystřelit znovu';
+    requestAnimationFrame(frame);
+  }
+
+  function addTrace(s) {
+    if (traces.length >= TRACE_COLORS.length) traces.shift();
+    const used = traces.map(t => t.color);
+    const color = TRACE_COLORS.find(c => !used.includes(c));
+    traces.push({ s, color });
+    renderTraces(); draw();
+  }
+  function renderTraces() {
+    const box = $('traces');
+    box.querySelectorAll('.trace-chip').forEach(e => e.remove());
+    $('noTr').hidden = traces.length > 0;
+    const gName = { 9.81: 'Země', 1.62: 'Měsíc', 3.71: 'Mars', 24.79: 'Jupiter' };
+    traces.forEach(t => {
+      const el = document.createElement('span'); el.className = 'trace-chip';
+      el.innerHTML = `<i style="background:${t.color}"></i>v₀ ${fmt(t.s.v0)} · ${t.s.a}°${t.s.h0 ? ' · h₀ ' + fmt(t.s.h0) : ''}${t.s.g !== 9.81 ? ' · ' + gName[t.s.g] : ''} → d = ${fmt(t.s.D)} m`;
+      box.appendChild(el);
+    });
+  }
+
+  ['v0', 'al', 'h0', 'gs', 'sp'].forEach(id => $(id).addEventListener('input', updateUI));
+  ['cbV', 'cbC', 'cbP', 'cbM'].forEach(id => $(id).addEventListener('change', draw));
+  $('fire').addEventListener('click', fire);
+  $('pause').addEventListener('click', () => {
+    if (!running) return;
+    paused = !paused; $('pause').textContent = paused ? 'Pokračovat' : 'Pauza';
+  });
+  $('clear').addEventListener('click', () => { traces = []; renderTraces(); draw(); });
+  document.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => {
+    const [v, a, h] = b.dataset.p.split(',');
+    $('v0').value = v; $('al').value = a; $('h0').value = h; updateUI();
+  }));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // výchozí stav: ukázkové dráhy 30° a 60° pro porovnání
+  traces = [{ s: solve({ v0: 20, a: 30, h0: 0, g: 9.81 }), color: TRACE_COLORS[0] }, { s: solve({ v0: 20, a: 60, h0: 0, g: 9.81 }), color: TRACE_COLORS[1] }];
+  renderTraces(); updateUI();
+  if (document.fonts) document.fonts.ready.then(draw);
+})();
+</script>
+</body>
+</html>
