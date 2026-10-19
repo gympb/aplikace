@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enigma</title>
+    <meta name="description" content="Simulátor šifrovacího stroje Enigma M3 s rotory, prstenci, reflektorem a propojovací deskou.">
+    <meta property="og:title" content="Enigma">
+    <meta property="og:image" content="nahled.png">
+    <link rel="stylesheet" href="fonty/fonty.css">
+    <link rel="stylesheet" href="styl.css">
+    <style>
+        :root {
+            --enigma-dark: #1a1a1a;
+            --enigma-metal: #2d2d2d;
+            --enigma-gold: #d4af37;
+            --enigma-light: #e0e0e0;
+        }
+        body {
+            background-color: #121212;
+            color: var(--enigma-light);
+            font-family: 'Courier Prime', monospace;
+        }
+        .enigma-case {
+            background: linear-gradient(145deg, #232323, #1a1a1a);
+            border: 4px solid #333;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+        .rotor-display {
+            font-family: 'Share Tech Mono', monospace;
+            background: #000;
+            color: var(--enigma-gold);
+            text-shadow: 0 0 5px var(--enigma-gold);
+        }
+        .key {
+            transition: all 0.1s;
+            user-select: none;
+        }
+        .key:active, .key.active {
+            transform: translateY(4px);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            background-color: #444;
+        }
+        .lamp.active {
+            background-color: #ffd700;
+            color: #000;
+            box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700;
+        }
+        .plugboard-wire {
+            stroke: var(--enigma-gold);
+            stroke-width: 3;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center min-h-screen">
+
+    <a href="../" class="max-w-4xl w-full mb-4 text-xs text-gray-500 hover:text-gray-300 tracking-widest">← VŠECHNY ŠKOLNÍ APLIKACE</a>
+
+    <div class="max-w-4xl w-full enigma-case rounded-xl p-6 md:p-10 relative overflow-hidden">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-10 border-b border-gray-700 pb-4">
+            <div>
+                <h1 class="text-3xl font-bold tracking-widest text-gray-400">ENIGMA <span class="text-xs align-top">M3</span></h1>
+                <p class="text-xs text-gray-500 italic">Kryptografický simulátor</p>
+            </div>
+            <div class="text-right">
+                <button id="reset-btn" class="bg-red-900/30 hover:bg-red-900/50 text-red-400 text-xs py-1 px-3 border border-red-900/50 rounded transition-colors">
+                    RESETOVAT STROJ
+                </button>
+            </div>
+        </div>
+
+        <!-- Rotor Settings Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 bg-black/30 p-4 rounded-lg">
+            <!-- Left Rotor -->
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-gray-500 mb-2">LEVÝ ROTOR</span>
+                <div class="flex gap-2">
+                    <select id="rotor-left-type" class="bg-neutral-800 text-xs p-1 border border-gray-600 rounded">
+                        <option value="I">I</option>
+                        <option value="II">II</option>
+                        <option value="III">III</option>
+                        <option value="IV">IV</option>
+                        <option value="V">V</option>
+                    </select>
+                    <div class="flex flex-col items-center">
+                        <button onclick="changeRotorPos('left', 1)" class="text-gray-500 hover:text-white">▲</button>
+                        <div id="rotor-left-pos" class="rotor-display w-10 h-10 flex items-center justify-center text-2xl border border-gray-700 rounded my-1">A</div>
+                        <button onclick="changeRotorPos('left', -1)" class="text-gray-500 hover:text-white">▼</button>
+                    </div>
+                </div>
+                <div class="mt-2 text-[10px] text-gray-600">PRSTENEC: <input id="ring-left" type="number" min="1" max="26" value="1" class="bg-transparent w-8 text-center border-b border-gray-700"></div>
+            </div>
+
+            <!-- Middle Rotor -->
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-gray-500 mb-2">STŘEDNÍ ROTOR</span>
+                <div class="flex gap-2">
+                    <select id="rotor-middle-type" class="bg-neutral-800 text-xs p-1 border border-gray-600 rounded" selected="II">
+                        <option value="I">I</option>
+                        <option value="II" selected>II</option>
+                        <option value="III">III</option>
+                        <option value="IV">IV</option>
+                        <option value="V">V</option>
+                    </select>
+                    <div class="flex flex-col items-center">
+                        <button onclick="changeRotorPos('middle', 1)" class="text-gray-500 hover:text-white">▲</button>
+                        <div id="rotor-middle-pos" class="rotor-display w-10 h-10 flex items-center justify-center text-2xl border border-gray-700 rounded my-1">A</div>
+                        <button onclick="changeRotorPos('middle', -1)" class="text-gray-500 hover:text-white">▼</button>
+                    </div>
+                </div>
+                <div class="mt-2 text-[10px] text-gray-600">PRSTENEC: <input id="ring-middle" type="number" min="1" max="26" value="1" class="bg-transparent w-8 text-center border-b border-gray-700"></div>
+            </div>
+
+            <!-- Right Rotor -->
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-gray-500 mb-2">PRAVÝ ROTOR</span>
+                <div class="flex gap-2">
+                    <select id="rotor-right-type" class="bg-neutral-800 text-xs p-1 border border-gray-600 rounded">
+                        <option value="I">I</option>
+                        <option value="II">II</option>
+                        <option value="III" selected>III</option>
+                        <option value="IV">IV</option>
+                        <option value="V">V</option>
+                    </select>
+                    <div class="flex flex-col items-center">
+                        <button onclick="changeRotorPos('right', 1)" class="text-gray-500 hover:text-white">▲</button>
+                        <div id="rotor-right-pos" class="rotor-display w-10 h-10 flex items-center justify-center text-2xl border border-gray-700 rounded my-1">A</div>
+                        <button onclick="changeRotorPos('right', -1)" class="text-gray-500 hover:text-white">▼</button>
+                    </div>
+                </div>
+                <div class="mt-2 text-[10px] text-gray-600">PRSTENEC: <input id="ring-right" type="number" min="1" max="26" value="1" class="bg-transparent w-8 text-center border-b border-gray-700"></div>
+            </div>
+        </div>
+
+        <!-- Lampboard (Output Visualizer) -->
+        <div class="mb-10 grid grid-cols-10 gap-2 px-2 md:px-10 justify-center">
+            <!-- Row 1 -->
+            <div class="col-start-1 col-span-10 flex justify-center gap-2 mb-2">
+                <div id="lamp-Q" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">Q</div>
+                <div id="lamp-W" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">W</div>
+                <div id="lamp-E" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">E</div>
+                <div id="lamp-R" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">R</div>
+                <div id="lamp-T" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">T</div>
+                <div id="lamp-Z" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">Z</div>
+                <div id="lamp-U" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">U</div>
+                <div id="lamp-I" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">I</div>
+                <div id="lamp-O" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">O</div>
+            </div>
+            <!-- Row 2 -->
+            <div class="col-start-1 col-span-10 flex justify-center gap-2 mb-2 ml-4">
+                <div id="lamp-A" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">A</div>
+                <div id="lamp-S" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">S</div>
+                <div id="lamp-D" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">D</div>
+                <div id="lamp-F" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">F</div>
+                <div id="lamp-G" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">G</div>
+                <div id="lamp-H" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">H</div>
+                <div id="lamp-J" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">J</div>
+                <div id="lamp-K" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">K</div>
+            </div>
+            <!-- Row 3 -->
+            <div class="col-start-1 col-span-10 flex justify-center gap-2 mb-2">
+                <div id="lamp-P" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">P</div>
+                <div id="lamp-Y" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">Y</div>
+                <div id="lamp-X" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">X</div>
+                <div id="lamp-C" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">C</div>
+                <div id="lamp-V" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">V</div>
+                <div id="lamp-B" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">B</div>
+                <div id="lamp-N" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">N</div>
+                <div id="lamp-M" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">M</div>
+                <div id="lamp-L" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">L</div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="flex flex-col">
+                <label class="text-[10px] text-gray-500 mb-1 uppercase tracking-widest">Vstupní text</label>
+                <textarea id="input-text" class="bg-black/50 border border-gray-700 rounded p-3 text-sm focus:outline-none focus:border-yellow-600 transition-colors h-24 resize-none" placeholder="Sem pište zprávu..."></textarea>
+            </div>
+            <div class="flex flex-col">
+                <label class="text-[10px] text-gray-500 mb-1 uppercase tracking-widest text-right">Výstupní (šifrovaný) text</label>
+                <textarea id="output-text" readonly class="bg-black/80 border border-gray-700 rounded p-3 text-sm h-24 resize-none text-yellow-500 font-bold" placeholder="Šifrovaný text se objeví zde..."></textarea>
+            </div>
+        </div>
+
+        <!-- Plugboard and Advanced Settings -->
+        <div class="bg-black/40 p-4 rounded-lg">
+            <h3 class="text-xs text-gray-500 mb-4 border-b border-gray-800 pb-2">ROZVODNÁ DESKA (PLUGBOARD)</h3>
+            <div class="flex flex-wrap gap-4 items-center">
+                <input id="plugboard-input" type="text" placeholder="Páry: AB CD EF..." class="bg-neutral-800 border border-gray-700 rounded px-3 py-1 text-sm flex-grow uppercase" maxlength="40">
+                <div class="flex items-center gap-4">
+                    <span class="text-xs text-gray-600">REFLEKTOR:</span>
+                    <select id="reflector-type" class="bg-neutral-800 text-xs p-1 border border-gray-600 rounded">
+                        <option value="B">B (Standard)</option>
+                        <option value="C">C</option>
+                    </select>
+                </div>
+            </div>
+            <p class="text-[10px] text-gray-600 mt-2">Zadejte páry písmen oddělené mezerou pro jejich vzájemnou záměnu.</p>
+        </div>
+
+        <div class="mt-8 text-center">
+            <p class="text-[10px] text-gray-700 uppercase tracking-tighter">&copy; 1943 - HEERES-NACHRICHTENWESEN - SIMULACE</p>
+        </div>
+    </div>
+
+    <script>
+        // Enigma Logic Implementation
+        const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        
+        const ROTORS = {
+            'I':   { wiring: "EKMFLGDQVZNTOWYHXUSPAIBRCJ", notch: "Q" },
+            'II':  { wiring: "AJDKSIRUXBLHWTMCQGZNPYFVOE", notch: "E" },
+            'III': { wiring: "BDFHJLCPRTXVZNYEIWGAKMUSQO", notch: "V" },
+            'IV':  { wiring: "ESOVPZJAYQUIRHXLNFTGKDCMWB", notch: "J" },
+            'V':   { wiring: "VZBRGITYUPSDNHLXAWMJQOFECK", notch: "Z" }
+        };
+
+
+        // Historické zapojení reflektorů UKW-B a UKW-C
+        const REF_B = "YRUHQSLDPXNGOKMIEBFZCWVJAT";
+        const REF_C = "FVPJIAOYEDRZXWGCTKUQSBNMHL";
+
+        class EnigmaMachine {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.leftRotor = { type: 'I', pos: 0, ring: 0 };
+                this.middleRotor = { type: 'II', pos: 0, ring: 0 };
+                this.rightRotor = { type: 'III', pos: 0, ring: 0 };
+                this.reflector = 'B';
+                this.plugboard = {};
+            }
+
+            setPlugboard(pairsString) {
+                this.plugboard = {};
+                const pairs = pairsString.toUpperCase().split(/\s+/);
+                for (const pair of pairs) {
+                    if (pair.length === 2) {
+                        this.plugboard[pair[0]] = pair[1];
+                        this.plugboard[pair[1]] = pair[0];
+                    }
+                }
+            }
+
+            rotate() {
+                const rNotch = ROTORS[this.rightRotor.type].notch.charCodeAt(0) - 65;
+                const mNotch = ROTORS[this.middleRotor.type].notch.charCodeAt(0) - 65;
+
+                // Double stepping mechanism
+                let stepMiddle = false;
+                let stepLeft = false;
+
+                if (this.middleRotor.pos === mNotch) {
+                    stepMiddle = true;
+                    stepLeft = true;
+                } else if (this.rightRotor.pos === rNotch) {
+                    stepMiddle = true;
+                }
+
+                this.rightRotor.pos = (this.rightRotor.pos + 1) % 26;
+                if (stepMiddle) this.middleRotor.pos = (this.middleRotor.pos + 1) % 26;
+                if (stepLeft) this.leftRotor.pos = (this.leftRotor.pos + 1) % 26;
+            }
+
+            map(c, rotor, reverse = false) {
+                const charCode = c.charCodeAt(0) - 65;
+                // Shift by position and ring setting
+                const shift = (rotor.pos - rotor.ring + 26) % 26;
+                
+                let inputIdx = (charCode + shift) % 26;
+                let outputIdx;
+
+                if (!reverse) {
+                    const mappedChar = ROTORS[rotor.type].wiring[inputIdx];
+                    outputIdx = (mappedChar.charCodeAt(0) - 65 - shift + 26) % 26;
+                } else {
+                    const wiring = ROTORS[rotor.type].wiring;
+                    const charToFind = String.fromCharCode(((inputIdx + 65)));
+                    // Find which input maps to this character in wiring
+                    for(let i=0; i<26; i++) {
+                        if(wiring[i] === charToFind) {
+                            outputIdx = (i - shift + 26) % 26;
+                            break;
+                        }
+                    }
+                }
+
+                return String.fromCharCode(outputIdx + 65);
+            }
+
+            encryptChar(c) {
+                c = c.toUpperCase();
+                if (!ALPHABET.includes(c)) return c;
+
+                this.rotate();
+
+                // 1. Plugboard
+                let res = this.plugboard[c] || c;
+
+                // 2. Forward through rotors
+                res = this.map(res, this.rightRotor);
+                res = this.map(res, this.middleRotor);
+                res = this.map(res, this.leftRotor);
+
+                // 3. Reflector
+                const reflectorWiring = this.reflector === 'B' ? REF_B : REF_C;
+                res = reflectorWiring[res.charCodeAt(0) - 65];
+
+                // 4. Backward through rotors
+                res = this.map(res, this.leftRotor, true);
+                res = this.map(res, this.middleRotor, true);
+                res = this.map(res, this.rightRotor, true);
+
+                // 5. Plugboard again
+                res = this.plugboard[res] || res;
+
+                return res;
+            }
+        }
+
+        // UI Logic
+        const machine = new EnigmaMachine();
+        const inputArea = document.getElementById('input-text');
+        const outputArea = document.getElementById('output-text');
+        const plugboardInput = document.getElementById('plugboard-input');
+        
+        function updateUI() {
+            document.getElementById('rotor-left-pos').innerText = String.fromCharCode(machine.leftRotor.pos + 65);
+            document.getElementById('rotor-middle-pos').innerText = String.fromCharCode(machine.middleRotor.pos + 65);
+            document.getElementById('rotor-right-pos').innerText = String.fromCharCode(machine.rightRotor.pos + 65);
+        }
+
+        function syncMachineSettings() {
+            machine.leftRotor.type = document.getElementById('rotor-left-type').value;
+            machine.middleRotor.type = document.getElementById('rotor-middle-type').value;
+            machine.rightRotor.type = document.getElementById('rotor-right-type').value;
+            
+            machine.leftRotor.ring = parseInt(document.getElementById('ring-left').value) - 1;
+            machine.middleRotor.ring = parseInt(document.getElementById('ring-middle').value) - 1;
+            machine.rightRotor.ring = parseInt(document.getElementById('ring-right').value) - 1;
+            
+            machine.reflector = document.getElementById('reflector-type').value;
+            machine.setPlugboard(plugboardInput.value);
+        }
+
+        function changeRotorPos(rotor, delta) {
+            const r = rotor === 'left' ? machine.leftRotor : (rotor === 'middle' ? machine.middleRotor : machine.rightRotor);
+            r.pos = (r.pos + delta + 26) % 26;
+            updateUI();
+        }
+
+        inputArea.addEventListener('input', (e) => {
+            syncMachineSettings();
+            const text = inputArea.value.toUpperCase();
+            
+            // Re-encrypt everything from start to ensure rotor positions stay synced with text length
+            // In a real Enigma, you'd do it char by char, but for simplicity of the UI we re-run
+            const originalPos = {
+                left: machine.leftRotor.pos,
+                middle: machine.middleRotor.pos,
+                right: machine.rightRotor.pos
+            };
+
+            // Temporary machine to calculate result without moving the "main" machine state permanently
+            // Actually, let's just use the current state and append last char if it was a single keypress
+            // But if user deletes, it's messy. So we'll reset machine to current UI state and process full text.
+            
+            // To make it look like a real machine, we only process the *change* if possible,
+            // but for a text area, full re-processing is safer.
+            
+            // Let's implement a "Typewriter" mode:
+        });
+
+        // Refined Interaction Logic: Keydown based
+        let lastLength = 0;
+        inputArea.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+                // When deleting, we can't easily "un-rotate" a mechanical Enigma in this UI logic 
+                // easily without keeping a history. Let's just clear if they delete.
+                return;
+            }
+
+            if (e.key.length === 1 && ALPHABET.includes(e.key.toUpperCase())) {
+                syncMachineSettings();
+                const encrypted = machine.encryptChar(e.key);
+                
+                // Visual feedback
+                const lamp = document.getElementById(`lamp-${encrypted}`);
+                if (lamp) {
+                    lamp.classList.add('active');
+                    setTimeout(() => lamp.classList.remove('active'), 300);
+                }
+
+                // Update output
+                outputArea.value += encrypted;
+                updateUI();
+            }
+        });
+
+        // Reset functionality
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            machine.reset();
+            inputArea.value = '';
+            outputArea.value = '';
+            updateUI();
+        });
+
+        // Initialize
+        syncMachineSettings();
+        updateUI();
+
+        // Prevent standard typing into output
+        outputArea.addEventListener('keydown', (e) => e.preventDefault());
+
+    </script>
+</body>
+</html>

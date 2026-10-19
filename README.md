@@ -9,7 +9,7 @@ Interaktivní výukové aplikace, které fungují v prohlížeči bez přihláš
 ```
 index.html          katalog aplikací (úvodní stránka)
 katalog.json        údaje o aplikacích, ze kterých se skládá katalog
-assets/fonty/       písma katalogu (Montserrat, Atkinson Hyperlegible)
+assets/fonty/       písma katalogu (Cinzel, Source Sans 3, JetBrains Mono)
 CNAME               vlastní doména pro GitHub Pages
 caesarova-sifra/    jedna složka = jedna aplikace
   index.html        aplikace
