@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Caesarova šifra</title>
+<meta name="description" content="Interaktivní výuková aplikace: šifrovací kotouč, šifrování a dešifrování, útok hrubou silou a frekvenční analýza.">
+<meta name="author" content="Ivo Bešťák, Gymnázium Příbram">
+<meta property="og:title" content="Caesarova šifra">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+/* Layout: kamenná deska — šifrovací kotouč vlevo, ovládání vpravo; pod tím abeceda, hrubá síla a frekvence */
+:root{
+  --bg:#eceef1; --panel:#f8f9fb; --ink:#1a2030; --muted:#5d6577; --line:#d3d7df;
+  --accent:#6d2a5e; --accent-soft:#ecdde8; --gold:#9a7428; --good:#2f7a4f;
+  --f-display:"Cinzel","Trajan Pro",Georgia,serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#13161d; --panel:#1b1f29; --ink:#e7e9ef; --muted:#9aa1b2; --line:#2e3442;
+  --accent:#d491c3; --accent-soft:#3a2436; --gold:#d6b066; --good:#6cc391; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#13161d; --panel:#1b1f29; --ink:#e7e9ef; --muted:#9aa1b2; --line:#2e3442;
+  --accent:#d491c3; --accent-soft:#3a2436; --gold:#d6b066; --good:#6cc391; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:40px}
+h1,h2{font-family:var(--f-display);font-weight:700;letter-spacing:.06em;text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,5vw,48px);line-height:1.1}
+h2{font-size:22px}
+.eyebrow{font:600 12px/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.lede{color:var(--muted);max-width:62ch;margin:10px 0 0}
+header{display:grid;gap:6px}
+
+.hero{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:36px;align-items:start}
+@media (max-width:760px){.hero{grid-template-columns:minmax(0,1fr)}}
+.wheel-box{display:grid;gap:10px;justify-items:center}
+#wheel{width:100%;max-width:360px;height:auto}
+#wheel .ring-out{fill:var(--panel);stroke:var(--line)}
+#wheel .ring-in{fill:var(--accent-soft);stroke:var(--accent)}
+#wheel .tick{stroke:var(--line)}
+#wheel .lo{fill:var(--ink);font:600 15px var(--f-mono)}
+#wheel .li{fill:var(--accent);font:600 14px var(--f-mono)}
+#wheel .hub{fill:var(--panel);stroke:var(--accent)}
+#wheel .hubtxt{fill:var(--accent);font:700 26px var(--f-display);text-anchor:middle}
+#wheel .hubsub{fill:var(--muted);font:600 9px var(--f-body);letter-spacing:.14em;text-anchor:middle}
+#wheel .mark{fill:var(--gold)}
+#wheel .hl{fill:var(--gold);opacity:.28}
+#inner{transition:transform .45s cubic-bezier(.3,.7,.2,1);transform-origin:180px 180px}
+#inner.dragging{transition:none}
+#wheel{touch-action:none;user-select:none;-webkit-user-select:none;border-radius:50%}
+#wheel.grab-zone{cursor:grab}
+#wheel.grabbing{cursor:grabbing}
+#wheel:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.wheel-hint{font-size:13px;color:var(--muted);margin:0;text-align:center}
+.snd{font-size:13px;color:var(--muted)}
+.snd input{accent-color:var(--accent);margin-right:6px}
+@media (prefers-reduced-motion:reduce){#inner{transition:none}}
+.wheel-legend{font-size:13px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.wheel-legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.lg-o::before{background:var(--ink)} .lg-i::before{background:var(--accent)}
+
+.controls{display:grid;gap:18px;min-width:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--panel);width:max-content;max-width:100%}
+.seg button{border:0;background:none;color:var(--muted);font:600 14px var(--f-body);padding:7px 18px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+label.lab{font:600 12px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+textarea{width:100%;min-height:110px;resize:vertical;font:15px/1.5 var(--f-mono);color:var(--ink);background:var(--panel);
+  border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+textarea:focus,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.shift-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.shift-row input[type=range]{flex:1 1 200px;accent-color:var(--accent)}
+.kbox{display:flex;align-items:center;gap:6px}
+.kbox button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:600 18px var(--f-body);cursor:pointer}
+.kval{font:700 28px var(--f-display);min-width:2.2ch;text-align:center;color:var(--accent);font-variant-numeric:tabular-nums}
+.opts{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.opts input{accent-color:var(--accent);margin-right:6px}
+.output{background:var(--ink);color:var(--bg);border-radius:8px;padding:14px 16px;font:600 16px/1.6 var(--f-mono);
+  white-space:pre-wrap;word-break:break-word;min-height:72px}
+.out-head{display:flex;justify-content:space-between;align-items:end;gap:10px}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);font:600 13px var(--f-body);padding:6px 12px;border-radius:6px;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.formula{font:14px var(--f-mono);color:var(--muted)}
+.formula b{color:var(--accent)}
+
+section{display:grid;gap:14px}
+.sec-head{display:grid;gap:4px}
+.sec-head p{margin:0;color:var(--muted);max-width:70ch}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+table.alpha{border-collapse:collapse;font:600 15px var(--f-mono);margin:0 auto}
+table.alpha th{font:600 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;white-space:nowrap;position:sticky;left:0;background:var(--panel)}
+table.alpha td{padding:8px 0;width:30px;min-width:30px;text-align:center}
+table.alpha tr.c td{color:var(--accent);border-top:1px dashed var(--line)}
+table.alpha td.on{background:var(--accent-soft);color:var(--accent)}
+table.alpha tr.p td.on{color:var(--ink)}
+.trace{font:14px var(--f-mono);color:var(--muted);display:flex;flex-wrap:wrap;gap:6px}
+.trace span{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px 8px}
+.trace span b{color:var(--accent)}
+
+.brute{display:grid;gap:2px;border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:6px;max-height:440px;overflow-y:auto}
+.brute button{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;align-items:center;text-align:left;border:0;background:none;
+  color:var(--ink);padding:7px 10px;border-radius:6px;cursor:pointer;font:14px var(--f-mono)}
+.brute button:hover{background:var(--accent-soft)}
+.brute .k{color:var(--muted);font-variant-numeric:tabular-nums}
+.brute .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brute .best{background:var(--accent-soft)}
+.brute .best .k{color:var(--accent);font-weight:600}
+.pill{font:700 11px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--good);border:1px solid var(--good);border-radius:999px;padding:2px 8px;white-space:nowrap}
+
+.chart-box{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:12px 8px 6px;overflow-x:auto}
+#chart{display:block;min-width:620px;width:100%;height:auto}
+#chart .bar{fill:var(--accent)}
+#chart .ref{fill:none;stroke:var(--gold);stroke-width:2}
+#chart .refdot{fill:var(--gold)}
+#chart .ax{fill:var(--muted);font:600 11px var(--f-mono);text-anchor:middle}
+#chart .gy{fill:var(--muted);font:10px var(--f-mono);text-anchor:end}
+#chart .grid{stroke:var(--line)}
+.chart-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.chart-legend i{display:inline-block;width:14px;height:10px;margin-right:6px;vertical-align:0}
+.note{font-size:14px;color:var(--muted);max-width:70ch;margin:0}
+.verdict{font-size:15px}
+.verdict b{color:var(--accent)}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+</style>
+<style>body{margin:0}[hidden]{display:none!important}.back{font:600 14px var(--f-body);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <header>
+    <div class="eyebrow">Kryptografie · substituční šifry</div>
+    <h1>Caesarova šifra</h1>
+    <p class="lede">Každé písmeno zprávy se posune v abecedě o stejný počet míst. Julius Caesar podle Suetonia používal posun o tři. Otočte vnitřním kotoučem a sledujte, co se stane s textem.</p>
+  </header>
+
+  <div class="hero">
+    <div class="wheel-box">
+      <svg id="wheel" viewBox="0 0 360 360" role="slider" tabindex="0" aria-label="Šifrovací kotouč, posun" aria-valuemin="0" aria-valuemax="25" aria-valuenow="3"></svg>
+      <div class="wheel-legend"><span class="lg-o">otevřený text</span><span class="lg-i">šifrový text</span></div>
+      <p class="wheel-hint">Vnitřní kroužek otočíte tažením myší nebo prstem, případně šipkami na klávesnici.</p>
+      <label class="snd"><input type="checkbox" id="sound" checked>Zvuk aretace</label>
+    </div>
+
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Režim">
+        <button id="m-enc" aria-pressed="true">Zašifrovat</button>
+        <button id="m-dec" aria-pressed="false">Dešifrovat</button>
+      </div>
+
+      <div>
+        <label class="lab" for="input" id="in-lab">Otevřený text</label>
+        <textarea id="input" spellcheck="false">Gaius Julius Caesar posílal svým velitelům tajné zprávy, ve kterých posunul každé písmeno o tři místa dál v abecedě. Nepřítel, který dopis zachytil, viděl jen nesmyslnou změť písmen.</textarea>
+      </div>
+
+      <div>
+        <label class="lab" for="shift">Klíč (posun)</label>
+        <div class="shift-row">
+          <input type="range" id="shift" min="0" max="25" value="3">
+          <div class="kbox">
+            <button id="k-minus" aria-label="Snížit posun">−</button>
+            <span class="kval" id="kval">3</span>
+            <button id="k-plus" aria-label="Zvýšit posun">+</button>
+          </div>
+        </div>
+        <div class="formula" id="formula"></div>
+      </div>
+
+      <div class="opts">
+        <label><input type="checkbox" id="strip" checked>Odstranit diakritiku (č → c)</label>
+        <label><input type="checkbox" id="upper">Převést na velká písmena</label>
+        <label><input type="checkbox" id="nospace">Odstranit mezery a interpunkci</label>
+        <label><input type="checkbox" id="groups">Šifrový text ve skupinách po 5</label>
+      </div>
+
+      <div>
+        <div class="out-head">
+          <span class="lab" id="out-lab">Šifrový text</span>
+          <button class="btn" id="copy">Kopírovat</button>
+        </div>
+        <div class="output" id="output" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Krok za krokem</div>
+      <h2>Posunutá abeceda</h2>
+      <p>Horní řádek je běžná abeceda, spodní řádek abeceda posunutá o klíč. Zvýrazněná písmena se vyskytují v aktuálním textu.</p>
+    </div>
+    <div class="scroll"><table class="alpha" id="alpha"></table></div>
+    <div class="trace" id="trace"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Útok hrubou silou</div>
+      <h2>Všech 26 možných klíčů</h2>
+      <p>Caesarova šifra má jen 26 klíčů, takže útočník může vyzkoušet všechny. Řádek označený jako nejpravděpodobnější má rozložení písmen nejbližší <span class="lang-dat">češtině</span>. Kliknutím na řádek text dešifrujete tímto klíčem.</p>
+    </div>
+    <div class="brute" id="brute"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Frekvenční analýza</div>
+      <h2>Které písmeno je nejčastější?</h2>
+      <div class="seg" role="group" aria-label="Jazyk pro frekvenční analýzu" style="margin-top:8px">
+        <button id="l-cs" aria-pressed="true">Čeština</button>
+        <button id="l-en" aria-pressed="false">Angličtina</button>
+      </div>
+      <p>Sloupce ukazují četnost písmen v šifrovém textu. Zlatá křivka je orientační četnost písmen <span class="lang-loc">v češtině</span> posunutá o odhadnutý klíč. Když se křivka kryje se sloupci, klíč je nalezen.</p>
+    </div>
+    <div class="chart-box"><svg id="chart" viewBox="0 0 780 240" role="img" aria-label="Graf četnosti písmen"></svg></div>
+    <div class="chart-legend"><span><i style="background:var(--accent)"></i>šifrový text</span><span><i style="background:var(--gold)"></i><span class="lang-nom">čeština</span> posunutá o odhad</span></div>
+    <p class="verdict" id="verdict"></p>
+  </section>
+
+  <footer>Šifrování: C = (P + k) mod 26 · Dešifrování: P = (C − k) mod 26 · Znaky mimo anglickou abecedu (číslice, mezery, interpunkce) zůstávají beze změny, pokud je neodstraníte. Ponechané mezery prozrazují délky slov, proto se šifrogramy tradičně psaly ve skupinách po pěti písmenech.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" style="color:inherit">CC BY 4.0</a> · Aktualizace: 19. 10. 2026</footer>
+</div>
+
+<script>
+const A='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+// Orientační četnost písmen v češtině (%), diakritika sloučena se základním písmenem
+const CZ=[8.6,1.7,2.6,3.6,10.4,.3,.3,1.3,7.2,2.1,3.7,3.8,3.2,6.6,8.7,3.4,.01,4.9,5.7,5.6,4.0,4.3,.1,.1,2.8,3.2];
+// Četnost písmen v angličtině (%)
+const EN=[8.2,1.5,2.8,4.3,12.7,2.2,2.0,6.1,7.0,.15,.77,4.0,2.4,6.7,7.5,1.9,.095,6.0,6.3,9.1,2.8,.98,2.4,.15,2.0,.074];
+const norm=a=>{const s=a.reduce((x,y)=>x+y,0);return a.map(v=>v/s);};
+const LANGS={
+  cs:{p:norm(CZ),nom:'čeština',dat:'češtině',loc:'v češtině'},
+  en:{p:norm(EN),nom:'angličtina',dat:'angličtině',loc:'v angličtině'}
+};
+let lang='cs', CZP=LANGS.cs.p;
+const $=id=>document.getElementById(id);
+const st={mode:'enc',k:3};
+const mod=(n,m)=>((n%m)+m)%m;
+
+function prep(s){
+  if($('strip').checked) s=s.normalize('NFD').replace(/[̀-ͯ]/g,'');
+  if($('upper').checked) s=s.toUpperCase();
+  if($('nospace').checked) s=s.replace(/[^\p{L}]/gu,'');
+  return s;
+}
+function shift(s,k){
+  let o='';
+  for(const ch of s){
+    const c=ch.charCodeAt(0);
+    if(c>=65&&c<=90) o+=String.fromCharCode(65+mod(c-65+k,26));
+    else if(c>=97&&c<=122) o+=String.fromCharCode(97+mod(c-97+k,26));
+    else o+=ch;
+  }
+  return o;
+}
+function counts(s){
+  const n=new Array(26).fill(0);
+  for(const ch of s.toUpperCase()){const c=ch.charCodeAt(0)-65; if(c>=0&&c<26)n[c]++;}
+  return n;
+}
+// chí-kvadrát: jak moc se text dešifrovaný klíčem k liší od češtiny
+function scoreAll(cipher){
+  const n=counts(cipher), tot=n.reduce((a,b)=>a+b,0);
+  const res=[];
+  for(let k=0;k<26;k++){
+    let chi=0;
+    for(let i=0;i<26;i++){const e=CZP[i]*tot||1e-9; const o=n[mod(i+k,26)]; chi+=(o-e)**2/e;}
+    res.push(chi);
+  }
+  return {res,tot,n};
+}
+
+/* --- kotouč --- */
+function buildWheel(){
+  const s=$('wheel'), C=180, NS='http://www.w3.org/2000/svg';
+  const el=(t,a,p=s)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;};
+  el('circle',{cx:C,cy:C,r:172,class:'ring-out'});
+  el('path',{d:`M${C-7} 2 L${C+7} 2 L${C} 14 Z`,class:'mark'});
+  el('rect',{id:'hlband',x:C-15,y:12,width:30,height:118,rx:15,class:'hl'});
+  for(let i=0;i<26;i++){
+    const a=i*360/26;
+    const g=el('g',{transform:`rotate(${a} ${C} ${C})`});
+    el('line',{x1:C,y1:8,x2:C,y2:16,class:'tick',transform:`rotate(${180/26} ${C} ${C})`},g);
+    const t=el('text',{x:C,y:42,'text-anchor':'middle',class:'lo'},g); t.textContent=A[i];
+  }
+  el('circle',{cx:C,cy:C,r:126,class:'ring-in'});
+  const inner=el('g',{id:'inner'});
+  for(let i=0;i<26;i++){
+    const g=el('g',{transform:`rotate(${i*360/26} ${C} ${C})`},inner);
+    el('line',{x1:C,y1:56,x2:C,y2:64,class:'tick',transform:`rotate(${180/26} ${C} ${C})`},g);
+    const t=el('text',{x:C,y:80,'text-anchor':'middle',class:'li'},g); t.textContent=A[i];
+  }
+  el('circle',{cx:C,cy:C,r:60,class:'hub'});
+  const k=el('text',{x:C,y:C+8,class:'hubtxt',id:'hubk'}); k.textContent='3';
+  const sub=el('text',{x:C,y:C+28,class:'hubsub'}); sub.textContent='POSUN';
+}
+let rot=0, drag=null;
+const STEP=360/26;
+function turnWheel(k){
+  $('wheel').setAttribute('aria-valuenow',k);
+  if(drag){$('hubk').textContent=k;return;}
+  // nejkratší cesta otočení, aby kotouč neprotáčel celé kolo
+  const target=-k*360/26;
+  let d=mod(target-rot+180,360)-180;
+  rot+=d;
+  $('inner').style.transform=`rotate(${rot}deg)`;
+  $('hubk').textContent=k;
+}
+
+/* --- zvuk aretace: krátké kovové cvaknutí syntetizované Web Audio --- */
+let actx=null, noiseBuf=null, lastTick=0;
+function audioInit(){
+  if(actx||!$('sound').checked)return;
+  try{
+    actx=new (window.AudioContext||window.webkitAudioContext)();
+    noiseBuf=actx.createBuffer(1,Math.floor(actx.sampleRate*.03),actx.sampleRate);
+    const d=noiseBuf.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
+  }catch(e){actx=null;}
+}
+function tick(){
+  if(!actx||!$('sound').checked)return;
+  if(actx.state==='suspended')actx.resume();
+  const t=actx.currentTime;
+  if(t-lastTick<.018)return;               // při rychlém točení neslévat cvaknutí do šumu
+  lastTick=t;
+  // ostré „cvak“ pružinky
+  const n=actx.createBufferSource(); n.buffer=noiseBuf; n.playbackRate.value=.9+Math.random()*.2;
+  const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=3200; bp.Q.value=4;
+  const g=actx.createGain(); g.gain.setValueAtTime(.55,t); g.gain.exponentialRampToValueAtTime(.001,t+.03);
+  n.connect(bp).connect(g).connect(actx.destination); n.start(t);
+  // tlumený „ťuk“ kuličky zapadající do západky
+  const o=actx.createOscillator(); o.type='triangle';
+  o.frequency.setValueAtTime(420,t); o.frequency.exponentialRampToValueAtTime(140,t+.04);
+  const g2=actx.createGain(); g2.gain.setValueAtTime(.25,t); g2.gain.exponentialRampToValueAtTime(.001,t+.05);
+  o.connect(g2).connect(actx.destination); o.start(t); o.stop(t+.06);
+}
+document.addEventListener('pointerdown',audioInit,true);
+document.addEventListener('keydown',audioInit,true);
+let lastK=null;
+
+/* --- vykreslení --- */
+function render(){
+  const k=st.k, enc=st.mode==='enc';
+  if(lastK!==null&&k!==lastK)tick();
+  lastK=k;
+  const src=prep($('input').value);
+  let out=shift(src,enc?k:-k);
+  // klasický zápis šifrogramu: skupiny po pěti písmenech skryjí hranice slov
+  if(enc&&$('groups').checked) out=(out.replace(/[^\p{L}]/gu,'').match(/.{1,5}/gu)||[]).join(' ');
+  const plain=enc?src:out, cipher=enc?out:src;
+  $('output').textContent=out||'—';
+  $('kval').textContent=k; $('shift').value=k;
+  $('in-lab').textContent=enc?'Otevřený text':'Šifrový text';
+  $('out-lab').textContent=enc?'Šifrový text':'Otevřený text';
+  $('formula').innerHTML=enc?`C = (P + <b>${k}</b>) mod 26`:`P = (C − <b>${k}</b>) mod 26`;
+  turnWheel(k);
+
+  // abeceda
+  const used=new Set(counts(plain).map((v,i)=>v?i:-1).filter(i=>i>=0));
+  let h='<tr class="p"><th>Otevřený</th>'+[...A].map((c,i)=>`<td class="${used.has(i)?'on':''}">${c}</td>`).join('')+'</tr>';
+  h+='<tr class="c"><th>Šifrový</th>'+[...A].map((c,i)=>`<td class="${used.has(i)?'on':''}">${A[mod(i+k,26)]}</td>`).join('')+'</tr>';
+  $('alpha').innerHTML=h;
+
+  // ukázka prvních písmen
+  const letters=[...plain].filter(c=>/[a-z]/i.test(c)).slice(0,8);
+  $('trace').innerHTML=letters.length?letters.map(c=>{const u=c.toUpperCase(),i=A.indexOf(u);
+    return `<span>${u} (${i}) → <b>${A[mod(i+k,26)]}</b> (${mod(i+k,26)})</span>`;}).join(''):'';
+
+  // hrubá síla
+  const {res,tot,n}=scoreAll(cipher);
+  const best=res.indexOf(Math.min(...res));
+  const preview=cipher.replace(/\s+/g,' ').slice(0,140);
+  $('brute').innerHTML=res.map((_,kk)=>`<button data-k="${kk}" class="${kk===best&&tot?'best':''}">
+      <span class="k">k = ${String(kk).padStart(2,' ')}</span>
+      <span class="t">${esc(shift(preview,-kk))}</span>
+      ${kk===best&&tot?'<span class="pill">nejpravděpodobnější</span>':'<span></span>'}</button>`).join('');
+
+  drawChart(n,tot,best);
+  $('verdict').innerHTML=tot
+    ? `Nejčastější písmeno v šifrovém textu je <b>${A[n.indexOf(Math.max(...n))]}</b>. Statistický odhad klíče: <b>k = ${best}</b>${best===k?' (shoduje se s nastaveným klíčem)':''}. U krátkých textů může odhad selhat.`
+    : 'Zadejte text s písmeny.';
+}
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+function drawChart(n,tot,best){
+  const W=780,H=240,L=40,R=10,T=14,B=28, cw=(W-L-R)/26;
+  const f=n.map(v=>tot?v/tot*100:0);
+  const ref=CZP.map((_,i)=>CZP[mod(i-best,26)]*100);
+  const max=Math.max(12,...f,...ref);
+  const step=max>20?10:4, top=Math.ceil(max/step)*step;
+  const y=v=>T+(H-T-B)*(1-v/top);
+  let s='';
+  for(let g=0;g<=top;g+=step) s+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${y(g)}" y2="${y(g)}"/><text class="gy" x="${L-6}" y="${y(g)+3}">${g} %</text>`;
+  f.forEach((v,i)=>{const x=L+i*cw+cw*.18; s+=`<rect class="bar" x="${x}" y="${y(v)}" width="${cw*.64}" height="${Math.max(0,H-B-y(v))}" rx="2"><title>${A[i]}: ${v.toFixed(1)} %</title></rect>`;
+    s+=`<text class="ax" x="${L+i*cw+cw/2}" y="${H-10}">${A[i]}</text>`;});
+  if(tot){
+    s+=`<polyline class="ref" points="${ref.map((v,i)=>`${L+i*cw+cw/2},${y(v)}`).join(' ')}"/>`;
+    ref.forEach((v,i)=>s+=`<circle class="refdot" cx="${L+i*cw+cw/2}" cy="${y(v)}" r="2.5"/>`);
+  }
+  $('chart').innerHTML=s;
+}
+
+/* --- ovládání --- */
+function setMode(m){st.mode=m;$('m-enc').setAttribute('aria-pressed',m==='enc');$('m-dec').setAttribute('aria-pressed',m==='dec');}
+$('m-enc').onclick=()=>{if(st.mode!=='enc'){$('input').value=$('output').textContent.replace(/^—$/,'');setMode('enc');render();}};
+$('m-dec').onclick=()=>{if(st.mode!=='dec'){$('input').value=$('output').textContent.replace(/^—$/,'');setMode('dec');render();}};
+$('shift').oninput=e=>{st.k=+e.target.value;render();};
+$('k-minus').onclick=()=>{st.k=mod(st.k-1,26);render();};
+$('k-plus').onclick=()=>{st.k=mod(st.k+1,26);render();};
+$('input').oninput=render; $('strip').onchange=render; $('upper').onchange=render;
+$('nospace').onchange=()=>{if(!$('nospace').checked)$('groups').checked=false;render();};
+$('groups').onchange=()=>{if($('groups').checked)$('nospace').checked=true;render();};
+$('brute').onclick=e=>{const b=e.target.closest('button'); if(!b)return;
+  const cipher=st.mode==='enc'?$('output').textContent:prep($('input').value);
+  $('input').value=cipher; setMode('dec'); st.k=+b.dataset.k; render();
+  $('input').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});};
+$('copy').onclick=()=>{const t=$('output').textContent;
+  const done=()=>{$('copy').textContent='Zkopírováno';setTimeout(()=>$('copy').textContent='Kopírovat',1500);};
+  const fallback=()=>{const r=document.createRange();r.selectNodeContents($('output'));const s=getSelection();s.removeAllRanges();s.addRange(r);};
+  try{navigator.clipboard.writeText(t).then(done,fallback);}catch(e){fallback();}};
+
+/* --- otáčení kotouče myší / prstem --- */
+function wheelPoint(e){
+  const r=$('wheel').getBoundingClientRect(), s=360/r.width;
+  const x=(e.clientX-r.left)*s-180, y=(e.clientY-r.top)*s-180;
+  return {d:Math.hypot(x,y), a:Math.atan2(x,-y)*180/Math.PI};
+}
+const onRing=p=>p.d>=56&&p.d<=128;
+$('wheel').addEventListener('pointerdown',e=>{
+  const p=wheelPoint(e); if(!onRing(p))return;
+  e.preventDefault();
+  drag={a0:p.a, r0:rot};
+  $('wheel').setPointerCapture(e.pointerId);
+  $('inner').classList.add('dragging');
+  $('wheel').classList.add('grabbing');
+});
+$('wheel').addEventListener('pointermove',e=>{
+  const p=wheelPoint(e);
+  if(!drag){$('wheel').classList.toggle('grab-zone',onRing(p));return;}
+  let d=p.a-drag.a0; d=mod(d+180,360)-180;   // přechod přes ±180°
+  drag.a0=p.a; drag.r0+=d; rot=drag.r0;
+  $('inner').style.transform=`rotate(${rot}deg)`;
+  const k=mod(Math.round(-rot/STEP),26);
+  if(k!==st.k){st.k=k;render();}
+});
+function endDrag(){
+  if(!drag)return;
+  drag=null;
+  $('inner').classList.remove('dragging');
+  $('wheel').classList.remove('grabbing');
+  rot=Math.round(rot/STEP)*STEP;           // dosednutí na nejbližší písmeno
+  $('inner').style.transform=`rotate(${rot}deg)`;
+  render();
+}
+$('wheel').addEventListener('pointerup',endDrag);
+$('wheel').addEventListener('pointercancel',endDrag);
+$('wheel').addEventListener('pointerleave',()=>{if(!drag)$('wheel').classList.remove('grab-zone');});
+$('wheel').addEventListener('keydown',e=>{
+  const d={ArrowRight:1,ArrowUp:1,ArrowLeft:-1,ArrowDown:-1}[e.key];
+  if(d===undefined)return; e.preventDefault(); st.k=mod(st.k+d,26); render();
+});
+
+function setLang(l){
+  lang=l; CZP=LANGS[l].p;
+  $('l-cs').setAttribute('aria-pressed',l==='cs'); $('l-en').setAttribute('aria-pressed',l==='en');
+  for(const c of ['nom','dat','loc']) document.querySelectorAll('.lang-'+c).forEach(e=>e.textContent=LANGS[l][c]);
+  try{localStorage.setItem('caesar-lang',l);}catch(e){}
+  const tk=lastK; render(); lastK=tk;
+}
+$('l-cs').onclick=()=>setLang('cs');
+$('l-en').onclick=()=>setLang('en');
+buildWheel(); render();
+try{const l=localStorage.getItem('caesar-lang'); if(l==='en')setLang('en');}catch(e){}
+</script>
+</body>
+</html>
