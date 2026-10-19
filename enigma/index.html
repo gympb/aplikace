@@ -1,212 +1,181 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enigma</title>
-    <meta name="description" content="Simulátor šifrovacího stroje Enigma M3 s rotory, prstenci, reflektorem a propojovací deskou.">
-    <meta property="og:title" content="Enigma">
-    <meta property="og:image" content="nahled.png">
-    <link rel="stylesheet" href="fonty/fonty.css">
-    <link rel="stylesheet" href="styl.css">
-    <style>
-        :root {
-            --enigma-dark: #1a1a1a;
-            --enigma-metal: #2d2d2d;
-            --enigma-gold: #d4af37;
-            --enigma-light: #e0e0e0;
-        }
-        body {
-            background-color: #121212;
-            color: var(--enigma-light);
-            font-family: 'Courier Prime', monospace;
-        }
-        .enigma-case {
-            background: linear-gradient(145deg, #232323, #1a1a1a);
-            border: 4px solid #333;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-        }
-        .rotor-display {
-            font-family: 'Share Tech Mono', monospace;
-            background: #000;
-            color: var(--enigma-gold);
-            text-shadow: 0 0 5px var(--enigma-gold);
-        }
-        .key {
-            transition: all 0.1s;
-            user-select: none;
-        }
-        .key:active, .key.active {
-            transform: translateY(4px);
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
-            background-color: #444;
-        }
-        .lamp.active {
-            background-color: #ffd700;
-            color: #000;
-            box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700;
-        }
-        .plugboard-wire {
-            stroke: var(--enigma-gold);
-            stroke-width: 3;
-            opacity: 0.6;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Enigma</title>
+<meta name="description" content="Simulátor šifrovacího stroje Enigma M3 s rotory, prstenci, reflektorem a propojovací deskou.">
+<meta property="og:title" content="Enigma">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="../assets/fonty/fonty.css">
+<style>
+/* Vzhled podle aplikace Caesarova šifra */
+:root{
+  --bg:#eceef1; --panel:#f8f9fb; --ink:#1a2030; --muted:#5d6577; --line:#d3d7df;
+  --accent:#6d2a5e; --accent-soft:#ecdde8; --gold:#9a7428; --good:#2f7a4f; --danger:#a3324a;
+  --f-display:"Cinzel","Trajan Pro",Georgia,serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#13161d; --panel:#1b1f29; --ink:#e7e9ef; --muted:#9aa1b2; --line:#2e3442;
+  --accent:#d491c3; --accent-soft:#3a2436; --gold:#d6b066; --good:#6cc391; --danger:#e58a9c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#13161d; --panel:#1b1f29; --ink:#e7e9ef; --muted:#9aa1b2; --line:#2e3442;
+  --accent:#d491c3; --accent-soft:#3a2436; --gold:#d6b066; --good:#6cc391; --danger:#e58a9c; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:36px}
+h1,h2{font-family:var(--f-display);font-weight:700;letter-spacing:.06em;text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,5vw,48px);line-height:1.1}
+h2{font-size:22px}
+.eyebrow{font:600 12px/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.lede{color:var(--muted);max-width:66ch;margin:10px 0 0}
+.back{font:600 14px var(--f-body);color:var(--muted);text-decoration:none}
+.back:hover{color:var(--accent)}
+header{display:grid;gap:6px}
+.head-row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lab{font:600 12px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);font:600 13px var(--f-body);padding:7px 14px;border-radius:6px;cursor:pointer}
+.btn:hover{border-color:var(--danger);color:var(--danger)}
+section{display:grid;gap:14px}
+.sec-head{display:grid;gap:4px}
+.sec-head p{margin:0;color:var(--muted);max-width:70ch}
+select,input[type=number],input[type=text]{font:15px var(--f-mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+
+.rotors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:640px){.rotors{grid-template-columns:minmax(0,1fr)}}
+.rotor{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;justify-items:center;gap:12px}
+.rotor-row{display:flex;align-items:center;gap:16px}
+.wheel{display:grid;justify-items:center;gap:4px}
+.step{width:34px;height:28px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;cursor:pointer;font-size:12px}
+.step:hover{border-color:var(--accent);color:var(--accent)}
+.window{width:64px;height:64px;border-radius:50%;background:var(--accent-soft);border:2px solid var(--accent);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;font:700 30px var(--f-display)}
+.ring{font:600 12px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.ring input{width:64px;text-align:center}
+
+.lampboard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 12px;display:grid;gap:10px;justify-items:center;overflow-x:auto}
+.lamp-row{display:flex;gap:8px}
+.lamp-row:nth-child(2){margin-left:24px}
+.lamp{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--muted);
+  display:flex;align-items:center;justify-content:center;font:600 15px var(--f-mono);transition:background .25s,color .25s,box-shadow .25s}
+.lamp.active{background:var(--gold);border-color:var(--gold);color:var(--panel);box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 30%,transparent)}
+@media (max-width:440px){.lamp{width:32px;height:32px;font-size:13px}.lamp-row{gap:5px}.lamp-row:nth-child(2){margin-left:16px}}
+@media (prefers-reduced-motion:reduce){.lamp{transition:none}}
+
+.io{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:640px){.io{grid-template-columns:minmax(0,1fr)}}
+.io label{margin-bottom:6px}
+textarea{width:100%;min-height:110px;resize:vertical;font:16px/1.6 var(--f-mono);border-radius:8px;padding:12px 14px}
+#input-text{color:var(--ink);background:var(--panel);border:1px solid var(--line)}
+#output-text{background:var(--ink);color:var(--bg);border:1px solid var(--ink);font-weight:600;letter-spacing:.08em}
+#output-text::placeholder{color:var(--muted);font-weight:400;letter-spacing:0}
+
+.plug{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px}
+.plug-row{display:flex;gap:12px 20px;flex-wrap:wrap;align-items:center}
+.plug-row input{flex:1 1 240px;min-width:0;text-transform:uppercase}
+.plug-row label{display:flex;align-items:center;gap:8px}
+.note{font-size:14px;color:var(--muted);margin:0}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+footer a{color:inherit}
+</style>
 </head>
-<body class="p-4 md:p-8 flex flex-col items-center min-h-screen">
-
-    <a href="../" class="max-w-4xl w-full mb-4 text-xs text-gray-500 hover:text-gray-300 tracking-widest">← VŠECHNY ŠKOLNÍ APLIKACE</a>
-
-    <div class="max-w-4xl w-full enigma-case rounded-xl p-6 md:p-10 relative overflow-hidden">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-10 border-b border-gray-700 pb-4">
-            <div>
-                <h1 class="text-3xl font-bold tracking-widest text-gray-400">ENIGMA <span class="text-xs align-top">M3</span></h1>
-                <p class="text-xs text-gray-500 italic">Kryptografický simulátor</p>
-            </div>
-            <div class="text-right">
-                <button id="reset-btn" class="bg-red-900/30 hover:bg-red-900/50 text-red-400 text-xs py-1 px-3 border border-red-900/50 rounded transition-colors">
-                    RESETOVAT STROJ
-                </button>
-            </div>
-        </div>
-
-        <!-- Rotor Settings Section -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 bg-black/30 p-4 rounded-lg">
-            <!-- Left Rotor -->
-            <div class="flex flex-col items-center">
-                <span class="text-xs text-gray-500 mb-2">LEVÝ ROTOR</span>
-                <div class="flex gap-2">
-                    <select id="rotor-left-type" class="bg-neutral-800 text-xs p-1 border border-gray-600 rounded">
-                        <option value="I">I</option>
-                        <option value="II">II</option>
-                        <option value="III">III</option>
-                        <option value="IV">IV</option>
-                        <option value="V">V</option>
-                    </select>
-                    <div class="flex flex-col items-center">
-                        <button onclick="changeRotorPos('left', 1)" class="text-gray-500 hover:text-white">▲</button>
-                        <div id="rotor-left-pos" class="rotor-display w-10 h-10 flex items-center justify-center text-2xl border border-gray-700 rounded my-1">A</div>
-                        <button onclick="changeRotorPos('left', -1)" class="text-gray-500 hover:text-white">▼</button>
-                    </div>
-                </div>
-                <div class="mt-2 text-[10px] text-gray-600">PRSTENEC: <input id="ring-left" type="number" min="1" max="26" value="1" class="bg-transparent w-8 text-center border-b border-gray-700"></div>
-            </div>
-
-            <!-- Middle Rotor -->
-            <div class="flex flex-col items-center">
-                <span class="text-xs text-gray-500 mb-2">STŘEDNÍ ROTOR</span>
-                <div class="flex gap-2">
-                    <select id="rotor-middle-type" class="bg-neutral-800 text-xs p-1 border border-gray-600 rounded" selected="II">
-                        <option value="I">I</option>
-                        <option value="II" selected>II</option>
-                        <option value="III">III</option>
-                        <option value="IV">IV</option>
-                        <option value="V">V</option>
-                    </select>
-                    <div class="flex flex-col items-center">
-                        <button onclick="changeRotorPos('middle', 1)" class="text-gray-500 hover:text-white">▲</button>
-                        <div id="rotor-middle-pos" class="rotor-display w-10 h-10 flex items-center justify-center text-2xl border border-gray-700 rounded my-1">A</div>
-                        <button onclick="changeRotorPos('middle', -1)" class="text-gray-500 hover:text-white">▼</button>
-                    </div>
-                </div>
-                <div class="mt-2 text-[10px] text-gray-600">PRSTENEC: <input id="ring-middle" type="number" min="1" max="26" value="1" class="bg-transparent w-8 text-center border-b border-gray-700"></div>
-            </div>
-
-            <!-- Right Rotor -->
-            <div class="flex flex-col items-center">
-                <span class="text-xs text-gray-500 mb-2">PRAVÝ ROTOR</span>
-                <div class="flex gap-2">
-                    <select id="rotor-right-type" class="bg-neutral-800 text-xs p-1 border border-gray-600 rounded">
-                        <option value="I">I</option>
-                        <option value="II">II</option>
-                        <option value="III" selected>III</option>
-                        <option value="IV">IV</option>
-                        <option value="V">V</option>
-                    </select>
-                    <div class="flex flex-col items-center">
-                        <button onclick="changeRotorPos('right', 1)" class="text-gray-500 hover:text-white">▲</button>
-                        <div id="rotor-right-pos" class="rotor-display w-10 h-10 flex items-center justify-center text-2xl border border-gray-700 rounded my-1">A</div>
-                        <button onclick="changeRotorPos('right', -1)" class="text-gray-500 hover:text-white">▼</button>
-                    </div>
-                </div>
-                <div class="mt-2 text-[10px] text-gray-600">PRSTENEC: <input id="ring-right" type="number" min="1" max="26" value="1" class="bg-transparent w-8 text-center border-b border-gray-700"></div>
-            </div>
-        </div>
-
-        <!-- Lampboard (Output Visualizer) -->
-        <div class="mb-10 grid grid-cols-10 gap-2 px-2 md:px-10 justify-center">
-            <!-- Row 1 -->
-            <div class="col-start-1 col-span-10 flex justify-center gap-2 mb-2">
-                <div id="lamp-Q" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">Q</div>
-                <div id="lamp-W" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">W</div>
-                <div id="lamp-E" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">E</div>
-                <div id="lamp-R" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">R</div>
-                <div id="lamp-T" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">T</div>
-                <div id="lamp-Z" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">Z</div>
-                <div id="lamp-U" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">U</div>
-                <div id="lamp-I" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">I</div>
-                <div id="lamp-O" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">O</div>
-            </div>
-            <!-- Row 2 -->
-            <div class="col-start-1 col-span-10 flex justify-center gap-2 mb-2 ml-4">
-                <div id="lamp-A" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">A</div>
-                <div id="lamp-S" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">S</div>
-                <div id="lamp-D" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">D</div>
-                <div id="lamp-F" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">F</div>
-                <div id="lamp-G" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">G</div>
-                <div id="lamp-H" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">H</div>
-                <div id="lamp-J" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">J</div>
-                <div id="lamp-K" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">K</div>
-            </div>
-            <!-- Row 3 -->
-            <div class="col-start-1 col-span-10 flex justify-center gap-2 mb-2">
-                <div id="lamp-P" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">P</div>
-                <div id="lamp-Y" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">Y</div>
-                <div id="lamp-X" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">X</div>
-                <div id="lamp-C" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">C</div>
-                <div id="lamp-V" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">V</div>
-                <div id="lamp-B" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">B</div>
-                <div id="lamp-N" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">N</div>
-                <div id="lamp-M" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">M</div>
-                <div id="lamp-L" class="lamp w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-700 flex items-center justify-center text-sm transition-all duration-300">L</div>
-            </div>
-        </div>
-
-        <!-- Input Area -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            <div class="flex flex-col">
-                <label class="text-[10px] text-gray-500 mb-1 uppercase tracking-widest">Vstupní text</label>
-                <textarea id="input-text" class="bg-black/50 border border-gray-700 rounded p-3 text-sm focus:outline-none focus:border-yellow-600 transition-colors h-24 resize-none" placeholder="Sem pište zprávu..."></textarea>
-            </div>
-            <div class="flex flex-col">
-                <label class="text-[10px] text-gray-500 mb-1 uppercase tracking-widest text-right">Výstupní (šifrovaný) text</label>
-                <textarea id="output-text" readonly class="bg-black/80 border border-gray-700 rounded p-3 text-sm h-24 resize-none text-yellow-500 font-bold" placeholder="Šifrovaný text se objeví zde..."></textarea>
-            </div>
-        </div>
-
-        <!-- Plugboard and Advanced Settings -->
-        <div class="bg-black/40 p-4 rounded-lg">
-            <h3 class="text-xs text-gray-500 mb-4 border-b border-gray-800 pb-2">ROZVODNÁ DESKA (PLUGBOARD)</h3>
-            <div class="flex flex-wrap gap-4 items-center">
-                <input id="plugboard-input" type="text" placeholder="Páry: AB CD EF..." class="bg-neutral-800 border border-gray-700 rounded px-3 py-1 text-sm flex-grow uppercase" maxlength="40">
-                <div class="flex items-center gap-4">
-                    <span class="text-xs text-gray-600">REFLEKTOR:</span>
-                    <select id="reflector-type" class="bg-neutral-800 text-xs p-1 border border-gray-600 rounded">
-                        <option value="B">B (Standard)</option>
-                        <option value="C">C</option>
-                    </select>
-                </div>
-            </div>
-            <p class="text-[10px] text-gray-600 mt-2">Zadejte páry písmen oddělené mezerou pro jejich vzájemnou záměnu.</p>
-        </div>
-
-        <div class="mt-8 text-center">
-            <p class="text-[10px] text-gray-700 uppercase tracking-tighter">&copy; 1943 - HEERES-NACHRICHTENWESEN - SIMULACE</p>
-        </div>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <header>
+    <div class="head-row">
+      <div>
+        <div class="eyebrow">Kryptografie · rotorové šifry</div>
+        <h1>Enigma <span style="font-size:.4em;vertical-align:top;color:var(--muted)">M3</span></h1>
+      </div>
+      <button id="reset-btn" class="btn">Resetovat stroj</button>
     </div>
+    <p class="lede">Šifrovací stroj německé armády z druhé světové války. Každé písmeno projde propojovací deskou, třemi rotory a reflektorem a vrátí se zpět jako jiné písmeno. Po každém stisku se pravý rotor pootočí, takže stejné písmeno se pokaždé zašifruje jinak.</p>
+  </header>
 
-    <script>
+  <section>
+    <div class="sec-head"><div class="eyebrow">Nastavení</div><h2>Rotory</h2>
+      <p>Vyberte typ rotoru, výchozí písmeno v okénku a nastavení prstence. Příjemce musí mít stroj nastavený stejně.</p></div>
+    <div class="rotors">
+      <div class="rotor">
+        <span class="lab">Levý rotor</span>
+        <div class="rotor-row">
+          <select id="rotor-left-type" aria-label="Levý rotor – typ"><option value="I" selected>I</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option></select>
+          <div class="wheel">
+            <button class="step" onclick="changeRotorPos('left', 1)" aria-label="Levý rotor o písmeno dál">▲</button>
+            <div id="rotor-left-pos" class="window">A</div>
+            <button class="step" onclick="changeRotorPos('left', -1)" aria-label="Levý rotor o písmeno zpět">▼</button>
+          </div>
+        </div>
+        <label class="ring">Prstenec <input id="ring-left" type="number" min="1" max="26" value="1"></label>
+      </div>
+      <div class="rotor">
+        <span class="lab">Střední rotor</span>
+        <div class="rotor-row">
+          <select id="rotor-middle-type" aria-label="Střední rotor – typ"><option value="I">I</option><option value="II" selected>II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option></select>
+          <div class="wheel">
+            <button class="step" onclick="changeRotorPos('middle', 1)" aria-label="Střední rotor o písmeno dál">▲</button>
+            <div id="rotor-middle-pos" class="window">A</div>
+            <button class="step" onclick="changeRotorPos('middle', -1)" aria-label="Střední rotor o písmeno zpět">▼</button>
+          </div>
+        </div>
+        <label class="ring">Prstenec <input id="ring-middle" type="number" min="1" max="26" value="1"></label>
+      </div>
+      <div class="rotor">
+        <span class="lab">Pravý rotor</span>
+        <div class="rotor-row">
+          <select id="rotor-right-type" aria-label="Pravý rotor – typ"><option value="I">I</option><option value="II">II</option><option value="III" selected>III</option><option value="IV">IV</option><option value="V">V</option></select>
+          <div class="wheel">
+            <button class="step" onclick="changeRotorPos('right', 1)" aria-label="Pravý rotor o písmeno dál">▲</button>
+            <div id="rotor-right-pos" class="window">A</div>
+            <button class="step" onclick="changeRotorPos('right', -1)" aria-label="Pravý rotor o písmeno zpět">▼</button>
+          </div>
+        </div>
+        <label class="ring">Prstenec <input id="ring-right" type="number" min="1" max="26" value="1"></label>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div class="eyebrow">Výstup</div><h2>Lampové pole</h2>
+      <p>Po stisku klávesy se rozsvítí lampa se zašifrovaným písmenem.</p></div>
+    <div class="lampboard" aria-hidden="true">
+      <div class="lamp-row"><div id="lamp-Q" class="lamp">Q</div><div id="lamp-W" class="lamp">W</div><div id="lamp-E" class="lamp">E</div><div id="lamp-R" class="lamp">R</div><div id="lamp-T" class="lamp">T</div><div id="lamp-Z" class="lamp">Z</div><div id="lamp-U" class="lamp">U</div><div id="lamp-I" class="lamp">I</div><div id="lamp-O" class="lamp">O</div></div>
+      <div class="lamp-row"><div id="lamp-A" class="lamp">A</div><div id="lamp-S" class="lamp">S</div><div id="lamp-D" class="lamp">D</div><div id="lamp-F" class="lamp">F</div><div id="lamp-G" class="lamp">G</div><div id="lamp-H" class="lamp">H</div><div id="lamp-J" class="lamp">J</div><div id="lamp-K" class="lamp">K</div></div>
+      <div class="lamp-row"><div id="lamp-P" class="lamp">P</div><div id="lamp-Y" class="lamp">Y</div><div id="lamp-X" class="lamp">X</div><div id="lamp-C" class="lamp">C</div><div id="lamp-V" class="lamp">V</div><div id="lamp-B" class="lamp">B</div><div id="lamp-N" class="lamp">N</div><div id="lamp-M" class="lamp">M</div><div id="lamp-L" class="lamp">L</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="io">
+      <div><label class="lab" for="input-text">Vstupní text</label>
+        <textarea id="input-text" spellcheck="false" placeholder="Sem pište zprávu…"></textarea></div>
+      <div><label class="lab" for="output-text">Výstupní (šifrovaný) text</label>
+        <textarea id="output-text" readonly placeholder="Šifrovaný text se objeví zde…"></textarea></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div class="eyebrow">Propojení</div><h2>Propojovací deska a reflektor</h2></div>
+    <div class="plug">
+      <div class="plug-row">
+        <input id="plugboard-input" type="text" placeholder="Páry: AB CD EF…" maxlength="40" aria-label="Páry propojovací desky">
+        <label class="lab">Reflektor
+          <select id="reflector-type"><option value="B">B (standardní)</option><option value="C">C</option></select></label>
+      </div>
+      <p class="note">Zadejte páry písmen oddělené mezerou. Písmena v páru se před vstupem do rotorů i po výstupu z nich vzájemně zamění.</p>
+    </div>
+  </section>
+
+  <footer>Rotory I–V a reflektory B a C mají historické zapojení. Při nastavení rotorů I-II-III na AAA se zpráva AAAAA zašifruje jako BDZGO. Enigma šifruje vratně: zašifrovaný text se stejným nastavením stroje znovu zadaný vrátí původní zprávu.<br>Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 19. 10. 2026</footer>
+</div>
+
+<script>
         // Enigma Logic Implementation
         const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         
