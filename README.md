@@ -1,4 +1,4 @@
-# Školní aplikace Gymnázia Příbram
+# Aplikace GymPb
 
 Interaktivní výukové aplikace, které fungují v prohlížeči bez přihlášení a bez instalace.
 
