@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="cs" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rozhodovací strom</title>
+    <meta name="description" content="Interaktivní stavitel klasifikačního rozhodovacího stromu z dat ve formátu CSV.">
+    <meta name="author" content="Michal Haušild">
+    <meta property="og:title" content="Rozhodovací strom">
+    <meta property="og:image" content="nahled.png">
+    <!-- Tailwind CSS (sestavené), písmo Inter a ikony Font Awesome jsou uložené lokálně -->
+    <link rel="stylesheet" href="styl.css">
+    <link rel="stylesheet" href="fonty/fonty.css">
+    <link rel="stylesheet" href="ikony/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tree-node-card { transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        #treeCanvasContainer {
+            cursor: grab;
+            user-select: none;
+        }
+        #treeCanvasContainer:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-full flex flex-col overflow-hidden">
+
+    <header class="bg-slate-900 text-white shadow-md py-3 px-6 flex items-center justify-between shrink-0 z-20">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 p-2.5 rounded-xl shadow-inner text-white">
+                <i class="fa-solid fa-sitemap text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">TreeBuilder AI</h1>
+                <p class="text-xs text-slate-400">Interaktivní stavitel klasifikačního stromu</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <a href="../" class="text-xs text-slate-400 hover:text-white transition"><i class="fa-solid fa-arrow-left mr-1"></i> Všechny školní aplikace</a>
+            <button onclick="loadSampleData('tennis')" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 font-medium px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center">
+                <i class="fa-solid fa-flask mr-1.5"></i> Vzorový dataset (Běhání)
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        
+        <!-- Sidebar / Control Panel -->
+        <section class="w-full md:w-80 lg:w-96 bg-white border-r border-slate-200 flex flex-col overflow-y-auto p-5 shrink-0 shadow-sm z-10">
+            
+            <!-- Step 1: Input Data -->
+            <div id="step-1-container" class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center">
+                        <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 text-[10px] flex items-center justify-center mr-2 font-bold">1</span>
+                        Vstupní data (CSV)
+                    </h2>
+                </div>
+                
+                <div>
+                    <div class="flex border-b border-slate-200 mb-3">
+                        <button onclick="switchInputTab('upload')" id="tab-upload" class="pb-2 text-xs font-semibold text-indigo-600 border-b-2 border-indigo-600 mr-4 focus:outline-none">Nahrát soubor</button>
+                        <button onclick="switchInputTab('paste')" id="tab-paste" class="pb-2 text-xs font-medium text-slate-500 hover:text-slate-800 focus:outline-none">Vložit text</button>
+                    </div>
+
+                    <div id="panel-upload" class="space-y-2">
+                        <label class="border-2 border-dashed border-slate-300 hover:border-indigo-400 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer bg-slate-50 transition">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 mb-1"></i>
+                            <span class="text-xs font-medium text-slate-600">Klikni pro výběr CSV souboru</span>
+                            <input type="file" id="csvFile" accept=".csv" class="hidden" onchange="handleFileSelect(event)">
+                        </label>
+                    </div>
+
+                    <div id="panel-paste" class="hidden space-y-2">
+                        <textarea id="csvPaste" rows="5" class="w-full text-xs font-mono p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="pocasi,teplota,hrat&#10;slunecno,vysoka,ne&#10;oblacno,normalni,ano"></textarea>
+                        <button onclick="handlePasteSubmit()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow transition">Načíst text</button>
+                    </div>
+                </div>
+
+                <div id="dataset-summary" class="hidden bg-slate-50 rounded-xl p-3 border border-slate-200 text-xs space-y-1">
+                    <p class="font-semibold text-slate-700 flex items-center"><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> Dataset načten</p>
+                    <p id="summary-stats" class="text-slate-500"></p>
+                </div>
+            </div>
+
+            <!-- Step 2: Configuration -->
+            <div id="step-2-container" class="mt-5 pt-5 border-t border-slate-200 space-y-4 opacity-50 pointer-events-none transition">
+                <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center">
+                    <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 text-[10px] flex items-center justify-center mr-2 font-bold">2</span>
+                    Konfigurace stromu
+                </h2>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Cílový atribut (Target):</label>
+                    <select id="targetSelect" class="w-full text-xs p-2.5 border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none" onchange="updateFeaturesCheckboxes(); checkConfigReady()">
+                        <option value="">-- Vyber cíl --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Vstupní atributy (Vlastnosti):</label>
+                    <div id="featuresCheckboxes" class="space-y-1.5 max-h-36 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-white text-xs">
+                        <span class="text-slate-400 italic">Nejprve nahraj data...</span>
+                    </div>
+                </div>
+
+                <button id="btnStartTree" onclick="initTreeBuilder()" disabled class="w-full py-2.5 bg-slate-300 text-slate-500 font-semibold text-xs rounded-xl shadow-none transition cursor-not-allowed">
+                    <i class="fa-solid fa-play mr-1"></i> Spustit interaktivní stavění
+                </button>
+            </div>
+
+            <div class="mt-auto pt-6 text-center text-[11px] text-slate-400 space-y-1">
+                <p>Pevný strom + Zoom & Pan myší</p>
+                <p>Autor: Michal Haušild · Gymnázium Příbram · <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" class="underline hover:text-slate-600">CC BY 4.0</a></p>
+            </div>
+        </section>
+
+        <!-- Main Workspace Area -->
+        <section class="flex-1 flex flex-col overflow-hidden bg-slate-100 relative">
+            
+            <!-- Top Toolbar / Breadcrumbs & Status -->
+            <div class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shrink-0 shadow-sm z-10">
+                <div class="flex items-center space-x-2 text-xs">
+                    <span class="font-semibold text-slate-500">Aktivní uzel:</span>
+                    <nav id="breadcrumbNav" class="flex items-center space-x-1 text-slate-700 font-medium">
+                        <span class="text-slate-400 italic">Strom ještě nebyl spuštěn</span>
+                    </nav>
+                </div>
+                <div id="globalTreeStats" class="text-xs font-medium text-slate-600"></div>
+            </div>
+
+            <!-- Workspace Content: Split into Inspector & Tree Graph -->
+            <div class="flex-1 flex flex-col xl:flex-row overflow-hidden p-6 gap-6">
+                
+                <!-- Left: Active Node Inspector & Splitter -->
+                <div id="inspectorPanel" class="w-full xl:w-4/12 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden opacity-50 pointer-events-none transition shrink-0">
+                    <div class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between">
+                        <h3 class="text-sm font-bold flex items-center">
+                            <i class="fa-solid fa-cube mr-2 text-indigo-400"></i> Detail uzlu
+                        </h3>
+                        <span id="nodeDepthBadge" class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700 font-mono">Kořen</span>
+                    </div>
+
+                    <div class="p-5 flex-1 overflow-y-auto space-y-4">
+                        
+                        <!-- Distribution Stats -->
+                        <div>
+                            <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Rozdělení tříd v uzlu</h4>
+                            <div id="nodeDistributionContainer" class="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-2">
+                                <p class="text-xs text-slate-400 italic">Zatím žádná data...</p>
+                            </div>
+                        </div>
+
+                        <!-- Split Action Box -->
+                        <div id="splitActionContainer" class="space-y-3 pt-3 border-t border-slate-100">
+                            <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Rozdělit uzel podle atributu</h4>
+                            <div class="flex space-x-2">
+                                <select id="splitAttributeSelect" class="flex-1 text-xs p-2.5 border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                    <option value="">-- Vyber atribut --</option>
+                                </select>
+                                <button onclick="executeSplit()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-xs font-semibold rounded-xl shadow transition flex items-center shrink-0">
+                                    <i class="fa-solid fa-code-branch mr-1.5"></i> Větvit
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Branches Result List -->
+                        <div id="branchesResultContainer" class="space-y-3 pt-3 border-t border-slate-100">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Vzniklé větve</h4>
+                                <button id="btnClearSplit" onclick="clearNodeSplit()" class="hidden text-[11px] text-rose-600 hover:text-rose-700 font-semibold flex items-center">
+                                    <i class="fa-solid fa-trash-can mr-1"></i> Zrušit větvení
+                                </button>
+                            </div>
+                            <div id="branchesList" class="space-y-2">
+                                <p class="text-xs text-slate-400 italic">Uzel zatím nebyl rozdělen.</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Navigation Footer -->
+                    <div class="bg-slate-50 border-t border-slate-200 px-5 py-3 flex items-center justify-between">
+                        <button onclick="resetToRoot()" class="text-xs text-slate-600 hover:text-slate-900 font-medium flex items-center">
+                            <i class="fa-solid fa-rotate-left mr-1.5"></i> Zpět ke kořenu
+                        </button>
+                        <span id="nodeSampleCount" class="text-xs text-slate-500 font-mono">0 záznamů</span>
+                    </div>
+                </div>
+
+                <!-- Right: Pannable & Zoomable Tree Visual Map -->
+                <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden relative">
+                    <div class="bg-slate-50 border-b border-slate-200 px-5 py-3.5 flex items-center justify-between shrink-0 z-10">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center">
+                            <i class="fa-solid fa-network-wired mr-2 text-indigo-600"></i> Stromová struktura
+                        </h3>
+                        <!-- Zoom & Pan Toolbar -->
+                        <div class="flex items-center space-x-2">
+                            <div class="flex bg-white border border-slate-200 rounded-lg shadow-2xs overflow-hidden">
+                                <button onclick="zoomIn()" title="Přiblížit" class="px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-100 border-r border-slate-200"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                                <button onclick="zoomOut()" title="Oddálit" class="px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-100 border-r border-slate-200"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                                <button onclick="resetZoomPan()" title="Resetovat pohled" class="px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-100"><i class="fa-solid fa-house"></i></button>
+                            </div>
+                            <span class="text-xs text-slate-400 hidden sm:inline">(Tažení myší pro posun)</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Canvas Container with Pan & Zoom support -->
+                    <div id="treeCanvasContainer" class="flex-1 relative overflow-hidden bg-slate-50/50">
+                        <div id="treeTransformWrapper" class="absolute origin-top-left transition-transform duration-75 ease-out p-12">
+                            <div id="treeGraphContainer" class="flex flex-col items-center min-w-max">
+                                <div class="text-center py-20 text-slate-400 space-y-2">
+                                    <i class="fa-solid fa-tree text-4xl text-slate-300"></i>
+                                    <p class="text-xs">Strom se vykreslí po spuštění a větvení.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let rawData = [];
+        let columns = [];
+        let targetCol = '';
+        let featureCols = [];
+        
+        let treeRoot = null;
+        let currentNode = null;
+
+        // Pan and Zoom state variables
+        let panX = 50;
+        let panY = 50;
+        let zoomScale = 1;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+
+        const sampleDatasets = {
+            tennis: `Pocasi,Teplota,Vitr,Vlhkost,Jit_behat
+Slunecno,Vysoka,Slaby,Nizka,Ano
+Slunecno,Vysoka,Silny,Vysoka,Ne
+Oblacno,Vysoka,Slaby,Nizka,Ano
+Destivo,Nizka,Silny,Vysoka,Ne
+Destivo,Nizka,Slaby,Vysoka,Ne
+Oblacno,Nizka,Slaby,Nizka,Ano
+Slunecno,Nizka,Silny,Nizka,Ne
+Slunecno,Vysoka,Slaby,Vysoka,Ano
+Destivo,Vysoka,Silny,Vysoka,Ne
+Oblacno,Vysoka,Slaby,Nizka,Ano
+Slunecno,Vysoka,Slaby,Nizka,Ano
+Destivo,Nizka,Slaby,Vysoka,Ne
+Oblacno,Vysoka,Silny,Nizka,Ano
+Slunecno,Nizka,Slaby,Vysoka,Ne
+Destivo,Vysoka,Silny,Nizka,Ne
+Slunecno,Vysoka,Silny,Nizka,Ano
+Oblacno,Nizka,Silny,Vysoka,Ne
+Destivo,Nizka,Slaby,Nizka,Ne
+Slunecno,Nizka,Slaby,Nizka,Ano
+Oblacno,Vysoka,Slaby,Vysoka,Ano`
+        };
+
+        // Initialize Pan and Zoom listeners on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('treeCanvasContainer');
+            
+            container.addEventListener('mousedown', (e) => {
+                if(e.button !== 0) return; // Only left click
+                isDragging = true;
+                startX = e.clientX - panX;
+                startY = e.clientY - panY;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                panX = e.clientX - startX;
+                panY = e.clientY - startY;
+                updateTransform();
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const zoomIntensity = 0.1;
+                if (e.deltaY < 0) {
+                    zoomScale = Math.min(zoomScale + zoomIntensity, 2.5);
+                } else {
+                    zoomScale = Math.max(zoomScale - zoomIntensity, 0.3);
+                }
+                updateTransform();
+            }, { passive: false });
+
+            updateTransform();
+        });
+
+        function updateTransform() {
+            const wrapper = document.getElementById('treeTransformWrapper');
+            if (wrapper) {
+                wrapper.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+            }
+        }
+
+        function zoomIn() {
+            zoomScale = Math.min(zoomScale + 0.2, 2.5);
+            updateTransform();
+        }
+
+        function zoomOut() {
+            zoomScale = Math.max(zoomScale - 0.2, 0.3);
+            updateTransform();
+        }
+
+        function resetZoomPan() {
+            panX = 50;
+            panY = 50;
+            zoomScale = 1;
+            updateTransform();
+        }
+
+        function switchInputTab(tab) {
+            if (tab === 'upload') {
+                document.getElementById('tab-upload').className = "pb-2 text-xs font-semibold text-indigo-600 border-b-2 border-indigo-600 mr-4 focus:outline-none";
+                document.getElementById('tab-paste').className = "pb-2 text-xs font-medium text-slate-500 hover:text-slate-800 focus:outline-none";
+                document.getElementById('panel-upload').classList.remove('hidden');
+                document.getElementById('panel-paste').classList.add('hidden');
+            } else {
+                document.getElementById('tab-paste').className = "pb-2 text-xs font-semibold text-indigo-600 border-b-2 border-indigo-600 mr-4 focus:outline-none";
+                document.getElementById('tab-upload').className = "pb-2 text-xs font-medium text-slate-500 hover:text-slate-800 focus:outline-none";
+                document.getElementById('panel-paste').classList.remove('hidden');
+                document.getElementById('panel-upload').classList.add('hidden');
+            }
+        }
+
+        function loadSampleData(key) {
+            parseCSVText(sampleDatasets[key]);
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                parseCSVText(e.target.result);
+            };
+            reader.readAsText(file);
+        }
+
+        function handlePasteSubmit() {
+            const text = document.getElementById('csvPaste').value.trim();
+            if (!text) {
+                alert('Vlož prosím nějaká CSV data.');
+                return;
+            }
+            parseCSVText(text);
+        }
+
+        function parseCSVText(text) {
+            try {
+                const lines = text.split(/\r\n|\n/).filter(l => l.trim() !== '');
+                if (lines.length < 2) {
+                    alert('CSV musí obsahovat hlavičku a alespoň jeden řádek dat.');
+                    return;
+                }
+                
+                const firstLine = lines[0];
+                const separator = firstLine.includes(';') ? ';' : ',';
+                columns = firstLine.split(separator).map(c => c.trim().replace(/^["']|["']$/g, ''));
+                
+                rawData = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const values = lines[i].split(separator).map(v => v.trim().replace(/^["']|["']$/g, ''));
+                    if (values.length === columns.length) {
+                        let rowObj = {};
+                        columns.forEach((col, idx) => { rowObj[col] = values[idx]; });
+                        rawData.push(rowObj);
+                    }
+                }
+
+                if (rawData.length === 0) {
+                    alert('Nepodařilo se parsovat žádné řádky dat.');
+                    return;
+                }
+
+                document.getElementById('dataset-summary').classList.remove('hidden');
+                document.getElementById('summary-stats').innerText = `Celkem ${rawData.length} záznamů, ${columns.length} atributů.`;
+
+                populateConfigUI();
+
+            } catch (err) {
+                console.error(err);
+                alert('Chyba při zpracování CSV dat.');
+            }
+        }
+
+        function populateConfigUI() {
+            const targetSelect = document.getElementById('targetSelect');
+            targetSelect.innerHTML = '<option value="">-- Vyber cíl --</option>';
+            columns.forEach(col => {
+                const opt = document.createElement('option');
+                opt.value = col;
+                opt.textContent = col;
+                targetSelect.appendChild(opt);
+            });
+            if (columns.length > 0) targetSelect.value = columns[columns.length - 1];
+
+            updateFeaturesCheckboxes();
+            checkConfigReady();
+        }
+
+        function updateFeaturesCheckboxes() {
+            const target = document.getElementById('targetSelect').value;
+            const container = document.getElementById('featuresCheckboxes');
+            container.innerHTML = '';
+
+            columns.forEach(col => {
+                if (col === target) return;
+                const div = document.createElement('label');
+                div.className = "flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-1 rounded";
+                div.innerHTML = `
+                    <input type="checkbox" value="${col}" checked class="feature-checkbox rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4 border-slate-300" onchange="checkConfigReady()">
+                    <span class="text-slate-700 font-medium">${col}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function checkConfigReady() {
+            const target = document.getElementById('targetSelect').value;
+            const checkedFeatures = Array.from(document.querySelectorAll('.feature-checkbox:checked')).map(cb => cb.value);
+
+            const btn = document.getElementById('btnStartTree');
+            if (target && checkedFeatures.length > 0) {
+                btn.disabled = false;
+                btn.className = "w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow transition cursor-pointer";
+                document.getElementById('step-2-container').classList.remove('opacity-50', 'pointer-events-none');
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full py-2.5 bg-slate-300 text-slate-500 font-semibold text-xs rounded-xl shadow-none transition cursor-not-allowed";
+            }
+        }
+
+        function initTreeBuilder() {
+            targetCol = document.getElementById('targetSelect').value;
+            featureCols = Array.from(document.querySelectorAll('.feature-checkbox:checked')).map(cb => cb.value);
+
+            if (!targetCol || featureCols.length === 0) return;
+
+            treeRoot = {
+                id: 'node_0',
+                data: rawData,
+                path: [],
+                depth: 0,
+                splitAttribute: null,
+                children: {},
+                isLeaf: isNodePure(rawData)
+            };
+
+            currentNode = treeRoot;
+            document.getElementById('inspectorPanel').classList.remove('opacity-50', 'pointer-events-none');
+
+            renderCurrentNode();
+            renderTreeGraph();
+            resetZoomPan();
+        }
+
+        function isNodePure(data) {
+            if (data.length === 0) return true;
+            const firstVal = data[0][targetCol];
+            return data.every(row => row[targetCol] === firstVal);
+        }
+
+        function renderCurrentNode() {
+            const breadcrumbNav = document.getElementById('breadcrumbNav');
+            if (currentNode.path.length === 0) {
+                breadcrumbNav.innerHTML = `<span class="text-indigo-600 font-semibold">Kořen (Všechna data)</span>`;
+            } else {
+                let html = `<span class="cursor-pointer hover:underline text-slate-500" onclick="resetToRoot()">Kořen</span>`;
+                currentNode.path.forEach(p => {
+                    html += ` <span class="text-slate-400">/</span> <span class="font-semibold text-indigo-600">${p.attr}=${p.val}</span>`;
+                });
+                breadcrumbNav.innerHTML = html;
+            }
+
+            document.getElementById('globalTreeStats').innerText = `Záznamů v uzlu: ${currentNode.data.length}`;
+            document.getElementById('nodeSampleCount').innerText = `${currentNode.data.length} záznamů`;
+            document.getElementById('nodeDepthBadge').innerText = `Hloubka ${currentNode.depth}`;
+
+            const distContainer = document.getElementById('nodeDistributionContainer');
+            distContainer.innerHTML = '';
+            
+            const counts = {};
+            currentNode.data.forEach(row => {
+                const val = row[targetCol] || 'Neznámo';
+                counts[val] = (counts[val] || 0) + 1;
+            });
+
+            const total = currentNode.data.length;
+            if (total === 0) {
+                distContainer.innerHTML = `<p class="text-xs text-slate-400 italic">Žádné záznamy</p>`;
+            } else {
+                for (let [cls, cnt] of Object.entries(counts)) {
+                    const pct = Math.round((cnt / total) * 100);
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = "space-y-1";
+                    rowDiv.innerHTML = `
+                        <div class="flex justify-between text-xs">
+                            <span class="font-medium text-slate-700">${targetCol} = <strong class="text-indigo-600">${cls}</strong></span>
+                            <span class="font-mono text-slate-500">${cnt} (${pct}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                            <div class="bg-indigo-600 h-full rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                    `;
+                    distContainer.appendChild(rowDiv);
+                }
+            }
+
+            const splitSelect = document.getElementById('splitAttributeSelect');
+            splitSelect.innerHTML = '<option value="">-- Vyber atribut --</option>';
+            featureCols.forEach(col => {
+                const usedInPath = currentNode.path.some(p => p.attr === col);
+                if (!usedInPath) {
+                    const opt = document.createElement('option');
+                    opt.value = col;
+                    opt.textContent = col;
+                    splitSelect.appendChild(opt);
+                }
+            });
+
+            const branchesList = document.getElementById('branchesList');
+            branchesList.innerHTML = '';
+            const btnClearSplit = document.getElementById('btnClearSplit');
+
+            if (currentNode.splitAttribute) {
+                document.getElementById('splitActionContainer').style.display = 'none';
+                btnClearSplit.classList.remove('hidden');
+                
+                for (let [val, subNode] of Object.entries(currentNode.children)) {
+                    const branchDiv = document.createElement('div');
+                    branchDiv.className = "bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between text-xs";
+                    
+                    const subCounts = {};
+                    subNode.data.forEach(r => {
+                        const c = r[targetCol];
+                        subCounts[c] = (subCounts[c] || 0) + 1;
+                    });
+                    const summaryStr = Object.entries(subCounts).map(([k, v]) => `${k}: ${v}`).join(', ');
+
+                    branchDiv.innerHTML = `
+                        <div>
+                            <span class="font-semibold text-slate-700">${currentNode.splitAttribute} = ${val}</span>
+                            <div class="text-[10px] text-slate-400">Záznamů: ${subNode.data.length} (${summaryStr})</div>
+                        </div>
+                        <div class="flex items-center space-x-1.5">
+                            <button onclick="removeBranch('${val}')" title="Smazat tuto větev" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                            <button onclick="navigateToNode('${subNode.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold px-2.5 py-1 rounded-lg transition">
+                                Vstoupit <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    `;
+                    branchesList.appendChild(branchDiv);
+                }
+            } else {
+                document.getElementById('splitActionContainer').style.display = 'block';
+                btnClearSplit.classList.add('hidden');
+                branchesList.innerHTML = `<p class="text-xs text-slate-400 italic">Uzel zatím nebyl rozdělen.</p>`;
+            }
+        }
+
+        let nodeIdCounter = 0;
+        function executeSplit() {
+            const attr = document.getElementById('splitAttributeSelect').value;
+            if (!attr) {
+                alert('Vyber atribut pro rozdělení.');
+                return;
+            }
+
+            currentNode.splitAttribute = attr;
+            currentNode.children = {};
+
+            const groups = {};
+            currentNode.data.forEach(row => {
+                const val = row[attr] || 'Neznámo';
+                if (!groups[val]) groups[val] = [];
+                groups[val].push(row);
+            });
+
+            for (let [val, subData] of Object.entries(groups)) {
+                nodeIdCounter++;
+                const subNode = {
+                    id: 'node_' + nodeIdCounter,
+                    data: subData,
+                    path: [...currentNode.path, { attr: attr, val: val }],
+                    depth: currentNode.depth + 1,
+                    splitAttribute: null,
+                    children: {},
+                    isLeaf: isNodePure(subData)
+                };
+                currentNode.children[val] = subNode;
+            }
+
+            renderCurrentNode();
+            renderTreeGraph();
+        }
+
+        function clearNodeSplit() {
+            currentNode.splitAttribute = null;
+            currentNode.children = {};
+            currentNode.isLeaf = isNodePure(currentNode.data);
+            renderCurrentNode();
+            renderTreeGraph();
+        }
+
+        function removeBranch(valKey) {
+            if (currentNode.children[valKey]) {
+                delete currentNode.children[valKey];
+                if (Object.keys(currentNode.children).length === 0) {
+                    currentNode.splitAttribute = null;
+                    currentNode.isLeaf = isNodePure(currentNode.data);
+                }
+                renderCurrentNode();
+                renderTreeGraph();
+            }
+        }
+
+        function navigateToNode(nodeId) {
+            const found = findNodeById(treeRoot, nodeId);
+            if (found) {
+                currentNode = found;
+                renderCurrentNode();
+                renderTreeGraph();
+            }
+        }
+
+        function findNodeById(node, id) {
+            if (node.id === id) return node;
+            for (let val in node.children) {
+                const res = findNodeById(node.children[val], id);
+                if (res) return res;
+            }
+            return null;
+        }
+
+        function resetToRoot() {
+            currentNode = treeRoot;
+            renderCurrentNode();
+            renderTreeGraph();
+        }
+
+        // --- TREE RENDERING ENGINE ---
+        function renderTreeGraph() {
+            const container = document.getElementById('treeGraphContainer');
+            container.innerHTML = '';
+            
+            if (!treeRoot) return;
+
+            const treeWrapper = document.createElement('div');
+            treeWrapper.className = "flex flex-col items-center w-full min-w-max py-4";
+            
+            renderSubTreeNode(treeRoot, treeWrapper);
+            container.appendChild(treeWrapper);
+        }
+
+        function renderSubTreeNode(node, parentElement) {
+            const isCurrent = node.id === currentNode.id;
+            
+            const nodeBox = document.createElement('div');
+            nodeBox.className = `tree-node-card z-10 p-3.5 rounded-xl border shadow-sm cursor-pointer text-xs w-56 transition bg-white ${
+                isCurrent 
+                    ? 'border-indigo-600 ring-2 ring-indigo-200 bg-indigo-50/40 shadow-md' 
+                    : 'border-slate-200 hover:border-indigo-300'
+            }`;
+
+            let titleText = node.path.length === 0 ? 'Kořenový uzel' : `${node.path[node.path.length-1].attr} = ${node.path[node.path.length-1].val}`;
+            
+            let statusBadge = '';
+            if (node.splitAttribute) {
+                statusBadge = `<span class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-semibold">Větvení: ${node.splitAttribute}</span>`;
+            } else if (node.isLeaf) {
+                statusBadge = `<span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">✨ Čistý list</span>`;
+            } else {
+                statusBadge = `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">Aktivní list</span>`;
+            }
+
+            nodeBox.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-bold text-slate-800 truncate pr-2" title="${titleText}">${titleText}</span>
+                    ${statusBadge}
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
+                    <span>Záznamů: <strong>${node.data.length}</strong></span>
+                    <span class="text-indigo-600 font-semibold hover:underline flex items-center">Detail <i class="fa-solid fa-arrow-right ml-1 text-[9px]"></i></span>
+                </div>
+            `;
+
+            nodeBox.onclick = (e) => {
+                e.stopPropagation();
+                currentNode = node;
+                renderCurrentNode();
+                renderTreeGraph();
+            };
+
+            parentElement.appendChild(nodeBox);
+
+            if (node.splitAttribute && Object.keys(node.children).length > 0) {
+                const childrenWrapper = document.createElement('div');
+                childrenWrapper.className = "flex flex-col items-center w-full";
+
+                const vLine = document.createElement('div');
+                vLine.className = "w-0.5 h-6 bg-slate-300";
+                childrenWrapper.appendChild(vLine);
+
+                const branchesRow = document.createElement('div');
+                branchesRow.className = "flex items-start justify-center gap-6 relative pt-2";
+
+                const childEntries = Object.entries(node.children);
+                
+                childEntries.forEach(([val, subNode]) => {
+                    const branchCol = document.createElement('div');
+                    branchCol.className = "flex flex-col items-center relative";
+
+                    const conditionTag = document.createElement('div');
+                    conditionTag.className = "text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full mb-3 shadow-2xs z-10";
+                    conditionTag.innerText = `${node.splitAttribute} = ${val}`;
+                    branchCol.appendChild(conditionTag);
+
+                    renderSubTreeNode(subNode, branchCol);
+                    branchesRow.appendChild(branchCol);
+                });
+
+                childrenWrapper.appendChild(branchesRow);
+                parentElement.appendChild(childrenWrapper);
+            }
+        }
+    </script>
+</body>
+</html>
