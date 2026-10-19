@@ -98,6 +98,10 @@ button.primary:hover { filter: brightness(1.08); }
 .checks label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
 .checks input { accent-color: var(--accent); width: 16px; height: 16px; }
 .swatch { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+.toggle { display: flex; gap: 8px; align-items: center; font-weight: 600; cursor: pointer; }
+.toggle input { accent-color: var(--accent); width: 18px; height: 18px; margin: 0; }
+select:disabled { opacity: .55; }
+.hint { color: var(--muted); font-size: 13px; line-height: 1.4; min-height: 1.4em; }
 .presets { display: flex; flex-wrap: wrap; gap: 6px; }
 .presets button { padding: 6px 10px; font-size: 13px; font-weight: 500; background: var(--accent-soft); border-color: transparent; }
 
@@ -124,7 +128,7 @@ button.primary:hover { filter: brightness(1.08); }
   <a class="back" href="../">← Všechny školní aplikace</a>
   <header>
     <h1>Šikmý <span>vrh</span></h1>
-    <p>Interaktivní model pohybu tělesa vrženého pod úhlem α počáteční rychlostí v₀, bez odporu vzduchu.</p>
+    <p>Interaktivní model pohybu tělesa vrženého pod úhlem α počáteční rychlostí v₀, volitelně s odporem vzduchu.</p>
   </header>
 
   <div class="main">
@@ -163,6 +167,17 @@ button.primary:hover { filter: brightness(1.08); }
         </select>
       </div>
       <div class="ctrl">
+        <label class="toggle"><input type="checkbox" id="drag"> Odpor vzduchu</label>
+        <select id="body" disabled aria-label="Vržené těleso">
+          <option value="tenis" selected>Tenisový míček</option>
+          <option value="golf">Golfový míček</option>
+          <option value="pingpong">Pingpongový míček</option>
+          <option value="fotbal">Fotbalový míč</option>
+          <option value="koule">Koule do vrhu (7,26 kg)</option>
+        </select>
+        <small class="hint" id="dragInfo">Vypnuto: těleso letí jako ve vakuu.</small>
+      </div>
+      <div class="ctrl">
         <div class="ctrl-head"><label for="sp">Rychlost přehrávání</label><output id="spo"></output></div>
         <input type="range" id="sp" min="0" max="4" step="1" value="2">
       </div>
@@ -194,8 +209,8 @@ button.primary:hover { filter: brightness(1.08); }
   </div>
 
   <section class="results" aria-label="Vypočtené hodnoty">
-    <div><span class="label">Doba letu T</span><b id="rT"></b><small>dopad na zem</small></div>
-    <div><span class="label">Dostřel d</span><b id="rD"></b><small>vodorovná vzdálenost</small></div>
+    <div><span class="label">Doba letu T</span><b id="rT"></b><small id="rTs">dopad na zem</small></div>
+    <div><span class="label">Dostřel d</span><b id="rD"></b><small id="rDs">vodorovná vzdálenost</small></div>
     <div><span class="label">Max. výška H</span><b id="rH"></b><small id="rHt"></small></div>
     <div><span class="label">Rychlost dopadu</span><b id="rV"></b><small>velikost |v|</small></div>
     <div><span class="label">Úhel dopadu</span><b id="rA"></b><small>pod vodorovnou</small></div>
@@ -219,8 +234,13 @@ button.primary:hover { filter: brightness(1.08); }
       <p>Ve vrcholu je v<sub>y</sub> = 0. Největší dostřel nastává pro α = 45°; úhly α a 90° − α dávají stejný dostřel.</p>
       <div class="eq">t<sub>H</sub> = v₀ sin α / g &nbsp;&nbsp; H = v₀² sin² α / (2g)<br>T = 2 v₀ sin α / g &nbsp;&nbsp; d = v₀² sin 2α / g</div>
     </div>
+    <div class="card">
+      <h2>Odpor vzduchu</h2>
+      <p>Odporová síla roste s druhou mocninou rychlosti a míří proti pohybu. Dráha už není parabola: sestupná část je strmější než vzestupná a největší dostřel nastává pro úhel menší než 45°. Pohyb se proto počítá numericky po krocích 0,004 s.</p>
+      <div class="eq">F<sub>o</sub> = ½ · C · ρ · S · v²<br>a<sub>x</sub> = −k · v · v<sub>x</sub> &nbsp;&nbsp; a<sub>y</sub> = −g − k · v · v<sub>y</sub><br>k = C · ρ · S / (2m)</div>
+    </div>
   </section>
-  <footer>Model bez odporu vzduchu, s konstantním tíhovým zrychlením. Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 19. 10. 2026</footer>
+  <footer>Model s konstantním tíhovým zrychlením. Odpor vzduchu je kvadratický (C = součinitel odporu tělesa), hustota atmosféry: Země 1,225 kg/m³, Mars 0,020 kg/m³, Jupiter 0,16 kg/m³ (hladina 1 bar), Měsíc bez atmosféry. Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 19. 10. 2026</footer>
 </div>
 
 <script>
@@ -232,18 +252,78 @@ button.primary:hover { filter: brightness(1.08); }
   const TRACE_COLORS = ['#7b61ff', '#0e9a7b', '#d4892a', '#c2335e', '#2b8fd6', '#6b8e23'];
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const params = () => ({ v0: +$('v0').value, a: +$('al').value, h0: +$('h0').value, g: +$('gs').value });
+  const params = () => ({ v0: +$('v0').value, a: +$('al').value, h0: +$('h0').value, g: +$('gs').value, drag: $('drag').checked, body: $('body').value });
+
+  // Odpor vzduchu: hustota atmosféry [kg/m³] a vržená tělesa (hmotnost m [kg], průměr d [m], součinitel odporu C)
+  const RHO = { '9.81': 1.225, '1.62': 0, '3.71': 0.020, '24.79': 0.16 };
+  const BODIES = {
+    tenis:    { short: 'tenisák',   m: 0.057,  d: 0.067,  c: 0.55 },
+    golf:     { short: 'golfák',    m: 0.0459, d: 0.0427, c: 0.25 },
+    pingpong: { short: 'pingpong',  m: 0.0027, d: 0.040,  c: 0.47 },
+    fotbal:   { short: 'fotbal',    m: 0.43,   d: 0.22,   c: 0.25 },
+    koule:    { short: 'koule',     m: 7.26,   d: 0.12,   c: 0.47 }
+  };
+  const kOf = p => {
+    if (!p.drag) return 0;
+    const b = BODIES[p.body], rho = RHO[String(p.g)] ?? 1.225;
+    return 0.5 * rho * b.c * Math.PI * (b.d / 2) ** 2 / b.m;
+  };
+  const DT = 0.004;
 
   function solve(p) {
+    const k = kOf(p);
+    return k > 0 ? solveDrag(p, k) : solveVac(p);
+  }
+
+  function solveVac(p) {
     const r = p.a * Math.PI / 180;
     const vx = p.v0 * Math.cos(r), vy0 = p.v0 * Math.sin(r);
     const T = (vy0 + Math.sqrt(vy0 * vy0 + 2 * p.g * p.h0)) / p.g;
     const tH = Math.max(0, vy0 / p.g);
     const H = p.h0 + (vy0 > 0 ? vy0 * vy0 / (2 * p.g) : 0);
     const vyT = vy0 - p.g * T;
-    return { ...p, vx, vy0, T, tH, H, D: vx * T, vImpact: Math.hypot(vx, vyT), aImpact: Math.atan2(-vyT, vx) * 180 / Math.PI };
+    return { ...p, k: 0, smp: null, vx, vy0, T, tH, H, D: vx * T, vImpact: Math.hypot(vx, vyT), aImpact: Math.atan2(-vyT, vx) * 180 / Math.PI };
   }
-  const posAt = (s, t) => ({ x: s.vx * t, y: s.h0 + s.vy0 * t - 0.5 * s.g * t * t, vx: s.vx, vy: s.vy0 - s.g * t });
+  // Numerické řešení s kvadratickým odporem (Rungeova–Kuttova metoda 4. řádu)
+  function solveDrag(p, k) {
+    const r = p.a * Math.PI / 180;
+    let x = 0, y = p.h0, vx = p.v0 * Math.cos(r), vy = p.v0 * Math.sin(r), t = 0;
+    const vx0 = vx, vy0 = vy;
+    const X = [x], Y = [y], VX = [vx], VY = [vy];
+    let H = y, tH = 0;
+    const acc = (vx, vy) => { const v = Math.hypot(vx, vy); return [-k * v * vx, -p.g - k * v * vy]; };
+    for (let i = 0; i < 200000; i++) {
+      const [a1x, a1y] = acc(vx, vy);
+      const [a2x, a2y] = acc(vx + a1x * DT / 2, vy + a1y * DT / 2);
+      const [a3x, a3y] = acc(vx + a2x * DT / 2, vy + a2y * DT / 2);
+      const [a4x, a4y] = acc(vx + a3x * DT, vy + a3y * DT);
+      const nx = x + DT * (vx + DT / 6 * (a1x + a2x + a3x));
+      const ny = y + DT * (vy + DT / 6 * (a1y + a2y + a3y));
+      const nvx = vx + DT / 6 * (a1x + 2 * a2x + 2 * a3x + a4x);
+      const nvy = vy + DT / 6 * (a1y + 2 * a2y + 2 * a3y + a4y);
+      if (ny < 0) { // dopad: lineární interpolace mezi kroky
+        const f = y / (y - ny);
+        x += f * (nx - x); vx += f * (nvx - vx); vy += f * (nvy - vy); t += f * DT; y = 0;
+        X.push(x); Y.push(y); VX.push(vx); VY.push(vy);
+        break;
+      }
+      x = nx; y = ny; vx = nvx; vy = nvy; t += DT;
+      X.push(x); Y.push(y); VX.push(vx); VY.push(vy);
+      if (y > H) { H = y; tH = t; }
+    }
+    return { ...p, k, vx: vx0, vy0, T: t, tH, H, D: x, vImpact: Math.hypot(vx, vy), aImpact: Math.atan2(-vy, vx) * 180 / Math.PI, smp: { X, Y, VX, VY } };
+  }
+
+  const posAt = (s, t) => {
+    if (!s.smp) return { x: s.vx * t, y: s.h0 + s.vy0 * t - 0.5 * s.g * t * t, vx: s.vx, vy: s.vy0 - s.g * t };
+    const { X, Y, VX, VY } = s.smp, n = X.length - 1;
+    if (n < 1 || t >= s.T) return { x: X[n], y: Y[n], vx: VX[n], vy: VY[n] };
+    const i = Math.min(Math.floor(t / DT), n - 1);
+    const len = i === n - 1 ? s.T - i * DT : DT;
+    const f = len > 0 ? Math.min(1, (t - i * DT) / len) : 0;
+    const L = a => a[i] + f * (a[i + 1] - a[i]);
+    return { x: L(X), y: L(Y), vx: L(VX), vy: L(VY) };
+  };
 
   let shot = null, simT = 0, running = false, paused = false, last = 0;
   let traces = [];
@@ -272,7 +352,9 @@ button.primary:hover { filter: brightness(1.08); }
     ctx.clearRect(0, 0, W, Hh);
 
     const cur = solve(params());
+    const vac = cur.k > 0 ? solveVac(cur) : null;
     const all = [cur, ...traces.map(t => t.s)];
+    if (vac && $('cbP').checked) all.push(vac);
     if (shot) all.push(shot);
     let maxX = Math.max(...all.map(s => s.D)), maxY = Math.max(...all.map(s => s.H));
     maxX = Math.max(maxX, maxY * 0.6, 5); maxY = Math.max(maxY, 3);
@@ -322,6 +404,13 @@ button.primary:hover { filter: brightness(1.08); }
 
     // předpověď
     if ($('cbP').checked) {
+      if (vac) { // pro srovnání dráha bez odporu
+        ctx.strokeStyle = C('--muted'); ctx.globalAlpha = 0.45; ctx.lineWidth = 1.2; ctx.setLineDash([2, 4]);
+        path(vac, vac.T); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+        const e = posAt(vac, vac.T);
+        ctx.fillStyle = C('--muted'); ctx.font = '11px ' + C('--mono'); ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+        ctx.fillText('bez odporu', X(e.x) - 8, Y(0) - 6);
+      }
       ctx.strokeStyle = C('--accent'); ctx.globalAlpha = 0.55; ctx.lineWidth = 1.5; ctx.setLineDash([6, 5]);
       path(cur, cur.T); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
       // vrchol
@@ -393,6 +482,14 @@ button.primary:hover { filter: brightness(1.08); }
     $('h0o').textContent = fmt(p.h0) + ' m';
     $('go').textContent = fmt(p.g, 2) + ' m/s²';
     $('spo').textContent = fmt(SPEEDS[+$('sp').value], 2).replace(/,?0+$/, '') + '×';
+    const b = BODIES[p.body], rho = RHO[String(p.g)];
+    $('body').disabled = !p.drag;
+    $('dragInfo').textContent = !p.drag ? 'Vypnuto: těleso letí jako ve vakuu.'
+      : rho === 0 ? 'Měsíc nemá atmosféru, odpor se neprojeví.'
+      : `m = ${b.m < 1 ? fmt(b.m * 1000, 1) + ' g' : fmt(b.m, 2) + ' kg'} · d = ${fmt(b.d * 100, 1)} cm · C = ${fmt(b.c, 2)} · ρ = ${fmt(rho, 3)} kg/m³`;
+    const vac = s.k > 0 ? solveVac(p) : null;
+    $('rTs').textContent = vac ? 'bez odporu ' + fmt(vac.T, 2) + ' s' : 'dopad na zem';
+    $('rDs').textContent = vac ? 'bez odporu ' + fmt(vac.D) + ' m' : 'vodorovná vzdálenost';
     $('rT').textContent = fmt(s.T, 2) + ' s';
     $('rD').textContent = fmt(s.D) + ' m';
     $('rH').textContent = fmt(s.H) + ' m';
@@ -437,12 +534,13 @@ button.primary:hover { filter: brightness(1.08); }
     const gName = { 9.81: 'Země', 1.62: 'Měsíc', 3.71: 'Mars', 24.79: 'Jupiter' };
     traces.forEach(t => {
       const el = document.createElement('span'); el.className = 'trace-chip';
-      el.innerHTML = `<i style="background:${t.color}"></i>v₀ ${fmt(t.s.v0)} · ${t.s.a}°${t.s.h0 ? ' · h₀ ' + fmt(t.s.h0) : ''}${t.s.g !== 9.81 ? ' · ' + gName[t.s.g] : ''} → d = ${fmt(t.s.D)} m`;
+      el.innerHTML = `<i style="background:${t.color}"></i>v₀ ${fmt(t.s.v0)} · ${t.s.a}°${t.s.h0 ? ' · h₀ ' + fmt(t.s.h0) : ''}${t.s.g !== 9.81 ? ' · ' + gName[t.s.g] : ''}${t.s.k > 0 ? ' · odpor (' + BODIES[t.s.body].short + ')' : ''} → d = ${fmt(t.s.D)} m`;
       box.appendChild(el);
     });
   }
 
   ['v0', 'al', 'h0', 'gs', 'sp'].forEach(id => $(id).addEventListener('input', updateUI));
+  ['drag', 'body'].forEach(id => $(id).addEventListener('change', updateUI));
   ['cbV', 'cbC', 'cbP', 'cbM'].forEach(id => $(id).addEventListener('change', draw));
   $('fire').addEventListener('click', fire);
   $('pause').addEventListener('click', () => {
