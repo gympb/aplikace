@@ -100,7 +100,7 @@ footer a{color:inherit}
 
   <section>
     <div class="sec-head"><div class="eyebrow">Nastavení</div><h2>Rotory</h2>
-      <p>Vyberte typ rotoru, výchozí písmeno v okénku a nastavení prstence. Příjemce musí mít stroj nastavený stejně.</p></div>
+      <p>Vyberte typ rotoru, výchozí písmeno v okénku a nastavení prstence. Příjemce musí mít stroj nastavený stejně. Každý rotor je v sadě jen jednou: když vyberete rotor, který už je ve stroji, oba rotory si vymění místa.</p></div>
     <div class="rotors">
       <div class="rotor">
         <span class="lab">Levý rotor</span>
@@ -377,6 +377,21 @@ footer a{color:inherit}
             inputArea.value = '';
             outputArea.value = '';
             updateUI();
+        });
+
+        // Každý z rotorů I–V existuje jen jednou: výběr už použitého rotoru oba rotory prohodí
+        const rotorSelects = ['left', 'middle', 'right'].map(p => document.getElementById(`rotor-${p}-type`));
+        rotorSelects.forEach(sel => {
+            sel.dataset.prev = sel.value;
+            sel.addEventListener('change', () => {
+                const other = rotorSelects.find(s => s !== sel && s.value === sel.value);
+                if (other) {
+                    other.value = sel.dataset.prev;
+                    other.dataset.prev = other.value;
+                }
+                sel.dataset.prev = sel.value;
+                syncMachineSettings();
+            });
         });
 
         // Initialize
