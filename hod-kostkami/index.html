@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulátor hodu kostkami</title>
+<meta name="description" content="Přesné rozdělení součtu hodu kostkami, informační entropie a porovnání s počítačovou simulací.">
+<meta property="og:title" content="Simulátor hodu kostkami">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+/* Layout: jeden sloupec laboratorního sešitu — nastavení, teorie (graf), simulace, tabulka; bloky se na šířce dělí do dvou sloupců */
+:root {
+  --bg: #f2f4f6;
+  --panel: #ffffff;
+  --fg: #17212b;
+  --muted: #5b6875;
+  --line: #d9dee4;
+  --theory: #c8323c;
+  --theory-soft: rgba(200, 50, 60, .22);
+  --sim: #156f86;
+  --sim-soft: rgba(21, 111, 134, .16);
+  --good: #2c7a3f; --good-bg: #e2f2e5;
+  --warn: #9a6400; --warn-bg: #fbefd6;
+  --bad: #b02a2a; --bad-bg: #f9e1e1;
+  --die: #fbfbfa; --pip: #17212b;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f151b; --panel: #161e26; --fg: #e5eaee; --muted: #93a1ad; --line: #2a3540;
+  --theory: #ff6b74; --theory-soft: rgba(255, 107, 116, .25);
+  --sim: #4ec3dc; --sim-soft: rgba(78, 195, 220, .18);
+  --good: #7fd18f; --good-bg: #183223; --warn: #f2c063; --warn-bg: #3a2c10; --bad: #ff8a8a; --bad-bg: #3d1a1c;
+  --die: #e9ecef; --pip: #10161c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f151b; --panel: #161e26; --fg: #e5eaee; --muted: #93a1ad; --line: #2a3540;
+  --theory: #ff6b74; --theory-soft: rgba(255, 107, 116, .25);
+  --sim: #4ec3dc; --sim-soft: rgba(78, 195, 220, .18);
+  --good: #7fd18f; --good-bg: #183223; --warn: #f2c063; --warn-bg: #3a2c10; --bad: #ff8a8a; --bad-bg: #3d1a1c;
+  --die: #e9ecef; --pip: #10161c; color-scheme: dark }
+
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+html, body { margin: 0 }
+.back { font-weight: 600; font-size: 14px; color: var(--muted); text-decoration: none }
+.back:hover { color: var(--sim) }
+footer a { color: inherit }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.5 }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 22px }
+h1, h2 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -.01em }
+h1 { font-size: clamp(28px, 4.4vw, 42px); font-weight: 700; line-height: 1.05 }
+h2 { font-size: 21px; font-weight: 700 }
+h3 { margin: 0; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted) }
+p { margin: 0 }
+.lead { color: var(--muted); max-width: 66ch; margin-top: 8px }
+.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 14px 24px }
+.top > div { min-width: 0; flex: 1 1 420px }
+.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px 7px 8px; font-weight: 600 }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px }
+.switch .track { width: 42px; height: 24px; border-radius: 999px; background: var(--line); position: relative; transition: background .15s; flex: none }
+.switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--panel); box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: transform .15s }
+.switch input:checked + .track { background: var(--sim) }
+.switch input:checked + .track::after { transform: translateX(18px) }
+.switch input:focus-visible + .track { outline: 2px solid var(--sim); outline-offset: 2px }
+.switch .state { font: 500 12px var(--f-mono); color: var(--muted); min-width: 4ch }
+@media (prefers-reduced-motion: reduce) { .switch .track, .switch .track::after { transition: none } }
+.mono, .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 16px; min-width: 0 }
+.panel-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px }
+.hint { color: var(--muted); font-size: 13px }
+
+/* ovládání */
+.controls { display: flex; flex-wrap: wrap; gap: 16px 22px; align-items: flex-end }
+.field { display: grid; gap: 5px }
+.field label { font-size: 13px; font-weight: 600 }
+.field input { width: 120px; font: 500 20px var(--f-mono); padding: 7px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--fg) }
+.field input:focus-visible, button:focus-visible, .chip:focus-visible { outline: 2px solid var(--theory); outline-offset: 2px }
+.notation { font: 700 34px var(--f-display); color: var(--theory); line-height: 1; padding-bottom: 4px }
+.chips { display: flex; flex-wrap: wrap; gap: 6px }
+.chip { font: 500 13px var(--f-mono); padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--fg); cursor: pointer }
+.chip:hover { border-color: var(--theory); color: var(--theory) }
+.chip[aria-pressed="true"] { background: var(--theory); border-color: var(--theory); color: var(--panel) }
+.sim .chip:hover { border-color: var(--sim); color: var(--sim) }
+.sim .chip[aria-pressed="true"] { background: var(--sim); border-color: var(--sim) }
+.err { color: var(--bad); font-size: 13px; min-height: 1.2em }
+button.btn { font: 600 14px var(--f-body); padding: 10px 16px; border-radius: 7px; border: 1px solid transparent; cursor: pointer; background: var(--fg); color: var(--bg) }
+button.btn.sim-btn { background: var(--sim); color: var(--panel) }
+button.btn.ghost { background: transparent; border-color: var(--line); color: var(--fg) }
+button.btn:disabled { opacity: .5; cursor: progress }
+
+/* souhrnná čísla */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden }
+.stat { background: var(--panel); padding: 12px 14px; display: grid; gap: 2px; min-width: 0 }
+.stat .k { font-size: 12px; color: var(--muted) }
+.stat .v { font: 500 19px var(--f-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere }
+.stat .s { font-size: 12px; color: var(--muted); font-family: var(--f-mono) }
+
+/* graf */
+.chart-box { position: relative; min-width: 0 }
+canvas { display: block; width: 100%; touch-action: pan-y }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted) }
+.legend span { display: inline-flex; align-items: center; gap: 7px }
+.sw { width: 14px; height: 10px; border-radius: 2px; display: inline-block }
+.sw.t { background: var(--theory-soft); border: 1.5px solid var(--theory) }
+.sw.m { background: var(--sim); height: 3px }
+.tip { position: absolute; pointer-events: none; background: var(--fg); color: var(--bg); font: 12px/1.45 var(--f-mono); padding: 7px 9px; border-radius: 6px; white-space: nowrap; transform: translate(-50%, -100%); z-index: 2 }
+
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 22px }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; align-items: baseline }
+.kv dt { color: var(--muted); font-size: 14px }
+.kv dd { margin: 0; font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; overflow-wrap: anywhere }
+.big { font: 500 30px var(--f-mono); color: var(--theory); font-variant-numeric: tabular-nums }
+.formula { font-family: var(--f-mono); font-size: 13px; background: var(--bg); border-radius: 6px; padding: 9px 11px; overflow-x: auto; white-space: nowrap }
+.meter { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden }
+.meter > i { display: block; height: 100%; background: var(--theory) }
+
+/* simulace */
+.progress { height: 4px; background: var(--bg); border-radius: 999px; overflow: hidden }
+.progress > i { display: block; height: 100%; width: 0; background: var(--sim); transition: width .1s }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 600 }
+.pill.good { background: var(--good-bg); color: var(--good) }
+.pill.warn { background: var(--warn-bg); color: var(--warn) }
+.pill.bad { background: var(--bad-bg); color: var(--bad) }
+.cmp { width: 100%; border-collapse: collapse; font-size: 14px }
+.cmp th, .cmp td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: right }
+.cmp th:first-child, .cmp td:first-child { text-align: left; color: var(--muted); font-weight: 400 }
+.cmp thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600 }
+.cmp td { font-family: var(--f-mono); font-variant-numeric: tabular-nums }
+.cmp .t { color: var(--theory) } .cmp .m { color: var(--sim) }
+
+.dice { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 46px }
+.die { width: 42px; height: 42px; border-radius: 9px; background: var(--die); border: 1px solid var(--line); box-shadow: inset 0 -3px 0 rgba(0,0,0,.12);
+  display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 6px; place-items: center; color: var(--pip) }
+.die i { width: 7px; height: 7px; border-radius: 50%; background: var(--pip); visibility: hidden }
+.die i.on { visibility: visible }
+.die.n { display: flex; justify-content: center; align-items: center; font: 600 16px var(--f-mono); padding: 0 }
+.die.roll { animation: tumble .35s ease-out }
+@keyframes tumble { from { transform: rotate(-30deg) scale(.8) } to { transform: none } }
+@media (prefers-reduced-motion: reduce) { .die.roll { animation: none } .progress > i { transition: none } }
+.sumbadge { font: 500 15px var(--f-mono); color: var(--muted); margin-left: 6px }
+
+/* tabulka */
+.tbl-wrap { max-height: 460px; overflow: auto; border: 1px solid var(--line); border-radius: 8px }
+table.dist { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums }
+.dist th { position: sticky; top: 0; background: var(--panel); text-align: right; font-size: 12px; font-weight: 600; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap }
+.dist td { font-family: var(--f-mono); text-align: right; padding: 5px 10px; border-bottom: 1px solid var(--line); white-space: nowrap }
+.dist th:first-child, .dist td:first-child { text-align: left }
+.dist tbody tr { cursor: pointer }
+.dist tbody tr:hover td { background: var(--bg) }
+.dist tr.sel td { background: var(--theory-soft) }
+.dist td.bar { background-repeat: no-repeat; background-image: linear-gradient(var(--theory-soft), var(--theory-soft)); background-position: right center }
+.dev-pos { color: var(--sim) } .dev-neg { color: var(--theory) }
+footer { color: var(--muted); font-size: 13px; max-width: 75ch }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <header class="top">
+    <div>
+      <h1>Simulátor hodu kostkami</h1>
+      <p class="lead">Zadejte počet kostek a počet stěn. Aplikace přesně spočítá rozdělení součtu hodu, jeho informační entropii a výsledek porovná s počítačovou simulací.</p>
+    </div>
+    <label class="switch" for="sim-toggle"><input type="checkbox" id="sim-toggle" role="switch" checked><span class="track"></span>Simulace <span class="state" id="sim-state">zap.</span></label>
+  </header>
+
+  <section class="panel" aria-labelledby="h-set">
+    <div class="panel-head"><h2 id="h-set">Nastavení</h2><span class="hint">Součet hodu S = X₁ + X₂ + … + Xₙ, každá kostka padá rovnoměrně 1 až s</span></div>
+    <div class="controls">
+      <div class="field"><label for="in-n">Počet kostek n (≥ 1)</label><input id="in-n" type="number" min="1" max="100" step="1" value="2" inputmode="numeric"></div>
+      <div class="field"><label for="in-s">Počet stěn s (≥ 2)</label><input id="in-s" type="number" min="2" max="1000" step="1" value="6" inputmode="numeric"></div>
+      <div class="notation" id="notation" aria-live="polite">2k6</div>
+      <div class="field"><span class="hint">Rychlá volba</span><div class="chips" id="presets"></div></div>
+    </div>
+    <p class="err" id="err" role="alert"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="h-th">
+    <div class="panel-head"><h2 id="h-th">Teoretické rozdělení součtu</h2><span class="hint">Najetím nebo klepnutím na graf zobrazíte hodnoty</span></div>
+    <div class="stats" id="stats"></div>
+    <div class="legend"><span><i class="sw t"></i>teoretická pravděpodobnost P(S = k)</span><span id="lg-sim" hidden><i class="sw m"></i>relativní četnost ze simulace</span></div>
+    <div class="chart-box" id="chart-box"><canvas id="chart" aria-label="Graf rozdělení pravděpodobnosti součtu"></canvas><div class="tip" id="tip" hidden></div></div>
+  </section>
+
+  <div class="grid2">
+    <section class="panel" aria-labelledby="h-val">
+      <h2 id="h-val">Pravděpodobnost konkrétní hodnoty</h2>
+      <div class="field"><label for="in-k">Součet k</label><input id="in-k" type="number" step="1" value="7" inputmode="numeric"></div>
+      <div><div class="big" id="pk">—</div><div class="hint mono" id="pk-frac"></div></div>
+      <dl class="kv" id="kv-k"></dl>
+    </section>
+
+    <section class="panel" aria-labelledby="h-ent">
+      <h2 id="h-ent">Informační entropie</h2>
+      <div><div class="big" id="ent">—</div><div class="hint">bitů na jeden hod (součet S)</div></div>
+      <div class="formula">H(S) = −Σ P(S = k) · log₂ P(S = k)</div>
+      <dl class="kv" id="kv-ent"></dl>
+      <div><div class="hint" style="margin-bottom:6px">Využití maxima log₂(počet součtů)</div><div class="meter"><i id="ent-meter"></i></div></div>
+    </section>
+  </div>
+
+  <section class="panel sim" id="sim-panel" aria-labelledby="h-sim">
+    <div class="panel-head"><h2 id="h-sim">Simulace házení</h2><span class="hint">Generátor náhodných čísel Math.random()</span></div>
+    <div class="controls">
+      <div class="field"><label for="in-N">Počet hodů N</label><input id="in-N" type="number" min="1" max="10000000" step="1" value="10000" inputmode="numeric" style="width:150px"></div>
+      <div class="field"><span class="hint">Rychlá volba</span><div class="chips" id="npresets"></div></div>
+      <button class="btn sim-btn" id="run">Spustit simulaci</button>
+      <button class="btn ghost" id="once">Hodit jednou</button>
+    </div>
+    <div class="progress" aria-hidden="true"><i id="prog"></i></div>
+    <div>
+      <h3 style="margin-bottom:8px" id="dice-label">Poslední hod</h3>
+      <div class="dice" id="dice"></div>
+    </div>
+    <div id="sim-out"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-tab">
+    <div class="panel-head"><h2 id="h-tab">Tabulka výsledků</h2><span class="hint">Klepnutím na řádek vyberete součet k</span></div>
+    <div class="tbl-wrap"><table class="dist"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+  </section>
+
+  <footer>Rozdělení se počítá přesně (celočíselnou konvolucí, s libovolně velkými čísly). Počet kombinací udává, kolika uspořádanými způsoby z celkových sⁿ lze daný součet hodit. Shoda se simulací se posuzuje testem χ² dobré shody; třídy s očekávanou četností pod 5 se slučují se sousedními. Limity: n ≤ 100, s ≤ 1000, nejvýše 20 001 různých součtů a 100 milionů hozených kostek v jedné simulaci.<br>Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 19. 10. 2026</footer>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const nf = (x, d = 0) => x.toLocaleString('cs-CZ', { minimumFractionDigits: d, maximumFractionDigits: d });
+const sup = s => String(s).replace(/[-0-9]/g, c => '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['-0123456789'.indexOf(c)]);
+function fmtBig(b) {
+  const str = b.toString();
+  if (str.length <= 16) return Number(b).toLocaleString('cs-CZ');
+  const m = (Number(str.slice(0, 4)) / 1000).toLocaleString('cs-CZ', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  return m + ' · 10' + sup(str.length - 1);
+}
+function fmtP(p) {
+  if (p === 0) return '0 %';
+  const v = p * 100;
+  if (v >= 0.01) return v.toLocaleString('cs-CZ', { maximumSignificantDigits: 4 }) + ' %';
+  const [m, e] = p.toExponential(2).split('e');
+  return Number(m).toLocaleString('cs-CZ', { minimumFractionDigits: 2 }) + '·10' + sup(Number(e));
+}
+function ratio(a, b) {
+  const bl = b.toString(2).length;
+  if (bl > 1000) { const sh = BigInt(bl - 1000); a >>= sh; b >>= sh; }
+  return Number(a) / Number(b);
+}
+
+const st = { n: 2, s: 6, counts: [], probs: [], cdf: [], total: 1n, H: 0, sel: 7, sim: null, runId: 0, simOn: true };
+const act = () => st.simOn ? st.sim : null;
+
+function compute() {
+  const { n, s } = st;
+  let c = [1n];
+  for (let d = 0; d < n; d++) {
+    const L = c.length + s - 1, nc = new Array(L);
+    let w = 0n;
+    for (let k = 0; k < L; k++) {
+      if (k < c.length) w += c[k];
+      const j = k - s; if (j >= 0 && j < c.length) w -= c[j];
+      nc[k] = w;
+    }
+    c = nc;
+  }
+  st.counts = c;
+  st.total = BigInt(s) ** BigInt(n);
+  st.probs = c.map(x => ratio(x, st.total));
+  st.cdf = []; let acc = 0;
+  for (const p of st.probs) { acc += p; st.cdf.push(Math.min(1, acc)); }
+  st.H = entropy(st.probs);
+}
+function entropy(ps) { let h = 0; for (const p of ps) if (p > 0) h -= p * Math.log2(p); return h; }
+
+/* ---------- vykreslení teorie ---------- */
+function renderStats() {
+  const { n, s } = st, K = st.probs.length;
+  const mean = n * (s + 1) / 2, vr = n * (s * s - 1) / 12;
+  let modeMax = Math.max(...st.probs);
+  const modes = []; st.probs.forEach((p, i) => { if (p >= modeMax * (1 - 1e-12)) modes.push(i + n); });
+  const modeTxt = modes.length > 2 ? modes[0] + '–' + modes[modes.length - 1] : modes.join(' a ');
+  const tiles = [
+    ['Počet všech výsledků', fmtBig(st.total), s + sup(n) + ' uspořádaných hodů'],
+    ['Počet různých součtů', nf(K), 'od ' + n + ' do ' + n * s],
+    ['Střední hodnota E(S)', mean.toLocaleString('cs-CZ', { maximumFractionDigits: 3 }), 'n(s+1)/2'],
+    ['Směrodatná odchylka', Math.sqrt(vr).toLocaleString('cs-CZ', { maximumFractionDigits: 3 }), 'rozptyl ' + vr.toLocaleString('cs-CZ', { maximumFractionDigits: 3 })],
+    ['Nejčastější součet', modeTxt, 'P = ' + fmtP(modeMax)],
+    ['Entropie H(S)', st.H.toLocaleString('cs-CZ', { maximumFractionDigits: 4 }) + ' b', 'bitů na hod'],
+  ];
+  $('stats').innerHTML = tiles.map(t => `<div class="stat"><span class="k">${t[0]}</span><span class="v">${t[1]}</span><span class="s">${t[2]}</span></div>`).join('');
+}
+
+function renderEntropy() {
+  const { n, s } = st, K = st.probs.length;
+  const Hmax = Math.log2(K), Hfull = n * Math.log2(s);
+  $('ent').textContent = st.H.toLocaleString('cs-CZ', { maximumFractionDigits: 5 }) + ' b';
+  const rows = [
+    ['Maximum pro ' + nf(K) + ' součtů', Hmax.toLocaleString('cs-CZ', { maximumFractionDigits: 5 }) + ' b'],
+    ['Entropie celého hodu (n·log₂ s)', Hfull.toLocaleString('cs-CZ', { maximumFractionDigits: 5 }) + ' b'],
+    ['Informace ztracená sečtením', (Hfull - st.H).toLocaleString('cs-CZ', { maximumFractionDigits: 5 }) + ' b'],
+  ];
+  if (act()) rows.push(['Empirická entropie ze simulace', st.sim.H.toLocaleString('cs-CZ', { maximumFractionDigits: 5 }) + ' b']);
+  $('kv-ent').innerHTML = rows.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('');
+  $('ent-meter').style.width = (K > 1 ? st.H / Hmax * 100 : 100) + '%';
+}
+
+function renderLookup() {
+  const { n, s } = st, kIn = $('in-k');
+  kIn.min = n; kIn.max = n * s;
+  let k = Math.round(Number(kIn.value));
+  if (!Number.isFinite(k)) k = n;
+  const i = k - n, K = st.probs.length;
+  const inR = i >= 0 && i < K;
+  const p = inR ? st.probs[i] : 0, cnt = inR ? st.counts[i] : 0n;
+  const le = i < 0 ? 0 : i >= K ? 1 : st.cdf[i];
+  const ge = i <= 0 ? 1 : i > K - 1 ? 0 : 1 - st.cdf[i - 1];
+  $('pk').textContent = 'P(S = ' + k + ') = ' + fmtP(p);
+  $('pk-frac').textContent = inR ? fmtBig(cnt) + ' / ' + fmtBig(st.total) + ' kombinací' : 'Součet mimo rozsah ' + n + ' až ' + n * s;
+  const rows = [['P(S ≤ ' + k + ')', fmtP(Math.max(0, le))], ['P(S ≥ ' + k + ')', fmtP(Math.max(0, ge))],
+    ['Šance zhruba', p > 0 ? '1 : ' + (1 / p).toLocaleString('cs-CZ', { maximumSignificantDigits: 4 }) : '—']];
+  if (act() && inR) rows.push(['Ze simulace', fmtP(st.sim.hist[i] / st.sim.N) + ' (' + nf(st.sim.hist[i]) + '×)']);
+  $('kv-k').innerHTML = rows.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('');
+  st.sel = inR ? k : null;
+  document.querySelectorAll('#tbody tr.sel').forEach(r => r.classList.remove('sel'));
+  if (inR) { const row = $('tbody').children[i]; if (row) row.classList.add('sel'); }
+  drawChart();
+}
+
+function renderTable() {
+  const { n } = st, sim = act();
+  const maxP = Math.max(...st.probs);
+  $('thead').innerHTML = '<tr><th>Součet k</th><th>Počet kombinací</th><th>P(S = k)</th><th>P(S ≤ k)</th>' +
+    (sim ? '<th>Četnost v simulaci</th><th>Rel. četnost</th><th>Odchylka</th>' : '') + '</tr>';
+  const out = [];
+  for (let i = 0; i < st.probs.length; i++) {
+    const p = st.probs[i];
+    let row = `<tr data-k="${i + n}"><td>${i + n}</td><td>${fmtBig(st.counts[i])}</td><td class="bar" style="background-size:${(p / maxP * 100).toFixed(1)}% 70%">${fmtP(p)}</td><td>${fmtP(st.cdf[i])}</td>`;
+    if (sim) {
+      const f = sim.hist[i] / sim.N, d = (f - p) * 100;
+      const ds = (d >= 0 ? '+' : '−') + Math.abs(d).toLocaleString('cs-CZ', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + ' p.b.';
+      row += `<td>${nf(sim.hist[i])}</td><td>${fmtP(f)}</td><td class="${d >= 0 ? 'dev-pos' : 'dev-neg'}">${ds}</td>`;
+    }
+    out.push(row + '</tr>');
+  }
+  $('tbody').innerHTML = out.join('');
+}
+
+/* ---------- graf ---------- */
+let hover = null;
+function niceStep(raw) { const p = 10 ** Math.floor(Math.log10(raw)), f = raw / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
+function drawChart() {
+  const cv = $('chart'), box = $('chart-box');
+  const W = box.clientWidth, H = Math.round(Math.min(360, Math.max(230, W * 0.42)));
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + 'px';
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const css = getComputedStyle(document.documentElement), col = v => css.getPropertyValue(v).trim();
+  const P = st.probs, K = P.length, sim = act();
+  const L = 58, R = 10, T = 12, B = 30, pw = W - L - R, ph = H - T - B;
+  let maxY = Math.max(...P);
+  if (sim) for (let i = 0; i < K; i++) maxY = Math.max(maxY, sim.hist[i] / sim.N);
+  const yStep = niceStep(maxY / 5), yMax = Math.ceil(maxY * 1.04 / yStep) * yStep;
+  const y = v => T + ph - v / yMax * ph, bw = pw / K, x = i => L + i * bw;
+  const dec = Math.max(0, -Math.floor(Math.log10(yStep * 100)));
+  g.font = '11px "IBM Plex Mono", monospace'; g.textBaseline = 'middle';
+  g.lineWidth = 1;
+  for (let v = 0; v <= yMax + 1e-12; v += yStep) {
+    const yy = Math.round(y(v)) + .5;
+    g.strokeStyle = col('--line'); g.beginPath(); g.moveTo(L, yy); g.lineTo(W - R, yy); g.stroke();
+    g.fillStyle = col('--muted'); g.textAlign = 'right';
+    g.fillText((v * 100).toLocaleString('cs-CZ', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + ' %', L - 6, yy);
+  }
+  // teoretické sloupce
+  const th = col('--theory'), ths = col('--theory-soft');
+  if (bw >= 3) {
+    const gap = bw >= 8 ? bw * 0.16 : 0.5;
+    for (let i = 0; i < K; i++) {
+      const top = y(P[i]);
+      g.fillStyle = (st.sel === i + st.n || hover === i) ? th : ths;
+      g.fillRect(x(i) + gap / 2, top, bw - gap, T + ph - top);
+      if (bw >= 8) { g.fillStyle = th; g.fillRect(x(i) + gap / 2, top, bw - gap, 2); }
+    }
+  } else {
+    g.beginPath(); g.moveTo(L, T + ph);
+    for (let i = 0; i < K; i++) g.lineTo(x(i) + bw / 2, y(P[i]));
+    g.lineTo(W - R, T + ph); g.closePath(); g.fillStyle = ths; g.fill();
+    g.beginPath(); for (let i = 0; i < K; i++) g[i ? 'lineTo' : 'moveTo'](x(i) + bw / 2, y(P[i]));
+    g.strokeStyle = th; g.lineWidth = 1.5; g.stroke();
+    const si = st.sel != null ? st.sel - st.n : hover;
+    if (si != null) { g.fillStyle = th; g.fillRect(x(si) + bw / 2 - 1, y(P[si]), 2, T + ph - y(P[si])); }
+  }
+  // simulace
+  if (sim) {
+    const sc = col('--sim');
+    g.strokeStyle = sc; g.fillStyle = sc;
+    if (bw >= 6) {
+      g.lineWidth = 2.5;
+      for (let i = 0; i < K; i++) {
+        const yy = y(sim.hist[i] / sim.N), inset = bw * 0.08;
+        g.beginPath(); g.moveTo(x(i) + inset, yy); g.lineTo(x(i) + bw - inset, yy); g.stroke();
+        if (bw >= 14) { g.beginPath(); g.arc(x(i) + bw / 2, yy, 3, 0, Math.PI * 2); g.fill(); }
+      }
+    } else {
+      g.lineWidth = 1.5; g.beginPath();
+      for (let i = 0; i < K; i++) g[i ? 'lineTo' : 'moveTo'](x(i) + bw / 2, y(sim.hist[i] / sim.N));
+      g.stroke();
+    }
+  }
+  // osa x
+  g.strokeStyle = col('--muted'); g.lineWidth = 1;
+  g.beginPath(); g.moveTo(L, T + ph + .5); g.lineTo(W - R, T + ph + .5); g.stroke();
+  const xStep = Math.max(1, niceStep(K / Math.max(1, pw / 46)));
+  g.fillStyle = col('--muted'); g.textAlign = 'center'; g.textBaseline = 'top';
+  const first = Math.ceil(st.n / xStep) * xStep;
+  for (let k = first; k <= st.n * st.s; k += xStep) {
+    const xx = x(k - st.n) + bw / 2;
+    g.fillRect(Math.round(xx), T + ph, 1, 4);
+    g.fillText(String(k), xx, T + ph + 7);
+  }
+  drawChart.geo = { L, pw, bw, K, T, y };
+}
+function showTip(clientX) {
+  const geo = drawChart.geo; if (!geo) return;
+  const r = $('chart').getBoundingClientRect(), px = clientX - r.left;
+  const i = Math.floor((px - geo.L) / geo.bw);
+  if (i < 0 || i >= geo.K) { hideTip(); return; }
+  if (hover !== i) { hover = i; drawChart(); }
+  const tip = $('tip'), p = st.probs[i];
+  let html = `součet <b>${i + st.n}</b><br>teorie ${fmtP(p)}<br>kombinací ${fmtBig(st.counts[i])}`;
+  if (act()) html += `<br>simulace ${fmtP(st.sim.hist[i] / st.sim.N)} (${nf(st.sim.hist[i])}×)`;
+  tip.innerHTML = html; tip.hidden = false;
+  const tx = Math.min(Math.max(geo.L + (i + .5) * geo.bw, 90), r.width - 90);
+  tip.style.left = tx + 'px'; tip.style.top = Math.max(geo.y(p) - 8, 70) + 'px';
+}
+function hideTip() { $('tip').hidden = true; if (hover !== null) { hover = null; drawChart(); } }
+$('chart').addEventListener('mousemove', e => showTip(e.clientX));
+$('chart').addEventListener('mouseleave', hideTip);
+$('chart').addEventListener('click', e => {
+  showTip(e.clientX);
+  if (hover != null) { $('in-k').value = hover + st.n; renderLookup(); }
+});
+
+/* ---------- kostky ---------- */
+const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+function renderDice(faces, label) {
+  $('dice-label').textContent = label;
+  const show = faces.slice(0, 24), sum = faces.reduce((a, b) => a + b, 0);
+  const html = show.map(f => st.s <= 6
+    ? `<span class="die roll" role="img" aria-label="${f}">${Array.from({ length: 9 }, (_, j) => `<i class="${PIPS[f].includes(j) ? 'on' : ''}"></i>`).join('')}</span>`
+    : `<span class="die n roll">${f}</span>`).join('');
+  $('dice').innerHTML = html + (faces.length > 24 ? `<span class="hint">+ ${faces.length - 24} dalších</span>` : '') +
+    `<span class="sumbadge">součet = <b>${sum}</b></span>`;
+}
+const rollOne = () => Array.from({ length: st.n }, () => 1 + Math.floor(Math.random() * st.s));
+
+/* ---------- simulace ---------- */
+function gammln(x) {
+  const c = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
+  let y = x, t = x + 5.5; t -= (x + 0.5) * Math.log(t);
+  let s = 1.000000000190015; for (const v of c) s += v / ++y;
+  return -t + Math.log(2.5066282746310005 * s / x);
+}
+function gammaQ(a, x) {
+  if (x <= 0) return 1;
+  if (x < a + 1) {
+    let ap = a, sum = 1 / a, del = sum;
+    for (let i = 0; i < 2000; i++) { ap++; del *= x / ap; sum += del; if (Math.abs(del) < Math.abs(sum) * 1e-14) break; }
+    return Math.max(0, 1 - sum * Math.exp(-x + a * Math.log(x) - gammln(a)));
+  }
+  let b = x + 1 - a, c = 1e300, d = 1 / b, h = d;
+  for (let i = 1; i < 2000; i++) {
+    const an = -i * (i - a); b += 2;
+    d = an * d + b; if (Math.abs(d) < 1e-300) d = 1e-300;
+    c = b + an / c; if (Math.abs(c) < 1e-300) c = 1e-300;
+    d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < 1e-14) break;
+  }
+  return Math.exp(-x + a * Math.log(x) - gammln(a)) * h;
+}
+function chiSquare(hist, P, N) {
+  const bins = []; let E = 0, O = 0;
+  for (let i = 0; i < P.length; i++) { E += P[i] * N; O += hist[i]; if (E >= 5) { bins.push([O, E]); E = 0; O = 0; } }
+  if (E > 0 || O > 0) { if (bins.length) { bins[bins.length - 1][0] += O; bins[bins.length - 1][1] += E; } else bins.push([O, E]); }
+  let x2 = 0; for (const [o, e] of bins) x2 += (o - e) ** 2 / e;
+  const df = bins.length - 1;
+  return { x2, df, p: df > 0 ? gammaQ(df / 2, x2 / 2) : 1 };
+}
+
+async function runSim() {
+  const N = Math.round(Number($('in-N').value));
+  if (!(N >= 1 && N <= 1e7)) { $('err').textContent = 'Počet hodů N musí být celé číslo od 1 do 10 000 000.'; return; }
+  if (N * st.n > 1e8) { $('err').textContent = 'Simulace by vyžadovala ' + nf(N * st.n) + ' hodů kostkou. Snižte N nebo počet kostek (limit 100 milionů).'; return; }
+  $('err').textContent = '';
+  const id = ++st.runId, { n, s } = st, K = st.probs.length;
+  const hist = new Float64Array(K);
+  const btn = $('run'); btn.disabled = true; btn.textContent = 'Simuluji…';
+  const chunk = Math.max(1, Math.floor(400000 / n));
+  let done = 0, last = null;
+  while (done < N) {
+    const m = Math.min(chunk, N - done);
+    for (let t = 0; t < m; t++) {
+      let sum = 0; for (let d = 0; d < n; d++) sum += Math.floor(Math.random() * s);
+      hist[sum]++;
+    }
+    done += m;
+    $('prog').style.width = (done / N * 100) + '%';
+    await new Promise(r => setTimeout(r, 0));
+    if (id !== st.runId) return;
+  }
+  last = rollOne();
+  let mean = 0; for (let i = 0; i < K; i++) mean += (i + n) * hist[i]; mean /= N;
+  let vr = 0; for (let i = 0; i < K; i++) vr += hist[i] * (i + n - mean) ** 2; vr /= N;
+  const freq = Array.from(hist, h => h / N);
+  let tvd = 0, maxd = 0, maxk = n;
+  for (let i = 0; i < K; i++) { const d = Math.abs(freq[i] - st.probs[i]); tvd += d; if (d > maxd) { maxd = d; maxk = i + n; } }
+  st.sim = { N, hist, mean, sd: Math.sqrt(vr), H: entropy(freq), tvd: tvd / 2, maxd, maxk, chi: chiSquare(hist, st.probs, N) };
+  btn.disabled = false; btn.textContent = 'Spustit simulaci';
+  renderDice(last, 'Ukázkový hod (' + n + 'k' + s + ')');
+  renderSim(); renderTable(); renderEntropy(); renderLookup();
+}
+
+function renderSim() {
+  const sim = st.sim, { n, s } = st;
+  $('lg-sim').hidden = !act();
+  if (!sim) { $('sim-out').innerHTML = '<p class="hint">Simulace pro aktuální nastavení zatím neproběhla. Zvolte počet hodů a spusťte ji.</p>'; return; }
+  const mean = n * (s + 1) / 2, sd = Math.sqrt(n * (s * s - 1) / 12);
+  const f3 = v => v.toLocaleString('cs-CZ', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  const pv = sim.chi.p;
+  const [cls, verdict] = pv >= 0.05 ? ['good', 'Simulace odpovídá teorii'] : pv >= 0.01 ? ['warn', 'Hraniční shoda'] : ['bad', 'Významná odchylka od teorie'];
+  const pvTxt = pv < 1e-4 ? '< 0,0001' : pv.toLocaleString('cs-CZ', { maximumFractionDigits: 4 });
+  const expectedTVD = Math.sqrt(st.probs.length / (2 * Math.PI * sim.N)); // hrubý řád
+  $('sim-out').innerHTML = `
+    <div class="panel-head" style="margin-bottom:12px"><div><span class="pill ${cls}">${verdict}</span></div>
+      <span class="hint">${nf(sim.N)} hodů · test χ² dobré shody: χ² = ${sim.chi.x2.toLocaleString('cs-CZ', { maximumFractionDigits: 2 })}, ${sim.chi.df} st. volnosti, p = ${pvTxt}</span></div>
+    <div style="overflow-x:auto"><table class="cmp">
+      <thead><tr><th>Veličina</th><th>Teorie</th><th>Simulace</th><th>Rozdíl</th></tr></thead>
+      <tbody>
+        <tr><td>Střední hodnota</td><td class="t">${f3(mean)}</td><td class="m">${f3(sim.mean)}</td><td>${f3(sim.mean - mean)}</td></tr>
+        <tr><td>Směrodatná odchylka</td><td class="t">${f3(sd)}</td><td class="m">${f3(sim.sd)}</td><td>${f3(sim.sd - sd)}</td></tr>
+        <tr><td>Entropie H (bity)</td><td class="t">${f3(st.H)}</td><td class="m">${f3(sim.H)}</td><td>${f3(sim.H - st.H)}</td></tr>
+        <tr><td>Největší odchylka P(S = k)</td><td></td><td class="m">${(sim.maxd * 100).toLocaleString('cs-CZ', { maximumFractionDigits: 3 })} p.b.</td><td>u součtu ${sim.maxk}</td></tr>
+        <tr><td>Celková variační vzdálenost</td><td></td><td class="m">${f3(sim.tvd)}</td><td class="hint">0 = shoda, 1 = opak</td></tr>
+      </tbody></table></div>
+    <p class="hint" style="margin-top:10px">Empirická entropie je odhadnutá z relativních četností. Při malém N vychází typicky o něco nižší než teoretická, protože málo pravděpodobné součty v simulaci nepadnou vůbec. S rostoucím N se odchylky zmenšují zhruba úměrně 1/√N.</p>`;
+}
+
+/* ---------- vstupy ---------- */
+function readParams() {
+  const n = Math.round(Number($('in-n').value)), s = Math.round(Number($('in-s').value));
+  if (!Number.isFinite(n) || n < 1) return 'Počet kostek musí být alespoň 1.';
+  if (!Number.isFinite(s) || s < 2) return 'Počet stěn musí být alespoň 2.';
+  if (n > 100) return 'Počet kostek je omezen na 100.';
+  if (s > 1000) return 'Počet stěn je omezen na 1000.';
+  if (n * (s - 1) + 1 > 20001) return 'Kombinace dává ' + nf(n * (s - 1) + 1) + ' různých součtů; limit je 20 001. Snižte n nebo s.';
+  return { n, s };
+}
+function apply(autoSim) {
+  const r = readParams();
+  if (typeof r === 'string') { $('err').textContent = r; return; }
+  $('err').textContent = '';
+  const changed = r.n !== st.n || r.s !== st.s || !st.counts.length;
+  st.n = r.n; st.s = r.s;
+  $('notation').textContent = st.n + 'k' + st.s;
+  document.querySelectorAll('#presets .chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.n == st.n && c.dataset.s == st.s));
+  if (!changed) return;
+  st.runId++; st.sim = null; $('prog').style.width = '0';
+  $('run').disabled = false; $('run').textContent = 'Spustit simulaci';
+  compute();
+  const kv = Math.round(Number($('in-k').value));
+  if (!(kv >= st.n && kv <= st.n * st.s)) $('in-k').value = Math.round(st.n * (st.s + 1) / 2);
+  renderStats(); renderEntropy(); renderSim(); renderTable(); renderLookup();
+  renderDice(rollOne(), 'Ukázkový hod (' + st.n + 'k' + st.s + ')');
+  if (autoSim && st.simOn && st.n * Number($('in-N').value) <= 2e6) runSim();
+}
+let tmr;
+['in-n', 'in-s'].forEach(id => $(id).addEventListener('input', () => { clearTimeout(tmr); tmr = setTimeout(() => apply(true), 300); }));
+$('in-k').addEventListener('input', renderLookup);
+$('run').addEventListener('click', runSim);
+function setSim(on) {
+  st.simOn = on;
+  $('sim-toggle').checked = on;
+  $('sim-state').textContent = on ? 'zap.' : 'vyp.';
+  $('sim-panel').hidden = !on;
+  try { localStorage.setItem('simOn', on ? '1' : '0'); } catch (e) {}
+  if (!on && $('run').disabled) { st.runId++; st.sim = null; $('prog').style.width = '0'; $('run').disabled = false; $('run').textContent = 'Spustit simulaci'; renderSim(); }
+  renderSim(); renderTable(); renderEntropy(); renderLookup();
+  if (on && !st.sim && st.n * Number($('in-N').value) <= 2e6) runSim();
+}
+$('sim-toggle').addEventListener('change', e => setSim(e.target.checked));
+try { if (localStorage.getItem('simOn') === '0') { st.simOn = false; $('sim-toggle').checked = false; $('sim-state').textContent = 'vyp.'; $('sim-panel').hidden = true; } } catch (e) {}
+$('once').addEventListener('click', () => renderDice(rollOne(), 'Jeden hod'));
+$('tbody').addEventListener('click', e => { const tr = e.target.closest('tr'); if (tr) { $('in-k').value = tr.dataset.k; renderLookup(); } });
+
+[[1, 6], [2, 6], [3, 6], [5, 6], [10, 6], [2, 20], [3, 10], [20, 2]].forEach(([n, s]) => {
+  const b = document.createElement('button'); b.className = 'chip'; b.type = 'button';
+  b.dataset.n = n; b.dataset.s = s; b.textContent = n + 'k' + s;
+  b.addEventListener('click', () => { $('in-n').value = n; $('in-s').value = s; apply(true); });
+  $('presets').appendChild(b);
+});
+[1000, 10000, 100000, 1000000].forEach(N => {
+  const b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.textContent = nf(N);
+  b.addEventListener('click', () => { $('in-N').value = N; document.querySelectorAll('#npresets .chip').forEach(c => c.setAttribute('aria-pressed', c === b)); });
+  if (N === 10000) b.setAttribute('aria-pressed', 'true');
+  $('npresets').appendChild(b);
+});
+$('in-N').addEventListener('input', () => document.querySelectorAll('#npresets .chip').forEach(c => c.setAttribute('aria-pressed', c.textContent === nf(Number($('in-N').value)))));
+
+let rz; new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(drawChart); }).observe($('chart-box'));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawChart);
+new MutationObserver(drawChart).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+document.fonts && document.fonts.ready.then(drawChart);
+
+apply(true);
+})();
+</script>
+</body>
+</html>
