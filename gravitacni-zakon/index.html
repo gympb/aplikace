@@ -135,6 +135,12 @@ button.primary:hover { filter: brightness(1.08); }
 .chip.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .chip .dot { width: 10px; height: 10px; }
 .chip .m { color: var(--muted); }
+.pairbtns { display: flex; flex-wrap: wrap; gap: 6px; }
+.pairbtns button { display: inline-flex; align-items: center; gap: 7px; font: 500 14px var(--body); padding: 7px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--paper); color: var(--fg); cursor: pointer; }
+.pairbtns button:hover { border-color: var(--accent); }
+.pairbtns button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); font-weight: 600; }
+.pairbtns .role { font: 500 12px var(--mono); color: var(--accent); }
+.pairhint { margin: 0; font-size: 12px; color: var(--muted); }
 
 .theory { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
 .card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
@@ -197,10 +203,11 @@ button.primary:hover { filter: brightness(1.08); }
       </div>
 
       <div class="ctrl">
-        <div class="ctrl-head"><span class="t">Druhé těleso dvojice</span><output id="rOut"></output></div>
+        <div class="ctrl-head"><span class="t">Dvojice pro výpočet F</span><output id="rOut"></output></div>
         <p id="pairEmpty" class="empty" hidden>Na ploše musí být alespoň dvě tělesa.</p>
         <div id="pairEdit" class="ctrl" style="gap:8px">
-          <div class="namerow" style="gap:8px"><span id="pairA" hidden></span><select id="partner" aria-label="Druhé těleso dvojice"></select></div>
+          <span id="pairA" hidden></span><div class="pairbtns" id="pairBtns" role="group" aria-label="Dvojice těles pro výpočet síly"></div>
+          <p class="pairhint" id="pairHint"></p>
           <div class="sci"><span>r =</span><input type="text" class="mant" id="rMant" inputmode="decimal" aria-label="Vzdálenost, číslo"><span>· 10^</span><input type="number" class="exp" id="rExp" step="1" aria-label="Vzdálenost, exponent"><span>m</span></div>
           <div class="minis"><button data-rk="0.5">r ÷2</button><button data-rk="2">r ×2</button><button data-rk="3">r ×3</button><button id="saveF0">uložit F₀</button></div>
           <div class="meta" id="rMeta"></div>
@@ -319,7 +326,7 @@ function distFriendly(r, html = true){
 }
 
 /* ---------- stav ---------- */
-let bodies = [], nextId = 1, sel = null, partner = null;
+let bodies = [], nextId = 1, sel = null, partner = null, lastSel = null;
 const view = {cx: 0, cy: 0, mpp: 1e9};
 let Fref = 1, running = false, daysPerSec = 30, elapsed = 0, F0 = null, drag = null, structDirty = true;
 const show = {partial: true, result: true, dist: true, trails: true};
@@ -624,7 +631,7 @@ document.addEventListener('keydown', e => {
 
 /* ---------- panel ---------- */
 const bName = $('#bName'), mMant = $('#mMant'), mExp = $('#mExp'), mSlider = $('#mSlider');
-const rMant = $('#rMant'), rExp = $('#rExp'), partnerSel = $('#partner');
+const rMant = $('#rMant'), rExp = $('#rExp');
 const parseNum = s => parseFloat(String(s).replace(/\s/g, '').replace(',', '.').replace('−', '-'));
 
 function setSciInputs(mantEl, expEl, v, force){
@@ -642,6 +649,8 @@ function onSelect(){
 function ensurePartner(){
   const b = byId(sel);
   if (!b || bodies.length < 2){ partner = null; return; }
+  // když se vybere druhé těleso dvojice, dvojice zůstane (role se jen prohodí)
+  if (partner === sel && lastSel && lastSel !== sel && byId(lastSel)){ partner = lastSel; return; }
   if (!partner || partner === sel || !byId(partner)){
     let best = null, bd = Infinity;
     for (const o of bodies) if (o !== b){ const d = Math.hypot(o.x - b.x, o.y - b.y); if (d < bd){ bd = d; best = o; } }
@@ -654,13 +663,14 @@ function buildStructure(){
   const b = byId(sel);
   $('#bodyEmpty').hidden = !!b; $('#bodyEdit').hidden = !b; $('#delBody').hidden = !b;
   if (b){ $('#bDot').style.background = col(b); }
-  // partner select
-  partnerSel.innerHTML = bodies.filter(o => o.id !== sel).map(o => `<option value="${o.id}">${esc(o.name)}</option>`).join('');
-  if (partner) partnerSel.value = partner;
+  // přepínače dvojice: zapnutá jsou vždy právě dvě tělesa (m₁ = vybrané, m₂ = druhé)
+  $('#pairBtns').innerHTML = bodies.map(o => { const on = o.id === sel || o.id === partner;
+    return `<button type="button" data-id="${o.id}" aria-pressed="${on}"><span class="dot" style="background:${col(o)}"></span>${esc(o.name)}${on ? `<span class="role">${o.id === sel ? 'm₁' : 'm₂'}</span>` : ''}</button>`; }).join('');
+  $('#pairHint').textContent = bodies.length > 2 ? 'Klepnutím na těleso ho zařadíte do dvojice místo toho, které v ní je déle.' : '';
   $('#pairEmpty').hidden = !!(b && partner); $('#pairEdit').hidden = !(b && partner);
   // chips
   $('#chips').innerHTML = bodies.map(o => `<button class="chip${o.id === sel ? ' on' : ''}" data-id="${o.id}"><span class="dot" style="background:${col(o)}"></span>${esc(o.name)}<span class="m">${num(o.m, 3)} kg</span></button>`).join('');
-  structDirty = false;
+  structDirty = false; lastSel = sel;
 }
 const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
@@ -772,7 +782,12 @@ document.querySelectorAll('[data-rk]').forEach(btn => btn.addEventListener('clic
   setPairDist(Math.hypot(o.x - b.x, o.y - b.y) * +btn.dataset.rk);
   setSciInputs(rMant, rExp, Math.hypot(o.x - b.x, o.y - b.y), true);
 }));
-partnerSel.addEventListener('change', () => { partner = +partnerSel.value; });
+$('#pairBtns').addEventListener('click', e => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  const id = +btn.dataset.id; if (id === sel) return;
+  // klepnuté těleso se stane m₁ (vybraným), dosavadní vybrané zůstane ve dvojici jako m₂
+  partner = sel; sel = id; onSelect();
+});
 $('#saveF0').addEventListener('click', () => {
   const b = byId(sel), o = byId(partner); if (!b || !o) return;
   const r = Math.hypot(o.x - b.x, o.y - b.y);
