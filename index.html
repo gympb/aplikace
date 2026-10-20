@@ -68,9 +68,12 @@ a{color:inherit}
 .count{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,310px),1fr));gap:20px}
 .card{display:flex;flex-direction:column;border:1px solid var(--line);background:var(--panel);border-radius:12px;overflow:hidden;min-width:0}
-.card-art{height:120px;background:var(--bg);display:flex;align-items:center;justify-content:center;font:600 24px/1.2 var(--f-mono);
+.card-art{height:120px;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;font:600 24px/1.2 var(--f-mono);
   color:var(--muted);text-align:center;padding:0 16px;position:relative;border-bottom:1px solid var(--line)}
 .card.ready .card-art{background:var(--accent-soft);color:var(--accent)}
+.card-art.has-img{padding:0;background:var(--bg);height:auto;aspect-ratio:8/3;max-width:100%}
+.card-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.card-art.has-img small{z-index:1;background:var(--panel);padding:3px 8px;border-radius:999px;left:10px;top:10px;box-shadow:0 1px 2px rgba(0,0,0,.15)}
 .card-art small{position:absolute;left:14px;top:12px;font:600 11px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .card-body{display:grid;gap:8px;padding:16px 18px 18px;flex:1;align-content:start}
 .card h3{font:700 22px/1.2 var(--f-display);letter-spacing:.04em}
@@ -190,7 +193,7 @@ function render(){
   $('grid').innerHTML=list.length?list.map(a=>{
     const url=a.odkaz||`${a.slug}/`, local=!a.odkaz, prep=a.stav==='priprava';
     return `<article class="card ${prep?'':'ready'}">
-      <div class="card-art" aria-hidden="true"><small>${esc(a.predmet.join(' · '))}</small>${esc(a.motiv||a.nazev)}</div>
+      <div class="card-art${a.obrazek ? ' has-img' : ''}" aria-hidden="true">${a.obrazek ? `<img src="${esc(a.slug)}/${esc(a.obrazek)}" alt="" loading="lazy">` : esc(a.motiv||a.nazev)}<small>${esc(a.predmet.join(' · '))}</small></div>
       <div class="card-body">
         <h3>${esc(a.nazev)}</h3>
         <p>${esc(a.popis)}</p>

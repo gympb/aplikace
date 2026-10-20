@@ -15,6 +15,7 @@ caesarova-sifra/    jedna složka = jedna aplikace
   index.html        aplikace
   nahled.png        náhled 1200 × 630 px pro sdílení odkazu
   qr.png            QR kód na adresu aplikace
+  karta.svg         ilustrace na kartě v katalogu
   fonty/            písma aplikace (pokud používá jiná než katalog)
 ```
 
@@ -44,7 +45,8 @@ caesarova-sifra/    jedna složka = jedna aplikace
 | `slug` | název složky aplikace |
 | `predmet`, `rocnik` | podle nich fungují filtry v katalogu |
 | `temata` | slova, podle kterých aplikaci najde hledání |
-| `motiv` | krátký text na barevné ploše karty |
+| `obrazek` | ilustrace karty ve složce aplikace, např. `karta.svg` (poměr stran 8 : 3) |
+| `motiv` | krátký text na kartě, pokud aplikace nemá ilustraci |
 | `stav` | `nove`, `overeno` (ověřeno ve výuce), `priprava` (karta bez odkazu), `archiv` (skryto z katalogu, adresa dál funguje) |
 | `odkaz` | volitelné: adresa aplikace mimo tento repozitář |
 
