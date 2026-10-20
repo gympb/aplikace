@@ -47,7 +47,7 @@ caesarova-sifra/    jedna složka = jedna aplikace
 | `temata` | slova, podle kterých aplikaci najde hledání |
 | `obrazek` | ilustrace karty ve složce aplikace, např. `karta.svg` (poměr stran 8 : 3) |
 | `motiv` | krátký text na kartě, pokud aplikace nemá ilustraci |
-| `stav` | `nove`, `overeno` (ověřeno ve výuce), `priprava` (karta bez odkazu), `archiv` (skryto z katalogu, adresa dál funguje) |
+| `stav` | `nove`, `priprava` (karta bez odkazu), `archiv` (skryto z katalogu, adresa dál funguje) |
 | `odkaz` | volitelné: adresa aplikace mimo tento repozitář |
 
 Po uložení se změna do minuty objeví na webu.

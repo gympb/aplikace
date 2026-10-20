@@ -43,7 +43,7 @@ a{color:inherit}
 @media (max-width:820px){.hero .in{grid-template-columns:minmax(0,1fr)}}
 .hero h1{font-size:clamp(40px,7vw,76px);line-height:.98;letter-spacing:-.04em}
 .hero p{margin:0;max-width:52ch}
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:2px solid var(--ink);margin-top:20px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:2px solid var(--ink);margin-top:20px}
 .stats div{padding:10px 12px 0 0}
 .stats div+div{padding-left:12px;border-left:1px solid var(--line)}
 .stats b{display:block;font:700 30px/1.1 var(--f-display);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
@@ -139,10 +139,8 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
     <h1>gympb apps</h1>
   </div>
   <div>
-    <p>Interaktivní aplikace, které vznikly pro výuku na našem gymnáziu. Fungují v prohlížeči na počítači, tabletu i interaktivním panelu, bez přihlášení a bez instalace.</p>
     <div class="stats">
       <div><b id="st-all">–</b><span>aplikací</span></div>
-      <div><b id="st-ready">–</b><span>ověřeno ve výuce</span></div>
       <div><b id="st-subj">–</b><span>předměty</span></div>
     </div>
   </div>
@@ -170,10 +168,9 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
   <ol class="steps">
     <li><div class="num">1</div><b>Návrh</b><span>Učitel popíše, co má aplikace ukázat a pro který ročník.</span></li>
     <li><div class="num">2</div><b>Prototyp</b><span>Vznikne první verze, kterou si učitel vyzkouší sám.</span></li>
-    <li><div class="num">3</div><b>Ověření ve výuce</b><span>Aplikace se použije v hodině a podle zkušenosti se upraví.</span></li>
-    <li><div class="num">4</div><b>Kontrola</b><span>ICT metodik ověří, že splňuje pravidla katalogu.</span></li>
-    <li><div class="num">5</div><b>Zveřejnění</b><span>Aplikace dostane adresu, kartu v katalogu a QR kód.</span></li>
-    <li><div class="num">6</div><b>Údržba</b><span>Chyby a náměty se hlásí přes školní helpdesk.</span></li>
+    <li><div class="num">3</div><b>Kontrola</b><span>ICT metodik ověří, že splňuje pravidla katalogu.</span></li>
+    <li><div class="num">4</div><b>Zveřejnění</b><span>Aplikace dostane adresu, kartu v katalogu a QR kód.</span></li>
+    <li><div class="num">5</div><b>Údržba</b><span>Chyby a náměty se hlásí přes školní helpdesk.</span></li>
   </ol>
   <div class="rules">
     <div><b>Bez osobních údajů.</b> Aplikace nesbírají data žáků, nevyžadují přihlášení a neobsahují měření návštěvnosti.</div>
@@ -189,7 +186,7 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
 
 <script>
 const $=id=>document.getElementById(id);
-const ST={nove:'Nové',overeno:'Ověřeno ve výuce',priprava:'V přípravě'};
+const ST={nove:'Nové',priprava:'V přípravě'};
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const datum=d=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');return m?`${+m[3]}. ${+m[2]}. ${m[1]}`:'';};
@@ -228,9 +225,8 @@ fetch('katalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.sta
   SUBJ=['Vše',...[...new Set(APPS.flatMap(a=>a.predmet))].sort((a,b)=>a.localeCompare(b,'cs'))];
   GRADES=['Vše',...[...new Set(APPS.flatMap(a=>a.rocnik))].sort().map(String)];
   const pl=(n,a,b,c)=>n===1?a:(n>=2&&n<=4?b:c);
-  const nA=APPS.length, nR=APPS.filter(a=>a.stav==='overeno').length, nS=SUBJ.length-1;
+  const nA=APPS.length, nS=SUBJ.length-1;
   $('st-all').textContent=nA; $('st-all').nextElementSibling.textContent=pl(nA,'aplikace','aplikace','aplikací');
-  $('st-ready').textContent=nR;
   $('st-subj').textContent=nS; $('st-subj').nextElementSibling.textContent=pl(nS,'předmět','předměty','předmětů');
   if(d.aktualizace)$('upd').textContent=`Katalog aktualizován ${datum(d.aktualizace)}.`;
   chips('f-subj',SUBJ,'s'); chips('f-grade',GRADES,'g'); render();
