@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Programové a datové soubory</title>
+<meta name="description" content="Třídicí hra: rozřaď 20 souborů podle přípony a účelu na programové a datové.">
+<meta property="og:title" content="Programové a datové soubory">
+<meta property="og:image" content="nahled.png">
+<style>
+:root{--navy:#123b70;--blue:#eaf5ff;--green:#e9f8ef;--green2:#279766;--line:#cbd9e8;--ink:#172b4d;--muted:#5c6b80;--red:#b42318}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(135deg,#f4f9ff,#f9fcff);color:var(--ink)}
+main{max-width:1200px;margin:auto;padding:24px}
+header{display:flex;gap:16px;align-items:center;margin-bottom:18px} .logo{font-size:42px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:10px}
+h1{margin:0;color:var(--navy);font-size:clamp(1.6rem,3vw,2.5rem)} .sub{margin:6px 0 0;color:var(--muted)}
+.instructions{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 18px;margin-bottom:18px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.score{font-weight:700;background:#fff;border:1px solid var(--line);border-radius:999px;padding:10px 15px}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:11px 16px;cursor:pointer;background:var(--navy);color:white}
+button.secondary{background:#e6eef8;color:var(--navy)} button:focus-visible,.card:focus-visible,.dropzone:focus-visible{outline:3px solid #f59e0b;outline-offset:3px}
+.board{display:grid;grid-template-columns:minmax(220px,1fr) minmax(220px,1fr) minmax(220px,1fr);gap:14px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;min-height:410px;display:flex;flex-direction:column}
+.panel h2{font-size:1.12rem;margin:0;padding:15px;background:#eaf3ff;color:var(--navy)}
+.panel.program h2{background:#d9f5e5;color:#155b3b}.panel.data h2{background:#d9edff;color:#124b83}
+.cards{display:flex;flex-wrap:wrap;align-content:flex-start;gap:9px;padding:12px;min-height:340px}
+.dropzone{flex:1;min-height:330px;border:2px dashed #aabbd0;border-radius:12px;margin:12px;padding:12px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:9px;transition:.15s}
+.program .dropzone{background:#f4fcf7;border-color:#7cc9a1}.data .dropzone{background:#f4faff;border-color:#7dbcf0}
+.dropzone.over{background:#fff4d6;border-color:#d97706}
+.card{border:1px solid #d6e0eb;background:white;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:9px;min-width:130px;max-width:100%;cursor:grab;box-shadow:0 2px 5px #163b6810;user-select:none}
+.card:active{cursor:grabbing}.fileicon{font-size:23px}.filename{font-weight:650;font-size:.92rem;overflow-wrap:anywhere}
+.card.correct{border:2px solid #23945e;background:#effbf3}.card.wrong{border:2px solid #d92d20;background:#fff3f1}
+.feedback{margin-top:16px;padding:14px 16px;border-radius:14px;background:#fff;border:1px solid var(--line);min-height:54px}
+.feedback.good{border-color:#72c79b;background:#f0fbf4}.feedback.bad{border-color:#f3aaa5;background:#fff5f4}
+.back{display:inline-block;margin-bottom:12px;font-weight:600;font-size:.9rem;color:var(--muted);text-decoration:none}.back:hover{color:var(--navy)}
+footer a{color:inherit}
+footer{margin-top:15px;color:var(--muted);font-size:.92rem;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(max-width:850px){.board{grid-template-columns:1fr}.panel{min-height:auto}.cards{min-height:100px}.dropzone{min-height:150px}}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="../">← Všechny školní aplikace</a>
+<header><div class="logo">📁</div><div><h1>Programové a datové soubory</h1><p class="sub">Třídicí hra · 20 kartiček · Informatika</p></div></header>
+<div class="instructions"><strong>Úkol:</strong> Přetáhni každou kartičku do správného sloupce. Programové soubory obsahují instrukce nebo programový kód. Datové soubory obsahují informace, se kterými pracujeme. Rozhoduj se podle přípony a účelu souboru. Pokud přetahování nefunguje, klikni na kartičku a potom na cílový sloupec.</div>
+<div class="topbar"><div class="score" id="score" aria-live="polite">Zařazeno: 0 / 20</div><div><button class="secondary" id="check">Zkontrolovat</button> <button id="reset">Začít znovu</button></div></div>
+<section class="board" aria-label="Třídicí plocha">
+<div class="panel"><h2>🗂️ Soubory k přiřazení (20)</h2><div class="cards" id="source" data-zone="source" aria-label="Nepřiřazené soubory"></div></div>
+<div class="panel program"><h2>⚙️ Programové soubory</h2><div class="dropzone" id="program" data-zone="program" tabindex="0" aria-label="Sloupec programové soubory"></div></div>
+<div class="panel data"><h2>📄 Datové soubory</h2><div class="dropzone" id="data" data-zone="data" tabindex="0" aria-label="Sloupec datové soubory"></div></div>
+</section>
+<div id="feedback" class="feedback" role="status" aria-live="polite">Začni přetahovat kartičky do sloupců. Můžeš také kliknout na kartičku a pak vybrat sloupec.</div>
+<footer><span>Tip: Přípona napovídá, ale nemusí sama zaručit skutečný obsah souboru.</span><span>Hodně štěstí! 🙂 · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a></span></footer>
+</main>
+<script>
+const files = [
+ {name:"referat.docx",type:"data"},
+ {name:"fotka.jpg",type:"data"},
+ {name:"tabulka.xlsx",type:"data"},
+ {name:"prezentace.pptx",type:"data"},
+ {name:"navod.pdf",type:"data"},
+ {name:"hudba.mp3",type:"data"},
+ {name:"hra.exe",type:"program"},
+ {name:"skript.py",type:"program"},
+ {name:"video.mp4",type:"data"},
+ {name:"poznamky.txt",type:"data"},
+ {name:"aplikace.com",type:"program"},
+ {name:"editor.js",type:"program"},
+ {name:"logo.png",type:"data"},
+ {name:"zaloha.zip",type:"data"},
+ {name:"instalator.msi",type:"program"},
+ {name:"stranka.html",type:"data"},
+ {name:"makro.vbs",type:"program"},
+ {name:"databaze.csv",type:"data"},
+ {name:"prikazy.bat",type:"program"},
+ {name:"zvuky.wav",type:"data"}
+];
+const source=document.getElementById('source'), prog=document.getElementById('program'), data=document.getElementById('data');
+const feedback=document.getElementById('feedback'), score=document.getElementById('score');
+let selected=null, checked=false;
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function render(){
+ source.innerHTML='';prog.innerHTML='';data.innerHTML='';selected=null;checked=false;
+ shuffle([...files]).forEach(f=>{const el=document.createElement('div');el.className='card';el.draggable=true;el.tabIndex=0;el.dataset.name=f.name;el.dataset.type=f.type;el.innerHTML=`<span class="filename">${f.name}</span>`;
+ el.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',f.name);e.dataTransfer.effectAllowed='move'});
+ el.addEventListener('click',()=>{document.querySelectorAll('.card').forEach(c=>c.style.outline='');selected=el;el.style.outline='3px solid #f59e0b';feedback.className='feedback';feedback.textContent='Vybráno: '+f.name+'. Nyní klikni na sloupec, kam chceš kartičku zařadit.'});
+ el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click()}});
+ source.appendChild(el);
+ });
+ updateScore();feedback.className='feedback';feedback.textContent='Začni přetahovat kartičky do sloupců. Můžeš také kliknout na kartičku a pak vybrat sloupec.';
+}
+function move(card,zone){zone.appendChild(card);card.style.outline='';selected=null;card.classList.remove('correct','wrong');if(checked)checkAnswers();updateScore()}
+function checkAnswers(){
+ checked=true;let correct=0,total=0;
+ document.querySelectorAll('.card').forEach(c=>{const parent=c.parentElement.id;if(parent==='source'){c.classList.remove('correct','wrong');return}total++;const ok=parent===c.dataset.type;c.classList.toggle('correct',ok);c.classList.toggle('wrong',!ok);if(ok)correct++});
+ score.textContent=`Správně: ${correct} / ${files.length} · Zařazeno: ${total} / ${files.length}`;
+ feedback.className='feedback '+(correct===files.length?'good':'bad');
+ if(correct===files.length&&total===files.length)feedback.textContent='Výborně! Všechny soubory jsou správně zařazené. Pamatuj: skript obsahuje programový kód, zatímco dokumenty, obrázky, zvuk a video jsou datové soubory.';
+ else feedback.textContent=`Zatím máš správně ${correct} z ${files.length}. Zelené kartičky jsou správně, červené přesuň do druhého sloupce. Nepřiřazené kartičky ještě doplň.`;
+}
+function updateScore(){const all=[...document.querySelectorAll('.card')];const placed=all.filter(c=>c.parentElement.id!=='source');const right=placed.filter(c=>c.parentElement.id===c.dataset.type).length;
+ // počet správných se ukáže až po kliknutí na „Zkontrolovat“
+ score.textContent=checked?`Správně: ${right} / ${files.length} · Zařazeno: ${placed.length} / ${files.length}`:`Zařazeno: ${placed.length} / ${files.length}`}
+// posluchače sloupců stačí přidat jednou (dříve se při každém „Začít znovu“ přidávaly znovu)
+[source,prog,data].forEach(zone=>{
+ zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over')});
+ zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+ zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('over');const name=e.dataTransfer.getData('text/plain');const card=[...document.querySelectorAll('.card')].find(c=>c.dataset.name===name);if(card)move(card,zone)});
+ zone.addEventListener('click',e=>{if(selected&&e.target===zone)move(selected,zone)});
+});
+document.getElementById('check').addEventListener('click',checkAnswers);
+document.getElementById('reset').addEventListener('click',render);
+render();
+</script>
+</body></html>
