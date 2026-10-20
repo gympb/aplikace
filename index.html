@@ -191,10 +191,14 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const datum=d=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');return m?`${+m[3]}. ${+m[2]}. ${m[1]}`:'';};
 let APPS=[], SUBJ=[], GRADES=[];
+// ročník: číslo (1–4) pro čtyřleté studium, nebo název třídy osmiletého studia (prima … oktáva)
+const OSMILETE=['prima','sekunda','tercie','kvarta','kvinta','sexta','septima','oktáva'];
+const gLabel=g=>/^\d+$/.test(String(g))?g+'. ročník':String(g).charAt(0).toUpperCase()+String(g).slice(1);
+const gOrder=g=>/^\d+$/.test(String(g))?Number(g):100+OSMILETE.indexOf(String(g).toLowerCase());
 const f={s:'Vše',g:'Vše',q:''};
 
 function chips(el,list,key){
-  $(el).innerHTML=list.map(v=>`<button class="chip" data-v="${esc(v)}" aria-pressed="${String(f[key])===String(v)}">${esc(v==='Vše'?v:key==='g'?v+'. ročník':v)}</button>`).join('');
+  $(el).innerHTML=list.map(v=>`<button class="chip" data-v="${esc(v)}" aria-pressed="${String(f[key])===String(v)}">${esc(v==='Vše'?v:key==='g'?gLabel(v):v)}</button>`).join('');
   $(el).onclick=e=>{const b=e.target.closest('button');if(!b)return;f[key]=b.dataset.v;chips(el,list,key);render();};
 }
 function render(){
@@ -209,7 +213,7 @@ function render(){
       <div class="card-body">
         <h3>${esc(a.nazev)}</h3>
         <p>${esc(a.popis)}</p>
-        <div class="meta">${a.rocnik.map(g=>`<span class="tag">${g}. ročník</span>`).join('')}${a.autor?`<span class="tag">${esc(a.autor)}</span>`:''}${a.aktualizace?`<span class="tag">${datum(a.aktualizace)}</span>`:''}</div>
+        <div class="meta">${a.rocnik.map(g=>`<span class="tag">${esc(gLabel(g))}</span>`).join('')}${a.autor?`<span class="tag">${esc(a.autor)}</span>`:''}${a.aktualizace?`<span class="tag">${datum(a.aktualizace)}</span>`:''}</div>
       </div>
       <div class="card-foot">
         <span class="status ${prep?'prep':a.stav==='nove'?'new':''}">${ST[a.stav]||''}</span>
@@ -223,7 +227,7 @@ function render(){
 fetch('katalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(d=>{
   APPS=(d.aplikace||[]).filter(a=>a.stav!=='archiv');
   SUBJ=['Vše',...[...new Set(APPS.flatMap(a=>a.predmet))].sort((a,b)=>a.localeCompare(b,'cs'))];
-  GRADES=['Vše',...[...new Set(APPS.flatMap(a=>a.rocnik))].sort().map(String)];
+  GRADES=['Vše',...[...new Set(APPS.flatMap(a=>a.rocnik.map(String)))].sort((a,b)=>gOrder(a)-gOrder(b))];
   const pl=(n,a,b,c)=>n===1?a:(n>=2&&n<=4?b:c);
   const nA=APPS.length, nS=SUBJ.length-1;
   $('st-all').textContent=nA; $('st-all').nextElementSibling.textContent=pl(nA,'aplikace','aplikace','aplikací');

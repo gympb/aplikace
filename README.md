@@ -43,7 +43,7 @@ caesarova-sifra/    jedna složka = jedna aplikace
 | Pole | Význam |
 |---|---|
 | `slug` | název složky aplikace |
-| `predmet`, `rocnik` | podle nich fungují filtry v katalogu |
+| `predmet`, `rocnik` | podle nich fungují filtry v katalogu; ročník je číslo 1–4 (čtyřleté studium) nebo název třídy osmiletého studia, např. `"tercie"` |
 | `temata` | slova, podle kterých aplikaci najde hledání |
 | `obrazek` | ilustrace karty ve složce aplikace, např. `karta.svg` (poměr stran 8 : 3) |
 | `motiv` | krátký text na kartě, pokud aplikace nemá ilustraci |
