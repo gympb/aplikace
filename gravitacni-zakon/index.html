@@ -29,6 +29,7 @@ html,body{margin:0}
   --accent: #1f4fd6;
   --accent-soft: #e3eafc;
   --vec: #e0661b;
+  --vel: #178a4c;
   --b-sun: #e3a512; --b-earth: #2b8fd6; --b-moon: #7f8a98; --b-mars: #c0532a;
   --b-teal: #0e9a7b; --b-violet: #7b61ff; --b-rose: #c2335e;
   --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
@@ -39,7 +40,7 @@ html,body{margin:0}
   :root:not([data-theme="light"]) {
     --bg: #0f141c; --paper: #151c27; --grid: #1f2836; --grid-strong: #2e3a4c;
     --fg: #e6ebf2; --muted: #93a0b2; --line: #2a3444;
-    --accent: #6f95ff; --accent-soft: #1d2a4a; --vec: #ff9a4d;
+    --accent: #6f95ff; --accent-soft: #1d2a4a; --vec: #ff9a4d; --vel: #4fd18a;
     --b-sun: #f4c03a; --b-earth: #4fa6ff; --b-moon: #b4bdc9; --b-mars: #e2704a;
     --b-teal: #3fd3ae; --b-violet: #a08cff; --b-rose: #ff6f96;
     color-scheme: dark;
@@ -48,7 +49,7 @@ html,body{margin:0}
 :root[data-theme="dark"] {
   --bg: #0f141c; --paper: #151c27; --grid: #1f2836; --grid-strong: #2e3a4c;
   --fg: #e6ebf2; --muted: #93a0b2; --line: #2a3444;
-  --accent: #6f95ff; --accent-soft: #1d2a4a; --vec: #ff9a4d;
+  --accent: #6f95ff; --accent-soft: #1d2a4a; --vec: #ff9a4d; --vel: #4fd18a;
   --b-sun: #f4c03a; --b-earth: #4fa6ff; --b-moon: #b4bdc9; --b-mars: #e2704a;
   --b-teal: #3fd3ae; --b-violet: #a08cff; --b-rose: #ff6f96;
   color-scheme: dark;
@@ -150,6 +151,7 @@ button.primary:hover { filter: brightness(1.08); }
 .card p { margin: 0; color: var(--muted); max-width: 65ch; }
 .card p b { color: var(--fg); font-weight: 600; }
 .eq { font-family: var(--mono); font-size: 14px; background: var(--bg); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: nowrap; line-height: 1.9; }
+#vEq { white-space: normal; }
 .eq .res { color: var(--vec); font-weight: 500; font-size: 16px; }
 .legend { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 14px; }
 .rows { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 14px; }
@@ -197,7 +199,7 @@ button.primary:hover { filter: brightness(1.08); }
     <div><span class="label">Poměr <i>F</i> / <i>F</i>₀</span><b id="rRatio">–</b><small id="rRatioSub">uložte F₀ v panelu</small></div>
     <div><span class="label">Výsledná síla</span><b id="rRes">–</b><small>na vybrané těleso</small></div>
     <div><span class="label">Zrychlení <i>a</i></span><b id="rA">–</b><small>a = F / m</small></div>
-    <div><span class="label">Rychlost <i>v</i></span><b id="rV">–</b><small>vybraného tělesa</small></div>
+    <div id="rVbox" title="Bez této rychlosti by těleso spadlo na těžší těleso. Do strany letí tak rychle, že kolem něj neustále padá po kruhové dráze."><span class="label" id="rVlab">Rychlost <i>v</i></span><b id="rV">–</b><small id="rVsub">vybraného tělesa</small></div>
   </section>
 
   <div class="traces"><span class="label">Tělesa na ploše:</span><span class="traces" id="chips" style="min-height:0"></span></div>
@@ -213,6 +215,7 @@ button.primary:hover { filter: brightness(1.08); }
     <div class="card">
       <h2 id="forceTitle">Síly působící na těleso</h2>
       <div class="rows" id="forceRows"></div>
+      <div class="eq" id="vEq" hidden></div>
       <p id="forceNote"></p>
     </div>
     <div class="card">
@@ -271,6 +274,7 @@ button.primary:hover { filter: brightness(1.08); }
         <label><input type="checkbox" id="tResult" checked> <span class="swatch" style="background:var(--vec)"></span> Výsledná síla F</label>
         <label><input type="checkbox" id="tPartial" checked> <span class="swatch" style="background:linear-gradient(90deg,var(--b-sun),var(--b-earth),var(--b-mars))"></span> Dílčí síly (barva podle původce)</label>
         <label><input type="checkbox" id="tDist" checked> <span class="swatch" style="background:var(--muted)"></span> Vzdálenosti r</label>
+        <label><input type="checkbox" id="tVel" checked> <span class="swatch" style="background:var(--vel)"></span> Rychlost v (oběžná)</label>
         <label><input type="checkbox" id="tTrails" checked> Stopy pohybu</label>
       </div>
       <button id="arrowScale" style="font-weight:500;font-size:13px;padding:7px 10px" title="Nastaví délku šipek podle aktuálně největší síly">Přepočítat délku šipek</button>
@@ -282,6 +286,7 @@ button.primary:hover { filter: brightness(1.08); }
           <button data-preset="earthMoon">Země a Měsíc</button>
           <button data-preset="personEarth">Člověk na Zemi</button>
           <button data-preset="personMoon">Člověk na Měsíci</button>
+          <button data-preset="earthISS">Země a ISS</button>
           <button data-preset="sunEarthMars">Slunce, Země, Mars</button>
           <button data-preset="binary">Dvojhvězda</button>
           <button data-preset="three">Tři tělesa</button>
@@ -331,8 +336,9 @@ function distFriendly(r, html = true){
 /* ---------- stav ---------- */
 let bodies = [], nextId = 1, sel = null, partner = null, lastSel = null;
 const view = {cx: 0, cy: 0, mpp: 1e9};
+let autoOrbit = true; // dokud se nespustí pohyb, rychlosti se drží na hodnotě pro kruhový oběh
 let Fref = 1, running = false, daysPerSec = 30, elapsed = 0, F0 = null, drag = null, structDirty = true;
-const show = {partial: true, result: true, dist: true, trails: true};
+const show = {partial: true, result: true, dist: true, trails: true, vel: true};
 
 function mk(name, m, x, y, color, R){
   return {id: nextId++, name, m, x, y, R: R || 0, vx: 0, vy: 0, color, trail: [], fx: 0, fy: 0, parts: []};
@@ -356,12 +362,14 @@ const PRESETS = {
     return {days: 20, list: L};
   },
   personEarth: () => ({days: 0.01, list: [mk('Země', M_EARTH, 0, 0, 'earth', R_EARTH), mk('Člověk', 60, 0, R_EARTH, 'teal', 0.3)]}),
-  personMoon: () => ({days: 0.01, list: [mk('Měsíc', M_MOON, 0, 0, 'moon', R_MOON), mk('Člověk', 60, 0, R_MOON, 'teal', 0.3)]})
+  personMoon: () => ({days: 0.01, list: [mk('Měsíc', M_MOON, 0, 0, 'moon', R_MOON), mk('Člověk', 60, 0, R_MOON, 'teal', 0.3)]}),
+  // ISS: hmotnost asi 420 t, výška oběžné dráhy asi 420 km nad povrchem Země
+  earthISS: () => ({days: 0.01, list: [mk('Země', M_EARTH, 0, 0, 'earth', R_EARTH), mk('ISS', 4.2e5, R_EARTH + 4.2e5, 0, 'violet', 55)]})
 };
 
 function loadPreset(key){
   const p = PRESETS[key]();
-  bodies = p.list; daysPerSec = p.days; elapsed = 0; running = false; F0 = null;
+  bodies = p.list; daysPerSec = p.days; elapsed = 0; running = false; F0 = null; autoOrbit = true;
   sel = bodies[bodies.length - 1].id; partner = null;
   setOrbits(); computeForces(); fit(); resetArrowScale();
   structDirty = true; syncSpeed(); syncPlay(); onSelect();
@@ -418,6 +426,7 @@ function setOrbits(){
   for (const b of bodies){
     if (b === H) continue;
     const dx = b.x - H.x, dy = b.y - H.y, r = Math.hypot(dx, dy) || 1;
+    if (H.R && r < H.R * 1.01){ b.vx = 0; b.vy = 0; continue; } // stojí na povrchu (otáčení planety zanedbáváme)
     const v = Math.sqrt(G * (H.m + b.m) / r);
     b.vx = -dy / r * v; b.vy = dx / r * v;
   }
@@ -437,7 +446,7 @@ new ResizeObserver(resize).observe(stage); resize();
 let C = {};
 function readColors(){
   const cs = getComputedStyle(document.documentElement);
-  ['paper','grid','grid-strong','fg','muted','line','accent','vec','b-sun','b-earth','b-moon','b-mars','b-teal','b-violet','b-rose']
+  ['paper','grid','grid-strong','fg','muted','line','accent','vec','vel','b-sun','b-earth','b-moon','b-mars','b-teal','b-violet','b-rose']
     .forEach(k => C[k] = cs.getPropertyValue('--' + k).trim());
   structDirty = true;
 }
@@ -560,6 +569,22 @@ function draw(){
         pill((two ? 'F = ' : 'F výsl. = ') + sci(Fm, 3, false) + ' N', tip.x + ux * 12, tip.y + uy * 12 + (Math.abs(ux) < 0.4 ? uy * 6 : 0), C.vec, Math.abs(ux) < 0.4 ? 'center' : ux > 0 ? 'left' : 'right');
       }
     }
+  }
+
+  // vektory rychlosti: u lehčích těles vůči nejhmotnějšímu tělesu (oběžná rychlost), u nejhmotnějšího vůči těžišti
+  if (show.vel && bodies.length > 1){
+    const Hb = bodies.reduce((p, q) => q.m > p.m ? q : p, bodies[0]);
+    const vs = bodies.map(b => b === Hb ? [b.vx, b.vy] : [b.vx - Hb.vx, b.vy - Hb.vy]);
+    const vmax = Math.max(...vs.map(v => Math.hypot(v[0], v[1])));
+    if (vmax > 0) bodies.forEach((b, i) => {
+      const vm = Math.hypot(vs[i][0], vs[i][1]);
+      if (vm < vmax * 0.02) return;
+      const s = toS(b.x, b.y), r = drawR(b), ux = vs[i][0] / vm, uy = -vs[i][1] / vm;
+      ctx.save(); ctx.globalAlpha = 0.95;
+      const tip = arrow(s.x + ux * (r + 2), s.y + uy * (r + 2), ux, uy, 34 + 66 * vm / vmax, C.vel, 2.5);
+      ctx.restore();
+      if (tip && (two || b.id === sel)) pill('v = ' + num(vm / 1000, 3, false) + ' km/s', tip.x + ux * 12, tip.y + uy * 12 + (Math.abs(ux) < 0.4 ? uy * 6 : 0), C.vel, Math.abs(ux) < 0.4 ? 'center' : ux > 0 ? 'left' : 'right');
+    });
   }
 
   // hmotnost se nastavuje jen v panelu Vybrané těleso (úchyt na ploše odstraněn)
@@ -714,8 +739,29 @@ function updatePanel(){
   const v = Math.hypot(b.vx, b.vy);
   setHTML('mOut', num(b.m, 3) + ' kg'); setHTML('lm1', num(b.m, 3) + ' kg');
   setHTML('la1', num(a, 3) + ' m/s²'); setHTML('rRes', sci(Fm, 3) + ' N');
-  setHTML('rA', num(a, 3) + ' m/s²'); setHTML('rV', num(v / 1000, 3) + ' km/s');
-  rows += `<span>Rychlost</span><span class="v">${num(v / 1000, 4)} km/s</span>`;
+  setHTML('rA', num(a, 3) + ' m/s²');
+  // rychlost: u lehčího tělesa vůči nejhmotnějšímu tělesu, u nejhmotnějšího vůči těžišti soustavy
+  const Hb = bodies.reduce((p, q) => q.m > p.m ? q : p, bodies[0]);
+  const isH = b === Hb, pre = autoOrbit && elapsed === 0;
+  const rH = isH ? 0 : Math.hypot(b.x - Hb.x, b.y - Hb.y);
+  const onSurf = !isH && Hb.R && rH < Hb.R * 1.01;
+  const vRel = isH ? v : Math.hypot(b.vx - Hb.vx, b.vy - Hb.vy);
+  const vWhere = isH ? 'vůči těžišti soustavy' : 'vůči tělesu ' + esc(Hb.name);
+  setHTML('rVlab', (pre && !isH && !onSurf ? 'Oběžná rychlost <i>v</i>' : 'Rychlost <i>v</i>'));
+  setHTML('rV', num(vRel / 1000, 3) + ' km/s');
+  setHTML('rVsub', onSurf && pre ? 'stojí na povrchu' : (pre && !isH ? 'počáteční, ' : '') + vWhere);
+  rows += `<span>Rychlost ${vWhere}</span><span class="v">${num(vRel / 1000, 4)} km/s</span>`;
+  let vq = '';
+  if (pre && !isH && !onSurf && bodies.length > 1){
+    const light = b.m / Hb.m < 1e-3;
+    const vc = Math.sqrt(G * (Hb.m + b.m) / rH);
+    vq = `<div style="font-family:var(--body);font-size:13px;color:var(--muted);margin-bottom:4px;white-space:normal">Oběžná rychlost pro kruhovou dráhu kolem tělesa ${esc(Hb.name)}:</div>`
+       + (light ? `v = √(G · M / r)<br>v = √(${sci(G, 4)} · ${sci(Hb.m, 4)} / ${sci(rH, 4)})`
+                : `v = √(G · (M + m) / r)<br>v = √(${sci(G, 4)} · (${sci(Hb.m, 4)} + ${sci(b.m, 4)}) / ${sci(rH, 4)})`)
+       + `<br><span class="res">v = ${num(vc / 1000, 4)} km/s</span>`
+       + `<div style="font-family:var(--body);font-size:13px;color:var(--muted);margin-top:4px;white-space:normal">Bez této rychlosti by těleso ${esc(b.name)} spadlo na těleso ${esc(Hb.name)}. Takhle letí do strany tak rychle, že kolem něj neustále „padá“ po kružnici.${light ? ' Hmotnost m lehkého tělesa se ve vzorci vykrátí.' : ''}</div>`;
+  }
+  const vEq = $('#vEq'); vEq.hidden = !vq; if (vq) setHTML('vEq', vq);
   if (!bodies.length || b.parts.length === 0) rows = `<span style="color:var(--muted)">Na těleso nepůsobí žádné jiné těleso.</span><span></span>`;
   setHTML('forceRows', rows);
 
@@ -724,13 +770,20 @@ function updatePanel(){
     const ao = (G * b.m * o.m / Math.pow(Math.hypot(o.x - b.x, o.y - b.y), 2)) / o.m;
     const q = a && bodies.length === 2 ? ao / a : null;
     note = `<b>3. Newtonův zákon:</b> ${esc(o.name)} přitahuje těleso ${esc(b.name)} stejně velkou silou, jakou ${esc(b.name)} přitahuje ${esc(o.name)}, jen opačným směrem.`;
-    if (q) note += ` Zrychlení se ale liší: ${esc(o.name)} zrychluje ${q >= 1 ? num(q, 4) + '×' : '1/' + num(1 / q, 4) + '×'} víc než ${esc(b.name)}, protože má ${q >= 1 ? 'menší' : 'větší'} hmotnost.`;
+    if (q) note += Math.abs(q - 1) < 1e-3 ? ' Obě tělesa mají stejnou hmotnost, a proto i stejně velké zrychlení.' : ` Zrychlení se ale liší: ${esc(o.name)} má ${q >= 1 ? num(q, 4) + '× větší' : num(1 / q, 4) + '× menší'} zrychlení než ${esc(b.name)}, protože má ${q >= 1 ? 'menší' : 'větší'} hmotnost.`;
   }
   if (o){
     const big = (o.R || 0) >= (b.R || 0) ? o : b, small = big === o ? b : o, r = Math.hypot(o.x - b.x, o.y - b.y);
     if (big.R > 1e3 && Math.abs(r - big.R) < big.R * 0.002 && small.m < 1e6){
       const g = G * big.m / (r * r);
       note = `<b>Tíha:</b> síla ${sci(G * big.m * small.m / (r * r), 4)} N je tíhová síla, kterou ${esc(big.name)} přitahuje těleso ${esc(small.name)} na povrchu. Tíhové zrychlení g = F / m = G·M / R² = <b>${num(g, 4)} m/s²</b>. ` + note;
+    }
+  }
+  if (o){
+    const big = o.m >= b.m ? o : b, small = big === o ? b : o, r = Math.hypot(o.x - b.x, o.y - b.y);
+    if (big.R > 1e3 && r > big.R * 1.01 && r < big.R * 1.3 && small.m < 1e7){
+      const g = G * big.m / (r * r), g0 = G * big.m / (big.R * big.R);
+      note = `<b>Beztíže:</b> ve výšce ${num((r - big.R) / 1000, 3)} km je g = ${num(g, 3)} m/s², jen o ${num(100 * (1 - g / g0), 2)} % méně než na povrchu. Na ${esc(small.name)} tedy gravitace působí skoro stejně. Posádka je ve stavu beztíže proto, že spolu se stanicí neustále padá kolem tělesa ${esc(big.name)}. ` + note;
     }
   }
   setHTML('forceNote', note);
@@ -813,10 +866,10 @@ function syncSpeed(){
 speed.addEventListener('input', () => { daysPerSec = Math.pow(10, +speed.value); syncSpeed(); });
 function syncPlay(){ $('#play').textContent = running ? '❚❚ Pozastavit' : '▶ Spustit pohyb'; }
 $('#play').addEventListener('click', () => { running = !running; if (running) collisionMsg = ''; syncPlay(); });
-$('#orbits').addEventListener('click', () => { setOrbits(); bodies.forEach(b => b.trail = []); });
-$('#zeroV').addEventListener('click', () => { bodies.forEach(b => { b.vx = 0; b.vy = 0; b.trail = []; }); });
+$('#orbits').addEventListener('click', () => { setOrbits(); if (elapsed === 0) autoOrbit = true; bodies.forEach(b => b.trail = []); });
+$('#zeroV').addEventListener('click', () => { autoOrbit = false; bodies.forEach(b => { b.vx = 0; b.vy = 0; b.trail = []; }); });
 $('#clearTrails').addEventListener('click', () => bodies.forEach(b => b.trail = []));
-[['tPartial','partial'],['tResult','result'],['tDist','dist'],['tTrails','trails']].forEach(([id, k]) => $('#' + id).addEventListener('change', e => show[k] = e.target.checked));
+[['tPartial','partial'],['tResult','result'],['tDist','dist'],['tVel','vel'],['tTrails','trails']].forEach(([id, k]) => $('#' + id).addEventListener('change', e => show[k] = e.target.checked));
 
 /* ---------- smyčka ---------- */
 let last = performance.now();
@@ -826,6 +879,7 @@ function frame(t){
     step(dt * daysPerSec * DAY);
     for (const b of bodies){ b.trail.push([b.x, b.y]); if (b.trail.length > 2500) b.trail.shift(); }
   }
+  if (autoOrbit && !running && elapsed === 0) setOrbits(); // před spuštěním drží rychlost pro kruhovou dráhu i po změně hmotnosti či vzdálenosti
   computeForces();
   if (W > 0) draw();
   updatePanel();
