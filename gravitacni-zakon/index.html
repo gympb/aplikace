@@ -183,7 +183,7 @@ button.primary:hover { filter: brightness(1.08); }
       </div>
       <div class="hint">
         <span><b>tažení tělesa</b> posun</span>
-        <span><b>úchyt m</b> nebo <b>kolečko nad tělesem</b> hmotnost</span>
+        <span><b>klepnutí na těleso</b> výběr, hmotnost v panelu vpravo</span>
         <span><b>tažení plochy</b> posun pohledu</span>
         <span><b>kolečko</b> přiblížení</span>
       </div>
@@ -559,23 +559,11 @@ function draw(){
     }
   }
 
-  // úchyt pro hmotnost
-  const sb = byId(sel);
-  if (sb){
-    const h = handlePos(sb);
-    ctx.fillStyle = C.paper; ctx.strokeStyle = C.accent; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(h.x, h.y, 9, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = C.accent; ctx.font = '600 12px "IBM Plex Mono", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('m', h.x, h.y + 0.5);
-  }
+  // hmotnost se nastavuje jen v panelu Vybrané těleso (úchyt na ploše odstraněn)
 
   const d = elapsed / DAY;
   setHTML('lt', d < 1 ? num(elapsed / 3600, 3) + ' h' : num(d, 4) + ' d');
   $('#hudSim').textContent = collisionMsg || `Uplynulý čas: ${d < 1 ? num(elapsed / 3600, 3, false) + ' h' : num(d, 4, false) + ' dní'}${d >= 365.25 ? ' (' + num(d / 365.25, 3, false) + ' roku)' : ''}`;
-}
-function handlePos(b){
-  const s = toS(b.x, b.y), r = drawR(b) + 15;
-  return {x: s.x + r * 0.7071, y: s.y - r * 0.7071};
 }
 
 /* ---------- ovládání myší ---------- */
@@ -587,13 +575,10 @@ function bodyAt(p){
   }
   return null;
 }
-const onHandle = (b, p) => { const h = handlePos(b); return Math.hypot(p.x - h.x, p.y - h.y) <= 12; };
 function setMass(b, m){ b.m = Math.min(1e35, Math.max(1, m)); }
 
 cv.addEventListener('pointerdown', e => {
   const p = pt(e); cv.setPointerCapture(e.pointerId);
-  const s = byId(sel);
-  if (s && onHandle(s, p)){ drag = {mode: 'mass', b: s, x0: p.x, y0: p.y, m0: s.m}; return; }
   const b = bodyAt(p);
   if (b){ if (b.id !== sel){ sel = b.id; onSelect(); } const sp = toS(b.x, b.y); drag = {mode: 'move', b, dx: p.x - sp.x, dy: p.y - sp.y}; cv.style.cursor = 'grabbing'; return; }
   drag = {mode: 'pan', x0: p.x, y0: p.y, cx: view.cx, cy: view.cy}; cv.style.cursor = 'grabbing';
@@ -601,20 +586,17 @@ cv.addEventListener('pointerdown', e => {
 cv.addEventListener('pointermove', e => {
   const p = pt(e);
   if (!drag){
-    const s = byId(sel);
-    cv.style.cursor = s && onHandle(s, p) ? 'nesw-resize' : bodyAt(p) ? 'move' : 'grab';
+    cv.style.cursor = bodyAt(p) ? 'move' : 'grab';
     return;
   }
   if (drag.mode === 'move'){ const w = toW(p.x - drag.dx, p.y - drag.dy); drag.b.x = w.x; drag.b.y = w.y; drag.b.trail = []; collisionMsg = ''; }
-  else if (drag.mode === 'mass'){ setMass(drag.b, drag.m0 * Math.pow(10, ((p.x - drag.x0) - (p.y - drag.y0)) / 90)); }
   else { view.cx = drag.cx - (p.x - drag.x0) * view.mpp; view.cy = drag.cy + (p.y - drag.y0) * view.mpp; }
 });
 const endDrag = () => { drag = null; cv.style.cursor = 'grab'; };
 cv.addEventListener('pointerup', endDrag); cv.addEventListener('pointercancel', endDrag);
 cv.addEventListener('wheel', e => {
   e.preventDefault();
-  const p = pt(e), b = bodyAt(p);
-  if (b){ if (b.id !== sel){ sel = b.id; onSelect(); } setMass(b, b.m * Math.pow(10, -e.deltaY / 600)); return; }
+  const p = pt(e);
   const w = toW(p.x, p.y);
   view.mpp = clampMpp(view.mpp * Math.exp(e.deltaY * 0.0015));
   view.cx = w.x - (p.x - W / 2) * view.mpp; view.cy = w.y + (p.y - H / 2) * view.mpp;
@@ -624,9 +606,7 @@ cv.addEventListener('wheel', e => {
 document.addEventListener('keydown', e => {
   if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
   const b = byId(sel); if (!b) return;
-  if (e.key === '+' || e.key === '='){ setMass(b, b.m * 2); }
-  else if (e.key === '-'){ setMass(b, b.m / 2); }
-  else if (e.key === 'Delete'){ removeSel(); }
+  if (e.key === 'Delete'){ removeSel(); }
 });
 
 /* ---------- panel ---------- */
