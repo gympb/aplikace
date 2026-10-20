@@ -119,6 +119,8 @@ button.primary:hover { filter: brightness(1.08); }
 .minis button, .presets button { padding: 6px 10px; font-size: 13px; font-weight: 500; background: var(--accent-soft); border-color: transparent; }
 .minis button { font-family: var(--mono); }
 .presets button.on { border-color: var(--accent); }
+.addmenu { grid-column: 1 / -1; display: grid; gap: 8px; padding: 12px; border: 1px solid var(--accent); border-radius: 8px; background: var(--bg); }
+.addmenu input[type=text]#cName { width: 100%; }
 .checks { display: grid; gap: 6px; }
 .checks label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
 .checks input { accent-color: var(--accent); width: 16px; height: 16px; }
@@ -262,10 +264,18 @@ button.primary:hover { filter: brightness(1.08); }
 
       <div class="btns">
         <button class="primary" id="play">▶ Spustit pohyb</button>
-        <button id="orbits" title="Každé těleso dostane rychlost pro kruhový oběh kolem nejhmotnějšího tělesa">Oběžné rychlosti</button>
+        <button id="orbits" title="Každé těleso dostane rychlost pro kruhový oběh kolem svého hlavního tělesa (Měsíc kolem Země, planety kolem Slunce)">Oběžné rychlosti</button>
         <button id="zeroV" title="Tělesa se zastaví a začnou na sebe padat">Vynulovat rychlosti</button>
-        <button id="addBody">+ Přidat těleso</button>
+        <button id="addBody" aria-expanded="false" aria-controls="addMenu">+ Přidat těleso</button>
         <button id="delBody">Odebrat těleso</button>
+        <div id="addMenu" class="addmenu" hidden>
+          <span class="label">Předdefinovaná tělesa</span>
+          <div class="presets" id="addList"></div>
+          <span class="label" style="margin-top:6px">Vlastní těleso</span>
+          <input type="text" id="cName" placeholder="Název, např. Planeta X" aria-label="Název vlastního tělesa">
+          <div class="sci"><span>m =</span><input type="text" class="mant" id="cMant" value="1" inputmode="decimal" aria-label="Hmotnost, číslo"><span>· 10^</span><input type="number" class="exp" id="cExp" value="24" step="1" aria-label="Hmotnost, exponent"><span>kg</span></div>
+          <div class="btns" style="margin-top:2px"><button id="cAdd">Přidat vlastní</button><button id="addClose">Zavřít</button></div>
+        </div>
         <button id="fit">Zobrazit vše</button>
         <button id="clearTrails">Smazat stopy</button>
       </div>
@@ -348,6 +358,19 @@ const dispR = m => Math.min(48, Math.max(4, 7 * Math.pow(m / M_EARTH, 1 / 6)));
 const R_EARTH = 6.371e6, R_MOON = 1.737e6, R_SUN = 6.957e8, R_MARS = 3.3895e6, M_MOON = 7.342e22;
 const drawR = b => Math.max(dispR(b.m), b.R ? b.R / view.mpp : 0);
 
+// tělesa pro „Přidat těleso“: kolem (around) kterého tělesa a v jaké vzdálenosti se umístí, pokud je na ploše
+const CATALOG = [
+  {name: 'Slunce',  m: M_SUN,    R: 6.957e8,  color: 'sun'},
+  {name: 'Merkur',  m: 3.301e23, R: 2.4397e6, color: 'moon',   around: 'Slunce', d: 5.791e10},
+  {name: 'Venuše',  m: 4.867e24, R: 6.0518e6, color: 'rose',   around: 'Slunce', d: 1.0821e11},
+  {name: 'Země',    m: M_EARTH,  R: 6.371e6,  color: 'earth',  around: 'Slunce', d: 1.496e11},
+  {name: 'Měsíc',   m: 7.342e22, R: 1.737e6,  color: 'moon',   around: 'Země',   d: 3.844e8},
+  {name: 'Mars',    m: 6.417e23, R: 3.3895e6, color: 'mars',   around: 'Slunce', d: 2.279e11},
+  {name: 'Jupiter', m: 1.898e27, R: 6.9911e7, color: 'mars',   around: 'Slunce', d: 7.785e11},
+  {name: 'Saturn',  m: 5.683e26, R: 5.8232e7, color: 'sun',    around: 'Slunce', d: 1.4335e12},
+  {name: 'ISS',     m: 4.2e5,    R: 55,       color: 'violet', around: 'Země',   d: 6.371e6 + 4.2e5},
+  {name: 'Člověk',  m: 60,       R: 0.3,      color: 'teal',   around: 'Země',   d: 6.371e6}
+];
 const PRESETS = {
   sunEarth: () => ({days: 30, list: [mk('Slunce', M_SUN, 0, 0, 'sun', R_SUN), mk('Země', M_EARTH, 1.496e11, 0, 'earth', R_EARTH)]}),
   earthMoon: () => ({days: 2, list: [mk('Země', M_EARTH, 0, 0, 'earth', R_EARTH), mk('Měsíc', M_MOON, 3.844e8, 0, 'moon', R_MOON)]}),
@@ -419,16 +442,27 @@ function step(simDt){
     if (c){ running = false; syncPlay(); collisionMsg = `Srážka: ${c[0].name} a ${c[1].name}. Pohyb zastaven.`; break; }
   }
 }
+// hlavní těleso, kolem kterého b obíhá: z těžších těles to, jehož gravitace v okolí b „vládne“ (největší m / r³) – Měsíc tak obíhá Zemi, ne Slunce
+function hostOf(b){
+  const order = [...bodies].sort((p, q) => q.m - p.m || bodies.indexOf(p) - bodies.indexOf(q));
+  let best = null, bestK = -1;
+  for (const c of order){
+    if (c === b) break;
+    const r = Math.hypot(b.x - c.x, b.y - c.y) || 1, k = c.m / (r * r * r);
+    if (k > bestK){ bestK = k; best = c; }
+  }
+  return best;
+}
 function setOrbits(){
   if (bodies.length < 2) return;
-  const H = bodies.reduce((p, b) => b.m > p.m ? b : p, bodies[0]);
-  H.vx = 0; H.vy = 0;
-  for (const b of bodies){
-    if (b === H) continue;
+  const order = [...bodies].sort((p, q) => q.m - p.m || bodies.indexOf(p) - bodies.indexOf(q));
+  order[0].vx = 0; order[0].vy = 0;
+  for (const b of order.slice(1)){
+    const H = hostOf(b);
     const dx = b.x - H.x, dy = b.y - H.y, r = Math.hypot(dx, dy) || 1;
-    if (H.R && r < H.R * 1.01){ b.vx = 0; b.vy = 0; continue; } // stojí na povrchu (otáčení planety zanedbáváme)
+    if (H.R && r < H.R * 1.01){ b.vx = H.vx; b.vy = H.vy; continue; } // stojí na povrchu (otáčení planety zanedbáváme)
     const v = Math.sqrt(G * (H.m + b.m) / r);
-    b.vx = -dy / r * v; b.vy = dx / r * v;
+    b.vx = H.vx - dy / r * v; b.vy = H.vy + dx / r * v;
   }
   let px = 0, py = 0, M = 0;
   for (const b of bodies){ px += b.m * b.vx; py += b.m * b.vy; M += b.m; }
@@ -573,8 +607,7 @@ function draw(){
 
   // vektory rychlosti: u lehčích těles vůči nejhmotnějšímu tělesu (oběžná rychlost), u nejhmotnějšího vůči těžišti
   if (show.vel && bodies.length > 1){
-    const Hb = bodies.reduce((p, q) => q.m > p.m ? q : p, bodies[0]);
-    const vs = bodies.map(b => b === Hb ? [b.vx, b.vy] : [b.vx - Hb.vx, b.vy - Hb.vy]);
+    const vs = bodies.map(b => { const H = hostOf(b); return H ? [b.vx - H.vx, b.vy - H.vy] : [b.vx, b.vy]; });
     const vmax = Math.max(...vs.map(v => Math.hypot(v[0], v[1])));
     if (vmax > 0) bodies.forEach((b, i) => {
       const vm = Math.hypot(vs[i][0], vs[i][1]);
@@ -741,7 +774,7 @@ function updatePanel(){
   setHTML('la1', num(a, 3) + ' m/s²'); setHTML('rRes', sci(Fm, 3) + ' N');
   setHTML('rA', num(a, 3) + ' m/s²');
   // rychlost: u lehčího tělesa vůči nejhmotnějšímu tělesu, u nejhmotnějšího vůči těžišti soustavy
-  const Hb = bodies.reduce((p, q) => q.m > p.m ? q : p, bodies[0]);
+  const Hb = hostOf(b) || b;
   const isH = b === Hb, pre = autoOrbit && elapsed === 0;
   const rH = isH ? 0 : Math.hypot(b.x - Hb.x, b.y - Hb.y);
   const onSurf = !isH && Hb.R && rH < Hb.R * 1.01;
@@ -838,13 +871,47 @@ function removeSel(){
   onSelect();
 }
 $('#delBody').addEventListener('click', removeSel);
-$('#addBody').addEventListener('click', () => {
-  const used = new Set(bodies.map(b => b.color));
-  const color = PAL.find(c => !used.has(c)) || PAL[bodies.length % PAL.length];
-  const ang = Math.random() * Math.PI * 2, d = Math.min(W, H) * 0.3 * view.mpp;
-  let n = bodies.length + 1; while (bodies.some(b => b.name === 'Těleso ' + n)) n++;
-  const b = mk('Těleso ' + n, M_EARTH, view.cx + Math.cos(ang) * d, view.cy + Math.sin(ang) * d, color);
-  bodies.push(b); sel = b.id; partner = null; onSelect();
+const addMenu = $('#addMenu'), addBtn = $('#addBody');
+function toggleAdd(open){ addMenu.hidden = !open; addBtn.setAttribute('aria-expanded', String(open)); }
+addBtn.addEventListener('click', () => toggleAdd(addMenu.hidden));
+$('#addClose').addEventListener('click', () => toggleAdd(false));
+addMenu.addEventListener('keydown', e => { if (e.key === 'Escape'){ toggleAdd(false); addBtn.focus(); } });
+$('#addList').innerHTML = CATALOG.map((c, i) => `<button data-cat="${i}"><span class="dot" style="background:var(--b-${c.color});width:9px;height:9px;margin-right:6px;vertical-align:0"></span>${c.name}</button>`).join('');
+function uniqueName(n){ if (!bodies.some(b => b.name === n)) return n; let k = 2; while (bodies.some(b => b.name === n + ' ' + k)) k++; return n + ' ' + k; }
+function addBody(name, m, color, R, around, d){
+  if (!color){ const used = new Set(bodies.map(b => b.color)); color = PAL.find(c => !used.has(c)) || PAL[bodies.length % PAL.length]; }
+  const ref = around ? bodies.find(b => b.name === around) : null;
+  const ang = Math.random() * Math.PI * 2;
+  let x, y;
+  if (ref && d){ x = ref.x + Math.cos(ang) * d; y = ref.y + Math.sin(ang) * d; }
+  else { // vlastní těleso: volné místo na ploše, co nejdál od ostatních těles
+    let best = -1;
+    for (let i = 0; i < 24; i++){
+      const a = ang + i * Math.PI / 12, dd = Math.min(W, H) * (i % 2 ? 0.25 : 0.38) * view.mpp;
+      const cx = view.cx + Math.cos(a) * dd, cy = view.cy + Math.sin(a) * dd;
+      const gap = bodies.reduce((g, q) => Math.min(g, Math.hypot(q.x - cx, q.y - cy) / view.mpp - drawR(q)), Infinity);
+      if (gap > best){ best = gap; x = cx; y = cy; }
+    }
+  }
+  const b = mk(uniqueName(name), m, x, y, color, R);
+  if (ref && !autoOrbit){ b.vx = ref.vx; b.vy = ref.vy; }
+  bodies.push(b); sel = b.id; partner = ref ? ref.id : null; collisionMsg = '';
+  if (autoOrbit && elapsed === 0) setOrbits();
+  onSelect();
+  const s = toS(b.x, b.y); if (s.x < 0 || s.x > W || s.y < 0 || s.y > H) fit();
+  toggleAdd(false);
+}
+$('#addList').addEventListener('click', e => {
+  const btn = e.target.closest('[data-cat]'); if (!btn) return;
+  const c = CATALOG[+btn.dataset.cat]; addBody(c.name, c.m, c.color, c.R, c.around, c.d);
+});
+$('#cAdd').addEventListener('click', () => {
+  const m = parseNum($('#cMant').value), e = parseInt($('#cExp').value, 10);
+  if (!(isFinite(m) && m > 0 && isFinite(e))){ $('#cMant').focus(); return; }
+  let n = $('#cName').value.trim();
+  if (!n){ n = 'Těleso ' + (bodies.length + 1); }
+  addBody(n, Math.min(1e35, Math.max(1, m * Math.pow(10, e))));
+  $('#cName').value = '';
 });
 $('#fit').addEventListener('click', fit);
 $('#arrowScale').addEventListener('click', resetArrowScale);
