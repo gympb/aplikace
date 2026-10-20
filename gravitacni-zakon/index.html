@@ -72,7 +72,9 @@ h2 { font-family: var(--display); font-weight: 600; font-size: 18px; margin: 0; 
 .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
 
 .main { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
-@media (max-width: 920px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.left { display: grid; gap: 16px; min-width: 0; }
+@media (max-width: 920px) { .main { grid-template-columns: minmax(0, 1fr); } .left { display: contents; } .main > .panel { order: 2; } .left > .stage { order: 1; } .left > .results { order: 3; } .left > .traces { order: 4; } .left > .theory { order: 5; } }
+.stage { grid-template-columns: minmax(0, 1fr); }
 
 .stage { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: grid; min-width: 0; }
 .canvas-box { position: relative; width: 100%; aspect-ratio: 16 / 10; max-width: 100%; min-height: 320px; touch-action: none; }
@@ -123,9 +125,9 @@ button.primary:hover { filter: brightness(1.08); }
 .meta { font: 12px var(--mono); color: var(--muted); }
 .empty { color: var(--muted); margin: 0; }
 
-.results { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-.results div { background: var(--paper); padding: 14px 16px; display: grid; gap: 2px; min-width: 0; align-content: start; }
-.results b { font-family: var(--display); font-weight: 600; font-size: 24px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.results { display: flex; flex-wrap: wrap; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.results div { flex: 1 1 150px; background: var(--paper); padding: 14px 16px; display: grid; gap: 2px; min-width: 0; align-content: start; }
+.results b { font-family: var(--display); font-weight: 600; font-size: 21px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .results b.f { color: var(--vec); }
 .results small { color: var(--muted); font-family: var(--mono); font-size: 12px; }
 @media (max-width: 760px) { .results { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -142,7 +144,8 @@ button.primary:hover { filter: brightness(1.08); }
 .pairbtns .role { font: 500 12px var(--mono); color: var(--accent); }
 .pairhint { margin: 0; font-size: 12px; color: var(--muted); }
 
-.theory { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.theory { display: flex; flex-wrap: wrap; gap: 16px; }
+.theory > .card { flex: 1 1 270px; }
 .card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
 .card p { margin: 0; color: var(--muted); max-width: 65ch; }
 .card p b { color: var(--fg); font-weight: 600; }
@@ -167,6 +170,7 @@ button.primary:hover { filter: brightness(1.08); }
   </header>
 
   <div class="main">
+    <div class="left">
     <section class="stage" aria-label="Pracovní plocha">
       <div class="canvas-box" id="stage">
         <canvas id="cv" aria-label="Plocha s tělesy a šipkami sil"></canvas>
@@ -188,7 +192,37 @@ button.primary:hover { filter: brightness(1.08); }
         <span><b>kolečko</b> přiblížení</span>
       </div>
     </section>
+  <section class="results" aria-label="Vypočtené hodnoty">
+    <div><span class="label">Gravitační síla <i>F</i></span><b class="f" id="rF">–</b><small id="rFsub">mezi dvojicí těles</small></div>
+    <div><span class="label">Poměr <i>F</i> / <i>F</i>₀</span><b id="rRatio">–</b><small id="rRatioSub">uložte F₀ v panelu</small></div>
+    <div><span class="label">Výsledná síla</span><b id="rRes">–</b><small>na vybrané těleso</small></div>
+    <div><span class="label">Zrychlení <i>a</i></span><b id="rA">–</b><small>a = F / m</small></div>
+    <div><span class="label">Rychlost <i>v</i></span><b id="rV">–</b><small>vybraného tělesa</small></div>
+  </section>
 
+  <div class="traces"><span class="label">Tělesa na ploše:</span><span class="traces" id="chips" style="min-height:0"></span></div>
+
+  <section class="theory">
+    <div class="card">
+      <h2>Newtonův gravitační zákon</h2>
+      <p>Každá dvě tělesa se přitahují silou, která je přímo úměrná součinu jejich hmotností a nepřímo úměrná druhé mocnině vzdálenosti jejich středů.</p>
+      <div class="eq" id="formula"></div>
+      <div class="legend" id="formLegend"></div>
+      <div class="lockrow"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 7V5a4 4 0 1 1 8 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 1 0-4 0v2z"/></svg>G = 6,674·10<sup>−11</sup> N·m²·kg<sup>−2</sup> je konstanta, nelze ji měnit.</div>
+    </div>
+    <div class="card">
+      <h2 id="forceTitle">Síly působící na těleso</h2>
+      <div class="rows" id="forceRows"></div>
+      <p id="forceNote"></p>
+    </div>
+    <div class="card">
+      <h2>Závislost na vzdálenosti a tíha</h2>
+      <p>Uložte F₀ a změňte jednu veličinu. Dvojnásobná hmotnost dá dvojnásobnou sílu, dvojnásobná vzdálenost jen čtvrtinovou.</p>
+      <div class="eq">m₁ × 2 &nbsp;→&nbsp; F × 2<br>r × 2 &nbsp;→&nbsp; F ÷ 4 &nbsp;&nbsp; r × 3 &nbsp;→&nbsp; F ÷ 9<br>g = G · M / R²</div>
+      <p>Na povrchu planety je gravitační síla tíhou tělesa. Kruhy nejsou v měřítku, kromě Slunce, planet a Měsíce při velkém přiblížení.</p>
+    </div>
+  </section>
+    </div>
     <aside class="panel" aria-label="Ovládání">
       <div class="ctrl" id="bodyCard">
         <div class="ctrl-head"><span class="t">Vybrané těleso</span><output id="mOut"></output></div>
@@ -255,37 +289,6 @@ button.primary:hover { filter: brightness(1.08); }
       </div>
     </aside>
   </div>
-
-  <section class="results" aria-label="Vypočtené hodnoty">
-    <div><span class="label">Gravitační síla <i>F</i></span><b class="f" id="rF">–</b><small id="rFsub">mezi dvojicí těles</small></div>
-    <div><span class="label">Poměr <i>F</i> / <i>F</i>₀</span><b id="rRatio">–</b><small id="rRatioSub">uložte F₀ v panelu</small></div>
-    <div><span class="label">Výsledná síla</span><b id="rRes">–</b><small>na vybrané těleso</small></div>
-    <div><span class="label">Zrychlení <i>a</i></span><b id="rA">–</b><small>a = F / m</small></div>
-    <div><span class="label">Rychlost <i>v</i></span><b id="rV">–</b><small>vybraného tělesa</small></div>
-  </section>
-
-  <div class="traces"><span class="label">Tělesa na ploše:</span><span class="traces" id="chips" style="min-height:0"></span></div>
-
-  <section class="theory">
-    <div class="card">
-      <h2>Newtonův gravitační zákon</h2>
-      <p>Každá dvě tělesa se přitahují silou, která je přímo úměrná součinu jejich hmotností a nepřímo úměrná druhé mocnině vzdálenosti jejich středů.</p>
-      <div class="eq" id="formula"></div>
-      <div class="legend" id="formLegend"></div>
-      <div class="lockrow"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 7V5a4 4 0 1 1 8 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 1 0-4 0v2z"/></svg>G = 6,674·10<sup>−11</sup> N·m²·kg<sup>−2</sup> je konstanta, nelze ji měnit.</div>
-    </div>
-    <div class="card">
-      <h2 id="forceTitle">Síly působící na těleso</h2>
-      <div class="rows" id="forceRows"></div>
-      <p id="forceNote"></p>
-    </div>
-    <div class="card">
-      <h2>Závislost na vzdálenosti a tíha</h2>
-      <p>Uložte F₀ a změňte jednu veličinu. Dvojnásobná hmotnost dá dvojnásobnou sílu, dvojnásobná vzdálenost jen čtvrtinovou.</p>
-      <div class="eq">m₁ × 2 &nbsp;→&nbsp; F × 2<br>r × 2 &nbsp;→&nbsp; F ÷ 4 &nbsp;&nbsp; r × 3 &nbsp;→&nbsp; F ÷ 9<br>g = G · M / R²</div>
-      <p>Na povrchu planety je gravitační síla tíhou tělesa. Kruhy nejsou v měřítku, kromě Slunce, planet a Měsíce při velkém přiblížení.</p>
-    </div>
-  </section>
   <footer class="foot">Autor: Isaac Newton · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 20. 10. 2026</footer>
 </div>
 
