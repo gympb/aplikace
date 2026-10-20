@@ -250,7 +250,6 @@ select:disabled { opacity: .55; }
   const fmt = (n, d = 1) => n.toLocaleString('cs-CZ', { minimumFractionDigits: d, maximumFractionDigits: d });
   const SPEEDS = [0.25, 0.5, 1, 2, 4];
   const TRACE_COLORS = ['#7b61ff', '#0e9a7b', '#d4892a', '#c2335e', '#2b8fd6', '#6b8e23'];
-  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const params = () => ({ v0: +$('v0').value, a: +$('al').value, h0: +$('h0').value, g: +$('gs').value, drag: $('drag').checked, body: $('body').value });
 
@@ -514,10 +513,10 @@ select:disabled { opacity: .55; }
 
   function fire() {
     shot = solve(params()); simT = 0; paused = false; $('pause').textContent = 'Pauza';
-    if (reduceMotion) { simT = shot.T; draw(); addTrace(shot); shot = null; return; }
-    running = true; last = performance.now();
+    // Let se vždy přehrává v reálném čase (i při omezení animací v systému), je to obsah simulace.
+    last = performance.now();
     $('fire').textContent = '↻ Vystřelit znovu';
-    requestAnimationFrame(frame);
+    if (!running) { running = true; requestAnimationFrame(frame); } // nespouštět druhou smyčku při opakovaném výstřelu
   }
 
   function addTrace(s) {
