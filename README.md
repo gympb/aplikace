@@ -1,4 +1,4 @@
-# Aplikace GymPb
+# gympb apps
 
 Interaktivní výukové aplikace, které fungují v prohlížeči bez přihlášení a bez instalace.
 
