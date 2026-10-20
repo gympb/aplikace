@@ -534,6 +534,24 @@ function pill(text, x, y, color, align = 'center'){
   ctx.fillStyle = color; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(text, lx + 5, y);
 }
 
+// popisek vedle čáry: posune se kolmo od čáry (směr ux, uy) tak, aby ji nepřekrýval; side +1 = nad čárou, −1 = pod ní
+function pillBeside(text, x, y, ux, uy, color, side = 1){
+  ctx.font = '500 12px "IBM Plex Mono", ui-monospace, monospace';
+  const w = ctx.measureText(text).width + 10, hh = 19;
+  let nx = -uy, ny = ux; if (ny > 0 || (ny === 0 && nx < 0)){ nx = -nx; ny = -ny; } // normála směrem nahoru
+  const ext = Math.abs(nx) * w / 2 + Math.abs(ny) * hh / 2;
+  // zkusí stranu side, pak opačnou, pak dál od čáry – aby se popisky nepřekrývaly
+  const tries = [[side, 7], [-side, 7], [side, 7 + hh + 4], [-side, 7 + hh + 4]];
+  let cx, cy;
+  for (const [sd, gap] of tries){
+    cx = x + nx * sd * (gap + ext); cy = y + ny * sd * (gap + ext);
+    const R = {x0: cx - w / 2, x1: cx + w / 2, y0: cy - hh / 2, y1: cy + hh / 2};
+    if (!placed.some(q => R.x0 < q.x1 && R.x1 > q.x0 && R.y0 < q.y1 && R.y1 > q.y0)){ break; }
+  }
+  placed.push({x0: cx - w / 2, x1: cx + w / 2, y0: cy - hh / 2, y1: cy + hh / 2});
+  pill(text, cx, cy, color, 'center');
+}
+let placed = [];
 function niceStep(target){
   const p = Math.pow(10, Math.floor(Math.log10(target)));
   for (const k of [1, 2, 5, 10]) if (p * k >= target * 0.7) return p * k;
@@ -541,6 +559,7 @@ function niceStep(target){
 }
 
 function draw(){
+  placed = [];
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.fillStyle = C.paper; ctx.fillRect(0, 0, W, H);
   // mřížka
@@ -568,7 +587,8 @@ function draw(){
       const A = toS(p.a.x, p.a.y), B = toS(p.b.x, p.b.y);
       ctx.strokeStyle = C.muted; ctx.globalAlpha = 0.6; ctx.lineWidth = 1; ctx.setLineDash([5, 6]);
       ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-      pill('r = ' + sci(p.r, 4, false) + ' m', (A.x + B.x) / 2, (A.y + B.y) / 2, C.muted);
+      const L = Math.hypot(B.x - A.x, B.y - A.y) || 1;
+      pillBeside('r = ' + sci(p.r, 4, false) + ' m', (A.x + B.x) / 2, (A.y + B.y) / 2, (B.x - A.x) / L, (B.y - A.y) / L, C.muted, -1);
     }
   }
 
@@ -585,7 +605,6 @@ function draw(){
     ctx.font = '600 13px "IBM Plex Sans", system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     ctx.fillStyle = C.fg;
     if (r > 60){ ctx.textBaseline = 'middle'; ctx.fillStyle = '#ffffff'; ctx.font = '600 15px "IBM Plex Sans", system-ui, sans-serif'; ctx.fillText(b.name, s.x, s.y); }
-    else if (r < 8){ ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(b.name, s.x - r - 10, s.y - r - 6); }
     else ctx.fillText(b.name, s.x, s.y + r + 9);
   }
 
@@ -602,7 +621,8 @@ function draw(){
       const ux = b.fx / Fm, uy = -b.fy / Fm;
       const tip = arrow(s.x + ux * (r + 2), s.y + uy * (r + 2), ux, uy, 90 * Fm / Fref, C.vec, 3.5);
       if (tip && (two || b.id === sel)){
-        pill((two ? 'F = ' : 'F výsl. = ') + sci(Fm, 3, false) + ' N', tip.x + ux * 12, tip.y + uy * 12 + (Math.abs(ux) < 0.4 ? uy * 6 : 0), C.vec, Math.abs(ux) < 0.4 ? 'center' : ux > 0 ? 'left' : 'right');
+        const base = {x: s.x + ux * (r + 2), y: s.y + uy * (r + 2)}, al = Math.hypot(tip.x - base.x, tip.y - base.y);
+        pillBeside((two ? 'F = ' : 'F výsl. = ') + sci(Fm, 3, false) + ' N', base.x + ux * al * 0.6, base.y + uy * al * 0.6, ux, uy, C.vec, 1);
       }
     }
   }
