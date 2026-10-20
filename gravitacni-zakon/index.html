@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gravitační zákon</title>
+<meta name="description" content="Interaktivní model Newtonova gravitačního zákona: síly mezi tělesy, zrychlení, oběžné dráhy a tíha.">
+<meta name="author" content="Isaac Newton">
+<meta property="og:title" content="Gravitační zákon">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+[hidden]{display:none!important}
+html,body{margin:0}
+.back{font-weight:600;font-size:14px;color:var(--muted);text-decoration:none}
+.back:hover{color:var(--accent)}
+.foot{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+.foot a{color:inherit}
+
+/* Layout: laboratorní pracoviště – velké plátno vlevo, ovládací panel vpravo, pod tím výsledky a vzorce (stejně jako Šikmý vrh) */
+:root {
+  --bg: #eef1f5;
+  --paper: #ffffff;
+  --grid: #dde3ec;
+  --grid-strong: #b9c3d2;
+  --fg: #16202e;
+  --muted: #5b6878;
+  --line: #d3dae4;
+  --accent: #1f4fd6;
+  --accent-soft: #e3eafc;
+  --vec: #e0661b;
+  --b-sun: #e3a512; --b-earth: #2b8fd6; --b-moon: #7f8a98; --b-mars: #c0532a;
+  --b-teal: #0e9a7b; --b-violet: #7b61ff; --b-rose: #c2335e;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141c; --paper: #151c27; --grid: #1f2836; --grid-strong: #2e3a4c;
+    --fg: #e6ebf2; --muted: #93a0b2; --line: #2a3444;
+    --accent: #6f95ff; --accent-soft: #1d2a4a; --vec: #ff9a4d;
+    --b-sun: #f4c03a; --b-earth: #4fa6ff; --b-moon: #b4bdc9; --b-mars: #e2704a;
+    --b-teal: #3fd3ae; --b-violet: #a08cff; --b-rose: #ff6f96;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141c; --paper: #151c27; --grid: #1f2836; --grid-strong: #2e3a4c;
+  --fg: #e6ebf2; --muted: #93a0b2; --line: #2a3444;
+  --accent: #6f95ff; --accent-soft: #1d2a4a; --vec: #ff9a4d;
+  --b-sun: #f4c03a; --b-earth: #4fa6ff; --b-moon: #b4bdc9; --b-mars: #e2704a;
+  --b-teal: #3fd3ae; --b-violet: #a08cff; --b-rose: #ff6f96;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px;
+}
+sup { font-size: 0.72em; line-height: 0; }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(28px, 4vw, 40px); margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+h1 span { color: var(--accent); }
+header p { margin: 0; color: var(--muted); max-width: 60ch; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 18px; margin: 0; }
+.label i { text-transform: none; font-style: italic; letter-spacing: 0; font-size: 13px; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
+@media (max-width: 920px) { .main { grid-template-columns: minmax(0, 1fr); } }
+
+.stage { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: grid; min-width: 0; }
+.canvas-box { position: relative; width: 100%; aspect-ratio: 16 / 10; max-width: 100%; min-height: 320px; touch-action: none; }
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+.hud { position: absolute; font: 12px var(--mono); color: var(--muted); background: color-mix(in srgb, var(--paper) 86%, transparent); padding: 3px 8px; border-radius: 6px; pointer-events: none; }
+.hud.tl { left: 8px; top: 8px; }
+.hud.br { right: 8px; bottom: 8px; text-align: right; }
+.live { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+.live div { padding: 10px 12px; border-right: 1px solid var(--line); min-width: 0; }
+.live div:last-child { border-right: 0; }
+.live b { display: block; font-family: var(--mono); font-weight: 500; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 600px) { .live { grid-template-columns: repeat(3, minmax(0, 1fr)); } .live div:nth-child(3) { border-right: 0; } .live div:nth-child(-n+3) { border-bottom: 1px solid var(--line); } }
+.hint { padding: 9px 12px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 14px; }
+.hint b { color: var(--fg); font-weight: 600; }
+
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 18px; min-width: 0; }
+.ctrl { display: grid; gap: 6px; min-width: 0; }
+.ctrl-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ctrl-head label, .ctrl-head .t { font-weight: 600; }
+.ctrl-head output { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 500; text-align: right; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+select, input[type=text], input[type=number] { font: inherit; padding: 7px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--paper); color: var(--fg); min-width: 0; }
+select { width: 100%; }
+.namerow { display: flex; align-items: center; gap: 10px; }
+.namerow input { flex: 1; width: 0; font-family: var(--display); font-weight: 600; font-size: 17px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; flex: none; display: inline-block; }
+.sci { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 14px; }
+.sci input { font-family: var(--mono); }
+.sci input.mant { width: 8ch; }
+.sci input.exp { width: 6.5ch; }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+button {
+  font: inherit; font-weight: 600; cursor: pointer; border-radius: 7px; padding: 10px 12px;
+  border: 1px solid var(--line); background: var(--paper); color: var(--fg);
+}
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { grid-column: 1 / -1; background: var(--accent); color: #fff; border-color: var(--accent); font-size: 16px; padding: 12px; }
+button.primary:hover { filter: brightness(1.08); }
+.minis, .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.minis button, .presets button { padding: 6px 10px; font-size: 13px; font-weight: 500; background: var(--accent-soft); border-color: transparent; }
+.minis button { font-family: var(--mono); }
+.presets button.on { border-color: var(--accent); }
+.checks { display: grid; gap: 6px; }
+.checks label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.checks input { accent-color: var(--accent); width: 16px; height: 16px; }
+.swatch { width: 18px; height: 3px; border-radius: 2px; display: inline-block; flex: none; }
+.meta { font: 12px var(--mono); color: var(--muted); }
+.empty { color: var(--muted); margin: 0; }
+
+.results { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.results div { background: var(--paper); padding: 14px 16px; display: grid; gap: 2px; min-width: 0; align-content: start; }
+.results b { font-family: var(--display); font-weight: 600; font-size: 24px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.results b.f { color: var(--vec); }
+.results small { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+@media (max-width: 760px) { .results { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.traces { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 28px; }
+.chip { display: inline-flex; gap: 6px; align-items: center; font-family: var(--mono); font-size: 12px; font-weight: 400; padding: 4px 10px; border-radius: 99px; border: 1px solid var(--line); background: var(--paper); }
+.chip.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.chip .dot { width: 10px; height: 10px; }
+.chip .m { color: var(--muted); }
+
+.theory { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.card p { margin: 0; color: var(--muted); max-width: 65ch; }
+.card p b { color: var(--fg); font-weight: 600; }
+.eq { font-family: var(--mono); font-size: 14px; background: var(--bg); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: nowrap; line-height: 1.9; }
+.eq .res { color: var(--vec); font-weight: 500; font-size: 16px; }
+.legend { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 14px; }
+.rows { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 14px; }
+.rows .v { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.rows .tot { font-weight: 600; border-top: 1px solid var(--line); padding-top: 6px; }
+.rows .tot.v { color: var(--vec); }
+.lockrow { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.lockrow svg { width: 12px; height: 12px; fill: currentColor; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <header>
+    <h1>Gravitační <span>zákon</span></h1>
+    <p>Interaktivní model gravitačního působení dvou a více těles. Tělesa posouvejte po ploše a měňte jejich hmotnost; výchozí hodnoty odpovídají skutečnému Slunci a Zemi.</p>
+  </header>
+
+  <div class="main">
+    <section class="stage" aria-label="Pracovní plocha">
+      <div class="canvas-box" id="stage">
+        <canvas id="cv" aria-label="Plocha s tělesy a šipkami sil"></canvas>
+        <div class="hud tl" id="hudGrid"></div>
+        <div class="hud br" id="hudSim"></div>
+      </div>
+      <div class="live" aria-live="off">
+        <div><span class="label"><i>m</i>₁</span><b id="lm1">–</b></div>
+        <div><span class="label"><i>m</i>₂</span><b id="lm2">–</b></div>
+        <div><span class="label"><i>r</i></span><b id="lr">–</b></div>
+        <div><span class="label"><i>F</i></span><b id="lF">–</b></div>
+        <div><span class="label"><i>a</i>₁</span><b id="la1">–</b></div>
+        <div><span class="label"><i>t</i></span><b id="lt">–</b></div>
+      </div>
+      <div class="hint">
+        <span><b>tažení tělesa</b> posun</span>
+        <span><b>úchyt m</b> nebo <b>kolečko nad tělesem</b> hmotnost</span>
+        <span><b>tažení plochy</b> posun pohledu</span>
+        <span><b>kolečko</b> přiblížení</span>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Ovládání">
+      <div class="ctrl" id="bodyCard">
+        <div class="ctrl-head"><span class="t">Vybrané těleso</span><output id="mOut"></output></div>
+        <p id="bodyEmpty" class="empty" hidden>Klikněte na těleso na ploše.</p>
+        <div id="bodyEdit" class="ctrl" style="gap:8px">
+          <div class="namerow"><span class="dot" id="bDot"></span><input type="text" id="bName" aria-label="Název tělesa"></div>
+          <div class="sci"><input type="text" class="mant" id="mMant" inputmode="decimal" aria-label="Hmotnost, číslo"><span>· 10^</span><input type="number" class="exp" id="mExp" step="1" aria-label="Hmotnost, exponent"><span>kg</span></div>
+          <input type="range" id="mSlider" min="0" max="35" step="0.01" aria-label="Hmotnost, posuvník">
+          <div class="minis"><button data-mk="0.1">÷10</button><button data-mk="0.5">÷2</button><button data-mk="2">×2</button><button data-mk="10">×10</button></div>
+          <div class="meta" id="mMeta"></div>
+        </div>
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-head"><span class="t">Druhé těleso dvojice</span><output id="rOut"></output></div>
+        <p id="pairEmpty" class="empty" hidden>Na ploše musí být alespoň dvě tělesa.</p>
+        <div id="pairEdit" class="ctrl" style="gap:8px">
+          <div class="namerow" style="gap:8px"><span id="pairA" hidden></span><select id="partner" aria-label="Druhé těleso dvojice"></select></div>
+          <div class="sci"><span>r =</span><input type="text" class="mant" id="rMant" inputmode="decimal" aria-label="Vzdálenost, číslo"><span>· 10^</span><input type="number" class="exp" id="rExp" step="1" aria-label="Vzdálenost, exponent"><span>m</span></div>
+          <div class="minis"><button data-rk="0.5">r ÷2</button><button data-rk="2">r ×2</button><button data-rk="3">r ×3</button><button id="saveF0">uložit F₀</button></div>
+          <div class="meta" id="rMeta"></div>
+        </div>
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-head"><label for="zoom">Přiblížení</label><output id="zoomOut"></output></div>
+        <input type="range" id="zoom" min="3" max="12" step="0.01">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-head"><label for="speed">Rychlost času</label><output id="speedLbl"></output></div>
+        <input type="range" id="speed" min="-3.5" max="2.6" step="0.01">
+      </div>
+
+      <div class="btns">
+        <button class="primary" id="play">▶ Spustit pohyb</button>
+        <button id="orbits" title="Každé těleso dostane rychlost pro kruhový oběh kolem nejhmotnějšího tělesa">Oběžné rychlosti</button>
+        <button id="zeroV" title="Tělesa se zastaví a začnou na sebe padat">Vynulovat rychlosti</button>
+        <button id="addBody">+ Přidat těleso</button>
+        <button id="delBody">Odebrat těleso</button>
+        <button id="fit">Zobrazit vše</button>
+        <button id="clearTrails">Smazat stopy</button>
+      </div>
+
+      <div class="checks">
+        <label><input type="checkbox" id="tResult" checked> <span class="swatch" style="background:var(--vec)"></span> Výsledná síla F</label>
+        <label><input type="checkbox" id="tPartial" checked> <span class="swatch" style="background:linear-gradient(90deg,var(--b-sun),var(--b-earth),var(--b-mars))"></span> Dílčí síly (barva podle původce)</label>
+        <label><input type="checkbox" id="tDist" checked> <span class="swatch" style="background:var(--muted)"></span> Vzdálenosti r</label>
+        <label><input type="checkbox" id="tTrails" checked> Stopy pohybu</label>
+      </div>
+      <button id="arrowScale" style="font-weight:500;font-size:13px;padding:7px 10px" title="Nastaví délku šipek podle aktuálně největší síly">Přepočítat délku šipek</button>
+
+      <div class="ctrl">
+        <span class="label">Vyzkoušej</span>
+        <div class="presets">
+          <button data-preset="sunEarth" class="on">Slunce a Země</button>
+          <button data-preset="earthMoon">Země a Měsíc</button>
+          <button data-preset="personEarth">Člověk na Zemi</button>
+          <button data-preset="personMoon">Člověk na Měsíci</button>
+          <button data-preset="sunEarthMars">Slunce, Země, Mars</button>
+          <button data-preset="binary">Dvojhvězda</button>
+          <button data-preset="three">Tři tělesa</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="results" aria-label="Vypočtené hodnoty">
+    <div><span class="label">Gravitační síla <i>F</i></span><b class="f" id="rF">–</b><small id="rFsub">mezi dvojicí těles</small></div>
+    <div><span class="label">Poměr <i>F</i> / <i>F</i>₀</span><b id="rRatio">–</b><small id="rRatioSub">uložte F₀ v panelu</small></div>
+    <div><span class="label">Výsledná síla</span><b id="rRes">–</b><small>na vybrané těleso</small></div>
+    <div><span class="label">Zrychlení <i>a</i></span><b id="rA">–</b><small>a = F / m</small></div>
+    <div><span class="label">Rychlost <i>v</i></span><b id="rV">–</b><small>vybraného tělesa</small></div>
+  </section>
+
+  <div class="traces"><span class="label">Tělesa na ploše:</span><span class="traces" id="chips" style="min-height:0"></span></div>
+
+  <section class="theory">
+    <div class="card">
+      <h2>Newtonův gravitační zákon</h2>
+      <p>Každá dvě tělesa se přitahují silou, která je přímo úměrná součinu jejich hmotností a nepřímo úměrná druhé mocnině vzdálenosti jejich středů.</p>
+      <div class="eq" id="formula"></div>
+      <div class="legend" id="formLegend"></div>
+      <div class="lockrow"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 7V5a4 4 0 1 1 8 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 1 0-4 0v2z"/></svg>G = 6,674·10<sup>−11</sup> N·m²·kg<sup>−2</sup> je konstanta, nelze ji měnit.</div>
+    </div>
+    <div class="card">
+      <h2 id="forceTitle">Síly působící na těleso</h2>
+      <div class="rows" id="forceRows"></div>
+      <p id="forceNote"></p>
+    </div>
+    <div class="card">
+      <h2>Závislost na vzdálenosti a tíha</h2>
+      <p>Uložte F₀ a změňte jednu veličinu. Dvojnásobná hmotnost dá dvojnásobnou sílu, dvojnásobná vzdálenost jen čtvrtinovou.</p>
+      <div class="eq">m₁ × 2 &nbsp;→&nbsp; F × 2<br>r × 2 &nbsp;→&nbsp; F ÷ 4 &nbsp;&nbsp; r × 3 &nbsp;→&nbsp; F ÷ 9<br>g = G · M / R²</div>
+      <p>Na povrchu planety je gravitační síla tíhou tělesa. Kruhy nejsou v měřítku, kromě Slunce, planet a Měsíce při velkém přiblížení.</p>
+    </div>
+  </section>
+  <footer class="foot">Autor: Isaac Newton · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 20. 10. 2026</footer>
+</div>
+
+<script>
+(() => {
+const G = 6.674e-11, AU = 1.495978707e11, DAY = 86400, M_EARTH = 5.972e24, M_SUN = 1.989e30;
+const PAL = ['sun','earth','moon','mars','teal','violet','rose'];
+const $ = s => document.querySelector(s);
+const cv = $('#cv'), ctx = cv.getContext('2d'), stage = $('#stage');
+
+/* ---------- formátování ---------- */
+const SUP = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sciParts(x, d){
+  if (x === 0) return {m:0, e:0};
+  let e = Math.floor(Math.log10(Math.abs(x)));
+  let m = Number((x / Math.pow(10, e)).toFixed(d - 1));
+  if (Math.abs(m) >= 10){ m /= 10; e++; }
+  return {m, e};
+}
+const comma = s => s.replace('.', ',').replace('-', '−');
+function sci(x, d = 4, html = true){
+  if (!isFinite(x)) return '—';
+  const p = sciParts(x, d);
+  const ms = comma(p.m.toFixed(d - 1));
+  if (p.e === 0) return ms;
+  const es = html ? `10<sup>${String(p.e).replace('-', '−')}</sup>` : '10' + String(p.e).split('').map(c => SUP[c]).join('');
+  return ms + '·' + es;
+}
+function num(x, d = 4, html = true, hi = 1e5){
+  const a = Math.abs(x);
+  if (a === 0) return '0';
+  if (a >= 0.01 && a < hi) return Number(x.toPrecision(d)).toLocaleString('cs-CZ', {maximumFractionDigits: 8}).replace('-', '−');
+  return sci(x, d, html);
+}
+function distFriendly(r, html = true){
+  if (r >= 0.01 * AU) return num(r / AU, 4, html) + ' AU';
+  return num(r / 1000, 4, html, 1e7) + ' km';
+}
+
+/* ---------- stav ---------- */
+let bodies = [], nextId = 1, sel = null, partner = null;
+const view = {cx: 0, cy: 0, mpp: 1e9};
+let Fref = 1, running = false, daysPerSec = 30, elapsed = 0, F0 = null, drag = null, structDirty = true;
+const show = {partial: true, result: true, dist: true, trails: true};
+
+function mk(name, m, x, y, color, R){
+  return {id: nextId++, name, m, x, y, R: R || 0, vx: 0, vy: 0, color, trail: [], fx: 0, fy: 0, parts: []};
+}
+const byId = id => bodies.find(b => b.id === id);
+const dispR = m => Math.min(48, Math.max(4, 7 * Math.pow(m / M_EARTH, 1 / 6)));
+const R_EARTH = 6.371e6, R_MOON = 1.737e6, R_SUN = 6.957e8, R_MARS = 3.3895e6, M_MOON = 7.342e22;
+const drawR = b => Math.max(dispR(b.m), b.R ? b.R / view.mpp : 0);
+
+const PRESETS = {
+  sunEarth: () => ({days: 30, list: [mk('Slunce', M_SUN, 0, 0, 'sun', R_SUN), mk('Země', M_EARTH, 1.496e11, 0, 'earth', R_EARTH)]}),
+  earthMoon: () => ({days: 2, list: [mk('Země', M_EARTH, 0, 0, 'earth', R_EARTH), mk('Měsíc', M_MOON, 3.844e8, 0, 'moon', R_MOON)]}),
+  sunEarthMars: () => {
+    const a = 140 * Math.PI / 180, r = 2.279e11;
+    return {days: 40, list: [mk('Slunce', M_SUN, 0, 0, 'sun', R_SUN), mk('Země', M_EARTH, 1.496e11, 0, 'earth', R_EARTH), mk('Mars', 6.417e23, r * Math.cos(a), r * Math.sin(a), 'mars', R_MARS)]};
+  },
+  binary: () => ({days: 30, list: [mk('Hvězda A', M_SUN, -0.75e11, 0, 'sun'), mk('Hvězda B', M_SUN, 0.75e11, 0, 'rose')]}),
+  three: () => {
+    const r = 1e11, L = [];
+    ['A','B','C'].forEach((n, i) => { const a = Math.PI / 2 + i * 2 * Math.PI / 3; L.push(mk('Těleso ' + n, M_SUN, r * Math.cos(a), r * Math.sin(a), ['teal','violet','sun'][i])); });
+    return {days: 20, list: L};
+  },
+  personEarth: () => ({days: 0.01, list: [mk('Země', M_EARTH, 0, 0, 'earth', R_EARTH), mk('Člověk', 70, 0, R_EARTH, 'teal', 0.3)]}),
+  personMoon: () => ({days: 0.01, list: [mk('Měsíc', M_MOON, 0, 0, 'moon', R_MOON), mk('Člověk', 70, 0, R_MOON, 'teal', 0.3)]})
+};
+
+function loadPreset(key){
+  const p = PRESETS[key]();
+  bodies = p.list; daysPerSec = p.days; elapsed = 0; running = false; F0 = null;
+  sel = bodies[bodies.length - 1].id; partner = null;
+  setOrbits(); computeForces(); fit(); resetArrowScale();
+  structDirty = true; syncSpeed(); syncPlay(); onSelect();
+}
+
+/* ---------- fyzika ---------- */
+let pairs = [];
+function computeForces(){
+  for (const b of bodies){ b.fx = 0; b.fy = 0; b.parts = []; }
+  pairs = [];
+  for (let i = 0; i < bodies.length; i++) for (let j = i + 1; j < bodies.length; j++){
+    const a = bodies[i], b = bodies[j];
+    const dx = b.x - a.x, dy = b.y - a.y, r = Math.hypot(dx, dy) || 1e-9;
+    const F = G * a.m * b.m / (r * r), ux = dx / r, uy = dy / r;
+    a.fx += F * ux; a.fy += F * uy; b.fx -= F * ux; b.fy -= F * uy;
+    a.parts.push({o: b, F, ux, uy}); b.parts.push({o: a, F, ux: -ux, uy: -uy});
+    pairs.push({a, b, r, F});
+  }
+}
+function accels(){
+  const n = bodies.length, ax = new Float64Array(n), ay = new Float64Array(n);
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++){
+    const a = bodies[i], b = bodies[j];
+    const dx = b.x - a.x, dy = b.y - a.y, r2 = dx * dx + dy * dy, r = Math.sqrt(r2) || 1e-9, k = G / (r2 * r);
+    ax[i] += k * b.m * dx; ay[i] += k * b.m * dy; ax[j] -= k * a.m * dx; ay[j] -= k * a.m * dy;
+  }
+  return [ax, ay];
+}
+function checkCollision(){
+  for (let i = 0; i < bodies.length; i++) for (let j = i + 1; j < bodies.length; j++){
+    const a = bodies[i], b = bodies[j];
+    const ra = a.R || dispR(a.m) * view.mpp * 0.5, rb = b.R || dispR(b.m) * view.mpp * 0.5;
+    if (Math.hypot(b.x - a.x, b.y - a.y) < (ra + rb) * 0.99) return [a, b];
+  }
+  return null;
+}
+let collisionMsg = '';
+function step(simDt){
+  const N = 200, h = simDt / N;
+  let [ax, ay] = accels();
+  for (let s = 0; s < N; s++){
+    bodies.forEach((b, i) => { b.x += b.vx * h + 0.5 * ax[i] * h * h; b.y += b.vy * h + 0.5 * ay[i] * h * h; });
+    const [nx, ny] = accels();
+    bodies.forEach((b, i) => { b.vx += 0.5 * (ax[i] + nx[i]) * h; b.vy += 0.5 * (ay[i] + ny[i]) * h; });
+    ax = nx; ay = ny; elapsed += h;
+    const c = checkCollision();
+    if (c){ running = false; syncPlay(); collisionMsg = `Srážka: ${c[0].name} a ${c[1].name}. Pohyb zastaven.`; break; }
+  }
+}
+function setOrbits(){
+  if (bodies.length < 2) return;
+  const H = bodies.reduce((p, b) => b.m > p.m ? b : p, bodies[0]);
+  H.vx = 0; H.vy = 0;
+  for (const b of bodies){
+    if (b === H) continue;
+    const dx = b.x - H.x, dy = b.y - H.y, r = Math.hypot(dx, dy) || 1;
+    const v = Math.sqrt(G * (H.m + b.m) / r);
+    b.vx = -dy / r * v; b.vy = dx / r * v;
+  }
+  let px = 0, py = 0, M = 0;
+  for (const b of bodies){ px += b.m * b.vx; py += b.m * b.vy; M += b.m; }
+  for (const b of bodies){ b.vx -= px / M; b.vy -= py / M; }
+}
+
+/* ---------- zobrazení ---------- */
+let W = 0, H = 0, dpr = 1;
+function resize(){
+  const r = stage.getBoundingClientRect(); W = r.width; H = r.height; dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+}
+new ResizeObserver(resize).observe(stage); resize();
+
+let C = {};
+function readColors(){
+  const cs = getComputedStyle(document.documentElement);
+  ['paper','grid','grid-strong','fg','muted','line','accent','vec','b-sun','b-earth','b-moon','b-mars','b-teal','b-violet','b-rose']
+    .forEach(k => C[k] = cs.getPropertyValue('--' + k).trim());
+  structDirty = true;
+}
+readColors();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
+new MutationObserver(readColors).observe(document.documentElement, {attributes: true, attributeFilter: ['data-theme']});
+const col = b => C['b-' + b.color] || C.accent;
+
+const toS = (x, y) => ({x: W / 2 + (x - view.cx) / view.mpp, y: H / 2 - (y - view.cy) / view.mpp});
+const toW = (sx, sy) => ({x: view.cx + (sx - W / 2) * view.mpp, y: view.cy - (sy - H / 2) * view.mpp});
+const clampMpp = v => Math.min(1e12, Math.max(1e3, v));
+
+function fit(){
+  if (!bodies.length || !W) return;
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const b of bodies){ x0 = Math.min(x0, b.x - b.R); x1 = Math.max(x1, b.x + b.R); y0 = Math.min(y0, b.y - b.R); y1 = Math.max(y1, b.y + b.R); }
+  view.cx = (x0 + x1) / 2; view.cy = (y0 + y1) / 2;
+  const sx = x1 - x0, sy = y1 - y0;
+  if (sx > 0 || sy > 0) view.mpp = clampMpp(Math.max(sx / (W * 0.62), sy / (H * 0.58)));
+  syncZoom();
+}
+function resetArrowScale(){
+  computeForces();
+  let mx = 0; for (const b of bodies) mx = Math.max(mx, Math.hypot(b.fx, b.fy), ...b.parts.map(p => p.F));
+  Fref = mx || 1;
+}
+
+function arrow(x, y, ux, uy, L, color, w){
+  const cap = 300, capped = L > cap; L = Math.min(L, cap);
+  if (L < 1.5) return null;
+  const ex = x + ux * L, ey = y + uy * L, hs = 6 + w * 2;
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex - ux * hs * 0.8, ey - uy * hs * 0.8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ex, ey);
+  ctx.lineTo(ex - ux * hs - uy * hs * 0.5, ey - uy * hs + ux * hs * 0.5);
+  ctx.lineTo(ex - ux * hs + uy * hs * 0.5, ey - uy * hs - ux * hs * 0.5); ctx.closePath(); ctx.fill();
+  if (capped){ // značka „zkráceno“
+    const mx = x + ux * L * 0.55, my = y + uy * L * 0.55;
+    ctx.lineWidth = 1.5;
+    for (const o of [-4, 4]){ ctx.beginPath(); ctx.moveTo(mx + ux * o - uy * 7 + ux * 3, my + uy * o + ux * 7 + uy * 3); ctx.lineTo(mx + ux * o + uy * 7 - ux * 3, my + uy * o - ux * 7 - uy * 3); ctx.stroke(); }
+  }
+  return {x: ex, y: ey};
+}
+function pill(text, x, y, color, align = 'center'){
+  ctx.font = '500 12px "IBM Plex Mono", ui-monospace, monospace';
+  const w = ctx.measureText(text).width + 10;
+  let lx = align === 'center' ? x - w / 2 : align === 'left' ? x : x - w;
+  ctx.fillStyle = C.paper; ctx.globalAlpha = 0.88; ctx.fillRect(lx, y - 10, w, 19); ctx.globalAlpha = 1;
+  ctx.fillStyle = color; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(text, lx + 5, y);
+}
+
+function niceStep(target){
+  const p = Math.pow(10, Math.floor(Math.log10(target)));
+  for (const k of [1, 2, 5, 10]) if (p * k >= target * 0.7) return p * k;
+  return p * 10;
+}
+
+function draw(){
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = C.paper; ctx.fillRect(0, 0, W, H);
+  // mřížka
+  const step = niceStep(view.mpp * 90);
+  const tl = toW(0, 0), br = toW(W, H);
+  ctx.lineWidth = 1; ctx.strokeStyle = C.grid; ctx.setLineDash([]); ctx.beginPath();
+  for (let gx = Math.ceil(tl.x / step) * step; gx <= br.x; gx += step){ const s = Math.round(toS(gx, 0).x) + 0.5; ctx.moveTo(s, 0); ctx.lineTo(s, H); }
+  for (let gy = Math.ceil(br.y / step) * step; gy <= tl.y; gy += step){ const s = Math.round(toS(0, gy).y) + 0.5; ctx.moveTo(0, s); ctx.lineTo(W, s); }
+  ctx.stroke();
+  $('#hudGrid').innerHTML = `1 dílek mřížky = ${num(step, 3)} m`;
+  setHTML('zoomOut', distFriendly(step) + ' / dílek');
+
+  // stopy
+  if (show.trails) for (const b of bodies){
+    if (b.trail.length < 2) continue;
+    ctx.strokeStyle = col(b); ctx.globalAlpha = 0.45; ctx.lineWidth = 1.5; ctx.beginPath();
+    b.trail.forEach((p, i) => { const s = toS(p[0], p[1]); i ? ctx.lineTo(s.x, s.y) : ctx.moveTo(s.x, s.y); });
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+
+  // vzdálenosti
+  if (show.dist){
+    const list = bodies.length <= 4 ? pairs : pairs.filter(p => p.a.id === sel || p.b.id === sel);
+    for (const p of list){
+      const A = toS(p.a.x, p.a.y), B = toS(p.b.x, p.b.y);
+      ctx.strokeStyle = C.muted; ctx.globalAlpha = 0.6; ctx.lineWidth = 1; ctx.setLineDash([5, 6]);
+      ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      pill('r = ' + sci(p.r, 4, false) + ' m', (A.x + B.x) / 2, (A.y + B.y) / 2, C.muted);
+    }
+  }
+
+  // tělesa
+  for (const b of bodies){
+    const s = toS(b.x, b.y), r = drawR(b), c = col(b);
+    if (b.color === 'sun'){ ctx.shadowColor = c; ctx.shadowBlur = 26; }
+    ctx.fillStyle = c; ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+    const g = ctx.createRadialGradient(s.x - r * 0.35, s.y - r * 0.35, r * 0.1, s.x, s.y, r);
+    g.addColorStop(0, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI * 2); ctx.fill();
+    if (b.id === sel){ ctx.strokeStyle = C.accent; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(s.x, s.y, r + 6, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.font = '600 13px "IBM Plex Sans", system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillStyle = C.fg;
+    if (r > 60){ ctx.textBaseline = 'middle'; ctx.fillStyle = '#ffffff'; ctx.font = '600 15px "IBM Plex Sans", system-ui, sans-serif'; ctx.fillText(b.name, s.x, s.y); }
+    else if (r < 8){ ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(b.name, s.x - r - 10, s.y - r - 6); }
+    else ctx.fillText(b.name, s.x, s.y + r + 9);
+  }
+
+  // síly
+  const two = bodies.length === 2;
+  for (const b of bodies){
+    const s = toS(b.x, b.y), r = drawR(b);
+    if (!two && show.partial) for (const p of b.parts){
+      const ux = p.ux, uy = -p.uy; // obrazovka má y dolů
+      arrow(s.x + ux * (r + 2), s.y + uy * (r + 2), ux, uy, 90 * p.F / Fref, col(p.o), 2);
+    }
+    const Fm = Math.hypot(b.fx, b.fy);
+    if ((two || show.result) && Fm > 0){
+      const ux = b.fx / Fm, uy = -b.fy / Fm;
+      const tip = arrow(s.x + ux * (r + 2), s.y + uy * (r + 2), ux, uy, 90 * Fm / Fref, C.vec, 3.5);
+      if (tip && (two || b.id === sel)){
+        pill((two ? 'F = ' : 'F výsl. = ') + sci(Fm, 3, false) + ' N', tip.x + ux * 12, tip.y + uy * 12 + (Math.abs(ux) < 0.4 ? uy * 6 : 0), C.vec, Math.abs(ux) < 0.4 ? 'center' : ux > 0 ? 'left' : 'right');
+      }
+    }
+  }
+
+  // úchyt pro hmotnost
+  const sb = byId(sel);
+  if (sb){
+    const h = handlePos(sb);
+    ctx.fillStyle = C.paper; ctx.strokeStyle = C.accent; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(h.x, h.y, 9, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = C.accent; ctx.font = '600 12px "IBM Plex Mono", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('m', h.x, h.y + 0.5);
+  }
+
+  const d = elapsed / DAY;
+  setHTML('lt', d < 1 ? num(elapsed / 3600, 3) + ' h' : num(d, 4) + ' d');
+  $('#hudSim').textContent = collisionMsg || `Uplynulý čas: ${d < 1 ? num(elapsed / 3600, 3, false) + ' h' : num(d, 4, false) + ' dní'}${d >= 365.25 ? ' (' + num(d / 365.25, 3, false) + ' roku)' : ''}`;
+}
+function handlePos(b){
+  const s = toS(b.x, b.y), r = drawR(b) + 15;
+  return {x: s.x + r * 0.7071, y: s.y - r * 0.7071};
+}
+
+/* ---------- ovládání myší ---------- */
+const pt = e => { const r = cv.getBoundingClientRect(); return {x: e.clientX - r.left, y: e.clientY - r.top}; };
+function bodyAt(p){
+  for (let i = bodies.length - 1; i >= 0; i--){
+    const b = bodies[i], s = toS(b.x, b.y);
+    if (Math.hypot(p.x - s.x, p.y - s.y) <= drawR(b) + 6) return b;
+  }
+  return null;
+}
+const onHandle = (b, p) => { const h = handlePos(b); return Math.hypot(p.x - h.x, p.y - h.y) <= 12; };
+function setMass(b, m){ b.m = Math.min(1e35, Math.max(1, m)); }
+
+cv.addEventListener('pointerdown', e => {
+  const p = pt(e); cv.setPointerCapture(e.pointerId);
+  const s = byId(sel);
+  if (s && onHandle(s, p)){ drag = {mode: 'mass', b: s, x0: p.x, y0: p.y, m0: s.m}; return; }
+  const b = bodyAt(p);
+  if (b){ if (b.id !== sel){ sel = b.id; onSelect(); } const sp = toS(b.x, b.y); drag = {mode: 'move', b, dx: p.x - sp.x, dy: p.y - sp.y}; cv.style.cursor = 'grabbing'; return; }
+  drag = {mode: 'pan', x0: p.x, y0: p.y, cx: view.cx, cy: view.cy}; cv.style.cursor = 'grabbing';
+});
+cv.addEventListener('pointermove', e => {
+  const p = pt(e);
+  if (!drag){
+    const s = byId(sel);
+    cv.style.cursor = s && onHandle(s, p) ? 'nesw-resize' : bodyAt(p) ? 'move' : 'grab';
+    return;
+  }
+  if (drag.mode === 'move'){ const w = toW(p.x - drag.dx, p.y - drag.dy); drag.b.x = w.x; drag.b.y = w.y; drag.b.trail = []; collisionMsg = ''; }
+  else if (drag.mode === 'mass'){ setMass(drag.b, drag.m0 * Math.pow(10, ((p.x - drag.x0) - (p.y - drag.y0)) / 90)); }
+  else { view.cx = drag.cx - (p.x - drag.x0) * view.mpp; view.cy = drag.cy + (p.y - drag.y0) * view.mpp; }
+});
+const endDrag = () => { drag = null; cv.style.cursor = 'grab'; };
+cv.addEventListener('pointerup', endDrag); cv.addEventListener('pointercancel', endDrag);
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  const p = pt(e), b = bodyAt(p);
+  if (b){ if (b.id !== sel){ sel = b.id; onSelect(); } setMass(b, b.m * Math.pow(10, -e.deltaY / 600)); return; }
+  const w = toW(p.x, p.y);
+  view.mpp = clampMpp(view.mpp * Math.exp(e.deltaY * 0.0015));
+  view.cx = w.x - (p.x - W / 2) * view.mpp; view.cy = w.y + (p.y - H / 2) * view.mpp;
+  syncZoom();
+}, {passive: false});
+
+document.addEventListener('keydown', e => {
+  if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  const b = byId(sel); if (!b) return;
+  if (e.key === '+' || e.key === '='){ setMass(b, b.m * 2); }
+  else if (e.key === '-'){ setMass(b, b.m / 2); }
+  else if (e.key === 'Delete'){ removeSel(); }
+});
+
+/* ---------- panel ---------- */
+const bName = $('#bName'), mMant = $('#mMant'), mExp = $('#mExp'), mSlider = $('#mSlider');
+const rMant = $('#rMant'), rExp = $('#rExp'), partnerSel = $('#partner');
+const parseNum = s => parseFloat(String(s).replace(/\s/g, '').replace(',', '.').replace('−', '-'));
+
+function setSciInputs(mantEl, expEl, v, force){
+  if (!force && (document.activeElement === mantEl || document.activeElement === expEl)) return;
+  const p = sciParts(v, 4);
+  mantEl.value = comma(String(p.m)); expEl.value = p.e;
+}
+
+function onSelect(){
+  const b = byId(sel);
+  if (b){ bName.value = b.name; setSciInputs(mMant, mExp, b.m, true); }
+  structDirty = true;
+}
+
+function ensurePartner(){
+  const b = byId(sel);
+  if (!b || bodies.length < 2){ partner = null; return; }
+  if (!partner || partner === sel || !byId(partner)){
+    let best = null, bd = Infinity;
+    for (const o of bodies) if (o !== b){ const d = Math.hypot(o.x - b.x, o.y - b.y); if (d < bd){ bd = d; best = o; } }
+    partner = best.id;
+  }
+}
+
+function buildStructure(){
+  ensurePartner();
+  const b = byId(sel);
+  $('#bodyEmpty').hidden = !!b; $('#bodyEdit').hidden = !b; $('#delBody').hidden = !b;
+  if (b){ $('#bDot').style.background = col(b); }
+  // partner select
+  partnerSel.innerHTML = bodies.filter(o => o.id !== sel).map(o => `<option value="${o.id}">${esc(o.name)}</option>`).join('');
+  if (partner) partnerSel.value = partner;
+  $('#pairEmpty').hidden = !!(b && partner); $('#pairEdit').hidden = !(b && partner);
+  // chips
+  $('#chips').innerHTML = bodies.map(o => `<button class="chip${o.id === sel ? ' on' : ''}" data-id="${o.id}"><span class="dot" style="background:${col(o)}"></span>${esc(o.name)}<span class="m">${num(o.m, 3)} kg</span></button>`).join('');
+  structDirty = false;
+}
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const lastHTML = {};
+function setHTML(id, html){ if (lastHTML[id] !== html){ lastHTML[id] = html; document.getElementById(id).innerHTML = html; } }
+
+function updatePanel(){
+  if (structDirty) buildStructure();
+  const b = byId(sel);
+  // chips: hmotnosti se mohou měnit
+  document.querySelectorAll('#chips .chip').forEach(ch => { const o = byId(+ch.dataset.id); if (o) ch.querySelector('.m').innerHTML = num(o.m, 3) + ' kg'; });
+  if (!b){ setHTML('forceRows', ''); setHTML('forceNote', ''); return; }
+  setSciInputs(mMant, mExp, b.m);
+  if (document.activeElement !== mSlider) mSlider.value = Math.log10(b.m);
+  let meta = `= ${num(b.m / M_EARTH, 4)} hmotnosti Země`;
+  if (b.m > 1e-3 * M_SUN) meta += ` = ${num(b.m / M_SUN, 4)} hmotnosti Slunce`;
+  setHTML('mMeta', meta);
+
+  // dvojice
+  const o = byId(partner);
+  if (o){
+    const r = Math.hypot(o.x - b.x, o.y - b.y), F = G * b.m * o.m / (r * r);
+    setHTML('pairA', `<span class="dot" style="background:${col(b)};width:10px;height:10px;margin-right:6px"></span>${esc(b.name)}`);
+    setHTML('formula',
+      `<div>F = G · m₁ · m₂ / r²</div>` +
+      `<div>F = ${sci(G, 4)} · ${sci(b.m, 4)} · ${sci(o.m, 4)} / (${sci(r, 4)})²</div>` +
+      `<div class="res">F = ${sci(F, 4)} N</div>`);
+    setHTML('formLegend', `<span>m₁ = ${esc(b.name)}</span><span>m₂ = ${esc(o.name)}</span><span>r v metrech</span>`);
+    setSciInputs(rMant, rExp, r);
+    const big = (o.R || 0) >= (b.R || 0) ? o : b, small = big === o ? b : o;
+    let rm = `= ${distFriendly(r)}`;
+    if (big.R > 1e3 && r >= big.R * 0.98) rm += Math.abs(r - big.R) < big.R * 0.002 ? ` · ${esc(small.name)} je na povrchu tělesa ${esc(big.name)} (r = poloměr ${num(big.R / 1000, 4, true, 1e7)} km)` : ` · výška nad povrchem tělesa ${esc(big.name)}: ${num((r - big.R) / 1000, 4, true, 1e7)} km`;
+    setHTML('rMeta', rm);
+    let rv = '–', rs = 'uložte F₀ v panelu';
+    if (F0){
+      const same = (F0.a === b.id && F0.b === o.id) || (F0.a === o.id && F0.b === b.id);
+      if (same){
+        const q = F / F0.F;
+        rv = Math.abs(q - 1) < 0.0005 ? '1×' : q < 1 ? '1/' + num(1 / q, 3) : num(q, 3) + '×';
+        rs = 'F₀ = ' + sci(F0.F, 3) + ' N';
+      } else rs = 'F₀ patří jiné dvojici';
+    }
+    setHTML('rRatio', rv); setHTML('rRatioSub', rs);
+    setHTML('rF', sci(F, 3) + ' N'); setHTML('rFsub', `mezi ${esc(b.name)} a ${esc(o.name)}`);
+    setHTML('lm2', num(o.m, 3) + ' kg'); setHTML('lr', sci(r, 3) + ' m'); setHTML('lF', sci(F, 3) + ' N');
+    setHTML('rOut', distFriendly(r));
+  } else {
+    ['rF','rRatio','lm2','lr','lF','rOut'].forEach(id => setHTML(id, id === 'rOut' ? '' : '–'));
+    setHTML('formula', ''); setHTML('formLegend', '');
+  }
+
+  // síly na těleso
+  $('#forceTitle').textContent = 'Síly působící na: ' + b.name;
+  let rows = b.parts.map(p => `<span><span class="dot" style="background:${col(p.o)};width:9px;height:9px;margin-right:6px"></span>od tělesa ${esc(p.o.name)}</span><span class="v">${sci(p.F, 4)} N</span>`).join('');
+  const Fm = Math.hypot(b.fx, b.fy), a = Fm / b.m;
+  if (b.parts.length > 1) rows += `<span class="tot">Výsledná síla (vektorový součet)</span><span class="v tot">${sci(Fm, 4)} N</span>`;
+  rows += `<span>Zrychlení a = F / m</span><span class="v">${num(a, 4)} m/s²</span>`;
+  const v = Math.hypot(b.vx, b.vy);
+  setHTML('mOut', num(b.m, 3) + ' kg'); setHTML('lm1', num(b.m, 3) + ' kg');
+  setHTML('la1', num(a, 3) + ' m/s²'); setHTML('rRes', sci(Fm, 3) + ' N');
+  setHTML('rA', num(a, 3) + ' m/s²'); setHTML('rV', num(v / 1000, 3) + ' km/s');
+  rows += `<span>Rychlost</span><span class="v">${num(v / 1000, 4)} km/s</span>`;
+  if (!bodies.length || b.parts.length === 0) rows = `<span style="color:var(--muted)">Na těleso nepůsobí žádné jiné těleso.</span><span></span>`;
+  setHTML('forceRows', rows);
+
+  let note = '';
+  if (o){
+    const ao = (G * b.m * o.m / Math.pow(Math.hypot(o.x - b.x, o.y - b.y), 2)) / o.m;
+    const q = a && bodies.length === 2 ? ao / a : null;
+    note = `<b>3. Newtonův zákon:</b> ${esc(o.name)} přitahuje těleso ${esc(b.name)} stejně velkou silou, jakou ${esc(b.name)} přitahuje ${esc(o.name)}, jen opačným směrem.`;
+    if (q) note += ` Zrychlení se ale liší: ${esc(o.name)} zrychluje ${q >= 1 ? num(q, 4) + '×' : '1/' + num(1 / q, 4) + '×'} víc než ${esc(b.name)}, protože má ${q >= 1 ? 'menší' : 'větší'} hmotnost.`;
+  }
+  if (o){
+    const big = (o.R || 0) >= (b.R || 0) ? o : b, small = big === o ? b : o, r = Math.hypot(o.x - b.x, o.y - b.y);
+    if (big.R > 1e3 && Math.abs(r - big.R) < big.R * 0.002 && small.m < 1e6){
+      const g = G * big.m / (r * r);
+      note = `<b>Tíha:</b> síla ${sci(G * big.m * small.m / (r * r), 4)} N je tíhová síla, kterou ${esc(big.name)} přitahuje těleso ${esc(small.name)} na povrchu. Tíhové zrychlení g = F / m = G·M / R² = <b>${num(g, 4)} m/s²</b>. ` + note;
+    }
+  }
+  setHTML('forceNote', note);
+}
+
+bName.addEventListener('input', () => { const b = byId(sel); if (b){ b.name = bName.value || '—'; structDirty = true; } });
+function massFromInputs(){
+  const b = byId(sel); if (!b) return;
+  const m = parseNum(mMant.value), e = parseInt(mExp.value, 10);
+  if (isFinite(m) && m > 0 && isFinite(e)) setMass(b, m * Math.pow(10, e));
+}
+mMant.addEventListener('input', massFromInputs); mExp.addEventListener('input', massFromInputs);
+[mMant, mExp].forEach(el => el.addEventListener('change', () => { const b = byId(sel); if (b) setSciInputs(mMant, mExp, b.m, true); }));
+mSlider.addEventListener('input', () => { const b = byId(sel); if (b){ setMass(b, Math.pow(10, +mSlider.value)); setSciInputs(mMant, mExp, b.m, true); } });
+document.querySelectorAll('[data-mk]').forEach(btn => btn.addEventListener('click', () => {
+  const b = byId(sel); if (b){ setMass(b, b.m * +btn.dataset.mk); setSciInputs(mMant, mExp, b.m, true); }
+}));
+
+function setPairDist(r){
+  const b = byId(sel), o = byId(partner); if (!b || !o || !(r > 0)) return;
+  let dx = o.x - b.x, dy = o.y - b.y, d = Math.hypot(dx, dy);
+  if (d === 0){ dx = 1; dy = 0; d = 1; }
+  o.x = b.x + dx / d * r; o.y = b.y + dy / d * r; o.trail = []; collisionMsg = '';
+  const s = toS(o.x, o.y);
+  if (s.x < 0 || s.x > W || s.y < 0 || s.y > H) fit();
+}
+function distFromInputs(){ const m = parseNum(rMant.value), e = parseInt(rExp.value, 10); if (isFinite(m) && m > 0 && isFinite(e)) setPairDist(m * Math.pow(10, e)); }
+rMant.addEventListener('input', distFromInputs); rExp.addEventListener('input', distFromInputs);
+[rMant, rExp].forEach(el => el.addEventListener('change', () => { const b = byId(sel), o = byId(partner); if (b && o) setSciInputs(rMant, rExp, Math.hypot(o.x - b.x, o.y - b.y), true); }));
+document.querySelectorAll('[data-rk]').forEach(btn => btn.addEventListener('click', () => {
+  const b = byId(sel), o = byId(partner); if (!b || !o) return;
+  setPairDist(Math.hypot(o.x - b.x, o.y - b.y) * +btn.dataset.rk);
+  setSciInputs(rMant, rExp, Math.hypot(o.x - b.x, o.y - b.y), true);
+}));
+partnerSel.addEventListener('change', () => { partner = +partnerSel.value; });
+$('#saveF0').addEventListener('click', () => {
+  const b = byId(sel), o = byId(partner); if (!b || !o) return;
+  const r = Math.hypot(o.x - b.x, o.y - b.y);
+  F0 = {a: b.id, b: o.id, F: G * b.m * o.m / (r * r)};
+});
+$('#chips').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c){ sel = +c.dataset.id; onSelect(); } });
+
+function removeSel(){
+  bodies = bodies.filter(b => b.id !== sel);
+  sel = bodies.length ? bodies[0].id : null;
+  if (partner && !byId(partner)) partner = null;
+  onSelect();
+}
+$('#delBody').addEventListener('click', removeSel);
+$('#addBody').addEventListener('click', () => {
+  const used = new Set(bodies.map(b => b.color));
+  const color = PAL.find(c => !used.has(c)) || PAL[bodies.length % PAL.length];
+  const ang = Math.random() * Math.PI * 2, d = Math.min(W, H) * 0.3 * view.mpp;
+  let n = bodies.length + 1; while (bodies.some(b => b.name === 'Těleso ' + n)) n++;
+  const b = mk('Těleso ' + n, M_EARTH, view.cx + Math.cos(ang) * d, view.cy + Math.sin(ang) * d, color);
+  bodies.push(b); sel = b.id; partner = null; onSelect();
+});
+$('#fit').addEventListener('click', fit);
+$('#arrowScale').addEventListener('click', resetArrowScale);
+document.querySelectorAll('[data-preset]').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('[data-preset]').forEach(x => x.classList.toggle('on', x === btn));
+  loadPreset(btn.dataset.preset);
+}));
+
+const zoom = $('#zoom');
+function syncZoom(){ zoom.value = Math.log10(view.mpp); }
+zoom.addEventListener('input', () => { view.mpp = clampMpp(Math.pow(10, +zoom.value)); });
+
+const speed = $('#speed');
+function syncSpeed(){
+  speed.value = Math.log10(daysPerSec);
+  const d = daysPerSec, t = d >= 1 ? `${num(d, 3, false)} dní` : d * 24 >= 1 ? `${num(d * 24, 3, false)} h` : `${num(d * 1440, 3, false)} min`;
+  $('#speedLbl').textContent = t + ' za sekundu';
+}
+speed.addEventListener('input', () => { daysPerSec = Math.pow(10, +speed.value); syncSpeed(); });
+function syncPlay(){ $('#play').textContent = running ? '❚❚ Pozastavit' : '▶ Spustit pohyb'; }
+$('#play').addEventListener('click', () => { running = !running; if (running) collisionMsg = ''; syncPlay(); });
+$('#orbits').addEventListener('click', () => { setOrbits(); bodies.forEach(b => b.trail = []); });
+$('#zeroV').addEventListener('click', () => { bodies.forEach(b => { b.vx = 0; b.vy = 0; b.trail = []; }); });
+$('#clearTrails').addEventListener('click', () => bodies.forEach(b => b.trail = []));
+[['tPartial','partial'],['tResult','result'],['tDist','dist'],['tTrails','trails']].forEach(([id, k]) => $('#' + id).addEventListener('change', e => show[k] = e.target.checked));
+
+/* ---------- smyčka ---------- */
+let last = performance.now();
+function frame(t){
+  const dt = Math.min(0.05, (t - last) / 1000); last = t;
+  if (running && bodies.length && !(drag && drag.mode === 'move')){
+    step(dt * daysPerSec * DAY);
+    for (const b of bodies){ b.trail.push([b.x, b.y]); if (b.trail.length > 2500) b.trail.shift(); }
+  }
+  computeForces();
+  if (W > 0) draw();
+  updatePanel();
+  requestAnimationFrame(frame);
+}
+loadPreset('sunEarth');
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
