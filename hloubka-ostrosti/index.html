@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hloubka ostrosti</title>
+<meta name="description" content="Interaktivní simulace hloubky ostrosti: ohnisko, clona, vzdálenost zaostření, velikost snímače a hyperfokální vzdálenost.">
+<meta property="og:title" content="Hloubka ostrosti">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+/* Layout: one working bench — live viewfinder + controls up top, engraved lens distance scale under it, then the explanation as a narrow reading column */
+:root{
+  --bg:#e8ebeb; --surface:#f6f7f7; --ink:#171a1c; --muted:#59636a; --line:#c6cdd0;
+  --accent:#e2a300; --accent-ink:#835b00; --focus:#c43a2c; --ok:#2f7d4f; --warn:#a86a00; --bad:#b0362a;
+  --barrel:#18191a; --engrave:#eceeee; --engrave-dim:#8a9295;
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111415; --surface:#1a1e20; --ink:#e7ebeb; --muted:#97a2a7; --line:#2d3437;
+  --accent:#f2b520; --accent-ink:#f4c654; --focus:#ff6b5b; --ok:#5cc187; --warn:#e8a93a; --bad:#ff7a6b;
+  --barrel:#0b0c0d; --engrave:#eceeee; --engrave-dim:#7b8386; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111415; --surface:#1a1e20; --ink:#e7ebeb; --muted:#97a2a7; --line:#2d3437;
+  --accent:#f2b520; --accent-ink:#f4c654; --focus:#ff6b5b; --ok:#5cc187; --warn:#e8a93a; --bad:#ff7a6b;
+  --barrel:#0b0c0d; --engrave:#eceeee; --engrave-dim:#7b8386; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+.back{font-weight:600;font-size:14px;color:var(--muted);text-decoration:none}
+.back:hover{color:var(--accent-ink)}
+footer a{color:inherit}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1160px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+h1,h2,h3{text-wrap:balance;margin:0}
+header.hero{display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:8px 40px;align-items:end}
+.hero h1{font-family:var(--f-display);font-weight:800;font-size:clamp(56px,9vw,112px);line-height:.86;letter-spacing:-.01em;text-transform:uppercase}
+.hero h1 span{display:block;color:var(--accent-ink)}
+.hero p{margin:0;max-width:52ch;color:var(--muted);font-size:17px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+@media (max-width:760px){header.hero{grid-template-columns:1fr}}
+
+/* simulator */
+.sim{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.sim{grid-template-columns:1fr}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.hint{font-size:13px;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface);gap:2px;flex-wrap:wrap}
+.seg button{font:500 13px var(--f-body);color:var(--muted);background:none;border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.viewfinder{position:relative;border-radius:6px;overflow:hidden;background:#000;box-shadow:0 0 0 1px var(--line)}
+#scene{display:block;width:100%;aspect-ratio:3/2;max-width:100%;cursor:crosshair;touch-action:manipulation}
+.vf-data{position:absolute;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;gap:4px 18px;padding:8px 12px;
+  font:500 13px var(--f-mono);color:#f1f3f3;background:linear-gradient(transparent,rgba(0,0,0,.65));pointer-events:none;font-variant-numeric:tabular-nums}
+.vf-data b{color:#ffd25a;font-weight:500}
+.vf-note{position:absolute;top:8px;left:10px;font:12px var(--f-body);color:#fff;background:rgba(0,0,0,.5);padding:3px 8px;border-radius:4px;pointer-events:none}
+
+.panel{display:flex;flex-direction:column;gap:18px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;min-width:0}
+.ctl{display:flex;flex-direction:column;gap:6px}
+.ctl-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:600;font-size:14px}
+.ctl output{font:500 15px var(--f-mono);font-variant-numeric:tabular-nums}
+.ctl output small{color:var(--muted);font-size:12px;margin-left:6px}
+.ctl .sub{font-size:12px;color:var(--muted);display:flex;justify-content:space-between}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.presets button,.btn{font:500 13px var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+.presets button:hover,.btn:hover{border-color:var(--ink)}
+
+.readout{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.readout div{background:var(--surface);padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.readout span{font-size:12px;color:var(--muted)}
+.readout strong{font:500 18px var(--f-mono);font-variant-numeric:tabular-nums}
+.readout .wide{grid-column:1/-1}
+.readout .big strong{font-size:24px;color:var(--accent-ink)}
+
+.scale-wrap{display:flex;flex-direction:column;gap:8px}
+.scale-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:baseline}
+.scale-head h2{font-family:var(--f-display);font-weight:600;font-size:22px;letter-spacing:.02em;text-transform:uppercase}
+#lens{display:block;width:100%;height:150px;border-radius:8px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+
+.objects{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.obj{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;color:var(--ink);font:inherit}
+.obj:hover{border-color:var(--ink)}
+.obj[aria-current="true"]{border-color:var(--focus);box-shadow:inset 0 0 0 1px var(--focus)}
+.obj .top{display:flex;justify-content:space-between;gap:6px;align-items:baseline}
+.obj .nm{font-weight:600;font-size:14px}
+.obj .dd{font:13px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.meter{height:6px;border-radius:3px;background:var(--line);position:relative;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;border-radius:3px}
+.meter::after{content:"";position:absolute;top:-2px;bottom:-2px;left:25%;width:2px;background:var(--ink);opacity:.5}
+.obj .st{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip{font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.chip.ok{color:var(--ok)} .chip.warn{color:var(--warn)} .chip.bad{color:var(--bad)}
+
+/* article */
+article{display:flex;flex-direction:column;gap:44px}
+.sec{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:12px 40px;border-top:1px solid var(--line);padding-top:22px}
+@media (max-width:760px){.sec{grid-template-columns:1fr}}
+.sec h2{font-family:var(--f-display);font-weight:800;font-size:34px;line-height:1;text-transform:uppercase}
+.sec .body{max-width:68ch;display:flex;flex-direction:column;gap:14px;min-width:0}
+.sec p{margin:0}
+.term{font-weight:600}
+.figure{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto}
+.figure svg{display:block;width:100%;min-width:480px;height:auto}
+.figcap{font-size:13px;color:var(--muted)}
+.levers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:620px){.levers{grid-template-columns:1fr}}
+.lever{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.lever h3{font-size:16px;font-weight:600}
+.lever .rule{font:500 13px var(--f-mono);color:var(--accent-ink)}
+.lever p{font-size:15px}
+.lever .btn{align-self:flex-start}
+.note{border-left:3px solid var(--accent);padding:4px 0 4px 14px;font-size:15px}
+.formulas{display:grid;gap:10px}
+.formula{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:6px 18px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 16px}
+@media (max-width:620px){.formula{grid-template-columns:1fr}}
+.formula code{font:500 15px var(--f-mono);overflow-x:auto;white-space:nowrap}
+.formula span{font-size:14px;color:var(--muted)}
+.vars{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px}
+.vars code{font-family:var(--f-mono);color:var(--accent-ink)}
+ol.tasks{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:12px}
+ol.tasks li::marker{font-family:var(--f-mono);color:var(--accent-ink)}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;max-width:90ch}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <header class="hero">
+    <h1>Hloubka <span>ostrosti</span></h1>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="eyebrow">Interaktivní simulace · fotografie a optika</div>
+      <p>Proč je na portrétu rozmazané pozadí, a na fotce krajiny je ostré všechno? Nastavte ohnisko, clonu a vzdálenost zaostření a sledujte, co zůstane ostré.</p>
+    </div>
+  </header>
+
+  <section class="sim" id="simulator" aria-label="Simulátor">
+    <div class="stage">
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Zobrazení">
+          <button type="button" id="vCam" aria-pressed="true">Pohled fotoaparátu</button>
+          <button type="button" id="vAll" aria-pressed="false">Celá scéna</button>
+        </div>
+        <span class="hint">Klepněte do obrazu a zaostří se na dané místo.</span>
+      </div>
+      <div class="viewfinder">
+        <canvas id="scene" width="960" height="640" aria-label="Simulovaná fotografie scény s turistkou, rozcestníkem, stromem a domem"></canvas>
+        <div class="vf-note" id="vfNote" hidden></div>
+        <div class="vf-data" id="vfData"></div>
+      </div>
+
+      <div class="scale-wrap">
+        <div class="scale-head">
+          <h2>Stupnice vzdálenosti</h2>
+          <div class="legend">
+            <span><i style="background:var(--accent)"></i>pásmo ostrosti</span>
+            <span><i style="background:var(--focus)"></i>rovina zaostření</span>
+            <span>stupnice je logaritmická, jako na objektivu</span>
+          </div>
+        </div>
+        <canvas id="lens" aria-label="Stupnice vzdálenosti s vyznačeným pásmem ostrosti"></canvas>
+      </div>
+
+      <div class="objects" id="objects"></div>
+    </div>
+
+    <div class="panel">
+      <div class="ctl">
+        <div class="ctl-head"><label for="fSl">Ohnisková vzdálenost</label><output id="fOut"></output></div>
+        <input type="range" id="fSl" min="0" max="11" step="1">
+        <div class="sub"><span>širokoúhlý</span><span>teleobjektiv</span></div>
+      </div>
+      <div class="ctl">
+        <div class="ctl-head"><label for="nSl">Clona</label><output id="nOut"></output></div>
+        <input type="range" id="nSl" min="0" max="9" step="1">
+        <div class="sub"><span>otevřená · malá hloubka</span><span>zacloněno · velká</span></div>
+      </div>
+      <div class="ctl">
+        <div class="ctl-head"><label for="sSl">Zaostřeno na</label><output id="sOut"></output></div>
+        <input type="range" id="sSl" min="0" max="1000" step="1">
+        <div class="sub"><span>0,5 m</span><span>∞</span></div>
+      </div>
+      <div class="ctl">
+        <label id="senLbl">Snímač</label>
+        <div class="seg" role="group" aria-labelledby="senLbl" id="senSeg"></div>
+      </div>
+
+      <div class="readout" aria-live="polite">
+        <div class="wide big"><span>Hloubka ostrosti</span><strong id="rDof"></strong></div>
+        <div><span>Ostré od</span><strong id="rNear"></strong></div>
+        <div><span>Ostré do</span><strong id="rFar"></strong></div>
+        <div><span>Před rovinou / za ní</span><strong id="rSplit"></strong></div>
+        <div><span>Hyperfokální vzd.</span><strong id="rH"></strong></div>
+        <div class="wide"><span>Povolený rozptylový kroužek c</span><strong id="rC"></strong></div>
+      </div>
+
+      <div class="ctl">
+        <label>Vyzkoušejte</label>
+        <div class="presets">
+          <button type="button" data-preset="portret">Portrét 85 mm f/2</button>
+          <button type="button" data-preset="krajina">Krajina 24 mm f/11</button>
+          <button type="button" data-preset="tele">Tele 200 mm</button>
+          <button type="button" data-preset="mobil">Mobil</button>
+          <button type="button" data-preset="hyper">Zaostřit na hyperfokální</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <article>
+    <section class="sec">
+      <h2>Co to je</h2>
+      <div class="body">
+        <p>Objektiv zaostří přesně jen na jednu vzdálenost, na <span class="term">rovinu zaostření</span>. Body, které leží blíž nebo dál, se na snímači nezobrazí jako bod, ale jako malá ploška: <span class="term">rozptylový kroužek</span>.</p>
+        <p>Dokud je ten kroužek menší, než dokáže oko na hotové fotografii rozlišit, vnímáme ho pořád jako ostrý bod. Rozmezí vzdáleností, ve kterém to platí, se jmenuje <span class="term">hloubka ostrosti</span> (anglicky depth of field, DOF). Ostrost tedy neskončí najednou; slábne plynule a hranice hloubky ostrosti je dohoda o tom, co je „ještě dost ostré“.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Rozptylový kroužek</h2>
+      <div class="body">
+        <div class="figure">
+          <svg viewBox="0 0 640 230" role="img" aria-label="Paprsky z bližšího bodu se sbíhají za snímačem a na snímači vytvoří kroužek">
+            <line x1="10" y1="115" x2="630" y2="115" stroke="var(--line)" stroke-dasharray="4 4"/>
+            <!-- point A focused -->
+            <g stroke="var(--muted)" stroke-width="1.5" fill="none">
+              <path d="M30 115 L250 35 L470 115"/>
+              <path d="M30 115 L250 195 L470 115"/>
+            </g>
+            <!-- point B nearer, converges behind sensor -->
+            <g stroke="var(--accent)" stroke-width="2" fill="none">
+              <path d="M120 115 L250 35 L545 115"/>
+              <path d="M120 115 L250 195 L545 115"/>
+            </g>
+            <ellipse cx="250" cy="115" rx="16" ry="84" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>
+            <line x1="470" y1="20" x2="470" y2="210" stroke="var(--ink)" stroke-width="3"/>
+            <line x1="470" y1="94" x2="470" y2="136" stroke="var(--focus)" stroke-width="7" stroke-linecap="round"/>
+            <circle cx="30" cy="115" r="5" fill="var(--muted)"/>
+            <circle cx="120" cy="115" r="5" fill="var(--accent)"/>
+            <g font-family="JetBrains Mono, monospace" font-size="13" fill="var(--ink)">
+              <text x="22" y="140">A</text>
+              <text x="112" y="140">B</text>
+              <text x="232" y="222">objektiv</text>
+              <text x="440" y="14">snímač</text>
+              <text x="486" y="108" fill="var(--focus)">kroužek b</text>
+              <text x="540" y="140" fill="var(--muted)">B by byl</text>
+              <text x="540" y="156" fill="var(--muted)">ostrý až zde</text>
+            </g>
+          </svg>
+        </div>
+        <p class="figcap">Bod A leží v rovině zaostření a jeho paprsky se sejdou přesně na snímači. Bod B je blíž, jeho paprsky by se protnuly až za snímačem. Na snímači proto vytvoří kroužek o průměru <i>b</i>.</p>
+        <p>Velikost kroužku závisí na tom, jak široký je kužel paprsků. Ten určuje průměr otvoru v objektivu, tedy <span class="term">clona</span>. Zacloněním kužel zúžíte a kroužek se zmenší. Proto f/16 dává mnohem víc ostré scény než f/1,4.</p>
+        <p>Největší ještě přijatelný kroužek se značí <i>c</i>. Pro plnoformátový snímač 36 × 24 mm se běžně bere 0,03 mm, což je zhruba úhlopříčka snímače dělená 1 500. Menší snímač se při tisku nebo na displeji musí víc zvětšit, proto pro něj platí menší <i>c</i>.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Co ji ovlivňuje</h2>
+      <div class="body">
+        <div class="levers">
+          <div class="lever">
+            <h3>Clona</h3>
+            <div class="rule">hloubka ≈ úměrná N</div>
+            <p>Čím vyšší clonové číslo N, tím menší otvor a větší hloubka ostrosti. Zaclonění o dva stupně (např. f/4 → f/8) hloubku zhruba zdvojnásobí.</p>
+            <button class="btn" type="button" data-try="clona">Porovnat f/2 a f/11</button>
+          </div>
+          <div class="lever">
+            <h3>Vzdálenost zaostření</h3>
+            <div class="rule">hloubka ≈ úměrná s²</div>
+            <p>Čím blíž zaostříte, tím je pásmo ostrosti užší. Při dvojnásobné vzdálenosti je hloubka asi čtyřikrát větší. U makrofotografie jde o milimetry.</p>
+            <button class="btn" type="button" data-try="vzdal">Zaostřit na mák</button>
+          </div>
+          <div class="lever">
+            <h3>Ohnisková vzdálenost</h3>
+            <div class="rule">hloubka ≈ úměrná 1/f²</div>
+            <p>Ze stejného místa dá delší ohnisko menší hloubku ostrosti. Teleobjektiv navíc zvětší vzdálené pozadí, takže jeho rozmazání je v záběru výraznější.</p>
+            <button class="btn" type="button" data-try="ohnisko">Ze stejného místa 200 mm</button>
+          </div>
+          <div class="lever">
+            <h3>Velikost snímače</h3>
+            <div class="rule">menší snímač → větší hloubka</div>
+            <p>Pro stejný záběr potřebuje malý snímač kratší ohnisko. Mobil proto skoro nedokáže rozmazat pozadí opticky a portrétní režim to dopočítává softwarem.</p>
+            <button class="btn" type="button" data-try="snimac">Mobil vs. plný formát</button>
+          </div>
+        </div>
+        <p class="note">Pozor na jednu past: když s delším objektivem odstoupíte tak daleko, aby měl fotografovaný člověk v záběru stejnou velikost, hloubka ostrosti kolem něj zůstane skoro stejná. Změní se hlavně pozadí: je ho v záběru méně a je víc zvětšené, takže působí rozmazaněji.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Hyperfokální vzdálenost</h2>
+      <div class="body">
+        <p>Pokud zaostříte na nekonečno, ostré bude všechno od určité vzdálenosti dál. Tato vzdálenost se nazývá <span class="term">hyperfokální</span> a značí se <i>H</i>. Zaostříte-li přímo na <i>H</i>, posune se blízká hranice ostrosti až na <i>H</i>/2 a vzdálená hranice zůstane v nekonečnu. Dostanete tak největší možnou hloubku ostrosti pro danou clonu a ohnisko.</p>
+        <p>Krajináři to využívají, aby měli ostré květiny v popředí i hory na obzoru. Starší objektivy mají pro tento účel na tubusu vyrytou stupnici hloubky ostrosti, podobnou té v simulátoru výše.</p>
+        <p>Pásmo ostrosti obvykle sahá dál za rovinu zaostření než před ni. Často se uvádí poměr 1 : 2, ten ale platí jen přibližně: zblízka se blíží 1 : 1 a při zaostření na <i>H</i> je za rovinou nekonečno.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Vzorce</h2>
+      <div class="body">
+        <div class="formulas">
+          <div class="formula"><code>H = f² / (N · c) + f</code><span>hyperfokální vzdálenost</span></div>
+          <div class="formula"><code>Dₙ = s(H − f) / (H + s − 2f)</code><span>blízká hranice ostrosti</span></div>
+          <div class="formula"><code>Dₖ = s(H − f) / (H − s)</code><span>vzdálená hranice; pro s ≥ H je nekonečno</span></div>
+          <div class="formula"><code>b = (f² / N) · |d − s| / (d · (s − f))</code><span>průměr kroužku pro předmět ve vzdálenosti d</span></div>
+        </div>
+        <div class="vars">
+          <code>f</code><span>ohnisková vzdálenost objektivu (mm)</span>
+          <code>N</code><span>clonové číslo, f/N je průměr otvoru</span>
+          <code>c</code><span>povolený rozptylový kroužek (mm)</span>
+          <code>s</code><span>vzdálenost, na kterou je zaostřeno</span>
+          <code>d</code><span>vzdálenost předmětu</span>
+        </div>
+        <p>Hloubka ostrosti je pak Dₖ − Dₙ. Všechny délky dosazujte ve stejných jednotkách. Simulátor počítá podle modelu tenké čočky; předmět považuje za ostrý, když je jeho kroužek <i>b</i> menší než <i>c</i>.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Úkoly</h2>
+      <div class="body">
+        <ol class="tasks">
+          <li>Nastavte portrét (85 mm, f/2, zaostřeno na turistku). Postupně zaclánějte. Při jakém clonovém čísle začne být ostrý i rozcestník za ní?</li>
+          <li>S objektivem 24 mm a clonou f/11 najděte takové zaostření, aby byl ostrý mák v popředí i hory na obzoru. Porovnejte výsledek s hyperfokální vzdáleností.</li>
+          <li>Zaostřete 50 mm objektivem na 3,5 m a zapište si hloubku ostrosti pro f/4 a pro f/8. Kolikrát se zvětšila? Odpovídá to pravidlu z textu?</li>
+          <li>Porovnejte mobil (6 mm, f/1,8) a plný formát se srovnatelným záběrem (24 mm, f/1,8), oba zaostřené na turistku. Proč z mobilu „opticky“ rozmazané pozadí nedostanete?</li>
+          <li>Vyberte 200 mm a zaostřete na dům. Jak velkou hloubku ostrosti máte při f/2,8 a jak při f/16? Proč je u vzdálených předmětů hloubka tak velká, i když jde o teleobjektiv?</li>
+        </ol>
+      </div>
+    </section>
+  </article>
+
+  <footer>Scéna je kreslená a zjednodušená: výpočty platí pro model tenké čočky, rozmazání je znázorněno Gaussovým rozostřením místo skutečného tvaru bokehu a výřez má vždy poměr stran 3 : 2. Hodnoty <i>c</i> odpovídají běžné konvenci (plný formát 0,03 mm, APS-C 0,02 mm, Micro 4/3 0,015 mm, mobil 0,008 mm).<br>Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 20. 10. 2026</footer>
+</div>
+
+<script>
+(()=>{
+const FOCALS=[6,10,14,18,24,28,35,50,85,105,135,200];
+const STOPS=[1.4,1.8,2,2.8,4,5.6,8,11,16,22];
+const SENSORS={
+  ff:{name:'Plný formát',w:36,c:0.03},
+  apsc:{name:'APS-C',w:23.5,c:0.02},
+  mft:{name:'Micro 4/3',w:17.3,c:0.015},
+  phone:{name:'Mobil',w:9.6,c:0.008}
+};
+const SW=960,SH=640,HOR=240,K=400; // scene units; K = px per metre at 1 m
+const yAt=d=>HOR+K/d, xAt=(X,d)=>480+K*X/d;
+
+const OBJ=[
+  {id:'dum',name:'Dům',d:40,X:10,hc:3.5,draw:drawHouse},
+  {id:'strom',name:'Lípa',d:14,X:-9,hc:5,draw:drawTree},
+  {id:'rozc',name:'Rozcestník',d:7,X:-2.2,hc:1.9,draw:drawSign},
+  {id:'osoba',name:'Turistka',d:3.5,X:0.6,hc:1.2,draw:drawPerson},
+  {id:'kopr',name:'Kopretiny',d:1.8,X:1.35,hc:.3,draw:drawDaisies},
+  {id:'mak',name:'Mák',d:1.3,X:-1.45,hc:.35,draw:drawPoppies},
+];
+const FAR={id:'hory',name:'Hory',d:Infinity};
+
+const state={fi:7,ni:3,s:3500,sensor:'ff',view:'camera',aim:'osoba',af:null};
+
+const cv=document.getElementById('scene'), ctx=cv.getContext('2d');
+let R=1,CW=SW,CH=SH;
+let view={zoom:1,vx:0,vy:0,frameW:0,clamped:false};
+const layers={}; let groundCv, farCv;
+
+// ---------- filter support ----------
+const FILTER_OK=(()=>{try{const t=document.createElement('canvas');t.width=t.height=9;const x=t.getContext('2d');x.filter='blur(2px)';x.fillStyle='#000';x.fillRect(4,4,1,1);return x.getImageData(1,4,1,1).data[3]>0}catch(e){return false}})();
+const tmp=document.createElement('canvas'), tctx=tmp.getContext('2d');
+
+// ---------- optics ----------
+function optics(){
+  const f=FOCALS[state.fi], N=STOPS[state.ni], sen=SENSORS[state.sensor], c=sen.c, s=state.s;
+  const H=f*f/(N*c)+f;
+  let near,far;
+  if(!isFinite(s)){near=H;far=Infinity}
+  else{near=s*(H-f)/(H+s-2*f); far=s<H? s*(H-f)/(H-s):Infinity}
+  return {f,N,c,s,H,near,far,sen};
+}
+function blurMM(o,dmm){
+  const {f,N,s}=o;
+  if(!isFinite(s)) return isFinite(dmm)? f*f/(N*dmm):0;
+  if(!isFinite(dmm)) return f*f/(N*(s-f));
+  return (f*f/N)*Math.abs(dmm-s)/(dmm*(s-f));
+}
+
+// ---------- view ----------
+function computeView(){
+  const o=optics();
+  const frameW=K*o.sen.w/o.f; view.frameW=frameW;
+  if(state.view==='camera'){
+    let zoom=SW/frameW; view.clamped=zoom<1; zoom=Math.max(1,zoom);
+    const vw=SW/zoom, vh=SH/zoom;
+    const a=OBJ.find(x=>x.id===state.aim)||OBJ[3];
+    let cx=xAt(a.X,a.d), cy=yAt(a.d)-a.hc*K/a.d;
+    cx=Math.min(SW-vw/2,Math.max(vw/2,cx)); cy=Math.min(SH-vh/2,Math.max(vh/2,cy));
+    view.zoom=zoom; view.vx=cx-vw/2; view.vy=cy-vh/2;
+  } else {view.zoom=1;view.vx=0;view.vy=0;view.clamped=false}
+}
+function setT(c){const z=view.zoom*R;c.setTransform(z,0,0,z,-view.vx*z,-view.vy*z)}
+function toScreenY(y){return (y-view.vy)*view.zoom*R}
+function toScene(px,py){return {x:px/(view.zoom*R)+view.vx,y:py/(view.zoom*R)+view.vy}}
+function sceneToScreen(x,y){return {x:(x-view.vx)*view.zoom*R,y:(y-view.vy)*view.zoom*R}}
+
+function mkCanvas(){const c=document.createElement('canvas');c.width=CW;c.height=CH;return c}
+function rebuild(){
+  computeView();
+  farCv=farCv||mkCanvas(); groundCv=groundCv||mkCanvas();
+  for(const c of [farCv,groundCv]){c.width=CW;c.height=CH}
+  let c=farCv.getContext('2d'); c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,CW,CH); setT(c); drawFar(c);
+  c=groundCv.getContext('2d'); c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,CW,CH); setT(c); drawGround(c);
+  for(const o of OBJ){
+    const cvs=layers[o.id]||(layers[o.id]=mkCanvas()); cvs.width=CW; cvs.height=CH;
+    const x=cvs.getContext('2d',{willReadFrequently:true}); x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,CW,CH); setT(x); o.draw(x,o);
+  }
+}
+
+// ---------- drawing primitives ----------
+function rr(c,x,y,w,h,r){c.beginPath();if(c.roundRect)c.roundRect(x,y,w,h,r);else c.rect(x,y,w,h);c.fill()}
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+function drawSky(c){
+  const g=c.createLinearGradient(0,0,0,HOR+10);g.addColorStop(0,'#7fa9cf');g.addColorStop(1,'#dde8ec');
+  c.fillStyle=g;c.fillRect(-10,-10,SW+20,HOR+20);
+  const gg=c.createLinearGradient(0,HOR,0,SH);gg.addColorStop(0,'#b7c79c');gg.addColorStop(1,'#5e8c3c');
+  c.fillStyle=gg;c.fillRect(-10,HOR,SW+20,SH-HOR+10);
+}
+function drawFar(c){
+  const r=rng(7);
+  c.fillStyle='rgba(255,255,255,.85)';
+  for(const [cx,cy,w] of [[150,70,120],[620,50,160],[860,120,90],[380,130,70]]){
+    for(let i=0;i<6;i++){c.beginPath();c.ellipse(cx+(r()-.5)*w,cy+(r()-.5)*18,w*(.25+r()*.2),w*(.12+r()*.06),0,0,Math.PI*2);c.fill()}
+  }
+  c.fillStyle='#9fb3b4';c.beginPath();c.moveTo(-10,250);
+  for(let x=-10;x<=SW+10;x+=6)c.lineTo(x,HOR-26+10*Math.sin(x/95)+7*Math.sin(x/41+1)+4*Math.sin(x/17));
+  c.lineTo(SW+10,250);c.closePath();c.fill();
+  c.fillStyle='#86a08a';c.beginPath();c.moveTo(-10,250);
+  for(let x=-10;x<=SW+10;x+=6)c.lineTo(x,HOR-12+6*Math.sin(x/63+2)+4*Math.sin(x/29));
+  c.lineTo(SW+10,250);c.closePath();c.fill();
+  c.fillStyle='#7d9a74';c.fillRect(-10,HOR-2,SW+20,10);
+}
+function drawGround(c){
+  const gg=c.createLinearGradient(0,HOR,0,SH);gg.addColorStop(0,'#b7c79c');gg.addColorStop(1,'#5e8c3c');
+  c.fillStyle=gg;c.fillRect(-10,HOR,SW+20,SH-HOR+10);
+  // path
+  const pg=c.createLinearGradient(0,HOR,0,SH);pg.addColorStop(0,'#d8ccae');pg.addColorStop(1,'#a88d62');
+  c.fillStyle=pg;c.beginPath();c.moveTo(480,HOR);c.lineTo(xAt(-0.9,0.9),yAt(0.9));c.lineTo(xAt(0.9,0.9),yAt(0.9));c.closePath();c.fill();
+  const r=rng(42);
+  // pebbles on path
+  for(let i=0;i<500;i++){const y=HOR+2+r()*(SH-HOR);const d=K/(y-HOR);const X=(r()-.5)*1.7;const s=K/d;
+    c.fillStyle=r()<.5?'rgba(120,98,66,.55)':'rgba(240,230,205,.6)';c.beginPath();c.ellipse(xAt(X,d),y,s*.012+.2,s*.006+.15,0,0,Math.PI*2);c.fill()}
+  // grass
+  const cols=['#4f7d33','#6a9a41','#3f6a2a','#83ad52','#5c8a3a'];
+  for(let i=0;i<4200;i++){
+    const y=HOR+1+Math.pow(r(),1.15)*(SH-HOR+20);const d=K/(y-HOR);const x=-40+r()*(SW+80);const X=(x-480)*d/K;
+    if(Math.abs(X)<0.95)continue;
+    const s=K/d,L=.13*s*(.5+r()),a=(r()-.5)*.6;
+    c.strokeStyle=cols[(r()*cols.length)|0];c.lineWidth=Math.max(.35,.011*s);c.lineCap='round';
+    c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+Math.sin(a)*L*.4,y-L*.6,x+Math.sin(a)*L,y-L*Math.cos(a));c.stroke();
+  }
+}
+function drawHouse(c,o){
+  const s=K/o.d,x=xAt(o.X,o.d),y=yAt(o.d),w=9*s,h=4.5*s;
+  c.fillStyle='#e9e2d4';c.fillRect(x-w/2,y-h,w,h);
+  c.fillStyle='#d4cab6';c.fillRect(x-w/2,y-h,w,.35*s);
+  c.fillStyle='#a9452f';c.beginPath();c.moveTo(x-w/2-.5*s,y-h);c.lineTo(x,y-h-3.6*s);c.lineTo(x+w/2+.5*s,y-h);c.closePath();c.fill();
+  c.fillStyle='#7a3424';c.fillRect(x+2*s,y-h-3.4*s,.8*s,1.6*s);
+  c.fillStyle='#2f4250';
+  for(const wx of [-3.4,-1.6,1.6,3.0]){c.fillRect(x+wx*s-.5*s,y-h+1.4*s,1*s,1.2*s)}
+  c.fillStyle='#5b3b28';c.fillRect(x-.2*s,y-2.2*s,1*s,2.2*s);
+  c.fillStyle='#e9e2d4';c.beginPath();c.moveTo(x-1.1*s,y-h-.4*s);c.lineTo(x,y-h-2.2*s);c.lineTo(x+1.1*s,y-h-.4*s);c.fill();
+  c.fillStyle='#2f4250';c.fillRect(x-.35*s,y-h-1.4*s,.7*s,.7*s);
+  // hedge
+  c.fillStyle='#4e7a3a';for(let i=-6;i<=6;i++){c.beginPath();c.arc(x+i*.9*s,y-.3*s,.65*s,0,Math.PI*2);c.fill()}
+}
+function drawTree(c,o){
+  const s=K/o.d,x=xAt(o.X,o.d),y=yAt(o.d),r=rng(3);
+  c.fillStyle='#5a4231';c.beginPath();c.moveTo(x-.45*s,y);c.lineTo(x-.2*s,y-3.4*s);c.lineTo(x+.2*s,y-3.4*s);c.lineTo(x+.45*s,y);c.closePath();c.fill();
+  const shades=['#2f5a2a','#3d6e30','#4b7f37','#5d9142'];
+  for(let k=0;k<4;k++){for(let i=0;i<14;i++){
+    const a=r()*Math.PI*2,rad=r()*2.6;const cx=x+Math.cos(a)*rad*1.1*s,cy=y-6*s+Math.sin(a)*rad*.95*s-k*.15*s;
+    c.fillStyle=shades[k];c.beginPath();c.arc(cx+(k-1.5)*.15*s,cy,(1.5-k*.2+r()*.6)*s,0,Math.PI*2);c.fill();
+  }}
+}
+function drawSign(c,o){
+  const s=K/o.d,x=xAt(o.X,o.d),y=yAt(o.d);
+  c.fillStyle='#8b9599';c.fillRect(x-.045*s,y-2.55*s,.09*s,2.55*s);
+  c.fillStyle='#6d777b';c.fillRect(x-.045*s,y-2.55*s,.02*s,2.55*s);
+  c.fillStyle='#ffffff';c.fillRect(x-.22*s,y-2.62*s,.44*s,.14*s);
+  c.fillStyle='#333';for(let i=0;i<2;i++)c.fillRect(x-.17*s,y-2.59*s+i*.05*s,.34*s,.02*s);
+  const plates=[[2.42,1,'#d23a2c'],[2.26,-1,'#2b62b8'],[2.10,1,'#2f8c46'],[1.94,-1,'#d23a2c']];
+  for(const [h,dir,col] of plates){
+    const y0=y-h*s,L=.55*s,T=.13*s,x0=dir>0?x+.05*s:x-.05*s;
+    c.fillStyle='#f3c623';c.beginPath();
+    if(dir>0){c.moveTo(x0,y0);c.lineTo(x0+L-T*.5,y0);c.lineTo(x0+L,y0+T/2);c.lineTo(x0+L-T*.5,y0+T);c.lineTo(x0,y0+T)}
+    else{c.moveTo(x0,y0);c.lineTo(x0-L+T*.5,y0);c.lineTo(x0-L,y0+T/2);c.lineTo(x0-L+T*.5,y0+T);c.lineTo(x0,y0+T)}
+    c.closePath();c.fill();
+    const sx=dir>0?x0+L-T*1.25:x0-L+T*.55;
+    c.fillStyle='#fff';c.fillRect(sx,y0+.02*s,T*.7,T-.04*s);c.fillStyle=col;c.fillRect(sx,y0+T*.38,T*.7,T*.24);
+    c.fillStyle='#222';const tx=dir>0?x0+.05*s:x0-L+T*1.4;c.fillRect(tx,y0+.035*s,.28*s,.018*s);c.fillRect(tx,y0+.075*s,.2*s,.018*s);
+  }
+}
+function drawPerson(c,o){
+  const s=K/o.d,x=xAt(o.X,o.d),y=yAt(o.d);
+  c.fillStyle='rgba(30,40,20,.25)';c.beginPath();c.ellipse(x,y,.35*s,.06*s,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#2a3340';rr(c,x-.17*s,y-.9*s,.15*s,.88*s,.05*s);rr(c,x+.02*s,y-.9*s,.15*s,.88*s,.05*s);
+  c.fillStyle='#1b1d20';rr(c,x-.2*s,y-.07*s,.2*s,.08*s,.03*s);rr(c,x+.01*s,y-.07*s,.2*s,.08*s,.03*s);
+  c.fillStyle='#2f6152';rr(c,x+.12*s,y-1.42*s,.2*s,.48*s,.06*s);
+  c.fillStyle='#d24a2f';rr(c,x-.22*s,y-1.47*s,.44*s,.66*s,.09*s);
+  c.fillStyle='#b23b24';rr(c,x-.31*s,y-1.42*s,.1*s,.55*s,.05*s);rr(c,x+.2*s,y-1.42*s,.1*s,.55*s,.05*s);
+  c.fillStyle='#e2b48f';c.beginPath();c.arc(x-.26*s,y-.84*s,.05*s,0,Math.PI*2);c.fill();
+  c.fillStyle='#e2b48f';c.fillRect(x-.04*s,y-1.53*s,.08*s,.08*s);
+  c.beginPath();c.arc(x,y-1.62*s,.115*s,0,Math.PI*2);c.fill();
+  c.fillStyle='#4a2f1f';c.beginPath();c.arc(x,y-1.65*s,.12*s,Math.PI*1.05,Math.PI*1.95);c.fill();
+  c.beginPath();c.ellipse(x+.1*s,y-1.55*s,.04*s,.12*s,.3,0,Math.PI*2);c.fill();
+  c.fillStyle='#e9eef0';c.fillRect(x-.22*s,y-1.27*s,.44*s,.03*s);
+}
+function drawPoppies(c,o){
+  const s=K/o.d,bx=xAt(o.X,o.d),by=yAt(o.d),r=rng(11);
+  for(let i=0;i<9;i++){
+    const x=bx+(r()-.5)*.6*s,yb=by+(r()-.3)*.12*s,h=(.3+r()*.25)*s,lean=(r()-.5)*.12*s;
+    c.strokeStyle='#4d7a3a';c.lineWidth=.012*s;c.lineCap='round';
+    c.beginPath();c.moveTo(x,yb);c.quadraticCurveTo(x+lean*.2,yb-h*.6,x+lean,yb-h);c.stroke();
+    c.fillStyle='#5a8a42';c.beginPath();c.ellipse(x+.03*s,yb-h*.3,.06*s,.015*s,-.6,0,Math.PI*2);c.fill();
+    if(i%4===3){c.fillStyle='#4d7a3a';c.beginPath();c.ellipse(x+lean,yb-h,.018*s,.03*s,0,0,Math.PI*2);c.fill();continue}
+    const fx=x+lean,fy=yb-h,R0=(.04+r()*.02)*s;
+    c.fillStyle='#d8312a';for(let p=0;p<4;p++){const a=p*Math.PI/2+.4;c.beginPath();c.ellipse(fx+Math.cos(a)*R0*.5,fy+Math.sin(a)*R0*.35,R0*.75,R0*.6,a,0,Math.PI*2);c.fill()}
+    c.fillStyle='#e8493c';c.beginPath();c.ellipse(fx,fy-R0*.2,R0*.6,R0*.45,0,0,Math.PI*2);c.fill();
+    c.fillStyle='#1d1a1a';c.beginPath();c.arc(fx,fy,R0*.22,0,Math.PI*2);c.fill();
+  }
+}
+function drawDaisies(c,o){
+  const s=K/o.d,bx=xAt(o.X,o.d),by=yAt(o.d),r=rng(23);
+  c.strokeStyle='#4b7a34';c.lineCap='round';
+  for(let i=0;i<22;i++){const x=bx+(r()-.5)*.8*s,L=(.1+r()*.18)*s,a=(r()-.5)*.8;c.lineWidth=.008*s;c.beginPath();c.moveTo(x,by);c.lineTo(x+Math.sin(a)*L,by-Math.cos(a)*L);c.stroke()}
+  for(let i=0;i<7;i++){
+    const x=bx+(r()-.5)*.65*s,h=(.25+r()*.22)*s,lean=(r()-.5)*.1*s;
+    c.strokeStyle='#4b7a34';c.lineWidth=.009*s;c.beginPath();c.moveTo(x,by);c.quadraticCurveTo(x,by-h*.5,x+lean,by-h);c.stroke();
+    const fx=x+lean,fy=by-h,R0=.035*s;
+    c.fillStyle='#f7f7f2';for(let p=0;p<12;p++){const a=p*Math.PI/6;c.beginPath();c.ellipse(fx+Math.cos(a)*R0,fy+Math.sin(a)*R0*.55,R0*.62,R0*.18,a,0,Math.PI*2);c.fill()}
+    c.fillStyle='#f0b51e';c.beginPath();c.ellipse(fx,fy,R0*.38,R0*.26,0,0,Math.PI*2);c.fill();
+  }
+}
+
+// ---------- compositing ----------
+function sigmaFor(o,dm){
+  const b=blurMM(o,isFinite(dm)?dm*1000:Infinity);
+  const px=b*K/o.f*view.zoom*R; return Math.min(px/2.6,70*R);
+}
+function drawBlurred(src,sigma,y0,y1){
+  ctx.save();
+  let sy=0,sh=CH;
+  if(y0!=null){ctx.beginPath();ctx.rect(0,y0,CW,y1-y0);ctx.clip();const pad=Math.ceil(sigma*3)+2;sy=Math.max(0,Math.floor(y0-pad));sh=Math.min(CH,Math.ceil(y1+pad))-sy;if(sh<=0){ctx.restore();return}}
+  if(sigma<0.35){ctx.drawImage(src,0,sy,CW,sh,0,sy,CW,sh)}
+  else if(FILTER_OK){ctx.filter=`blur(${sigma.toFixed(2)}px)`;ctx.drawImage(src,0,sy,CW,sh,0,sy,CW,sh);ctx.filter='none'}
+  else{
+    const k=Math.max(1,sigma/1.2),w=Math.max(1,Math.round(CW/k)),h=Math.max(1,Math.round(sh/k));
+    tmp.width=w;tmp.height=h;tctx.imageSmoothingEnabled=true;tctx.clearRect(0,0,w,h);tctx.drawImage(src,0,sy,CW,sh,0,0,w,h);
+    ctx.imageSmoothingEnabled=true;ctx.drawImage(tmp,0,0,w,h,0,sy,CW,sh);
+  }
+  ctx.restore();
+}
+const BANDS=[1,1.25,1.6,2,2.5,3.2,4,5,6.5,8.5,11,15,20,30,50,100,Infinity];
+function render(){
+  const o=optics();
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,CW,CH);
+  setT(ctx);drawSky(ctx);ctx.setTransform(1,0,0,1,0,0);
+  for(let i=BANDS.length-2;i>=0;i--){
+    const da=BANDS[i],db=BANDS[i+1];const dr=isFinite(db)?Math.sqrt(da*db):200;
+    const yTop=toScreenY(isFinite(db)?yAt(db):HOR), yBot=toScreenY(yAt(da));
+    if(yBot<0||yTop>CH)continue;
+    drawBlurred(groundCv,sigmaFor(o,dr),Math.max(0,yTop-0.5),Math.min(CH,yBot+0.5));
+  }
+  drawBlurred(farCv,sigmaFor(o,Infinity));
+  for(const ob of OBJ)drawBlurred(layers[ob.id],sigmaFor(o,ob.d));
+  // overlays
+  if(state.view==='all'){
+    const fw=Math.min(view.frameW,SW),fh=fw/1.5;const a=OBJ.find(x=>x.id===state.aim);
+    let cx=xAt(a.X,a.d),cy=yAt(a.d)-a.hc*K/a.d;cx=Math.min(SW-fw/2,Math.max(fw/2,cx));cy=Math.min(SH-fh/2,Math.max(fh/2,cy));
+    const x0=(cx-fw/2)*R,y0=(cy-fh/2)*R;
+    ctx.fillStyle='rgba(0,0,0,.5)';ctx.beginPath();ctx.rect(0,0,CW,CH);ctx.rect(x0,y0,fw*R,fh*R);ctx.fill('evenodd');
+    ctx.strokeStyle='#fff';ctx.lineWidth=1.5*R;ctx.strokeRect(x0,y0,fw*R,fh*R);
+    ctx.font=`500 ${13*R}px "JetBrains Mono",monospace`;ctx.fillStyle='#fff';ctx.textBaseline='bottom';
+    ctx.fillText(`výřez ${o.f} mm`,x0+6*R,y0>18*R?y0-4*R:y0+18*R);
+  }
+  if(state.af){
+    const p=sceneToScreen(state.af.x,state.af.y),q=14*R,l=6*R;
+    ctx.strokeStyle=getVar('--focus')||'#e33';ctx.lineWidth=2*R;ctx.beginPath();
+    for(const [sx,sy] of [[-1,-1],[1,-1],[1,1],[-1,1]]){ctx.moveTo(p.x+sx*q,p.y+sy*q-sy*l);ctx.lineTo(p.x+sx*q,p.y+sy*q);ctx.lineTo(p.x+sx*q-sx*l,p.y+sy*q)}
+    ctx.stroke();
+  }
+}
+
+// ---------- formatting ----------
+const fmt=(mm)=>{if(!isFinite(mm))return'∞';const m=mm/1000;if(m<1)return(m*100).toFixed(m<0.2?1:0).replace('.',',')+' cm';return(m<10?m.toFixed(2):m<100?m.toFixed(1):m.toFixed(0)).replace('.',',')+' m'};
+const fN=n=>'f/'+String(n).replace('.',',');
+function getVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+
+// ---------- UI ----------
+const $=id=>document.getElementById(id);
+const fSl=$('fSl'),nSl=$('nSl'),sSl=$('sSl');
+const sToV=s=>!isFinite(s)?1000:Math.round(Math.log(s/500)/Math.log(200)*980);
+const vToS=v=>v>990?Infinity:Math.min(100000,500*Math.pow(200,Math.min(v,980)/980));
+const senSeg=$('senSeg');
+for(const [k,v] of Object.entries(SENSORS)){const b=document.createElement('button');b.type='button';b.textContent=v.name;b.dataset.k=k;b.addEventListener('click',()=>{state.sensor=k;update(true)});senSeg.appendChild(b)}
+const objWrap=$('objects');
+const allObjs=[...OBJ].reverse().concat([FAR]);
+const rows={};
+for(const ob of allObjs){
+  const b=document.createElement('button');b.type='button';b.className='obj';
+  b.innerHTML=`<div class="top"><span class="nm">${ob.name}</span><span class="dd">${isFinite(ob.d)?String(ob.d).replace('.',',')+' m':'∞'}</span></div><div class="meter"><i></i></div><div class="st"><span class="chip"></span><span class="bv"></span></div>`;
+  b.addEventListener('click',()=>{focusOn(ob)});objWrap.appendChild(b);rows[ob.id]=b;
+}
+function focusOn(ob){
+  state.s=isFinite(ob.d)?ob.d*1000:Infinity;
+  if(ob.id!=='hory'){state.aim=ob.id;state.af={x:xAt(ob.X,ob.d),y:yAt(ob.d)-ob.hc*K/ob.d}}
+  else state.af={x:480,y:HOR-20};
+  update(true);
+}
+
+let pending=false,needRebuild=false;
+function update(rebuildNeeded){
+  if(rebuildNeeded)needRebuild=true;
+  if(pending)return;pending=true;
+  requestAnimationFrame(()=>{pending=false;if(needRebuild){rebuild();needRebuild=false}render();updateUI()});
+}
+function updateUI(){
+  const o=optics();
+  fSl.value=state.fi;nSl.value=state.ni;sSl.value=sToV(state.s);
+  const eq=Math.round(o.f*36/o.sen.w);
+  $('fOut').innerHTML=`${o.f} mm${o.sen.w!==36?`<small>ekv. ${eq} mm</small>`:''}`;
+  $('nOut').textContent=fN(o.N);
+  $('sOut').textContent=fmt(o.s);
+  for(const b of senSeg.children)b.setAttribute('aria-pressed',b.dataset.k===state.sensor);
+  $('vCam').setAttribute('aria-pressed',state.view==='camera');$('vAll').setAttribute('aria-pressed',state.view==='all');
+  const dof=o.far-o.near;
+  $('rDof').textContent=isFinite(dof)?fmt(dof):'až do nekonečna';
+  $('rNear').textContent=fmt(o.near);$('rFar').textContent=fmt(o.far);
+  $('rSplit').textContent=isFinite(o.s)?`${fmt(o.s-o.near)} / ${fmt(o.far-o.s)}`:'— / ∞';
+  $('rH').textContent=fmt(o.H);
+  $('rC').textContent=`${String(o.sen.c).replace('.',',')} mm (${o.sen.name})`;
+  $('vfData').innerHTML=`<span><b>${o.f}</b> mm</span><span><b>${fN(o.N)}</b></span><span>zaostřeno <b>${fmt(o.s)}</b></span><span>ostré ${fmt(o.near)} – ${fmt(o.far)}</span>`;
+  const note=$('vfNote');
+  if(state.view==='camera'&&view.clamped){note.hidden=false;note.textContent='Záběr je širší než nakreslená scéna, zobrazena je celá.'}
+  else note.hidden=true;
+  for(const ob of allObjs){
+    const b=blurMM(o,isFinite(ob.d)?ob.d*1000:Infinity),ratio=b/o.c,row=rows[ob.id];
+    // meter: log scale, 0.25 of width = ratio 1
+    const pos=Math.max(0.02,Math.min(1,0.25+Math.log10(Math.max(ratio,1e-3))*0.25));
+    const cls=ratio<=1?'ok':ratio<=2.5?'warn':'bad';
+    const m=row.querySelector('.meter i');m.style.width=(pos*100)+'%';m.style.background=`var(--${cls})`;
+    const chip=row.querySelector('.chip');chip.className='chip '+cls;chip.textContent=ratio<=1?'ostré':ratio<=2.5?'mírně neostré':'rozmazané';
+    row.querySelector('.bv').textContent=`b = ${ratio<0.1?'<0,1':ratio.toFixed(ratio<10?1:0).replace('.',',')} × c`;
+    row.setAttribute('aria-current',(isFinite(ob.d)?Math.abs(ob.d*1000-o.s)<1:!isFinite(o.s))?'true':'false');
+  }
+  drawLens(o);
+}
+
+// ---------- lens scale ----------
+const lens=$('lens'),lctx=lens.getContext('2d');
+function drawLens(o){
+  const dpr=Math.min(2,window.devicePixelRatio||1);const w=lens.clientWidth,h=lens.clientHeight;
+  if(lens.width!==Math.round(w*dpr)){lens.width=Math.round(w*dpr);lens.height=Math.round(h*dpr)}
+  const c=lctx;c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);
+  const barrel=getVar('--barrel'),eng=getVar('--engrave'),dim=getVar('--engrave-dim'),acc=getVar('--accent'),foc=getVar('--focus');
+  c.fillStyle=barrel;c.beginPath();if(c.roundRect)c.roundRect(0,0,w,h,8);else c.rect(0,0,w,h);c.fill();
+  // knurl
+  c.strokeStyle='rgba(255,255,255,.05)';c.lineWidth=1;for(let x=4;x<w;x+=5){c.beginPath();c.moveTo(x,h-14);c.lineTo(x,h-4);c.stroke()}
+  const padL=24,infW=40,padR=20,x0=padL,x1=w-padR-infW,dMin=400,dMax=150000;
+  const xOf=d=>!isFinite(d)?w-padR-infW/2:d<=dMin?x0:x0+(Math.log(Math.min(d,dMax)/dMin)/Math.log(dMax/dMin))*(x1-x0);
+  const yBand=34,hBand=30;
+  // dof band
+  const xn=xOf(o.near),xf=isFinite(o.far)?xOf(o.far):w-padR;
+  c.fillStyle=acc;c.globalAlpha=.85;c.fillRect(xn,yBand,Math.max(2,xf-xn),hBand);c.globalAlpha=1;
+  // ticks
+  const marks=w<520?[0.5,1,2,3,5,10,30]:[0.5,0.7,1,1.5,2,3,5,7,10,15,20,30,50,100];
+  c.font='500 12px "JetBrains Mono",monospace';c.textAlign='center';c.textBaseline='alphabetic';
+  for(const m of marks){const x=xOf(m*1000);c.strokeStyle=dim;c.beginPath();c.moveTo(x,yBand+hBand);c.lineTo(x,yBand+hBand+6);c.stroke();
+    c.fillStyle=eng;c.fillText(String(m).replace('.',','),x,yBand+hBand+19)}
+  c.fillStyle=eng;c.font='600 18px "JetBrains Mono",monospace';c.fillText('∞',xOf(Infinity),yBand+hBand+21);
+  c.font='500 11px "JetBrains Mono",monospace';c.fillStyle=dim;c.textAlign='left';c.fillText('m',x0-14,yBand+hBand+19);
+  // band frame
+  c.strokeStyle=dim;c.lineWidth=1;c.strokeRect(x0,yBand,(w-padR)-x0,hBand);
+  // hyperfocal
+  const xh=xOf(o.H);c.setLineDash([3,3]);c.strokeStyle=eng;c.beginPath();c.moveTo(xh,yBand-4);c.lineTo(xh,yBand+hBand+4);c.stroke();c.setLineDash([]);
+  c.fillStyle=eng;c.textAlign='center';c.font='600 11px "JetBrains Mono",monospace';c.fillText('H',xh,yBand-7);
+  // focus index
+  const xs=xOf(o.s);c.fillStyle=foc;c.beginPath();c.moveTo(xs-7,6);c.lineTo(xs+7,6);c.lineTo(xs,18);c.closePath();c.fill();
+  c.fillRect(xs-1,18,2,yBand+hBand-18);
+  // objects
+  c.font='500 11px "Instrument Sans",system-ui,sans-serif';
+  const objs=[...OBJ].reverse();let alt=0;
+  for(const ob of objs){const x=xOf(ob.d*1000);const b=blurMM(o,ob.d*1000);const sharp=b<=o.c;
+    c.fillStyle=sharp?'#fff':barrel;c.strokeStyle='#fff';c.lineWidth=1.5;c.beginPath();c.arc(x,yBand+hBand/2,4.5,0,Math.PI*2);c.fill();c.stroke();
+    if(w>=420){c.fillStyle=dim;c.textAlign='center';c.fillText(ob.name,x,alt%2?h-10:h-24)}alt++}
+}
+
+// ---------- events ----------
+fSl.addEventListener('input',()=>{state.fi=+fSl.value;update(true)});
+nSl.addEventListener('input',()=>{state.ni=+nSl.value;update(false)});
+sSl.addEventListener('input',()=>{state.s=vToS(+sSl.value);state.af=null;update(false)});
+$('vCam').addEventListener('click',()=>{state.view='camera';update(true)});
+$('vAll').addEventListener('click',()=>{state.view='all';update(true)});
+
+function hit(ev){
+  const r=cv.getBoundingClientRect();const px=(ev.clientX-r.left)/r.width*CW,py=(ev.clientY-r.top)/r.height*CH;
+  for(let i=OBJ.length-1;i>=0;i--){const L=layers[OBJ[i].id];try{if(L.getContext('2d').getImageData(px|0,py|0,1,1).data[3]>60)return{obj:OBJ[i],px,py}}catch(e){}}
+  return {obj:null,px,py};
+}
+cv.addEventListener('click',ev=>{
+  const h=hit(ev);const p=toScene(h.px,h.py);
+  if(h.obj){state.s=h.obj.d*1000;state.aim=h.obj.id;state.af=p;update(true);return}
+  if(p.y<=HOR+4){state.s=Infinity}else{state.s=Math.max(500,K/(p.y-HOR)*1000)}
+  state.af=p;update(false);
+});
+cv.addEventListener('mousemove',ev=>{cv.style.cursor=hit(ev).obj?'pointer':'crosshair'});
+
+function preset(n){
+  const fi=f=>FOCALS.indexOf(f),ni=x=>STOPS.indexOf(x);
+  const person=OBJ[3];
+  const P={
+    portret:{fi:fi(85),ni:ni(2),sensor:'ff',obj:person},
+    krajina:{fi:fi(24),ni:ni(11),sensor:'ff',hyper:true,aim:'rozc'},
+    tele:{fi:fi(200),ni:ni(2.8),sensor:'ff',obj:OBJ[1]},
+    mobil:{fi:fi(6),ni:ni(1.8),sensor:'phone',obj:person},
+    clona:{fi:fi(50),ni:ni(2),sensor:'ff',obj:person},
+    vzdal:{fi:fi(50),ni:ni(2.8),sensor:'ff',obj:OBJ[5]},
+    ohnisko:{fi:fi(200),ni:ni(4),sensor:'ff',obj:person},
+    snimac:{fi:fi(6),ni:ni(1.8),sensor:'phone',obj:person},
+  }[n];
+  if(n==='hyper'){const o=optics();state.s=o.H;state.af=null;update(false);return}
+  Object.assign(state,{fi:P.fi,ni:P.ni,sensor:P.sensor,view:'camera'});
+  if(P.obj){state.s=P.obj.d*1000;state.aim=P.obj.id;state.af={x:xAt(P.obj.X,P.obj.d),y:yAt(P.obj.d)-P.obj.hc*K/P.obj.d}}
+  if(P.hyper){const o=optics();state.s=o.H;state.af=null;state.aim=P.aim}
+  update(true);
+}
+document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>preset(b.dataset.preset)));
+document.querySelectorAll('[data-try]').forEach(b=>{
+  const orig=b.textContent;
+  b.addEventListener('click',()=>{
+    const t=b.dataset.try,second=b.dataset.step==='2';
+    if(t==='clona'){
+      if(!second){preset('clona');b.dataset.step='2';b.textContent='Teď zaclonit na f/11'}
+      else{state.ni=STOPS.indexOf(11);update(false);b.dataset.step='1';b.textContent=orig}
+    }else if(t==='snimac'){
+      if(!second){preset('snimac');b.dataset.step='2';b.textContent='Přepnout na plný formát 24 mm'}
+      else{state.fi=FOCALS.indexOf(24);state.ni=STOPS.indexOf(1.8);state.sensor='ff';update(true);b.dataset.step='1';b.textContent=orig}
+    }else preset(t);
+    document.getElementById('simulator').scrollIntoView();
+  });
+});
+
+function sizeCanvas(){
+  const dpr=Math.min(2,window.devicePixelRatio||1);const nr=cv.clientWidth*dpr>1200?Math.min(2,dpr):Math.max(1,Math.min(dpr,1.5));
+  if(nr!==R||cv.width!==Math.round(SW*nr)){R=nr;CW=Math.round(SW*R);CH=Math.round(SH*R);cv.width=CW;cv.height=CH;return true}return false;
+}
+window.addEventListener('resize',()=>{update(sizeCanvas())});
+const mq=matchMedia('(prefers-color-scheme: dark)');mq.addEventListener&&mq.addEventListener('change',()=>update(false));
+new MutationObserver(()=>update(false)).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>update(false));
+
+state.af={x:xAt(OBJ[3].X,OBJ[3].d),y:yAt(OBJ[3].d)-OBJ[3].hc*K/OBJ[3].d};
+sizeCanvas();update(true);
+})();
+</script>
+</body>
+</html>
