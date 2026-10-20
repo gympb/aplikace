@@ -83,6 +83,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .hud { position: absolute; font: 12px var(--mono); color: var(--muted); background: color-mix(in srgb, var(--paper) 86%, transparent); padding: 3px 8px; border-radius: 6px; pointer-events: none; }
 .hud.tl { left: 8px; top: 8px; }
 .hud.br { right: 8px; bottom: 8px; text-align: right; }
+.hud.tc { left: 50%; top: 8px; transform: translateX(-50%); font: 500 13px var(--body); color: var(--fg); background: var(--paper); border: 1px solid var(--vel); box-shadow: 0 2px 8px rgba(0,0,0,.12); padding: 6px 12px; width: max-content; max-width: calc(100% - 24px); text-align: center; }
 .live { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-top: 1px solid var(--line); }
 .live div { padding: 10px 12px; border-right: 1px solid var(--line); min-width: 0; }
 .live div:last-child { border-right: 0; }
@@ -180,6 +181,7 @@ button.primary:hover { filter: brightness(1.08); }
         <canvas id="cv" aria-label="Plocha s tělesy a šipkami sil"></canvas>
         <div class="hud tl" id="hudGrid"></div>
         <div class="hud br" id="hudSim"></div>
+        <div class="hud tc" id="hudVel" role="status" hidden></div>
       </div>
       <div class="live" aria-live="off">
         <div><span class="label"><i>m</i>₁</span><b id="lm1">–</b></div>
@@ -392,7 +394,7 @@ const PRESETS = {
 
 function loadPreset(key){
   const p = PRESETS[key]();
-  bodies = p.list; daysPerSec = p.days; elapsed = 0; running = false; F0 = null; autoOrbit = true;
+  bodies = p.list; daysPerSec = p.days; elapsed = 0; running = false; F0 = null; autoOrbit = true; hideVel();
   sel = bodies[bodies.length - 1].id; partner = null;
   setOrbits(); computeForces(); fit(); resetArrowScale();
   structDirty = true; syncSpeed(); syncPlay(); onSelect();
@@ -636,7 +638,16 @@ function bodyAt(p){
   }
   return null;
 }
-function setMass(b, m){ b.m = Math.min(1e35, Math.max(1, m)); }
+// upozornění: po změně během simulace se rychlost nepřepočítá
+let velNoteT = null;
+function markVel(){
+  if (autoOrbit && elapsed === 0) return; // před spuštěním se oběžná rychlost přepočítá sama
+  const el = $('#hudVel');
+  el.innerHTML = 'Rychlost zůstala původní – pro kruhovou dráhu stiskněte <b>Oběžné rychlosti</b>.';
+  el.hidden = false; clearTimeout(velNoteT); velNoteT = setTimeout(hideVel, 12000);
+}
+function hideVel(){ clearTimeout(velNoteT); $('#hudVel').hidden = true; }
+function setMass(b, m){ b.m = Math.min(1e35, Math.max(1, m)); markVel(); }
 
 cv.addEventListener('pointerdown', e => {
   const p = pt(e); cv.setPointerCapture(e.pointerId);
@@ -650,7 +661,7 @@ cv.addEventListener('pointermove', e => {
     cv.style.cursor = bodyAt(p) ? 'move' : 'grab';
     return;
   }
-  if (drag.mode === 'move'){ const w = toW(p.x - drag.dx, p.y - drag.dy); drag.b.x = w.x; drag.b.y = w.y; drag.b.trail = []; collisionMsg = ''; }
+  if (drag.mode === 'move'){ const w = toW(p.x - drag.dx, p.y - drag.dy); drag.b.x = w.x; drag.b.y = w.y; drag.b.trail = []; collisionMsg = ''; markVel(); }
   else { view.cx = drag.cx - (p.x - drag.x0) * view.mpp; view.cy = drag.cy + (p.y - drag.y0) * view.mpp; }
 });
 const endDrag = () => { drag = null; cv.style.cursor = 'grab'; };
@@ -839,7 +850,7 @@ function setPairDist(r){
   const b = byId(sel), o = byId(partner); if (!b || !o || !(r > 0)) return;
   let dx = o.x - b.x, dy = o.y - b.y, d = Math.hypot(dx, dy);
   if (d === 0){ dx = 1; dy = 0; d = 1; }
-  o.x = b.x + dx / d * r; o.y = b.y + dy / d * r; o.trail = []; collisionMsg = '';
+  o.x = b.x + dx / d * r; o.y = b.y + dy / d * r; o.trail = []; collisionMsg = ''; markVel();
   const s = toS(o.x, o.y);
   if (s.x < 0 || s.x > W || s.y < 0 || s.y > H) fit();
 }
@@ -933,8 +944,8 @@ function syncSpeed(){
 speed.addEventListener('input', () => { daysPerSec = Math.pow(10, +speed.value); syncSpeed(); });
 function syncPlay(){ $('#play').textContent = running ? '❚❚ Pozastavit' : '▶ Spustit pohyb'; }
 $('#play').addEventListener('click', () => { running = !running; if (running) collisionMsg = ''; syncPlay(); });
-$('#orbits').addEventListener('click', () => { setOrbits(); if (elapsed === 0) autoOrbit = true; bodies.forEach(b => b.trail = []); });
-$('#zeroV').addEventListener('click', () => { autoOrbit = false; bodies.forEach(b => { b.vx = 0; b.vy = 0; b.trail = []; }); });
+$('#orbits').addEventListener('click', () => { hideVel(); setOrbits(); if (elapsed === 0) autoOrbit = true; bodies.forEach(b => b.trail = []); });
+$('#zeroV').addEventListener('click', () => { hideVel(); autoOrbit = false; bodies.forEach(b => { b.vx = 0; b.vy = 0; b.trail = []; }); });
 $('#clearTrails').addEventListener('click', () => bodies.forEach(b => b.trail = []));
 [['tPartial','partial'],['tResult','result'],['tDist','dist'],['tVel','vel'],['tTrails','trails']].forEach(([id, k]) => $('#' + id).addEventListener('change', e => show[k] = e.target.checked));
 
