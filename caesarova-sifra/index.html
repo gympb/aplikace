@@ -94,6 +94,11 @@ table.alpha{border-collapse:collapse;font:600 15px var(--f-mono);margin:0 auto}
 table.alpha th{font:600 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;white-space:nowrap;position:sticky;left:0;background:var(--panel)}
 table.alpha td{padding:8px 0;width:30px;min-width:30px;text-align:center}
 table.alpha tr.c td{color:var(--accent);border-top:1px dashed var(--line)}
+table.alpha tr.c{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+table.alpha tr.c.drag{cursor:grabbing}
+table.alpha tr.c td{transition:transform .18s ease-out}
+table.alpha tr.c.drag td{transition:none}
+table.alpha tr.c th::after{content:" ⇆";letter-spacing:0;color:var(--accent)}
 table.alpha td.on{background:var(--accent-soft);color:var(--accent)}
 table.alpha tr.p td.on{color:var(--ink)}
 .trace{font:14px var(--f-mono);color:var(--muted);display:flex;flex-wrap:wrap;gap:6px}
@@ -191,7 +196,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <div class="sec-head">
       <div class="eyebrow">Krok za krokem</div>
       <h2>Posunutá abeceda</h2>
-      <p>Horní řádek je běžná abeceda, spodní řádek abeceda posunutá o klíč. Zvýrazněná písmena se vyskytují v aktuálním textu.</p>
+      <p>Horní řádek je běžná abeceda, spodní řádek abeceda posunutá o klíč. Zvýrazněná písmena se vyskytují v aktuálním textu. Spodní řádek můžete myší nebo prstem posouvat doleva a doprava.</p>
     </div>
     <div class="scroll"><table class="alpha" id="alpha"></table></div>
     <div class="trace" id="trace"></div>
@@ -364,6 +369,7 @@ function render(){
   let h='<tr class="p"><th>Otevřený</th>'+[...A].map((c,i)=>`<td class="${used.has(i)?'on':''}">${c}</td>`).join('')+'</tr>';
   h+='<tr class="c"><th>Šifrový</th>'+[...A].map((c,i)=>`<td class="${used.has(i)?'on':''}">${A[mod(i+k,26)]}</td>`).join('')+'</tr>';
   $('alpha').innerHTML=h;
+  applyStripOffset();
 
   // ukázka prvních písmen
   const letters=[...plain].filter(c=>/[a-z]/i.test(c)).slice(0,8);
@@ -409,6 +415,29 @@ function setMode(m){st.mode=m;$('m-enc').setAttribute('aria-pressed',m==='enc');
 $('m-enc').onclick=()=>{if(st.mode!=='enc'){$('input').value=$('output').textContent.replace(/^—$/,'');setMode('enc');render();}};
 $('m-dec').onclick=()=>{if(st.mode!=='dec'){$('input').value=$('output').textContent.replace(/^—$/,'');setMode('dec');render();}};
 $('shift').oninput=e=>{st.k=+e.target.value;render();};
+
+/* --- posouvání spodního řádku abecedy myší: posun o jedno políčko doleva = klíč +1 --- */
+let strip=null, stripOff=0;
+function applyStripOffset(){
+  const row=$('alpha').querySelector('tr.c'); if(!row)return;
+  row.classList.toggle('drag',!!strip);
+  row.querySelectorAll('td').forEach(td=>td.style.transform=stripOff?`translateX(${stripOff}px)`:'');
+}
+$('alpha').addEventListener('pointerdown',e=>{
+  const row=e.target.closest('tr.c'); if(!row)return;
+  const td=row.querySelector('td'); 
+  strip={x0:e.clientX,k0:st.k,w:td?td.getBoundingClientRect().width:30,id:e.pointerId};
+  $('alpha').setPointerCapture(e.pointerId); e.preventDefault(); applyStripOffset();
+});
+$('alpha').addEventListener('pointermove',e=>{
+  if(!strip||e.pointerId!==strip.id)return;
+  const dx=e.clientX-strip.x0, steps=Math.round(-dx/strip.w);
+  stripOff=dx+steps*strip.w;                 // zbytek posunu pod půl políčka, aby pohyb byl plynulý
+  const k=mod(strip.k0+steps,26);
+  if(k!==st.k){st.k=k;render();} else applyStripOffset();
+});
+const stripEnd=e=>{ if(!strip)return; strip=null; stripOff=0; applyStripOffset(); };
+$('alpha').addEventListener('pointerup',stripEnd); $('alpha').addEventListener('pointercancel',stripEnd);
 $('k-minus').onclick=()=>{st.k=mod(st.k-1,26);render();};
 $('k-plus').onclick=()=>{st.k=mod(st.k+1,26);render();};
 $('input').oninput=render; $('strip').onchange=render; $('upper').onchange=render;
