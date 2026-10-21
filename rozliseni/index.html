@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rozlišení</title>
+<meta name="description" content="Laboratoř rozlišení videa: pixely, srovnání formátů od 30 řádků po 8K, prokládání, barevná hloubka, kalkulačka datového toku a kvíz.">
+<meta name="author" content="Josef Fryš">
+<meta property="og:title" content="Rozlišení">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+/* Layout: one narrow lab bench. Header with tabs, then one working panel per tab.
+   Detail from the subject: SMPTE color bars as the page's signature stripe and in the demo scene. */
+:root {
+  --bg: #edf1f3;
+  --surface: #fbfcfc;
+  --ink: #101c24;
+  --muted: #566874;
+  --line: #cbd5db;
+  --accent: #00798c;
+  --accent-ink: #ffffff;
+  --tint: #dcebee;
+  --good: #2e7d4f;
+  --bad: #b3382c;
+  --display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1419; --surface: #141f26; --ink: #e6eef2; --muted: #93a5b0; --line: #28383f;
+    --accent: #3cc3d6; --accent-ink: #06222a; --tint: #12303a; --good: #6fcf97; --bad: #ff8a7a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1419; --surface: #141f26; --ink: #e6eef2; --muted: #93a5b0; --line: #28383f;
+  --accent: #3cc3d6; --accent-ink: #06222a; --tint: #12303a; --good: #6fcf97; --bad: #ff8a7a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.55;
+  padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: 2rem; letter-spacing: -0.01em; }
+h2 { font-size: 1.25rem; }
+p { margin: 0; max-width: 65ch; }
+.muted { color: var(--muted); }
+.mono, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.eyebrow { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+
+header { display: flex; flex-direction: column; gap: 10px; }
+.bars { display: flex; height: 8px; max-width: 280px; }
+.bars i { flex: 1; }
+.bars i:nth-child(1) { background: #c0c0c0; } .bars i:nth-child(2) { background: #c0c000; }
+.bars i:nth-child(3) { background: #00c0c0; } .bars i:nth-child(4) { background: #00c000; }
+.bars i:nth-child(5) { background: #c000c0; } .bars i:nth-child(6) { background: #c00000; }
+.bars i:nth-child(7) { background: #0000c0; }
+
+[role="tablist"] { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+[role="tab"] {
+  font: 500 0.95rem var(--body); color: var(--muted); background: none; border: 0; cursor: pointer;
+  padding: 10px 12px; border-bottom: 3px solid transparent; margin-bottom: -1px;
+}
+[role="tab"][aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+[role="tab"]:hover { color: var(--ink); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.panel { display: flex; flex-direction: column; gap: 16px; }
+.box { background: var(--surface); border: 1px solid var(--line); padding: 16px; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font: 500 0.82rem var(--mono); background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+  padding: 6px 10px; cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+.back { font-weight: 600; font-size: 14px; color: var(--muted); text-decoration: none; }
+.back:hover { color: var(--accent); }
+.foot { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+.foot a { color: inherit; }
+
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 208px; gap: 16px; align-items: start; }
+@media (max-width: 680px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+.screen { border: 1px solid var(--line); background: #000; line-height: 0; }
+.screen canvas, canvas.px { width: 100%; height: auto; display: block; image-rendering: pixelated; }
+#scene { cursor: crosshair; touch-action: pan-y; }
+.stagecol { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.screen { position: relative; }
+.portrait { max-width: 260px; margin: 0 auto; }
+.fsx {
+  position: absolute; z-index: 2; line-height: 1.2; cursor: pointer;
+  top: calc(10px + env(safe-area-inset-top, 0px)); right: calc(10px + env(safe-area-inset-right, 0px));
+  font: 600 0.9rem var(--body); background: rgba(0, 0, 0, 0.72); color: #fff; border: 1px solid rgba(255, 255, 255, 0.55); padding: 8px 12px;
+}
+.fsnav {
+  position: absolute; z-index: 2; left: 50%; transform: translateX(-50%); max-width: calc(100% - 20px);
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 8px; line-height: 1.2;
+  background: rgba(0, 0, 0, 0.72); border: 1px solid rgba(255, 255, 255, 0.55); padding: 6px;
+}
+.fsnav button {
+  font: 600 0.9rem var(--body); color: #fff; background: transparent; border: 1px solid rgba(255, 255, 255, 0.55);
+  padding: 8px 12px; cursor: pointer; white-space: nowrap;
+}
+.fsnav button:disabled { opacity: 0.35; cursor: default; }
+.fsnav span { font: 500 0.9rem var(--mono); color: #fff; min-width: 6.5rem; text-align: center; font-variant-numeric: tabular-nums; }
+.screen.fs { display: flex; align-items: center; justify-content: center; background: #000; border: 0; }
+.screen.pseudo { position: fixed; inset: 0; z-index: 100; }
+.screen.fs canvas { width: 100%; height: 100%; max-width: none; margin: 0; object-fit: contain; }
+body.noscroll { overflow: hidden; }
+.side { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+#loupe { width: 192px; height: 192px; max-width: 100%; border: 1px solid var(--line); image-rendering: pixelated; background: #000; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 0.88rem; }
+.check input { accent-color: var(--accent); width: 16px; height: 16px; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.stat { background: var(--surface); padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.stat b { font: 500 1.15rem var(--mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stat span { font-size: 0.78rem; color: var(--muted); }
+
+ul.devs { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+ul.devs li::marker { color: var(--accent); }
+
+/* Compare */
+.compare { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 720px) { .compare { grid-template-columns: minmax(0, 1fr); } }
+.nest { position: relative; aspect-ratio: 16 / 9; width: 100%; background: var(--surface); border: 1px solid var(--line); }
+.nest div { position: absolute; left: 0; top: 0; border: 1px solid var(--accent); border-left: 0; border-top: 0; }
+.nest div.on { background: var(--tint); border-width: 2px; z-index: 2; }
+.rows { display: flex; flex-direction: column; gap: 4px; }
+.row {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; text-align: left; width: 100%;
+  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); padding: 8px 10px; cursor: pointer;
+}
+.row[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.row .nm { font-weight: 600; }
+.row .dm, .row .px { font: 0.8rem var(--mono); color: var(--muted); }
+.row .px { text-align: right; }
+.time { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.time li { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); }
+.time li:first-child { border-top: 0; }
+.time b { font: 500 0.85rem var(--mono); color: var(--accent); }
+@media (max-width: 520px) { .time li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+/* Interlacing */
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.fig { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fig .screen { border-color: var(--line); }
+.fcap { font-size: 0.82rem; color: var(--muted); }
+.fcap b { color: var(--ink); font-weight: 600; }
+.ctrl { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.ctrl label { display: flex; gap: 10px; align-items: center; font-size: 0.88rem; flex: 1 1 220px; min-width: 0; }
+.ctrl output { font: 0.85rem var(--mono); min-width: 3ch; }
+
+/* Calculator */
+.form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+label.f { display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; color: var(--muted); min-width: 0; }
+label.f input, label.f select {
+  font: 1rem var(--mono); color: var(--ink); background: var(--bg); border: 1px solid var(--line); padding: 8px 10px; width: 100%; min-width: 0;
+}
+.formula { font: 0.95rem var(--mono); background: var(--tint); padding: 12px 14px; overflow-wrap: anywhere; }
+
+/* Quiz */
+.q { display: flex; flex-direction: column; gap: 12px; }
+.opts { display: flex; flex-direction: column; gap: 6px; }
+.opt { font: inherit; text-align: left; color: var(--ink); background: var(--surface); border: 1px solid var(--line); padding: 10px 12px; cursor: pointer; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:disabled { cursor: default; }
+.opt.right { border-color: var(--good); box-shadow: inset 3px 0 0 var(--good); }
+.opt.wrong { border-color: var(--bad); box-shadow: inset 3px 0 0 var(--bad); }
+.fb { font-size: 0.92rem; }
+.btn { font: 600 0.92rem var(--body); background: var(--accent); color: var(--accent-ink); border: 0; padding: 10px 16px; cursor: pointer; align-self: flex-start; }
+.btn.alt { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.progress { height: 4px; background: var(--line); }
+.progress i { display: block; height: 100%; background: var(--accent); }
+@media (prefers-reduced-motion: no-preference) { .progress i { transition: width 0.25s; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <header>
+    <div class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <span class="eyebrow">Základy videa</span>
+    <h1>Rozlišení</h1>
+    <p class="muted">Snímek videa je mřížka barevných bodů, kterým říkáme pixely. Rozlišení udává, kolik sloupců a řádků ta mřížka má. Vyzkoušejte si to, porovnávejte a počítejte.</p>
+  </header>
+
+  <div role="tablist" aria-label="Části laboratoře">
+    <button role="tab" id="t-explore" aria-selected="true" aria-controls="p-explore">Prozkoumat</button>
+    <button role="tab" id="t-compare" aria-selected="false" aria-controls="p-compare" tabindex="-1">Srovnání</button>
+    <button role="tab" id="t-inter" aria-selected="false" aria-controls="p-inter" tabindex="-1">Prokládání</button>
+    <button role="tab" id="t-depth" aria-selected="false" aria-controls="p-depth" tabindex="-1">Barevná hloubka</button>
+    <button role="tab" id="t-calc" aria-selected="false" aria-controls="p-calc" tabindex="-1">Kalkulačka</button>
+    <button role="tab" id="t-quiz" aria-selected="false" aria-controls="p-quiz" tabindex="-1">Kvíz</button>
+  </div>
+
+  <!-- PROZKOUMAT -->
+  <section class="panel" id="p-explore" role="tabpanel" aria-labelledby="t-explore">
+    <div class="box stack">
+      <div class="eyebrow">Vyberte rozlišení</div>
+      <div class="chips" id="chips"></div>
+      <input type="range" id="slider" min="0" value="3" aria-label="Krok rozlišení">
+    </div>
+    <div class="stage">
+      <div class="stagecol">
+        <div class="screen" id="screen">
+          <canvas id="scene" aria-label="Ukázkový obrázek vykreslený ve zvoleném rozlišení"></canvas>
+          <button class="fsx" id="fsx" type="button" hidden>Zavřít</button>
+          <div class="fsnav" id="fsnav" hidden>
+            <button id="fsprev" type="button" aria-label="Nižší rozlišení">‹ Nižší</button>
+            <span id="fslabel" aria-live="polite"></span>
+            <button id="fsnext" type="button" aria-label="Vyšší rozlišení">Vyšší ›</button>
+          </div>
+        </div>
+        <button class="btn alt" id="fsbtn" type="button">Celá obrazovka</button>
+        <div class="stack" id="arbox" hidden>
+          <div class="eyebrow">Poměr stran obrazu</div>
+          <div class="chips">
+            <button class="chip" data-ar="4:3" type="button" aria-pressed="true">4:3</button>
+            <button class="chip" data-ar="16:9" type="button" aria-pressed="false">16:9</button>
+          </div>
+          <p class="muted" style="font-size:0.8rem">Obraz 4:3 je oříznutý ze 16:9, ne roztažený.</p>
+        </div>
+      </div>
+      <div class="side">
+        <div class="eyebrow">Lupa</div>
+        <canvas id="loupe" width="192" height="192" aria-label="Zvětšený výřez 16 × 16 pixelů"></canvas>
+        <div class="num muted" id="pos" style="font-size:0.8rem"></div>
+        <label class="check"><input type="checkbox" id="grid" checked> Zobrazit mřížku pixelů</label>
+        <p class="muted" style="font-size:0.82rem">Najeďte myší na obrázek nebo na něj klepněte. Lupa ukazuje blok 16 × 16 skutečných pixelů.</p>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <p id="explain"></p>
+    <p class="muted" id="capnote" style="font-size:0.85rem" hidden></p>
+    <div class="box stack">
+      <div class="eyebrow">Kde se s ním setkáte</div>
+      <ul class="devs" id="devs"></ul>
+    </div>
+  </section>
+
+  <!-- SROVNÁNÍ -->
+  <section class="panel" id="p-compare" role="tabpanel" aria-labelledby="t-compare" hidden>
+    <p>Každý obrys je snímek nakreslený ve stejném měřítku. Všechny sdílejí levý horní roh, takže vidíte, kolik místa přibude s každým krokem nahoru.</p>
+    <div class="compare">
+      <div class="nest" id="nest" aria-hidden="true"></div>
+      <div class="rows" id="rows"></div>
+    </div>
+    <div class="box stack" id="cmpnote"></div>
+    <div class="box stack">
+      <h2>480p a 576p: v čem se liší</h2>
+      <p>Obě rozlišení patří do standardní kvality (SD), ale pocházejí z různých televizních světů.</p>
+      <div class="stats">
+        <div class="stat"><b>480p, NTSC</b><span>480 řádků, 60 půlsnímků/s, USA, Kanada, Japonsko, DVD 720 × 480</span></div>
+        <div class="stat"><b>576p, PAL a SECAM</b><span>576 řádků, 50 půlsnímků/s, Evropa včetně Česka, DVD 720 × 576</span></div>
+        <div class="stat"><b>1,2×</b><span>576p má o pětinu víc řádků, tedy o 20 % víc pixelů při stejné šířce</span></div>
+      </div>
+      <p class="muted" style="font-size:0.88rem">Na DVD mají obě varianty šířku 720 pixelů a širokoúhlý obraz vzniká tím, že se pixely při přehrávání roztáhnou. Obrázky se tady kreslí ve čtvercových pixelech, proto se 480p zobrazuje v poměru 4:3 jako 640 × 480 a ve 16:9 jako 854 × 480, 576p pak jako 768 × 576 a 1024 × 576. Čísla a výpočty používají původních 720 × 480 a 720 × 576.</p>
+    </div>
+    <div class="box stack">
+      <h2>Cesta k vyššímu rozlišení</h2>
+      <p class="muted">Historické televizní systémy se neoznačují pixely, ale počtem řádků.</p>
+      <ul class="time" id="time"></ul>
+    </div>
+  </section>
+
+  <!-- PROKLÁDÁNÍ -->
+  <section class="panel" id="p-inter" role="tabpanel" aria-labelledby="t-inter" hidden>
+    <h2>Progresivní a prokládané řádkování</h2>
+    <p>Písmeno za číslem říká, jak se snímek skládá. <b>1080p</b> je progresivní: každý snímek se zobrazí celý najednou. <b>1080i</b> je prokládané: obraz se přenáší ve dvou půlsnímcích, nejdřív řádky 1, 3, 5 a tak dále, pak řádky 2, 4, 6 a tak dále. Každý půlsnímek má jen polovinu řádků, takže přenos potřebuje zhruba poloviční datový tok.</p>
+    <div class="box stack">
+      <div class="ctrl">
+        <label>Rychlost pohybu
+          <input type="range" id="i-speed" min="0" max="8" step="0.5" value="3">
+          <output id="i-speed-o" for="i-speed">3</output>
+        </label>
+        <button class="btn alt" id="i-play" type="button">Pozastavit</button>
+      </div>
+      <div class="grid2">
+        <div class="fig"><div class="screen"><canvas class="px" id="i-prog" width="240" height="135"></canvas></div><div class="fcap"><b>Progresivně:</b> celý snímek najednou</div></div>
+        <div class="fig"><div class="screen"><canvas class="px" id="i-weave" width="240" height="135"></canvas></div><div class="fcap"><b>Prokládaně:</b> oba půlsnímky složené dohromady</div></div>
+        <div class="fig"><div class="screen"><canvas class="px" id="i-f1" width="240" height="135"></canvas></div><div class="fcap"><b>Půlsnímek 1:</b> řádky 1, 3, 5 …</div></div>
+        <div class="fig"><div class="screen"><canvas class="px" id="i-f2" width="240" height="135"></canvas></div><div class="fcap"><b>Půlsnímek 2:</b> řádky 2, 4, 6 … o chvilku později</div></div>
+      </div>
+    </div>
+    <p>Mezi oběma půlsnímky uplyne zlomek sekundy: v Evropě 1/50 s, v USA a Japonsku zhruba 1/60 s. Předmět se mezi nimi posune, a proto má složený obraz na svislých okrajích zubaté „hřebínky“. Čím rychlejší pohyb, tím jsou výraznější.</p>
+    <div class="stats">
+      <div class="stat"><b>1080p</b><span>1080 řádků v každém snímku</span></div>
+      <div class="stat"><b>1080i</b><span>2 × 540 řádků v půlsnímcích</span></div>
+      <div class="stat"><b>50 půlsnímků/s</b><span>v Evropě, tedy 25 celých snímků/s</span></div>
+    </div>
+    <p class="muted" style="font-size:0.9rem">Dnešní televize a počítače prokládaný obraz před zobrazením převádějí zpět na progresivní. Tomu se říká deinterlacing. Prokládání se dnes používá hlavně ve starším televizním vysílání, internetové video je téměř vždy progresivní.</p>
+  </section>
+
+  <!-- BAREVNÁ HLOUBKA -->
+  <section class="panel" id="p-depth" role="tabpanel" aria-labelledby="t-depth" hidden>
+    <h2>Barevná hloubka</h2>
+    <p>Každý pixel má tři barevné složky: červenou, zelenou a modrou. Barevná hloubka říká, kolik bitů má každá složka. Víc bitů znamená víc odstínů a hladší přechody. Rozlišení udává, kolik je pixelů, barevná hloubka udává, kolik odstínů může mít každý z nich.</p>
+    <div class="box stack">
+      <label class="ctrl"><span style="flex:0 0 auto;font-size:0.88rem">Bitů na složku</span>
+        <input type="range" id="d-bits" min="1" max="8" step="1" value="3" style="flex:1 1 180px">
+        <output id="d-bits-o" for="d-bits" style="font:1rem var(--mono)">3</output>
+      </label>
+      <div class="grid2">
+        <div class="fig"><div class="screen"><canvas class="px" id="d-orig" width="320" height="220" style="image-rendering:auto"></canvas></div><div class="fcap"><b>8 bitů na složku:</b> původní obraz</div></div>
+        <div class="fig"><div class="screen"><canvas class="px" id="d-new" width="320" height="220" style="image-rendering:auto"></canvas></div><div class="fcap" id="d-cap"></div></div>
+      </div>
+    </div>
+    <div class="stats" id="d-stats"></div>
+    <p>Při nízké hloubce se v plynulých přechodech, třeba na obloze nebo na stínu, objeví viditelné pruhy. Říká se jim banding. Dva proužky pod obrázkem jsou plynulé přechody, na kterých je pruhování nejlépe vidět.</p>
+    <div class="box stack">
+      <div class="eyebrow">Běžné hloubky</div>
+      <ul class="devs">
+        <li><b>8 bitů:</b> 256 úrovní na složku, 16 777 216 barev, 24 bitů na pixel. Běžné video a většina obrazovek.</li>
+        <li><b>10 bitů:</b> 1 024 úrovní na složku, asi 1,07 miliardy barev, 30 bitů na pixel. Video s HDR a profesionální monitory.</li>
+        <li><b>12 bitů:</b> 4 096 úrovní na složku, asi 68,7 miliardy barev, 36 bitů na pixel. Filmová produkce a profesionální záznam.</li>
+      </ul>
+    </div>
+    <p class="muted" style="font-size:0.85rem">Vaše obrazovka pravděpodobně zobrazuje 8 bitů na složku, takže hloubky nad 8 bitů tady nelze předvést. Počty barev výše jsou ale přesné.</p>
+  </section>
+
+  <!-- KALKULAČKA -->
+  <section class="panel" id="p-calc" role="tabpanel" aria-labelledby="t-calc" hidden>
+    <p>Surové video ukládá každý pixel každého snímku. Zadejte vlastní čísla a uvidíte, jak rychle se to nasčítá.</p>
+    <div class="box form">
+      <label class="f">Předvolba
+        <select id="c-preset"></select>
+      </label>
+      <label class="f">Šířka (px)<input id="c-w" type="number" min="1" max="16384" value="1920" inputmode="numeric"></label>
+      <label class="f">Výška (px)<input id="c-h" type="number" min="1" max="16384" value="1080" inputmode="numeric"></label>
+      <label class="f">Snímků za sekundu<input id="c-fps" type="number" min="1" max="240" value="30" inputmode="numeric"></label>
+      <label class="f">Bitů na pixel
+        <select id="c-bpp">
+          <option value="24" selected>24: 8bitové RGB</option>
+          <option value="30">30: 10bitové RGB</option>
+          <option value="12">12: 8bitové YUV 4:2:0</option>
+          <option value="15">15: 10bitové YUV 4:2:0</option>
+        </select>
+      </label>
+      <label class="f">Délka (sekundy)<input id="c-sec" type="number" min="1" max="86400" value="60" inputmode="numeric"></label>
+    </div>
+    <div class="formula" id="c-formula"></div>
+    <div class="stats" id="c-stats"></div>
+    <p class="muted" style="font-size:0.88rem">Bitů na pixel vyjde jako bity na složku krát tři u RGB. Formát YUV 4:2:0 ukládá barvu v menším rozlišení než jas, a proto mu stačí méně bitů na pixel. Skutečná videa se navíc komprimují, takže soubory a streamy jsou mnohem menší než tyto surové údaje. Komprese mění počet bitů na pixel, rozlišení neovlivní.</p>
+  </section>
+
+  <!-- KVÍZ -->
+  <section class="panel" id="p-quiz" role="tabpanel" aria-labelledby="t-quiz" hidden>
+    <div class="progress" aria-hidden="true"><i id="qbar" style="width:0%"></i></div>
+    <div class="box q" id="qbox"></div>
+  </section>
+
+  <footer class="foot">Autor: Josef Fryš · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 21. 10. 2026</footer>
+</div>
+
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var LOC = 'cs-CZ';
+  var fmt = function (n) { return n.toLocaleString(LOC); };
+  var dec = function (x, d) { return x.toLocaleString(LOC, { minimumFractionDigits: d, maximumFractionDigits: d }); };
+  var fmtX = function (x) { return dec(x, x >= 10 ? 0 : x >= 1 ? 1 : x >= 0.01 ? 2 : 4); };
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var PRESETS = [
+    { n: '30 řádků', w: 12, h: 30, note: 'První televize Johna Logieho Bairda z roku 1926 měla jen 30 řádků. Obraz byl vysoký a úzký (poměr stran asi 7:3 na výšku) a měl kolem 12,5 snímku za sekundu. Mechanický systém nemá pevnou mřížku pixelů, proto jsou tu uvedené sloupce jen přibližné.',
+      dev: ['Bairdova první veřejná ukázka v Londýně (1926)', 'Pokusné vysílání BBC systémem Bairda (1929–1932)', 'Baird Televisor, první komerčně prodávaný televizor (od roku 1930)'] },
+    { n: '64 × 36', w: 64, h: 36, note: 'Malá ukázka, na které je každý pixel dobře vidět.',
+      dev: ['LED reklamní panely a informační tabule', 'Ikony aplikací a pixel art'] },
+    { n: '144p', w: 256, h: 144, note: 'Velmi nízká kvalita, používala se při pomalém připojení.',
+      dev: ['Videa ve formátu 3GP na starších mobilních telefonech', 'Velmi pomalé mobilní připojení, například GPRS'] },
+    { n: '240p', w: 426, h: 240, note: 'První videa na webu.',
+      dev: ['Raná webová videa a přehrávače iPod', 'Videokazety VHS, které vypadají zhruba podobně', 'Horní displej konzole Nintendo 3DS (400 × 240)'] },
+    { n: '360p', w: 640, h: 360, note: 'Malé obrazovky a slabý signál.',
+      dev: ['Malá okna videa na webových stránkách', 'Úsporný režim streamování na mobilu'] },
+    { n: '480p', w: 720, h: 480, ard: { '4:3': [640, 480], '16:9': [854, 480] }, note: 'Standardní rozlišení (SD) amerického a japonského systému NTSC: 480 řádků a 60 půlsnímků za sekundu.',
+      dev: ['DVD v USA a Japonsku (720 × 480)', 'Analogová televize NTSC', 'Herní konzole Nintendo Wii'] },
+    { n: '576p', w: 720, h: 576, ard: { '4:3': [768, 576], '16:9': [1024, 576] }, note: 'Standardní rozlišení (SD) evropských systémů PAL a SECAM: 576 řádků a 50 půlsnímků za sekundu. Má víc řádků než 480p, ale méně snímků za sekundu.',
+      dev: ['DVD v Evropě (720 × 576)', 'Analogová televize PAL a SECAM', 'Standardní digitální vysílání DVB-T'] },
+    { n: '720p', w: 1280, h: 720, note: 'HD. Písmeno „p“ značí progresivní řádkování, 720 je počet řádků.',
+      dev: ['Televizory „HD ready“ (často s displejem 1366 × 768)', 'Konzole Xbox 360 a PlayStation 3 u mnoha her', 'Displej konzole Nintendo Switch v ručním režimu'] },
+    { n: '1080p', w: 1920, h: 1080, note: 'Full HD, běžné rozlišení televizí a notebooků.',
+      dev: ['Televizory Full HD', 'Disky Blu-ray', 'Konzole PlayStation 4 a Xbox One', 'Většina notebooků a monitorů a mnoho telefonů'] },
+    { n: '1440p', w: 2560, h: 1440, note: 'QHD, oblíbené u herních monitorů.',
+      dev: ['Herní monitory', 'Telefony s displejem QHD', 'Konzole Xbox Series X umí výstup v 1440p'] },
+    { n: '4K', w: 3840, h: 2160, note: 'Ultra HD. Dvojnásobná šířka a dvojnásobná výška oproti 1080p.',
+      dev: ['Televizory 4K', 'Disky Ultra HD Blu-ray', 'Konzole PlayStation 5 a Xbox Series X', 'Streamování ve 4K a natáčení videa na telefonech'] },
+    { n: '8K', w: 7680, h: 4320, note: 'Dvojnásobná šířka a výška oproti 4K. Zobrazí ho jen málo obrazovek.',
+      dev: ['Televizory 8K, například od Samsungu, LG a Sony', 'Vysílání japonské televize NHK v 8K od roku 2018', 'Některé fotoaparáty natáčejí video v 8K'] }
+  ];
+  var HISTORY = [
+    ['1926', 'John Logie Baird předvádí mechanickou televizi s 30 řádky.'],
+    ['1936–1937', 'BBC zahajuje pravidelné televizní vysílání a od roku 1937 používá 405 řádků.'],
+    ['1941', 'USA schvalují standard NTSC s 525 řádky.'],
+    ['1953', 'Československá televize zahajuje pravidelné vysílání.'],
+    ['50.–60. léta', 'V Evropě převládá 625 řádků (PAL a SECAM), z nich je viditelných asi 576.'],
+    ['Konec 90. let', 'Přicházejí disky DVD, v Evropě s 576 řádky.'],
+    ['Přelom tisíciletí', 'Začíná vysílání v HD, ve formátech 720p a 1080i.'],
+    ['2006', 'Disky Blu-ray přinášejí 1080p do obýváků.'],
+    ['Po roce 2010', 'Rozšiřují se televizory a streamování ve 4K.'],
+    ['2018', 'NHK zahajuje pravidelné vysílání v 8K.']
+  ];
+  var PX1080 = 1920 * 1080;
+
+  /* ---------- Záložky ---------- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+  function showTab(t) {
+    tabs.forEach(function (b) {
+      var on = b === t;
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      b.tabIndex = on ? 0 : -1;
+      $('#' + b.getAttribute('aria-controls')).hidden = !on;
+    });
+    if (t.id === 't-explore') requestAnimationFrame(updateLoupeFromLast);
+    if (t.id === 't-inter') renderInter();
+  }
+  tabs.forEach(function (b, i) {
+    b.addEventListener('click', function () { showTab(b); });
+    b.addEventListener('keydown', function (e) {
+      var j = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : null;
+      if (j === null) return;
+      j = (j + tabs.length) % tabs.length; tabs[j].focus(); showTab(tabs[j]); e.preventDefault();
+    });
+  });
+
+  /* ---------- Ukázkový obrázek (sdílený) ---------- */
+  function drawScene(ctx, W, H) {
+    ctx.save();
+    /* Scéna je 16:9. Do jiného poměru stran se ořízne na střed, nikdy se neroztáhne. */
+    var s = Math.max(W / 320, H / 180);
+    ctx.translate((W - 320 * s) / 2, (H - 180 * s) / 2);
+    ctx.scale(s, s);
+    var g = ctx.createLinearGradient(0, 0, 0, 120);
+    g.addColorStop(0, '#26356b'); g.addColorStop(1, '#f2a65a');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 320, 120);
+    ctx.fillStyle = '#ffd166'; ctx.beginPath(); ctx.arc(240, 88, 18, 0, 7); ctx.fill();
+    ctx.fillStyle = '#1d2a44'; ctx.beginPath();
+    ctx.moveTo(0, 120); ctx.lineTo(50, 70); ctx.lineTo(95, 105); ctx.lineTo(150, 58); ctx.lineTo(210, 112); ctx.lineTo(265, 74); ctx.lineTo(320, 118); ctx.lineTo(320, 125); ctx.lineTo(0, 125); ctx.fill();
+    ctx.fillStyle = '#2e6b4f'; ctx.fillRect(0, 120, 320, 48);
+    ctx.fillStyle = '#c8553d'; ctx.fillRect(60, 100, 44, 32);
+    ctx.fillStyle = '#6e2a1e'; ctx.beginPath(); ctx.moveTo(55, 100); ctx.lineTo(82, 80); ctx.lineTo(109, 100); ctx.fill();
+    ctx.fillStyle = '#ffe9a8'; ctx.fillRect(66, 108, 10, 9); ctx.fillRect(88, 108, 10, 9);
+    ctx.fillStyle = '#3b2a22'; ctx.fillRect(78, 118, 8, 14);
+    ctx.strokeStyle = '#f4f1e8'; ctx.lineWidth = 0.9;
+    for (var x = 150; x <= 222; x += 3.2) { ctx.beginPath(); ctx.moveTo(x, 126); ctx.lineTo(x, 144); ctx.stroke(); }
+    ctx.lineWidth = 0.4; ctx.strokeStyle = '#0b0f1a';
+    ctx.beginPath(); ctx.moveTo(0, 36); ctx.lineTo(320, 62); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, 46); ctx.lineTo(320, 76); ctx.stroke();
+    ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'alphabetic';
+    ctx.font = '700 12px sans-serif'; ctx.fillText('ROZLIŠENÍ', 50, 20);
+    ctx.font = '4px sans-serif'; ctx.fillText('Příliš žluťoučký kůň úpěl ďábelské ódy 0123456789', 50, 29);
+    var bars = ['#c0c0c0', '#c0c000', '#00c0c0', '#00c000', '#c000c0', '#c00000', '#0000c0'];
+    bars.forEach(function (c, i) { ctx.fillStyle = c; ctx.fillRect(i * (320 / 7), 168, 320 / 7 + 0.5, 12); });
+    ctx.restore();
+  }
+
+  /* ---------- Prozkoumat ---------- */
+  var ar = '4:3';
+  function dimsOf(p) { return p.ard ? p.ard[ar] : [p.w, p.h]; }
+  var idx = 4, cw = 0, ch = 0, lastX = 0.5, lastY = 0.5;
+  var scene = $('#scene'), sctx = scene.getContext('2d');
+  var loupe = $('#loupe'), lctx = loupe.getContext('2d');
+  var slider = $('#slider'); slider.max = PRESETS.length - 1;
+
+  var chips = $('#chips');
+  PRESETS.forEach(function (p, i) {
+    var b = document.createElement('button');
+    b.className = 'chip'; b.textContent = p.n; b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', function () { setIdx(i); });
+    chips.appendChild(b);
+  });
+
+  function setIdx(i) {
+    idx = i; slider.value = i;
+    if (typeof updateFsNav === 'function') updateFsNav();
+    var p = PRESETS[i];
+    var dm = dimsOf(p), dw = dm[0], dh = dm[1];
+    $('#arbox').hidden = !p.ard;
+    Array.prototype.forEach.call($('#arbox').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', b.dataset.ar === ar ? 'true' : 'false'); });
+    cw = Math.min(dw, 2560); ch = Math.round(cw * dh / dw);
+    scene.width = cw; scene.height = ch;
+    scene.classList.toggle('portrait', p.w < p.h);
+    drawScene(sctx, cw, ch);
+    Array.prototype.forEach.call(chips.children, function (c, k) { c.setAttribute('aria-pressed', k === i ? 'true' : 'false'); });
+    var px = p.w * p.h;
+    $('#stats').innerHTML =
+      '<div class="stat"><b>' + p.w + ' × ' + p.h + '</b><span>sloupců × řádků</span></div>' +
+      '<div class="stat"><b>' + fmt(px) + '</b><span>pixelů v jednom snímku</span></div>' +
+      '<div class="stat"><b>' + dec(px / 1e6, 2) + ' MP</b><span>megapixelů</span></div>' +
+      '<div class="stat"><b>' + fmtX(px / PX1080) + '×</b><span>pixelů oproti 1080p</span></div>';
+    $('#explain').textContent = p.note + ' Každý pixel nese jednu barvu, takže tento snímek se skládá z ' + fmt(px) + ' barevných bodů.';
+    $('#devs').innerHTML = p.dev.map(function (d) { return '<li>' + d + '</li>'; }).join('');
+    var cn = $('#capnote');
+    cn.hidden = cw === p.w;
+    if (!cn.hidden) {
+      cn.textContent = p.ard
+        ? 'Skutečný snímek má ' + p.w + ' × ' + p.h + ' pixelů, které nejsou čtvercové, a na obrazovce se roztáhnou do šířky. Náhled je pro zobrazení přepočten na ' + dw + ' × ' + dh + ' čtvercových pixelů. Údaje výše platí pro původních ' + p.w + ' × ' + p.h + '.'
+        : 'Náhled se kreslí v šířce ' + fmt(cw) + ' px, aby byl prohlížeč svižný. Údaje výše platí pro celý snímek ' + p.w + ' × ' + p.h + '.';
+    }
+    updateLoupeFromLast();
+  }
+
+  function updateLoupe(fx, fy) {
+    lastX = fx; lastY = fy;
+    var S = Math.min(16, cw, ch), cell = 192 / S;
+    var sx = Math.max(0, Math.min(cw - S, Math.round(fx * cw - S / 2)));
+    var sy = Math.max(0, Math.min(ch - S, Math.round(fy * ch - S / 2)));
+    lctx.imageSmoothingEnabled = false;
+    lctx.clearRect(0, 0, 192, 192);
+    lctx.drawImage(scene, sx, sy, S, S, 0, 0, 192, 192);
+    if ($('#grid').checked) {
+      lctx.strokeStyle = 'rgba(255,255,255,0.35)'; lctx.lineWidth = 1;
+      lctx.beginPath();
+      for (var i = 1; i < S; i++) {
+        lctx.moveTo(i * cell + 0.5, 0); lctx.lineTo(i * cell + 0.5, 192);
+        lctx.moveTo(0, i * cell + 0.5); lctx.lineTo(192, i * cell + 0.5);
+      }
+      lctx.stroke();
+    }
+    var p = PRESETS[idx];
+    $('#pos').textContent = 'pixely x ' + Math.round(sx * p.w / cw) + '–' + Math.round((sx + S) * p.w / cw) + ', y ' + Math.round(sy * p.h / ch) + '–' + Math.round((sy + S) * p.h / ch);
+  }
+  function updateLoupeFromLast() { if (cw) updateLoupe(lastX, lastY); }
+  function onPoint(e) {
+    var r = scene.getBoundingClientRect();
+    updateLoupe(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)));
+  }
+  scene.addEventListener('pointermove', onPoint);
+  scene.addEventListener('pointerdown', onPoint);
+  $('#grid').addEventListener('change', updateLoupeFromLast);
+  slider.addEventListener('input', function () { setIdx(+slider.value); });
+  Array.prototype.forEach.call($('#arbox').querySelectorAll('button'), function (b) {
+    b.addEventListener('click', function () { ar = b.dataset.ar; setIdx(idx); });
+  });
+
+  /* ---------- Celá obrazovka ---------- */
+  var screenEl = $('#screen'), fsBtn = $('#fsbtn'), fsX = $('#fsx');
+  function fsActive() { return document.fullscreenElement === screenEl || screenEl.classList.contains('pseudo'); }
+  function syncFs() {
+    var on = fsActive();
+    screenEl.classList.toggle('fs', on);
+    fsX.hidden = !on;
+    $('#fsnav').hidden = !on;
+    updateFsNav();
+    fsBtn.textContent = on ? 'Zavřít celou obrazovku' : 'Celá obrazovka';
+    document.body.classList.toggle('noscroll', screenEl.classList.contains('pseudo'));
+  }
+  function enterFs() {
+    var fallback = function () { screenEl.classList.add('pseudo'); syncFs(); };
+    try {
+      var r = screenEl.requestFullscreen && screenEl.requestFullscreen();
+      if (r && r.catch) r.catch(fallback); else fallback();
+    } catch (e) { fallback(); }
+  }
+  function exitFs() {
+    screenEl.classList.remove('pseudo');
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+    syncFs();
+  }
+  fsBtn.addEventListener('click', function () { if (fsActive()) exitFs(); else enterFs(); });
+  fsX.addEventListener('click', exitFs);
+  function updateFsNav() {
+    $('#fslabel').textContent = PRESETS[idx].n;
+    $('#fsprev').disabled = idx <= 0;
+    $('#fsnext').disabled = idx >= PRESETS.length - 1;
+  }
+  function stepRes(d) { var n = idx + d; if (n >= 0 && n < PRESETS.length) setIdx(n); }
+  $('#fsprev').addEventListener('click', function () { stepRes(-1); });
+  $('#fsnext').addEventListener('click', function () { stepRes(1); });
+  document.addEventListener('keydown', function (e) {
+    if (!fsActive()) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { stepRes(1); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { stepRes(-1); e.preventDefault(); }
+  });
+  document.addEventListener('fullscreenchange', syncFs);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && screenEl.classList.contains('pseudo')) exitFs(); });
+
+  /* ---------- Srovnání ---------- */
+  var nest = $('#nest'), rows = $('#rows');
+  var cmpPresets = PRESETS.slice(2);
+  cmpPresets.slice().reverse().forEach(function (p) {
+    var d = document.createElement('div');
+    var dm = dimsOf(p);
+    d.style.width = (dm[0] / 7680 * 100) + '%'; d.style.height = (dm[1] / 4320 * 100) + '%';
+    d.dataset.n = p.n; nest.appendChild(d);
+  });
+  cmpPresets.forEach(function (p, i) {
+    var b = document.createElement('button');
+    b.className = 'row'; b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = '<span class="nm">' + p.n + '</span><span class="px">' + fmt(p.w * p.h) + ' px</span><span class="dm">' + p.w + ' × ' + p.h + '</span><span class="px">' + fmtX(p.w * p.h / PX1080) + '× oproti 1080p</span>';
+    b.addEventListener('click', function () { selCmp(i); });
+    rows.appendChild(b);
+  });
+  function selCmp(i) {
+    var p = cmpPresets[i];
+    Array.prototype.forEach.call(rows.children, function (r, k) { r.setAttribute('aria-pressed', k === i ? 'true' : 'false'); });
+    Array.prototype.forEach.call(nest.children, function (d) { d.classList.toggle('on', d.dataset.n === p.n); });
+    var px = p.w * p.h, prev = cmpPresets[i - 1];
+    $('#cmpnote').innerHTML =
+      '<p><b>' + p.n + '</b> má ' + fmt(px) + ' pixelů.' +
+      (prev ? ' To je ' + fmtX(px / (prev.w * prev.h)) + '× více než u ' + prev.n + ', které jich má ' + fmt(prev.w * prev.h) + '.' : ' Je to nejmenší velikost v přehledu.') +
+      ' Šířka snímku je ' + fmtX(p.w / 1920) + '× větší než u 1080p.</p>' +
+      '<div class="eyebrow">Příklady zařízení</div><ul class="devs">' + p.dev.map(function (d) { return '<li>' + d + '</li>'; }).join('') + '</ul>';
+  }
+  selCmp(6);
+  $('#time').innerHTML = HISTORY.map(function (h) { return '<li><b>' + h[0] + '</b><span>' + h[1] + '</span></li>'; }).join('');
+
+  /* ---------- Prokládání ---------- */
+  var IW = 240, IH = 135;
+  var cvP = $('#i-prog'), cvW = $('#i-weave'), cvF1 = $('#i-f1'), cvF2 = $('#i-f2');
+  var cP = cvP.getContext('2d'), cW = cvW.getContext('2d'), cF1 = cvF1.getContext('2d'), cF2 = cvF2.getContext('2d');
+  var offA = document.createElement('canvas'), offB = document.createElement('canvas');
+  offA.width = offB.width = IW; offA.height = offB.height = IH;
+  var oA = offA.getContext('2d'), oB = offB.getContext('2d');
+  var iPlaying = !reduceMotion, iFrame = 0, iLast = 0;
+  $('#i-play').textContent = iPlaying ? 'Pozastavit' : 'Spustit';
+
+  function drawMover(ctx, t, speed) {
+    var span = IW + 100;
+    var x = ((t * speed) % span) - 50;
+    ctx.fillStyle = '#10202b'; ctx.fillRect(0, 0, IW, IH);
+    ctx.fillStyle = '#f4f1e8'; ctx.fillRect(x, 18, 18, 99);
+    ctx.fillStyle = '#ff9f43'; ctx.beginPath(); ctx.arc(x + 70, 67, 20, 0, 7); ctx.fill();
+  }
+  function renderInter() {
+    var speed = +$('#i-speed').value;
+    var t = iFrame * 2;
+    drawMover(oA, t, speed);
+    drawMover(oB, t + 1, speed);
+    cP.drawImage(offA, 0, 0);
+    cF1.fillStyle = '#000'; cF1.fillRect(0, 0, IW, IH);
+    cF2.fillStyle = '#000'; cF2.fillRect(0, 0, IW, IH);
+    for (var y = 0; y < IH; y++) {
+      var even = y % 2 === 0;
+      var src = even ? offA : offB;
+      cW.drawImage(src, 0, y, IW, 1, 0, y, IW, 1);
+      (even ? cF1 : cF2).drawImage(src, 0, y, IW, 1, 0, y, IW, 1);
+    }
+  }
+  function loopInter(now) {
+    if (!$('#p-inter').hidden && iPlaying && now - iLast > 40) { iLast = now; iFrame++; renderInter(); }
+    requestAnimationFrame(loopInter);
+  }
+  requestAnimationFrame(loopInter);
+  $('#i-speed').addEventListener('input', function () { $('#i-speed-o').textContent = dec(+this.value, this.value % 1 ? 1 : 0); renderInter(); });
+  $('#i-play').addEventListener('click', function () { iPlaying = !iPlaying; this.textContent = iPlaying ? 'Pozastavit' : 'Spustit'; });
+
+  /* ---------- Barevná hloubka ---------- */
+  var DW = 320, DH = 220;
+  var dSrc = document.createElement('canvas'); dSrc.width = DW; dSrc.height = DH;
+  var dsx = dSrc.getContext('2d');
+  drawScene(dsx, DW, 180);
+  var rg = dsx.createLinearGradient(0, 0, DW, 0); rg.addColorStop(0, '#0a1a4a'); rg.addColorStop(1, '#ffb36b');
+  dsx.fillStyle = rg; dsx.fillRect(0, 180, DW, 20);
+  var gg = dsx.createLinearGradient(0, 0, DW, 0); gg.addColorStop(0, '#000'); gg.addColorStop(1, '#fff');
+  dsx.fillStyle = gg; dsx.fillRect(0, 200, DW, 20);
+  var dOrig = $('#d-orig').getContext('2d'), dNew = $('#d-new').getContext('2d');
+  dOrig.drawImage(dSrc, 0, 0);
+  function renderDepth() {
+    var bits = +$('#d-bits').value, L = Math.pow(2, bits);
+    $('#d-bits-o').textContent = bits;
+    var lut = new Uint8ClampedArray(256);
+    for (var v = 0; v < 256; v++) lut[v] = Math.round(Math.round(v / 255 * (L - 1)) / (L - 1) * 255);
+    var img = dsx.getImageData(0, 0, DW, DH), d = img.data;
+    for (var i = 0; i < d.length; i += 4) { d[i] = lut[d[i]]; d[i + 1] = lut[d[i + 1]]; d[i + 2] = lut[d[i + 2]]; }
+    dNew.putImageData(img, 0, 0);
+    $('#d-cap').innerHTML = '<b>' + bits + ' ' + (bits === 1 ? 'bit' : bits < 5 ? 'bity' : 'bitů') + ' na složku</b>: ' + L + ' ' + (L < 5 ? 'úrovně' : 'úrovní');
+    $('#d-stats').innerHTML =
+      '<div class="stat"><b>' + fmt(L) + '</b><span>úrovní jedné složky</span></div>' +
+      '<div class="stat"><b>' + fmt(Math.pow(L, 3)) + '</b><span>barev celkem</span></div>' +
+      '<div class="stat"><b>' + (bits * 3) + '</b><span>bitů na pixel (RGB)</span></div>';
+  }
+  $('#d-bits').addEventListener('input', renderDepth);
+  renderDepth();
+
+  /* ---------- Kalkulačka ---------- */
+  var cp = $('#c-preset');
+  cp.innerHTML = '<option value="">Vlastní</option>' + cmpPresets.map(function (p, i) { return '<option value="' + i + '"' + (p.n === '1080p' ? ' selected' : '') + '>' + p.n + ' (' + p.w + ' × ' + p.h + ')</option>'; }).join('');
+  function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+  function bits(b) { return b >= 1e9 ? dec(b / 1e9, 2) + ' Gbit/s' : dec(b / 1e6, 1) + ' Mbit/s'; }
+  function bytes(B) { return B >= 1e12 ? dec(B / 1e12, 2) + ' TB' : B >= 1e9 ? dec(B / 1e9, 2) + ' GB' : dec(B / 1e6, 1) + ' MB'; }
+  function ratioName(w, h) {
+    if (w === 720 && (h === 480 || h === 576)) return 'mřížka SD, zobrazí se jako 4:3 nebo 16:9';
+    var r = w / h, k = [[16 / 9, '16:9 širokoúhlý'], [4 / 3, '4:3 klasický'], [21 / 9, '21:9 ultraširoký'], [1, '1:1 čtverec'], [9 / 16, '9:16 na výšku'], [3 / 2, '3:2 fotografický']];
+    for (var i = 0; i < k.length; i++) if (Math.abs(r - k[i][0]) < 0.02) return k[i][1];
+    return 'vlastní tvar';
+  }
+  function calc() {
+    var w = Math.max(1, Math.round(+$('#c-w').value || 0)), h = Math.max(1, Math.round(+$('#c-h').value || 0));
+    var fps = Math.max(1, +$('#c-fps').value || 0), bpp = +$('#c-bpp').value, sec = Math.max(1, +$('#c-sec').value || 0);
+    var px = w * h, rate = px * fps * bpp, size = rate * sec / 8, g = gcd(w, h);
+    $('#c-formula').textContent = w + ' × ' + h + ' px × ' + fps + ' snímků/s × ' + bpp + ' bitů = ' + bits(rate);
+    $('#c-stats').innerHTML =
+      '<div class="stat"><b>' + fmt(px) + '</b><span>pixelů ve snímku</span></div>' +
+      '<div class="stat"><b>' + (w / g) + ':' + (h / g) + '</b><span>poměr stran, ' + ratioName(w, h) + '</span></div>' +
+      '<div class="stat"><b>' + bits(rate) + '</b><span>surový datový tok</span></div>' +
+      '<div class="stat"><b>' + bytes(size) + '</b><span>surová velikost pro ' + fmt(sec) + ' s</span></div>';
+  }
+  ['#c-w', '#c-h', '#c-fps', '#c-bpp', '#c-sec'].forEach(function (s) {
+    $(s).addEventListener('input', function () { if (s === '#c-w' || s === '#c-h') cp.value = ''; calc(); });
+  });
+  cp.addEventListener('change', function () {
+    if (cp.value === '') return;
+    var p = cmpPresets[+cp.value]; $('#c-w').value = p.w; $('#c-h').value = p.h; calc();
+  });
+  calc();
+
+  /* ---------- Kvíz ---------- */
+  var QS = [
+    { q: 'Kolik pixelů má jeden snímek 1920 × 1080?', o: ['1 036 800', '2 073 600', '3 686 400', '8 294 400'], a: 1, e: 'Vynásobíte sloupce řádky: 1920 × 1080 = 2 073 600.' },
+    { q: 'Kolikrát víc pixelů má 4K (3840 × 2160) než 1080p?', o: ['2×', '3×', '4×', '8×'], a: 2, e: 'Šířka se zdvojnásobí a výška také, takže počet pixelů vzroste 2 × 2 = 4×.' },
+    { q: 'Co v označení „1080p“ znamená číslo 1080?', o: ['Šířku snímku v pixelech', 'Počet řádků pixelů', 'Počet snímků za sekundu', 'Celkový počet megapixelů'], a: 1, e: 'Počítá řádky pixelů shora dolů. Písmeno „p“ znamená progresivní řádkování.' },
+    { q: 'Na jaký poměr stran se zkrátí rozlišení 1280 × 720?', o: ['4:3', '16:10', '16:9', '21:9'], a: 2, e: 'Obě čísla vydělíte 80 a dostanete 16 × 9.' },
+    { q: 'Video 480p vypadá na velké televizi měkce. Proč?', o: ['Stejné pixely se roztáhnou na větší plochu', 'Televize pixely odebírá', 'Nízké rozlišení zpomaluje snímkování', 'Velké televize mají méně barev'], a: 0, e: 'Každý pixel musí pokrýt větší plochu, hustota pixelů klesne a hrany jsou rozmazané nebo hranaté.' },
+    { q: 'Zdvojnásobíte jen šířku snímku a výšku necháte stejnou. Co se stane s počtem pixelů?', o: ['Zůstane stejný', 'Zdvojnásobí se', 'Zčtyřnásobí se', 'Ztrojnásobí se'], a: 1, e: 'Pixely = šířka × výška, takže zdvojnásobením jedné strany se zdvojnásobí celek.' },
+    { q: 'Co znamená „i“ v označení 1080i?', o: ['Interaktivní obraz', 'Prokládané řádkování', 'Interpolované pixely', 'Nízkou kvalitu'], a: 1, e: 'Obraz se přenáší ve dvou půlsnímcích a každý z nich obsahuje jen polovinu řádků.' },
+    { q: 'Kolik úrovní jedné barevné složky rozliší 10bitový obraz?', o: ['256', '1 024', '4 096', '65 536'], a: 1, e: 'Dvě na desátou je 1 024 úrovní.' },
+    { q: 'Kolik bitů na pixel má obraz RGB s 8 bity na každou složku?', o: ['8', '16', '24', '32'], a: 2, e: 'Tři složky (červená, zelená, modrá) krát 8 bitů dají 24 bitů na pixel.' },
+    { q: 'Kolik řádků měla první Bairdova mechanická televize?', o: ['30', '405', '525', '625'], a: 0, e: 'Bairdův systém z roku 1926 měl jen 30 řádků. Později přišlo 405 řádků v Británii, 525 v USA a 625 v Evropě.' },
+    { q: 'Které rozlišení odpovídá evropskému DVD a analogové televizi PAL?', o: ['720 × 480', '720 × 576', '1280 × 720', '640 × 360'], a: 1, e: 'Evropské systémy PAL a SECAM mají 576 řádků a 50 půlsnímků za sekundu. Varianta 720 × 480 patří americkému NTSC.' }
+  ];
+  var qi = 0, score = 0;
+  function renderQ() {
+    var box = $('#qbox');
+    $('#qbar').style.width = (qi / QS.length * 100) + '%';
+    if (qi >= QS.length) {
+      box.innerHTML = '<div class="eyebrow">Hotovo</div><h2>Získali jste ' + score + ' z ' + QS.length + ' bodů</h2><p>' +
+        (score === QS.length ? 'Všechny odpovědi jsou správně.' : 'Projděte si ostatní záložky laboratoře a zkuste to znovu.') + '</p><button class="btn" id="again">Zkusit znovu</button>';
+      $('#again').addEventListener('click', function () { qi = 0; score = 0; renderQ(); });
+      return;
+    }
+    var q = QS[qi];
+    box.innerHTML = '<div class="eyebrow">Otázka ' + (qi + 1) + ' z ' + QS.length + '</div><h2></h2><div class="opts"></div><p class="fb" id="fb" aria-live="polite"></p>';
+    box.querySelector('h2').textContent = q.q;
+    var opts = box.querySelector('.opts');
+    q.o.forEach(function (t, i) {
+      var b = document.createElement('button'); b.className = 'opt'; b.textContent = t;
+      b.addEventListener('click', function () {
+        Array.prototype.forEach.call(opts.children, function (x, k) { x.disabled = true; if (k === q.a) x.classList.add('right'); });
+        if (i === q.a) { score++; $('#fb').textContent = 'Správně. ' + q.e; }
+        else { b.classList.add('wrong'); $('#fb').textContent = 'Nesprávně. ' + q.e; }
+        var n = document.createElement('button'); n.className = 'btn'; n.textContent = qi === QS.length - 1 ? 'Zobrazit výsledek' : 'Další otázka';
+        n.addEventListener('click', function () { qi++; renderQ(); });
+        box.appendChild(n); n.focus();
+      });
+      opts.appendChild(b);
+    });
+  }
+  renderQ();
+
+  setIdx(idx);
+  renderInter();
+  window.addEventListener('resize', updateLoupeFromLast);
+})();
+</script>
+
+</body></html>

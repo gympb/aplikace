@@ -211,6 +211,8 @@ let APPS=[], SUBJ=[], GRADES=[];
 // ročník: číslo (1–4) pro čtyřleté studium, nebo název třídy osmiletého studia (prima … oktáva)
 const OSMILETE=['prima','sekunda','tercie','kvarta','kvinta','sexta','septima','oktáva'];
 const gLabel=g=>/^\d+$/.test(String(g))?g+'. ročník':String(g).charAt(0).toUpperCase()+String(g).slice(1);
+// aplikace pro všechny ročníky čtyřletého i osmiletého studia: na kartě jeden štítek místo dvanácti
+const allGrades=r=>[1,2,3,4].every(n=>r.map(String).includes(String(n)))&&OSMILETE.every(o=>r.map(x=>String(x).toLowerCase()).includes(o));
 const gOrder=g=>/^\d+$/.test(String(g))?Number(g):100+OSMILETE.indexOf(String(g).toLowerCase());
 const f={s:'Vše',g:'Vše',q:''};
 
@@ -230,7 +232,7 @@ function render(){
       <div class="card-body">
         <h3>${esc(a.nazev)}</h3>
         <p>${esc(a.popis)}</p>
-        <div class="meta">${a.rocnik.map(g=>`<span class="tag">${esc(gLabel(g))}</span>`).join('')}${a.autor?`<span class="tag">${esc(a.autor)}</span>`:''}${a.aktualizace?`<span class="tag">${datum(a.aktualizace)}</span>`:''}</div>
+        <div class="meta">${(allGrades(a.rocnik)?['Všechny ročníky']:a.rocnik.map(gLabel)).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}${a.autor?`<span class="tag">${esc(a.autor)}</span>`:''}${a.aktualizace?`<span class="tag">${datum(a.aktualizace)}</span>`:''}</div>
       </div>
       <div class="card-foot">
         <span class="status ${prep?'prep':a.stav==='nove'?'new':''}">${ST[a.stav]||''}</span>
