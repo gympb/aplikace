@@ -72,10 +72,12 @@ h2 { font-family: var(--display); font-weight: 600; font-size: 18px; margin: 0; 
 
 .stage { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: grid; min-width: 0; }
 .canvas-box { position: relative; width: 100%; aspect-ratio: 16 / 10; max-width: 100%; }
-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 .live { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-top: 1px solid var(--line); }
 .live div { padding: 10px 12px; border-right: 1px solid var(--line); min-width: 0; }
 .live div:last-child { border-right: 0; }
+.stage-hint { padding: 9px 12px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+.stage-hint b { color: var(--fg); font-weight: 600; }
 .live b { display: block; font-family: var(--mono); font-weight: 500; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 @media (max-width: 600px) { .live { grid-template-columns: repeat(3, minmax(0, 1fr)); } .live div:nth-child(3) { border-right: 0; } .live div:nth-child(-n+3) { border-bottom: 1px solid var(--line); } }
 
@@ -143,6 +145,7 @@ select:disabled { opacity: .55; }
         <div><span class="label">v<sub>y</sub></span><b id="lvy">–</b></div>
         <div><span class="label">|v|</span><b id="lv">–</b></div>
       </div>
+      <div class="stage-hint"><b>Tažením modrého úchytu</b> u děla nastavíte směr (úhel α) i délku (rychlost v₀) výstřelu.</div>
     </section>
 
     <aside class="panel" aria-label="Ovládání">
@@ -326,6 +329,9 @@ select:disabled { opacity: .55; }
   };
 
   let shot = null, simT = 0, running = false, paused = false, last = 0;
+  let handle = null, handleDrag = false, handleHover = false;
+  const cos0 = r => r < 0.6;
+  const handleScale = () => Math.min(5, Math.min(W, Hh) * 0.55 / 50); // px na 1 m/s délky táhla
   let traces = [];
 
   // --- Kreslení ---
@@ -426,12 +432,50 @@ select:disabled { opacity: .55; }
     ctx.save(); ctx.translate(X(0), Y(cur.h0)); ctx.rotate(-r);
     ctx.fillStyle = C('--fg'); ctx.fillRect(-4, -5, bl, 10); ctx.restore();
     ctx.fillStyle = C('--fg'); ctx.beginPath(); ctx.arc(X(0), Y(cur.h0), 8, 0, 7); ctx.fill();
-    // oblouk úhlu
-    if (cur.a > 0) {
-      ctx.strokeStyle = C('--muted'); ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(X(0), Y(cur.h0), 40, -r, 0); ctx.stroke();
-      ctx.fillStyle = C('--muted'); ctx.font = '12px ' + C('--mono'); ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.fillText('α', X(0) + 46 * Math.cos(r / 2), Y(cur.h0) - 46 * Math.sin(r / 2));
+    // úchyt v₀ (jako táhlo Bézierovy křivky): směr = úhel vrhu, délka = rychlost; tažením myší se nastavuje
+    {
+      const ox = X(0), oy = Y(cur.h0), hs = handleScale(), L = cur.v0 * hs;
+      const ex = ox + L * Math.cos(r), ey = oy - L * Math.sin(r);
+      handle = { ox, oy, ex, ey, hs };
+      const acc = C('--accent'), mut = C('--muted'), fg = C('--fg');
+      // vodorovná pomocná čára kóty
+      const R = Math.max(46, Math.min(L * 0.62, 90));
+      ctx.strokeStyle = mut; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox + R + 16, oy); ctx.stroke(); ctx.setLineDash([]);
+      // úhlová kóta s šipkami na obou koncích
+      if (cur.a > 0) {
+        ctx.strokeStyle = fg; ctx.fillStyle = fg; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(ox, oy, R, -r, 0); ctx.stroke();
+        const tick = (ang, dir) => { // malá šipka na oblouku, dir = směr podél oblouku
+          const x = ox + R * Math.cos(ang), y = oy - R * Math.sin(ang);
+          const tx = -Math.sin(ang) * dir, ty = -Math.cos(ang) * dir, a = 7, w = 3.2;
+          ctx.beginPath(); ctx.moveTo(x, y);
+          ctx.lineTo(x - tx * a + Math.cos(ang) * w, y - ty * a - Math.sin(ang) * w);
+          ctx.lineTo(x - tx * a - Math.cos(ang) * w, y - ty * a + Math.sin(ang) * w); ctx.closePath(); ctx.fill();
+        };
+        if (cur.a >= 8) { tick(0, -1); tick(r, 1); }
+        const txt = 'α = ' + cur.a + '°';
+        ctx.font = '600 13px ' + C('--mono'); const tw = ctx.measureText(txt).width;
+        const m = r / 2, lx = ox + (R + 10) * Math.cos(m), ly = oy - (R + 10) * Math.sin(m);
+        ctx.fillStyle = C('--paper'); ctx.globalAlpha = .85; ctx.fillRect(lx - 3, ly - 10, tw + 6, 20); ctx.globalAlpha = 1;
+        ctx.fillStyle = fg; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(txt, lx, ly);
+      }
+      // táhlo
+      ctx.strokeStyle = fg; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ex, ey); ctx.stroke();
+      ctx.strokeStyle = acc; ctx.fillStyle = C('--paper'); ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(ex, ey, handleDrag || handleHover ? 9 : 7, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = acc; ctx.beginPath(); ctx.arc(ex, ey, 2.5, 0, 7); ctx.fill();
+      // popisek rychlosti kolmo od táhla (nad ním)
+      const t2 = 'v₀ = ' + fmt(cur.v0) + ' m/s';
+      ctx.font = '600 13px ' + C('--mono'); const w2 = ctx.measureText(t2).width;
+      const nx = -Math.sin(r), ny = -Math.cos(r); // normála „nahoru-doleva“
+      let cx = ex + Math.cos(r) * 16 + nx * 4, cy = ey - Math.sin(r) * 16 + ny * 4;
+      let lx2 = cos0(r) ? cx : cx - w2 / 2;
+      if (r > 1.2) { lx2 = ex + 14; cy = ey - 4; } // téměř svislé táhlo: popisek vpravo
+      lx2 = Math.min(Math.max(lx2, 4), W - w2 - 4); cy = Math.max(cy, 12);
+      ctx.fillStyle = C('--paper'); ctx.globalAlpha = .85; ctx.fillRect(lx2 - 3, cy - 10, w2 + 6, 20); ctx.globalAlpha = 1;
+      ctx.fillStyle = acc; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(t2, lx2, cy);
     }
 
     // aktuální let
@@ -540,6 +584,29 @@ select:disabled { opacity: .55; }
   }
 
   ['v0', 'al', 'h0', 'gs', 'sp'].forEach(id => $(id).addEventListener('input', updateUI));
+
+  // tažení úchytu v₀ myší / prstem
+  const cvPt = e => { const b = cv.getBoundingClientRect(); return { x: e.clientX - b.left, y: e.clientY - b.top }; };
+  const onHandle = p => handle && (Math.hypot(p.x - handle.ex, p.y - handle.ey) < 16 || (Math.hypot(handle.ex - handle.ox, handle.ey - handle.oy) < 16 && Math.hypot(p.x - handle.ox, p.y - handle.oy) < 16));
+  function setFromHandle(p) {
+    let dx = p.x - handle.ox, dy = handle.oy - p.y;
+    let a = Math.round(Math.atan2(Math.max(dy, 0), Math.max(dx, 0.0001)) * 180 / Math.PI);
+    a = Math.min(90, Math.max(0, a));
+    let v = Math.round(Math.hypot(Math.max(dx, 0), Math.max(dy, 0)) / handle.hs * 2) / 2;
+    v = Math.min(+$('v0').max, Math.max(+$('v0').min, v));
+    $('al').value = a; $('v0').value = v; updateUI();
+  }
+  cv.addEventListener('pointerdown', e => {
+    const p = cvPt(e); if (!onHandle(p)) return;
+    handleDrag = true; cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing'; e.preventDefault();
+  });
+  cv.addEventListener('pointermove', e => {
+    const p = cvPt(e);
+    if (handleDrag) { setFromHandle(p); return; }
+    const h = onHandle(p); if (h !== handleHover) { handleHover = h; cv.style.cursor = h ? 'grab' : ''; draw(); }
+  });
+  const endHandle = () => { if (handleDrag) { handleDrag = false; cv.style.cursor = handleHover ? 'grab' : ''; draw(); } };
+  cv.addEventListener('pointerup', endHandle); cv.addEventListener('pointercancel', endHandle);
   ['drag', 'body'].forEach(id => $(id).addEventListener('change', updateUI));
   ['cbV', 'cbC', 'cbP', 'cbM'].forEach(id => $(id).addEventListener('change', draw));
   $('fire').addEventListener('click', fire);
