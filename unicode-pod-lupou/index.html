@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Unicode pod lupou</title>
-<meta name="description" content="Co je Unicode, jak se liší od ASCII a jak se znaky převádějí na bajty v UTF-8 a UTF-16. Režim základní (1. ročník) a pokročilý.">
+<meta name="description" content="Tabulka znaků Unicode s kopírováním, výklad pro 1. ročník (ASCII, Unicode, UTF-8) a podrobnosti pro IT profesionály.">
 <meta name="author" content="Ivo Bešťák, Gymnázium Příbram">
 <meta property="og:title" content="Unicode pod lupou">
 <meta property="og:image" content="nahled.png">
@@ -180,11 +180,31 @@ tr.act td{background:var(--accent-soft)}
 .trap{display:grid;gap:10px}
 .trap .demo{font-family:var(--mono);font-size:.9rem;display:grid;gap:4px;overflow-wrap:anywhere}
 .ok{color:var(--k4);font-weight:600}.bad{color:var(--k1);font-weight:600}
-:root[data-mode="basic"] .adv{display:none!important}
-:root:not([data-mode="basic"]) .bas{display:none!important}
-.mode{margin-left:auto;display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--paper)}
-.mode button{border:0;background:transparent;padding:4px 14px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--muted)}
-.mode button[aria-pressed="true"]{background:var(--accent);color:var(--paper)}
+:root:not([data-tab="zaklady"]) .bas{display:none!important}
+:root:not([data-tab="expert"]) .adv{display:none!important}
+:root[data-tab="tabulka"] .t-learn{display:none!important}
+:root:not([data-tab="tabulka"]) .t-table{display:none!important}
+nav.toc{align-items:center}
+.tabs{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--paper)}
+.tabs button{border:0;background:transparent;padding:8px 18px;cursor:pointer;font:600 1rem var(--display);color:var(--muted)}
+.tabs button+button{border-left:1px solid var(--line)}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--paper)}
+.tabs button:hover:not([aria-selected="true"]){color:var(--accent)}
+.links{display:flex;flex-wrap:wrap;gap:4px 16px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;
+  background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;pointer-events:none;
+  transition:opacity .2s,transform .2s;z-index:20;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast .tg{font-family:var(--glyph);font-size:1.2rem;margin-right:6px}
+.cell.copied{background:var(--accent-soft)}
+textarea{font:500 .95rem/1.4 var(--mono);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;min-width:0;resize:vertical}
+.flag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.78rem;font-weight:600;margin:2px 4px 2px 0}
+.flag.w{background:color-mix(in srgb,var(--k1) 18%,var(--paper));color:var(--k1)}
+.flag.i{background:color-mix(in srgb,var(--k2) 18%,var(--paper));color:var(--k2)}
+.flag.g{background:color-mix(in srgb,var(--k4) 18%,var(--paper));color:var(--k4)}
+.out{font:500 .92rem/1.5 var(--mono);padding:10px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line);overflow-wrap:anywhere;min-height:2.6rem}
+ul.check{margin:0;padding-left:1.2em;display:grid;gap:6px;font-size:.94rem}
+.radios{display:flex;flex-wrap:wrap;gap:12px;font-size:.92rem}
 .timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
 .tl{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--paper);display:grid;gap:6px;align-content:start}
 .tl .yr{font:600 .8rem var(--mono);color:var(--accent)}
@@ -215,8 +235,23 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
   <a class="back" href="../">← Všechny školní aplikace</a>
   <span class="eyebrow">Výukový průvodce · Unicode, UTF-8, UTF-16</span>
   <h1>Unicode pod lupou</h1>
-  <p>Unicode přiřazuje každému znaku na světě číslo, tzv. <b>kódový bod</b>. Samotné číslo ale ještě nejsou bajty v souboru. O tom, jak se číslo zapíše do paměti, rozhoduje <b>kódování</b>: UTF-8, UTF-16 nebo UTF-32.</p>
-  <div class="chain" aria-label="Od znaku k bajtům">
+  <p>Unicode přiřazuje každému znaku na světě číslo, tzv. <b>kódový bod</b>. O tom, jak se číslo zapíše do bajtů, rozhoduje <b>kódování</b>: UTF-8, UTF-16 nebo UTF-32. Vyberte kartu podle toho, co potřebujete.</p>
+</header>
+
+<nav class="toc" aria-label="Karty a obsah">
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="tabulka" aria-selected="true">Tabulka</button>
+    <button role="tab" data-tab="zaklady" aria-selected="false">Základy</button>
+    <button role="tab" data-tab="expert" aria-selected="false">Expert</button>
+  </div>
+  <div class="links">
+    <a class="bas" href="#pojmy">Pojmy</a><a class="t-learn" href="#text">Rozbor textu</a><a class="t-learn" href="#lupa">Znak krok za krokem</a><a class="t-learn" href="#pravidla">Pravidla</a><a class="t-learn" href="#pasti">Pasti</a><a class="adv" href="#pro">Pro vývojáře</a>
+  </div>
+</nav>
+
+<section id="pojmy" class="bas">
+  <div><span class="eyebrow">Základy</span><h2>Jak počítač ukládá text</h2></div>
+  <div class="chain" style="margin-top:0" aria-label="Od znaku k bajtům">
     <div><small>1 · Znak</small><span class="big" id="hG">č</span><small>to, co vidíme</small></div>
     <div><small>2 · Kódový bod (Unicode)</small><span class="big mono" id="hU">U+010D</span><small id="hD">= 269 desítkově</small></div>
     <div><small>3 · Bajty (kódování)</small>
@@ -224,15 +259,7 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
       <span class="enc">UTF-16&nbsp;<b id="h16">01 0D</b></span>
       <span class="enc">UTF-32&nbsp;<b id="h32">00 00 01 0D</b></span></div>
   </div>
-</header>
 
-<nav class="toc" aria-label="Obsah">
-  <a href="#zaklady">Základy</a><a href="#text">Text pod lupou</a><a href="#lupa">Znak krok za krokem</a><a href="#mapa">Mapa Unicode</a><a href="#pravidla">Pravidla kódování</a><a href="#pasti">Na co si dát pozor</a>
-  <span class="mode" role="group" aria-label="Úroveň výkladu"><button id="mBas" aria-pressed="true">Základní</button><button id="mAdv" aria-pressed="false">Pokročilý</button></span>
-</nav>
-
-<section id="zaklady">
-  <div><span class="eyebrow">0 · Základy</span><h2>Jak počítač ukládá text</h2></div>
   <p>Počítač umí uložit jen čísla, přesněji jedničky a nuly (bity), seskupené po osmi do <b>bajtů</b>. Aby mohl uložit písmeno, musí existovat dohoda, které číslo patří kterému znaku. Taková dohoda se jmenuje <b>kódová tabulka</b>.</p>
   <dl class="terms">
     <div><dt>Znak</dt><dd>Písmeno, číslice, mezera, symbol nebo emoji. Třeba „A“, „č“ nebo „€“.</dd></div>
@@ -253,8 +280,8 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
   </div>
 </section>
 
-<section id="text">
-  <div><span class="eyebrow">1 · Rozbor textu</span><h2>Napište cokoli a podívejte se, z čeho se skládá</h2></div>
+<section id="text" class="t-learn">
+  <div><span class="eyebrow">Rozbor textu</span><h2>Napište cokoli a podívejte se, z čeho se skládá</h2></div>
   <p class="muted">Každý rámeček je jeden viditelný znak (grafém). Pod ním jsou kódové body, ze kterých se skládá, a počet bajtů v UTF-8. Najetím myši zvýrazníte odpovídající bajty, kliknutím znak rozložíte na bity.</p>
   <div class="panel">
     <div class="field"><label for="txt">Text</label><input type="text" id="txt" value="Aé€𝄞 čeština 😀" autocomplete="off" spellcheck="false"></div>
@@ -269,8 +296,8 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
   </div>
 </section>
 
-<section id="lupa">
-  <div><span class="eyebrow">2 · Jeden znak krok za krokem</span><h2>Jak se z kódového bodu stanou bajty</h2></div>
+<section id="lupa" class="t-learn">
+  <div><span class="eyebrow">Jeden znak krok za krokem</span><h2>Jak se z kódového bodu stanou bajty</h2></div>
   <div class="panel">
     <div class="walk">
       <div class="field"><label for="cpIn">Znak nebo kódový bod (např. č, U+1F600, 20AC)</label><input type="text" id="cpIn" autocomplete="off" spellcheck="false"></div>
@@ -289,11 +316,11 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
   </div>
 </section>
 
-<section id="mapa">
-  <div><span class="eyebrow">3 · Uspořádání</span><h2>Mapa Unicode: roviny a bloky</h2></div>
-  <p class="bas">Unicode má místo pro více než milion znaků, zatím jich obsahuje téměř 160 000. Znaky stejného písma leží pohromadě v <b>blocích</b>. Například česká písmena s háčky najdete v bloku Rozšířená latinka A. Vyberte blok a prohlédněte si ho.</p>
-  <p class="adv">Kódových bodů je <b>1 114 112</b> (od U+0000 do U+10FFFF). Dělí se do 17 rovin po 65 536 bodech. Znaky jsou přiřazené jen malé části z nich, verze Unicode 17.0 (2025) jich obsahuje téměř 160 000. Uvnitř rovin se znaky sdružují do <b>bloků</b> podle písma nebo účelu.</p>
-  <div class="planes adv" id="planes"></div>
+<section id="mapa" class="t-table">
+  <div><span class="eyebrow">Tabulka znaků</span><h2>Mapa Unicode: roviny a bloky</h2></div>
+  <p>Kódových bodů je <b>1 114 112</b> (od U+0000 do U+10FFFF). Dělí se do 17 rovin po 65 536 bodech. Znaky jsou přiřazené jen malé části z nich, verze Unicode 17.0 (2025) jich obsahuje téměř 160 000. Uvnitř rovin se znaky sdružují do <b>bloků</b> podle písma nebo účelu.</p>
+  <p class="note"><b>Kliknutím na znak v tabulce ho zkopírujete do schránky</b> a můžete ho vložit kamkoli (Ctrl+V).</p>
+  <div class="planes" id="planes"></div>
   <div class="panel">
     <div class="blkbar">
       <div class="field"><label for="blk">Blok</label><select id="blk"></select></div>
@@ -306,8 +333,8 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
   </div>
 </section>
 
-<section id="pravidla">
-  <div><span class="eyebrow">4 · Pravidla</span><h2>UTF-8, UTF-16 a UTF-32 v tabulkách</h2></div>
+<section id="pravidla" class="t-learn">
+  <div><span class="eyebrow">Pravidla</span><h2>UTF-8, UTF-16 a UTF-32 v tabulkách</h2></div>
   <div class="cols">
     <div class="panel">
       <h3>UTF-8: 1 až 4 bajty</h3>
@@ -347,8 +374,8 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
   </div>
 </section>
 
-<section id="pasti">
-  <div><span class="eyebrow">5 · Pasti v praxi</span><h2>Na co si dát pozor</h2></div>
+<section id="pasti" class="t-learn">
+  <div><span class="eyebrow">Pasti v praxi</span><h2>Na co si dát pozor</h2></div>
   <div class="cols">
     <div class="panel trap adv"><h3>Dvě „é“, které nejsou stejné</h3>
       <p>Písmeno é lze zapsat jedním kódovým bodem, nebo jako e + kombinující čárku. Vypadají stejně, ale počítač je bez <b>normalizace</b> (NFC/NFD) nepovažuje za shodné.</p>
@@ -367,6 +394,92 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
       <div class="demo" id="dLen"></div></div>
   </div>
 </section>
+
+<section id="pro" class="adv">
+  <div><span class="eyebrow">Pro vývojáře a správce</span><h2>Unicode v praxi IT</h2></div>
+  <div class="cols">
+    <div class="panel">
+      <h3>Dekodér bajtů</h3>
+      <p class="muted">Vložte bajty šestnáctkově a zjistěte, co znamenají. Chybné sekvence dekodér nahradí znakem U+FFFD &#xFFFD;, přesně jako prohlížeč.</p>
+      <div class="field"><label for="hexIn">Bajty (hex)</label><input type="text" id="hexIn" value="C4 8D E2 82 AC F0 9F 98 80 C0 AF ED A0 80" autocomplete="off" spellcheck="false"></div>
+      <div class="radios" role="radiogroup" aria-label="Kódování">
+        <label><input type="radio" name="decEnc" value="utf-8" checked> UTF-8</label>
+        <label><input type="radio" name="decEnc" value="utf-16be"> UTF-16BE</label>
+        <label><input type="radio" name="decEnc" value="utf-16le"> UTF-16LE</label>
+        <label><input type="radio" name="decEnc" value="windows-1250"> Windows-1250</label>
+      </div>
+      <div class="out" id="decOut"></div>
+      <div id="decInfo"></div>
+    </div>
+    <div class="panel">
+      <h3>Pravidla platného UTF-8</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Pravidlo</th><th>Neplatné příklady</th></tr></thead>
+        <tbody>
+          <tr><td>Bajty <code>C0</code>, <code>C1</code> a <code>F5–FF</code> se nikdy nevyskytují</td><td><code>C0 AF</code>, <code>FF</code></td></tr>
+          <tr><td>Nejkratší možný zápis (zákaz overlong). Historicky zneužito k obejití filtrů cest, např. <code>%C0%AF</code> jako „/“</td><td><code>C0 AF</code> místo <code>2F</code></td></tr>
+          <tr><td>Náhradní kódy D800–DFFF jsou zakázané</td><td><code>ED A0 80</code></td></tr>
+          <tr><td>Maximum je U+10FFFF</td><td><code>F4 90 80 80</code></td></tr>
+          <tr><td>Navazující bajt musí být <code>80–BF</code> a sekvence nesmí skončit předčasně</td><td><code>E2 82</code>, <code>C4 41</code></td></tr>
+        </tbody></table></div>
+      <p class="muted">Java v JNI a serializaci používá „Modified UTF-8“: NUL jako <code>C0 80</code> a znaky mimo BMP jako dva zakódované surrogáty (CESU-8). Ani jedno není platné UTF-8.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Délka řetězce v programovacích jazycích</h3>
+    <p class="muted">„Délka“ může znamenat bajty, jednotky UTF-16, kódové body nebo grafémy. Pro řetězec <b id="lenStr"></b>:</p>
+    <div class="tw"><table id="lenTbl"></table></div>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <h3>Normalizační formy</h3>
+      <p class="muted">NFC skládá, NFD rozkládá. Formy K (kompatibilitní) navíc převádějí ligatury, horní indexy a varianty šířky na základní znaky, takže mění význam. Před porovnáním řetězců (přihlašovací jména, hledání) sjednoťte formu.</p>
+      <div class="field"><label for="normIn">Text</label><input type="text" id="normIn" value="Žluť ﬁ ² Å ｶ" autocomplete="off" spellcheck="false"></div>
+      <div class="tw"><table id="normTbl"></table></div>
+    </div>
+    <div class="panel">
+      <h3>Kontrola podezřelých znaků</h3>
+      <p class="muted">Najde neviditelné znaky, řídicí znaky směru textu (útok Trojan Source, CVE-2021-42574) a míchání písem (homoglyfy: latinské „a“ vs. cyrilské „а“ U+0430).</p>
+      <div class="field"><label for="susIn">Text, identifikátor nebo doména</label><input type="text" id="susIn" autocomplete="off" spellcheck="false"></div>
+      <div class="chips" id="susSamples"></div>
+      <div id="susOut"></div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <h3>Zápis znaku v kódu</h3>
+      <div class="field"><label for="escIn">Znak</label><input type="text" id="escIn" value="č😀" autocomplete="off" spellcheck="false"></div>
+      <div class="tw"><table id="escTbl"></table></div>
+    </div>
+    <div class="panel">
+      <h3>Řazení a velikost písmen</h3>
+      <p class="muted">Řazení podle čísel kódových bodů neodpovídá české abecedě. Správné pořadí dává kolace pro daný jazyk (ICU, <code>Intl.Collator</code>, kolace v databázi).</p>
+      <div class="demo trap" id="collDemo" style="font-family:var(--mono);font-size:.9rem;display:grid;gap:6px"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Kontrolní seznam pro web, databáze a soubory</h3>
+    <ul class="check">
+      <li><b>HTML:</b> <code>&lt;meta charset="utf-8"&gt;</code> jako první prvek v <code>&lt;head&gt;</code>, v prvních 1024 bajtech dokumentu.</li>
+      <li><b>HTTP:</b> <code>Content-Type: text/html; charset=utf-8</code>. Hlavička má přednost před meta značkou.</li>
+      <li><b>MySQL / MariaDB:</b> <code>utf8</code> je ve skutečnosti <code>utf8mb3</code> (max. 3 bajty, bez emoji). Používejte <code>utf8mb4</code> s kolací např. <code>utf8mb4_czech_ci</code> nebo <code>utf8mb4_0900_ai_ci</code>, včetně nastavení připojení (<code>SET NAMES utf8mb4</code>).</li>
+      <li><b>PostgreSQL:</b> databáze s <code>ENCODING 'UTF8'</code>; pro české řazení kolace <code>cs-CZ-x-icu</code> nebo <code>cs_CZ.UTF-8</code>.</li>
+      <li><b>JSON:</b> podle RFC 8259 musí být mezi systémy v UTF-8. Escape <code>\uXXXX</code> používá jednotky UTF-16, emoji je tedy pár <code>😀</code>.</li>
+      <li><b>CSV pro Excel:</b> Excel otevře UTF-8 správně jen s BOM (<code>EF BB BF</code>) na začátku souboru, jinak předpokládá kódovou stránku systému.</li>
+      <li><b>Java:</b> od JDK 18 (JEP 400) je výchozí kódování UTF-8. Starší verze používaly kódování systému.</li>
+      <li><b>Python:</b> výchozí kódování <code>open()</code> závisí na systému. Vždy uvádějte <code>encoding="utf-8"</code>, nebo zapněte režim UTF-8 (<code>PYTHONUTF8=1</code>).</li>
+      <li><b>Windows konzole:</b> <code>chcp 65001</code> přepne na UTF-8; PowerShell 7 používá UTF-8 výchozím způsobem, Windows PowerShell 5.1 ne.</li>
+      <li><b>Domény (IDN):</b> <code>příbram.cz</code> se v DNS zapisuje Punycode jako <code id="idn">xn--pbram-…</code>. Prohlížeče zobrazují Punycode místo Unicode, když doména míchá písma.</li>
+      <li><b>E-mail:</b> hlavičky s diakritikou se kódují MIME (<code>=?UTF-8?B?…?=</code>), tělo deklaruje <code>charset=utf-8</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <footer>Unicode pod lupou · výukový materiál. Názvy bloků jsou přeloženy pro výuku, oficiální údaje najdete na <a href="https://www.unicode.org/charts/" target="_blank" rel="noopener">unicode.org/charts</a>.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 22. 10. 2026</footer>
 </div>
@@ -603,14 +716,35 @@ function preview(cp){
   const sur=isSur(cp);
   $('#prev2').innerHTML=`<span class="pg">${esc(glyph(cp))}</span><code>${U(cp)}</code><span>${esc(cat(cp))}</span>
    <span>UTF-8: <code>${sur?'—':bytesHex(u8(cp))}</code></span><span>UTF-16: <code>${sur?'—':u16(cp).map(u=>hx(u,4)).join(' ')}</code></span>
-   <button class="btn" id="goLupa">Rozložit na bity ↑</button>`;
-  $('#goLupa').onclick=()=>setCP(cp,true);
+   <button class="btn" id="goLupa">Rozložit na bity →</button>`;
+  $('#goLupa').onclick=()=>{setTab(lastLearn);setCP(cp,true);};
 }
 $('#blk').onchange=e=>{blkIdx=+e.target.value;page=0;renderBlock();};
 $('#pgPrev').onclick=()=>{page--;renderBlock();};
 $('#pgNext').onclick=()=>{page++;renderBlock();};
 $('#cgrid').addEventListener('click',e=>{const c=e.target.closest('button.cell');if(!c)return;selCell=+c.dataset.cp;
-  document.querySelectorAll('.cell.sel').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');preview(selCell);setCP(selCell,false);});
+  document.querySelectorAll('.cell.sel').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');preview(selCell);setCP(selCell,false);
+  copyChar(selCell,c);});
+
+/* kopírování do schránky */
+let toastT;
+function toast(html){const t=$('#toast');t.innerHTML=html;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1800);}
+function fallbackCopy(text){
+  const ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy');}catch(e){}ta.remove();return ok;
+}
+function copyChar(cp,cell){
+  if(isSur(cp)){toast(`${U(cp)} není znak, nelze ho zkopírovat`);return;}
+  const ch=String.fromCodePoint(cp);
+  const done=ok=>{
+    if(ok){toast(`<span class="tg">${esc(glyph(cp)||'·')}</span>${U(cp)} zkopírováno do schránky`);
+      if(cell){cell.classList.add('copied');setTimeout(()=>cell.classList.remove('copied'),600);}}
+    else toast(`Kopírování se nepodařilo. Znak: ${esc(ch)}`);
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ch).then(()=>done(true),()=>done(fallbackCopy(ch)));
+  } else done(fallbackCopy(ch));
+}
 
 /* ---------- 5. pasti ---------- */
 (function traps(){
@@ -641,16 +775,124 @@ $('#cgrid').addEventListener('click',e=>{const c=e.target.closest('button.cell')
   $('#ascii').addEventListener('click',e=>{const b=e.target.closest('[data-cp]');if(b)setCP(+b.dataset.cp,true);});
 })();
 
-/* režim */
-function setMode(m){
-  document.documentElement.dataset.mode=m;
-  $('#mBas').setAttribute('aria-pressed',m==='basic');$('#mAdv').setAttribute('aria-pressed',m!=='basic');
-  try{localStorage.setItem('unicodeMode',m);}catch(e){}
+/* karty */
+const TABS=['tabulka','zaklady','expert'];
+let lastLearn='zaklady';
+function setTab(t,push){
+  if(!TABS.includes(t)) t='tabulka';
+  document.documentElement.dataset.tab=t;
+  if(t!=='tabulka') lastLearn=t;
+  document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+  try{localStorage.setItem('unicodeTab',t);}catch(e){}
+  if(push){try{history.replaceState(null,'','#'+t);}catch(e){}}
 }
-$('#mBas').onclick=()=>setMode('basic');
-$('#mAdv').onclick=()=>setMode('advanced');
-let savedMode='basic';try{savedMode=localStorage.getItem('unicodeMode')||'basic';}catch(e){}
-setMode(savedMode);
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;setTab(b.dataset.tab,true);
+  window.scrollTo({top:0,behavior:'auto'});});
+let startTab=(location.hash||'').slice(1);
+if(!TABS.includes(startTab)){try{startTab=localStorage.getItem('unicodeTab')||'tabulka';}catch(e){startTab='tabulka';}}
+setTab(startTab);
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS.includes(h))setTab(h);});
+
+/* ---------- Expert: pro vývojáře ---------- */
+(function pro(){
+  const cps=s=>Array.from(s).map(c=>c.codePointAt(0));
+  const cpl=s=>cps(s).map(U).join(' ');
+  const enc=new TextEncoder();
+  const segCount=s=>seg?[...seg.segment(s)].length:Array.from(s).length;
+
+  // dekodér
+  function decode(){
+    const raw=$('#hexIn').value.replace(/0x/gi,'').replace(/[^0-9a-f]/gi,'');
+    const encName=document.querySelector('input[name=decEnc]:checked').value;
+    if(raw.length%2){$('#decOut').textContent='';$('#decInfo').innerHTML='<span class="flag w">Lichý počet šestnáctkových číslic</span>';return;}
+    const bytes=new Uint8Array(raw.match(/../g)?.map(h=>parseInt(h,16))||[]);
+    let txt='',strict=true;
+    try{txt=new TextDecoder(encName).decode(bytes);}catch(e){txt='(kódování není v tomto prohlížeči dostupné)';}
+    try{new TextDecoder(encName,{fatal:true}).decode(bytes);}catch(e){strict=false;}
+    $('#decOut').textContent=txt||' ';
+    const bad=(txt.match(/\uFFFD/g)||[]).length;
+    $('#decInfo').innerHTML=`<span class="flag i">${bytes.length} B → ${Array.from(txt).length} kódových bodů</span>`+
+      (strict?'<span class="flag g">Platná sekvence</span>':`<span class="flag w">Neplatné bajty: ${bad}× nahrazeno U+FFFD</span>`);
+  }
+  $('#hexIn').addEventListener('input',decode);
+  document.querySelectorAll('input[name=decEnc]').forEach(r=>r.addEventListener('change',decode));
+  decode();
+
+  // délky
+  const L=String.fromCodePoint(0x1F468,0x200D,0x1F469,0x200D,0x1F467)+'e'+String.fromCodePoint(0x301);
+  $('#lenStr').innerHTML=`<span style="font-family:var(--glyph)">${L}</span> (${cpl(L)})`;
+  const nB=enc.encode(L).length, nU=L.length, nC=Array.from(L).length, nG=segCount(L);
+  const rows=[['JavaScript','s.length',nU,'jednotky UTF-16'],['JavaScript','[...s].length',nC,'kódové body'],
+    ['JavaScript','Intl.Segmenter',nG,'grafémy'],['Python 3','len(s)',nC,'kódové body'],['Python 3','len(s.encode())',nB,'bajty UTF-8'],
+    ['Java','s.length()',nU,'jednotky UTF-16'],['Java','s.codePointCount(0, s.length())',nC,'kódové body'],
+    ['C#','s.Length',nU,'jednotky UTF-16'],['C# (.NET 5+)','new StringInfo(s).LengthInTextElements',nG,'grafémy'],
+    ['Go','len(s)',nB,'bajty UTF-8'],['Go','utf8.RuneCountInString(s)',nC,'kódové body'],
+    ['Rust','s.len()',nB,'bajty UTF-8'],['Rust','s.chars().count()',nC,'kódové body'],
+    ['MySQL','LENGTH(s) / CHAR_LENGTH(s)',nB+' / '+nC,'bajty / znaky']];
+  $('#lenTbl').innerHTML='<thead><tr><th>Jazyk</th><th>Výraz</th><th>Výsledek</th><th>Co se počítá</th></tr></thead><tbody>'+
+    rows.map(r=>`<tr><td>${r[0]}</td><td><code>${esc(r[1])}</code></td><td><b class="mono">${r[2]}</b></td><td>${r[3]}</td></tr>`).join('')+'</tbody>';
+
+  // normalizace
+  function norm(){
+    const t=$('#normIn').value;
+    $('#normTbl').innerHTML='<thead><tr><th>Forma</th><th>Výsledek</th><th>Kódové body</th><th>UTF-8</th></tr></thead><tbody>'+
+      ['původní','NFC','NFD','NFKC','NFKD'].map(f=>{const r=f==='původní'?t:t.normalize(f);
+        return `<tr><td><b>${f}</b></td><td style="font-family:var(--glyph)">${esc(r)}</td><td><small class="mono">${cps(r).length}</small></td><td><small class="mono">${enc.encode(r).length} B</small></td></tr>`;}).join('')+'</tbody>';
+  }
+  $('#normIn').addEventListener('input',norm); norm();
+
+  // podezřelé znaky
+  const BIDI=new Set([0x061C,0x200E,0x200F,0x202A,0x202B,0x202C,0x202D,0x202E,0x2066,0x2067,0x2068,0x2069]);
+  const INVIS=new Set([0x00AD,0x034F,0x180E,0x200B,0x200C,0x200D,0x2060,0x2061,0x2062,0x2063,0x2064,0xFEFF]);
+  const SCRIPTS=[['latinka',/\p{Script=Latin}/u],['cyrilice',/\p{Script=Cyrillic}/u],['řečtina',/\p{Script=Greek}/u],
+    ['arménština',/\p{Script=Armenian}/u],['hebrejština',/\p{Script=Hebrew}/u],['arabština',/\p{Script=Arabic}/u],['čeroké',/\p{Script=Cherokee}/u]];
+  const SUS=[['раураl.com','homoglyfy (falešný PayPal)'],
+    ['admin'+String.fromCodePoint(0x200B),'nulová mezera'],
+    ['if (isAdmin) { '+String.fromCodePoint(0x202E)+' } '+String.fromCodePoint(0x2066)+'// komentář','Trojan Source'],
+    ['příbram.cz','čistá doména s diakritikou']];
+  $('#susSamples').innerHTML=SUS.map((x,i)=>`<button class="chip" data-i="${i}">${esc(x[1])}</button>`).join('');
+  $('#susSamples').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;$('#susIn').value=SUS[b.dataset.i][0];sus();});
+  function sus(){
+    const t=$('#susIn').value, list=cps(t); const out=[];
+    const bidi=list.filter(c=>BIDI.has(c)), inv=list.filter(c=>INVIS.has(c)||(!BIDI.has(c)&&/\p{Cf}/u.test(String.fromCodePoint(c))));
+    const ctrl=list.filter(c=>/\p{Cc}/u.test(String.fromCodePoint(c)));
+    const used=SCRIPTS.filter(([n,r])=>r.test(t)).map(x=>x[0]);
+    if(bidi.length) out.push(`<span class="flag w">Řízení směru textu: ${[...new Set(bidi)].map(U).join(', ')}</span>`);
+    if(inv.length) out.push(`<span class="flag w">Neviditelné znaky: ${[...new Set(inv)].map(U).join(', ')}</span>`);
+    if(ctrl.length) out.push(`<span class="flag w">Řídicí znaky: ${[...new Set(ctrl)].map(U).join(', ')}</span>`);
+    if(used.length>1) out.push(`<span class="flag w">Míchání písem: ${used.join(' + ')}</span>`);
+    if(!out.length&&t) out.push('<span class="flag g">Nic podezřelého nenalezeno</span>');
+    if(used.length>1){
+      const mark=Array.from(t).map(c=>{const sc=SCRIPTS.find(([n,r])=>r.test(c));return sc&&sc[0]!=='latinka'?`<b class="bad">${esc(c)}</b>`:esc(c);}).join('');
+      out.push(`<div class="out">${mark}</div>`);
+    }
+    try{if(t&&/^[^\s/]+\.[a-z]{2,}$/i.test(t)) out.push(`<div class="out">Punycode: ${esc(new URL('https://'+t).hostname)}</div>`);}catch(e){}
+    $('#susOut').innerHTML=out.join('');
+  }
+  $('#susIn').value=SUS[0][0]; $('#susIn').addEventListener('input',sus); sus();
+
+  // escape sekvence
+  function escTbl(){
+    const list=cps($('#escIn').value).slice(0,6);
+    const u16x=cp=>u16(cp).map(u=>'\\u'+hx(u,4)).join('');
+    const rows=[['HTML',cp=>`&#x${hx(cp,1)};`],['CSS',cp=>`\\${hx(cp,1)} `],['JavaScript',cp=>cp>0xFFFF?`\\u{${hx(cp,1)}}`:`\\u${hx(cp,4)}`],
+      ['JSON, Java, C#',u16x],['Python',cp=>cp>0xFFFF?`\\U${hx(cp,8)}`:`\\u${hx(cp,4)}`],['C, C++ (u8"")',cp=>u8(cp).map(b=>'\\x'+hx(b).toLowerCase()).join('')],
+      ['URL',cp=>u8(cp).map(b=>'%'+hx(b)).join('')],['SQL (PostgreSQL)',cp=>`U&'\\+${hx(cp,6)}'`]];
+    $('#escTbl').innerHTML='<thead><tr><th>Kde</th><th>Zápis</th></tr></thead><tbody>'+
+      rows.map(([n,f])=>`<tr><td>${n}</td><td><code>${esc(list.map(f).join(''))}</code></td></tr>`).join('')+'</tbody>';
+  }
+  $('#escIn').addEventListener('input',escTbl); escTbl();
+
+  // řazení
+  const words=['chata','cizí','čaj','hrad','ivo','Žatec','zahrada','Ábel','auto'];
+  const naive=[...words].sort();
+  let cs=[...words];try{cs.sort(new Intl.Collator('cs').compare);}catch(e){}
+  $('#collDemo').innerHTML=`<span>Podle kódových bodů: <span class="bad">${naive.join(', ')}</span></span>
+   <span>Česká kolace (cs): <span class="ok">${cs.join(', ')}</span></span>
+   <span>"straße".toUpperCase() → ${'straße'.toUpperCase()}</span>
+   <span>"i".toUpperCase() → ${'i'.toUpperCase()}, ale v turečtině ("tr") → ${'i'.toLocaleUpperCase('tr')}</span>`;
+  try{$('#idn').textContent=new URL('https://příbram.cz').hostname;}catch(e){}
+})();
 
 /* start */
 $('#blk').value=blkIdx; renderBlock(); preview(0x010D); selCell=0x010D; renderBlock();
