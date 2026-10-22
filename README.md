@@ -21,6 +21,8 @@ caesarova-sifra/    jedna složka = jedna aplikace
 
 ## Přidání aplikace
 
+**Před každou úpravou si přečtěte [PRAVIDLA.md](PRAVIDLA.md).** Platí pro lidi i pro nástroje (Claude, Macaly).
+
 1. Vytvořte složku s názvem aplikace: malá písmena, bez diakritiky, slova oddělená pomlčkou (např. `vigenerova-sifra`).
 2. Aplikaci uložte do složky jako `index.html`. Přidejte `nahled.png` a `qr.png`.
 3. Do `katalog.json` připište záznam:
@@ -35,8 +37,9 @@ caesarova-sifra/    jedna složka = jedna aplikace
   "temata": ["kryptografie", "heslo"],
   "motiv": "KLÍČ",
   "autor": "Jméno Příjmení",
-  "stav": "nove",
-  "aktualizace": "2026-11-02"
+  "zverejneno": "2026-11-02",
+  "aktualizace": "2026-11-02",
+  "stav": "nasazeno"
 }
 ```
 
@@ -48,7 +51,9 @@ caesarova-sifra/    jedna složka = jedna aplikace
 | `temata` | slova, podle kterých aplikaci najde hledání |
 | `obrazek` | ilustrace karty ve složce aplikace, např. `karta.svg` (poměr stran 8 : 3) |
 | `motiv` | krátký text na kartě, pokud aplikace nemá ilustraci |
-| `stav` | `nove`, `priprava` (karta bez odkazu), `archiv` (skryto z katalogu, adresa dál funguje) |
+| `zverejneno` | datum prvního zveřejnění; vyplní se jednou a nemění se. Štítek „Nové“ se z něj počítá 30 dní. |
+| `aktualizace` | datum poslední úpravy |
+| `stav` | `nasazeno`, `priprava` (karta bez odkazu), `archiv` (skryto z katalogu, adresa dál funguje) |
 | `odkaz` | volitelné: adresa aplikace mimo tento repozitář |
 
 ### Štítky ročníků
