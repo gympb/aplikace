@@ -218,7 +218,7 @@ const ST={nove:'Nové',priprava:'V přípravě'};
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const datum=d=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');return m?`${+m[3]}. ${+m[2]}. ${m[1]}`:'';};
-let APPS=[], SUBJ=[], GRADES=[], COUNTS={};
+let APPS=[], SUBJ=[], GRADES=[];
 // ročníky: pevné štítky PRI SEK TER KVA (nižší gymnázium), 1R–4R (vyšší gymnázium) a skupiny NG, VG, All
 const ROCNIKY=['PRI','SEK','TER','KVA','1R','2R','3R','4R'];
 const SKUPINY={NG:['PRI','SEK','TER','KVA'],VG:['1R','2R','3R','4R'],All:ROCNIKY};
@@ -251,7 +251,7 @@ function render(){
       <div class="card-body">
         <h3>${esc(a.nazev)}</h3>
         <p>${esc(a.popis)}</p>
-        <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}${a.autor?`<span class="tag">${esc(a.autor)}</span>`:''}${a.aktualizace?`<span class="tag">${datum(a.aktualizace)}</span>`:''}${COUNTS[a.slug]!=null?`<span class="tag">Návštěvy: ${COUNTS[a.slug]}</span>`:''}</div>
+        <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}${a.autor?`<span class="tag">${esc(a.autor)}</span>`:''}${a.aktualizace?`<span class="tag">${datum(a.aktualizace)}</span>`:''}</div>
       </div>
       <div class="card-foot">
         <span class="status ${prep?'prep':a.stav==='nove'?'new':''}">${ST[a.stav]||''}</span>
@@ -278,7 +278,6 @@ fetch('katalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.sta
   $('count').textContent='';
   $('grid').innerHTML='<div class="empty">Katalog se nepodařilo načíst. Soubor katalog.json se načítá jen přes webový server, ne z disku. Otevřete stránku na adrese aplikace.gympb.cz, nebo ji spusťte lokálně příkazem <code>python3 -m http.server</code>.</div>';
 });
-fetch('https://glad-caribou-108.api.macaly.app/counts').then(r=>r.ok?r.json():{}).then(c=>{COUNTS=c;render();}).catch(()=>{});
 $('q').oninput=e=>{f.q=e.target.value;render();};
 </script>
 </body>
