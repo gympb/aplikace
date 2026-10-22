@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Morseova abeceda – Škola radisty</title>
+<meta name="description" content="Výuka, trénink příjmu a vysílání a přehrávač Morseovy abecedy s nastavitelnou rychlostí a tempy radistů z 2. světové války.">
+<meta name="author" content="Ivo Bešťák, Gymnázium Příbram">
+<meta property="og:title" content="Morseova abeceda – Škola radisty">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+/* Layout: signal-room console — tuning strip with signal lamp on top, paper tape under it, three working tabs below */
+:root{
+  --paper:#E5E9E0; --panel:#F6F7F2; --ink:#1D2622; --muted:#56635A; --line:#C2CABC;
+  --olive:#46573A; --olive-ink:#F6F7F2; --lamp:#E39A10; --lamp-off:#B9BFB2;
+  --ok:#2C7044; --bad:#A6352A; --tape:#F1E8CC; --tape-ink:#2B2924; --soft:#DCE2D4;
+  --f-display:"Big Shoulders Stencil Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#141915; --panel:#1C231D; --ink:#E1E6DA; --muted:#98A390; --line:#323D31;
+  --olive:#94A970; --olive-ink:#121810; --lamp:#F5B43A; --lamp-off:#39433A;
+  --ok:#6EC28C; --bad:#E58273; --tape:#29271F; --tape-ink:#EDE2C2; --soft:#252D25; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#141915; --panel:#1C231D; --ink:#E1E6DA; --muted:#98A390; --line:#323D31;
+  --olive:#94A970; --olive-ink:#121810; --lamp:#F5B43A; --lamp-off:#39433A;
+  --ok:#6EC28C; --bad:#E58273; --tape:#29271F; --tape-ink:#EDE2C2; --soft:#252D25; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+.back{font-size:14px;color:var(--olive);text-decoration:none;align-self:flex-start}
+.back:hover{text-decoration:underline}
+body{background:var(--paper);color:var(--ink);font:15px/1.55 var(--f-body)}
+.wrap{max-width:1020px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{text-wrap:balance;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+.mono{font-family:var(--f-mono)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+header h1{font-family:var(--f-display);font-weight:800;font-size:clamp(44px,8vw,76px);line-height:.9;letter-spacing:.01em;text-transform:uppercase}
+header h1 span{color:var(--olive)}
+header .eyebrow + h1{margin-top:.2em}
+.callsign{font-family:var(--f-mono);font-size:13px;line-height:1.6;color:var(--muted);text-align:right;display:flex;flex-direction:column;gap:2px;min-width:0}
+.callsign b{color:var(--ink);font-weight:600;letter-spacing:.06em;white-space:nowrap}
+@media (max-width:520px){.callsign{text-align:left}}
+
+/* console */
+.console{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px;display:grid;grid-template-columns:auto 1fr;gap:18px 22px}
+.lampbox{display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:4px}
+.lamp{width:58px;height:58px;border-radius:50%;background:var(--lamp-off);border:4px solid var(--line);transition:background .03s,box-shadow .03s}
+.lamp.on{background:var(--lamp);box-shadow:0 0 22px 6px color-mix(in srgb,var(--lamp) 55%,transparent)}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px 22px;min-width:0}
+.ctl{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ctl label{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl .val{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-weight:600}
+.big .val{font-family:var(--f-display);font-size:34px;line-height:1;font-weight:800}
+.big .val small{font-family:var(--f-mono);font-size:13px;font-weight:400;color:var(--muted);margin-left:4px}
+input[type=range]{width:100%;accent-color:var(--olive)}
+.check{display:flex;align-items:center;gap:8px;cursor:pointer}
+.check input{accent-color:var(--olive);width:16px;height:16px}
+
+.ww2{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:12px}
+.ww2 h2{font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.02em;text-transform:uppercase}
+.ruler{position:relative;height:42px;margin:0 6px}
+.ruler .bar{position:absolute;left:0;right:0;top:14px;height:2px;background:var(--line)}
+.ruler .tick{position:absolute;top:8px;width:2px;height:14px;background:var(--olive);transform:translateX(-1px)}
+.ruler .scale{position:absolute;top:26px;transform:translateX(-50%);font:11px var(--f-mono);color:var(--muted)}
+.ruler .me{position:absolute;top:0;width:14px;height:14px;transform:translateX(-7px);background:var(--lamp);clip-path:polygon(0 0,100% 0,50% 100%);transition:left .15s}
+.presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.preset{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:baseline;text-align:left;background:transparent;border:1px solid var(--line);border-radius:4px;padding:8px 10px;cursor:pointer}
+.preset:hover{border-color:var(--olive)}
+.preset.active{border-color:var(--olive);background:var(--soft)}
+.preset .n{grid-row:span 2;font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;color:var(--olive);font-variant-numeric:tabular-nums}
+.preset .t{font-weight:600;font-size:13.5px;line-height:1.25}
+.preset .w{font-size:12px;color:var(--muted);line-height:1.3}
+
+/* tape */
+.tape{background:var(--tape);color:var(--tape-ink);border-radius:3px;height:46px;overflow:hidden;position:relative;border-block:1px dashed color-mix(in srgb,var(--tape-ink) 25%,transparent)}
+.tape canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tape::before{content:"PÁSKA";position:absolute;left:10px;top:4px;font:10px var(--f-mono);letter-spacing:.14em;opacity:.45}
+
+.taperow{display:flex;gap:10px;align-items:center}
+.taperow .tape{flex:1;min-width:0}
+.taperow .btn{flex:none;height:46px}
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--ink);flex-wrap:wrap}
+.tab{background:transparent;border:0;padding:10px 16px 8px;font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-radius:4px 4px 0 0}
+.tab[aria-selected=true]{background:var(--ink);color:var(--paper)}
+.panel{display:flex;flex-direction:column;gap:18px}
+
+.btn{border:1px solid var(--olive);background:var(--olive);color:var(--olive-ink);padding:9px 16px;border-radius:4px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--olive)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{background:transparent;border:0;padding:7px 14px;cursor:pointer;font-weight:500}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+
+/* alphabet */
+.intro{max-width:68ch}
+.intro p{margin:0 0 6px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend .s{font-weight:600;color:var(--ink)}
+.legend .l{font-weight:600;color:var(--olive);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.card{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px 12px;cursor:pointer;min-width:0}
+.card:hover{border-color:var(--olive)}
+.card.playing{border-color:var(--lamp);box-shadow:inset 0 0 0 1px var(--lamp)}
+.card .top{display:flex;justify-content:space-between;align-items:center;width:100%;gap:8px}
+.card .ch{font-family:var(--f-display);font-weight:800;font-size:34px;line-height:1}
+.sym{display:inline-flex;align-items:center;gap:4px}
+.sym i{display:block;height:7px;border-radius:4px;background:var(--ink)}
+.sym i.d{width:7px}
+.sym i.l{width:22px}
+.card .mn{font-size:13.5px;color:var(--muted)}
+.mn .s{color:var(--ink)}
+.mn .l{color:var(--olive);font-weight:600;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
+.card .code{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+
+/* player */
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.box h3{font-family:var(--f-display);font-weight:700;font-size:21px;text-transform:uppercase;letter-spacing:.02em}
+textarea,input[type=text],select{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:10px 12px;width:100%}
+textarea{resize:vertical;min-height:90px}
+.cells{display:flex;flex-wrap:wrap;gap:6px 4px;align-items:flex-start}
+.cell{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 6px 8px;border-radius:3px;min-width:34px;border-bottom:2px solid transparent}
+.cell b{font-family:var(--f-mono);font-size:18px;font-weight:600;line-height:1}
+.cell .sym i{height:5px}
+.cell .sym i.d{width:5px}
+.cell .sym i.l{width:14px}
+.cell.done{opacity:.45}
+.cell.now{background:var(--soft);border-bottom-color:var(--lamp)}
+.cell.sp{min-width:18px}
+.meta{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.out{font-family:var(--f-mono);font-size:17px;min-height:30px;word-break:break-word;padding:8px 10px;background:var(--paper);border-radius:4px;border:1px dashed var(--line)}
+
+/* training */
+.train{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px}
+@media (max-width:760px){.train{grid-template-columns:1fr}}
+.pool{display:flex;flex-wrap:wrap;gap:4px}
+.pool button{font-family:var(--f-mono);font-weight:600;min-width:30px;padding:4px 6px;border:1px solid var(--line);background:var(--paper);border-radius:3px;cursor:pointer}
+.pool button.new{border-color:var(--lamp);background:color-mix(in srgb,var(--lamp) 18%,var(--paper))}
+.answer{font-family:var(--f-mono);font-size:30px;text-transform:uppercase;letter-spacing:.15em;text-align:center;padding:14px}
+.fb{min-height:62px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+.fb .c{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:4px;font-family:var(--f-mono)}
+.fb .c b{font-size:20px}
+.fb .c small{font-size:12px}
+.fb .ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.fb .no{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat{border:1px solid var(--line);border-radius:4px;padding:8px 10px}
+.stat b{display:block;font-family:var(--f-display);font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.target{font-family:var(--f-display);font-weight:800;font-size:96px;line-height:1;text-align:center}
+.keywrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.key{width:150px;height:150px;border-radius:50%;border:none;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;
+  background:radial-gradient(circle at 38% 32%,color-mix(in srgb,var(--lamp) 55%,#fff) 0%,var(--lamp) 38%,color-mix(in srgb,var(--lamp) 55%,#000) 100%);
+  box-shadow:0 8px 0 color-mix(in srgb,var(--lamp) 40%,#000),0 12px 24px rgba(0,0,0,.25);color:#2a1d02;font-family:var(--f-display);font-weight:800;font-size:22px;letter-spacing:.05em;transition:transform .04s,box-shadow .04s}
+.key.down{transform:translateY(6px);box-shadow:0 2px 0 color-mix(in srgb,var(--lamp) 40%,#000),0 4px 10px rgba(0,0,0,.25)}
+.sent{font-family:var(--f-mono);font-size:28px;letter-spacing:.2em;min-height:40px}
+.misses{font-size:13px;color:var(--muted)}
+.misses b{font-family:var(--f-mono);color:var(--bad)}
+footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:4px}
+footer a{color:var(--olive)}
+@media (max-width:520px){
+  .console{grid-template-columns:1fr}
+  .lampbox{flex-direction:row}
+  .lamp{width:40px;height:40px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .target{font-size:72px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <header>
+    <div>
+      <div class="eyebrow">Morseova abeceda · výuka · trénink · přehrávání</div>
+      <h1>Škola <span>radisty</span></h1>
+    </div>
+    <div class="callsign"><span>MORSE = <b>-- --- .-. ... .</b></span><span>Délka tečky: <b><span id="dotms">80</span> ms</b> při <b><span id="hdrwpm">15</span> WPM</b></span></div>
+  </header>
+
+
+  <div class="taperow">
+    <div class="tape" aria-hidden="true"><canvas id="tape"></canvas></div>
+    <button class="btn ghost" id="tapeClear" title="Smazat obsah pásky">Smazat pásku</button>
+  </div>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" id="t-abeceda" aria-controls="abeceda" aria-selected="true">Abeceda</button>
+    <button class="tab" role="tab" id="t-trenink" aria-controls="trenink" aria-selected="false">Trénink</button>
+    <button class="tab" role="tab" id="t-prehravac" aria-controls="prehravac" aria-selected="false">Přehrávač</button>
+  </nav>
+
+  <!-- ABECEDA -->
+  <section class="panel" id="abeceda" role="tabpanel" aria-labelledby="t-abeceda">
+    <div class="intro">
+      <p>Klepněte na znak a poslechněte si ho. Učte se zvuk celého znaku, ne počet teček a čárek. Zkušený radista slyší „dá-di-dá-di“ jako jeden obraz, ne jako čtyři prvky.</p>
+      <p class="muted small">České pomůcky: každá slabika je jeden prvek. Slabika s dlouhou samohláskou (á, é, í, ó, ú, ý) je čárka, krátká slabika je tečka.</p>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <div class="seg" id="alphaSeg">
+        <button aria-pressed="true" data-g="letters">Písmena</button>
+        <button aria-pressed="false" data-g="digits">Číslice</button>
+        <button aria-pressed="false" data-g="punct">Znaky</button>
+      </div>
+      <div class="legend"><span><span class="s">krátká</span> = tečka</span><span><span class="l">dlouhá</span> = čárka</span></div>
+    </div>
+    <div class="grid" id="alphaGrid"></div>
+  </section>
+
+  <!-- TRÉNINK -->
+  <section class="panel" id="trenink" role="tabpanel" aria-labelledby="t-trenink" hidden>
+    <div class="row" style="justify-content:space-between">
+      <div class="seg" id="modeSeg">
+        <button aria-pressed="true" data-m="listen">Příjem (poslech)</button>
+        <button aria-pressed="false" data-m="send">Vysílání (klíč)</button>
+      </div>
+      <button class="btn ghost" id="resetStats">Vynulovat statistiku</button>
+    </div>
+    <div class="train">
+      <div class="box">
+        <div id="listenUI">
+          <div class="row" style="justify-content:space-between;margin-bottom:10px">
+            <h3>Příjem</h3>
+            <span class="small muted">Napište, co slyšíte.</span>
+          </div>
+          <div class="row" style="margin-bottom:12px">
+            <button class="btn" id="lStart">▶ Spustit</button>
+            <button class="btn ghost" id="lReplay" disabled>↻ Znovu přehrát</button>
+            <button class="btn ghost" id="lSkip" disabled>Ukázat a dál</button>
+          </div>
+          <input type="text" class="answer" id="lInput" placeholder="—" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Vaše odpověď" disabled>
+          <div class="fb" id="lFb"><span class="muted small">Stiskněte Spustit. Znak zazní a vy ho napíšete na klávesnici.</span></div>
+        </div>
+        <div id="sendUI" hidden>
+          <div class="row" style="justify-content:space-between;margin-bottom:6px">
+            <h3>Vysílání</h3>
+            <label class="check small"><input type="checkbox" id="sHint" checked> Nápověda</label>
+          </div>
+          <div class="target" id="sTarget">K</div>
+          <div class="row" style="justify-content:center;gap:14px;min-height:28px" id="sHintBox"></div>
+          <div class="keywrap">
+            <div class="sent" id="sSent" aria-live="polite"></div>
+            <button class="key" id="key" aria-label="Telegrafní klíč">KLÍČ</button>
+            <span class="small muted" style="text-align:center">Držte klíč myší, prstem nebo <b>mezerníkem</b>.<br>Krátký stisk = tečka, delší = čárka. Tempo: <span id="sTempo">15 WPM</span>.</span>
+          </div>
+          <div class="fb" id="sFb"></div>
+        </div>
+      </div>
+      <div class="box">
+        <h3>Výcvik podle Kocha</h3>
+        <p class="small muted" style="margin:0">Začnete se dvěma znaky. Když máte přes 90 % správně, přidejte další. Nový znak je zvýrazněný.</p>
+        <div class="ctl">
+          <label for="level"><span>Počet znaků</span><span class="val" id="levelv">6</span></label>
+          <input type="range" id="level" min="2" max="40" step="1" value="6">
+        </div>
+        <div class="pool" id="pool"></div>
+        <div class="ctl" id="groupCtl">
+          <label for="group"><span>Délka skupiny při příjmu</span></label>
+          <select id="group">
+            <option value="1">1 znak</option>
+            <option value="3">3 znaky</option>
+            <option value="5">5 znaků (jako šifrové skupiny)</option>
+          </select>
+        </div>
+        <div class="stats">
+          <div class="stat"><b id="stOk">0</b><span>správně</span></div>
+          <div class="stat"><b id="stBad">0</b><span>chybně</span></div>
+          <div class="stat"><b id="stPct">–</b><span>úspěšnost</span></div>
+          <div class="stat"><b id="stStreak">0</b><span>série</span></div>
+        </div>
+        <div class="misses" id="misses"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PŘEHRÁVAČ -->
+  <section class="panel" id="prehravac" role="tabpanel" aria-labelledby="t-prehravac" hidden>
+    <div class="box">
+      <div class="row" style="justify-content:space-between">
+        <h3>Text na morseovku</h3>
+        <label class="check small"><input type="checkbox" id="chMode" checked> CH jako jeden znak (----)</label>
+      </div>
+      <textarea id="ptext" aria-label="Text k přehrání">Výsadek přistál v pořádku. Čekáme na další rozkazy.</textarea>
+      <div class="row">
+        <button class="btn" id="pPlay">▶ Přehrát</button>
+        <button class="btn ghost" id="pStop" disabled>■ Zastavit</button>
+        <label class="check small"><input type="checkbox" id="pLoop"> Opakovat</label>
+        <button class="btn ghost" id="pCopy">Kopírovat kód</button>
+        <span class="meta" id="pMeta"></span>
+      </div>
+      <div class="cells" id="cells"></div>
+      <span class="small muted">Diakritika se při vysílání vynechává, stejně jako v mezinárodním provozu.</span>
+    </div>
+    <div class="box">
+      <h3>Dekódovat morseovku</h3>
+      <textarea id="dtext" aria-label="Morseův kód k dekódování">... --- ... / -.-. --.- -.. .</textarea>
+      <span class="small muted">Znaky oddělte mezerou, slova lomítkem / nebo dvěma mezerami.</span>
+      <div class="out" id="dout"></div>
+      <div class="row"><button class="btn ghost" id="dPlay">▶ Přehrát dekódovaný text</button></div>
+    </div>
+  </section>
+
+  <section class="console" aria-label="Nastavení rychlosti a tónu">
+    <div class="lampbox"><div class="lamp" id="lamp" aria-hidden="true"></div><span class="eyebrow">signál</span></div>
+    <div class="controls">
+      <div class="ctl big">
+        <label for="wpm"><span>Rychlost znaků</span><span class="val"><span id="wpmv">15</span><small>WPM</small></span></label>
+        <input type="range" id="wpm" min="5" max="40" step="1" value="15">
+        <span class="small muted"><span id="cpm">75</span> znaků za minutu (slovo PARIS)</span>
+      </div>
+      <div class="ctl">
+        <label class="check" for="farn"><input type="checkbox" id="farn"> Farnsworthovy mezery</label>
+        <label for="eff"><span class="small muted">Celkové tempo</span><span class="val"><span id="effv">8</span> WPM</span></label>
+        <input type="range" id="eff" min="3" max="40" step="1" value="8">
+        <span class="small muted">Znaky zní rychle, mezery mezi nimi jsou delší.</span>
+      </div>
+      <div class="ctl">
+        <label for="freq"><span>Výška tónu</span><span class="val"><span id="freqv">650</span> Hz</span></label>
+        <input type="range" id="freq" min="400" max="1000" step="10" value="650">
+        <label for="vol"><span>Hlasitost</span><span class="val"><span id="volv">50</span> %</span></label>
+        <input type="range" id="vol" min="0" max="100" step="1" value="50">
+      </div>
+    </div>
+    <div class="ww2">
+      <div class="row" style="justify-content:space-between">
+        <h2>Rychlosti za 2. světové války</h2>
+        <span class="small muted">Klepnutím nastavíte tempo. Hodnoty jsou orientační.</span>
+      </div>
+      <div class="ruler" id="ruler" aria-hidden="true"><div class="bar"></div></div>
+      <div class="presets" id="presets"></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Časování: tečka = 1 jednotka, čárka = 3, mezera v znaku = 1, mezi znaky = 3, mezi slovy = 7. Rychlost ve WPM odpovídá počtu slov „PARIS“ za minutu (50 jednotek).</span>
+    <span>Zdroje rychlostí: požadavky US Army pro radisty a telegrafisty (<a href="https://www.strictly-gi.com/wwii-mos-database/756-radio-operator-aaf/" target="_blank" rel="noopener">MOS 756</a>, <a href="https://www.strictly-gi.com/wwii-mos-database/776-radio-operator-low-speed/" target="_blank" rel="noopener">MOS 776</a>, <a href="https://www.strictly-gi.com/wwii-mos-database/236-telegraph-operator/" target="_blank" rel="noopener">MOS 236</a>), agenti SOE (<a href="https://en.wikipedia.org/wiki/Yvonne_Cormeau" target="_blank" rel="noopener">Yvonne Cormeau</a>), české pomůcky (<a href="https://en.wikipedia.org/wiki/Morse_code_mnemonics" target="_blank" rel="noopener">Morse code mnemonics</a>). Armádní normy uváděly pětimístné šifrové skupiny za minutu, ty zde odpovídají WPM.</span>
+    <span>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 22. 10. 2026</span>
+  </footer>
+</div>
+
+<script>
+(() => {
+const MORSE = {A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',CH:'----',
+ '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.',
+ '.':'.-.-.-',',':'--..--','?':'..--..','/':'-..-.','=':'-...-','-':'-....-',':':'---...',';':'-.-.-.','(':'-.--.',')':'-.--.-','"':'.-..-.',"'":'.----.','!':'-.-.--','@':'.--.-.','+':'.-.-.'};
+const REV = Object.fromEntries(Object.entries(MORSE).map(([k,v])=>[v,k]));
+const MNEMO = {A:'a·kát',B:'blý·ska·vi·ce',C:'cí·lov·ní·ci',D:'dál·ni·ce',E:'erb',F:'fi·li·pí·ny',G:'grón·ská zem',H:'ho·lu·bi·ce',I:'i·bis',J:'jas·mín bí·lý',K:'krá·lov·ství',L:'led·ní ho·kej',M:'má·vá',N:'ná·rod',O:'ó náš pán',P:'pa·pír·ní·ci',Q:'kví·lí or·kán',R:'ra·rá·šek',S:'se·ke·ra',T:'tón',U:'u·če·ný',V:'vy·vo·le·ný',W:'wal·trův vůz',X:'xé·no·kra·tés',Y:'ý·gar má·vá',Z:'zrád·ná že·na',CH:'chléb nám dá·vá'};
+const PUNCT_NAMES = {'.':'tečka',',':'čárka','?':'otazník','/':'lomítko','=':'oddělovač (BT)','-':'pomlčka',':':'dvojtečka',';':'středník','(':'závorka (',')':'závorka )','"':'uvozovky',"'":'apostrof','!':'vykřičník','@':'zavináč','+':'konec zprávy (AR)'};
+const KOCH = 'KMRSUAPTLOWI.NJEF0Y,VG5/Q9ZH38B?427C1D6X'.split('');
+const PRESETS = [
+ {wpm:5, t:'Světelné signály', w:'US Army, minimum pro signální lampu'},
+ {wpm:12, t:'Průměrný agent SOE', w:'běžný radista v týlu nepřítele'},
+ {wpm:13, t:'Radista US Army', w:'minimum 13 skupin/min, příjem i klíč (MOS 776)'},
+ {wpm:16, t:'Radista letectva USAAF', w:'minimum 16 skupin/min (MOS 756)'},
+ {wpm:20, t:'Yvonne Cormeau, SOE', w:'špičková agentka, 18–22 slov/min'}
+];
+
+const $ = s => document.querySelector(s);
+const store = {
+  get(k,d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const S = Object.assign({wpm:15, farn:false, eff:8, freq:650, vol:50, ch:true, level:6, group:1}, store.get('radista-set', {}));
+const saveS = () => store.set('radista-set', S);
+
+/* ---------- timing ---------- */
+function timing(){
+  const c = S.wpm, dot = 1.2 / c;
+  let charGap = 3*dot, wordGap = 7*dot;
+  if (S.farn && S.eff < c){
+    const f = S.eff, ta = (60*c - 37.2*f) / (c*f);
+    charGap = 3*ta/19; wordGap = 7*ta/19;
+  }
+  return {dot, dash:3*dot, el:dot, charGap, wordGap};
+}
+function tokenize(text){
+  const t = text.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();
+  const out = [];
+  for (let i=0;i<t.length;i++){
+    const c = t[i];
+    if (/\s/.test(c)){ if (out.length && !out[out.length-1].space) out.push({space:true}); continue; }
+    if (S.ch && c==='C' && t[i+1]==='H'){ out.push({ch:'CH', code:MORSE.CH}); i++; continue; }
+    if (MORSE[c]) out.push({ch:c, code:MORSE[c]});
+  }
+  while (out.length && out[out.length-1].space) out.pop();
+  return out;
+}
+function build(tokens, T){
+  let t = 0; const tones = [], chars = [];
+  tokens.forEach((tk,i) => {
+    if (tk.space){ t += T.wordGap - T.charGap; return; }
+    const s0 = t;
+    [...tk.code].forEach((sym,j) => {
+      const d = sym==='.' ? T.dot : T.dash;
+      tones.push({s:t, e:t+d, sym});
+      t += d; if (j < tk.code.length-1) t += T.el;
+    });
+    chars.push({i, s:s0, word: i>0 && tokens[i-1].space});
+    t += T.charGap;
+  });
+  return {tones, chars, total: Math.max(0, t - T.charGap)};
+}
+
+/* ---------- audio ---------- */
+let ctx = null;
+function ac(){
+  if (!ctx){ const AC = window.AudioContext || window.webkitAudioContext; ctx = new AC(); }
+  if (ctx.state === 'suspended') ctx.resume();
+  return ctx;
+}
+const lampEl = $('#lamp'); let lampOn = false;
+function setLamp(on){ if (on !== lampOn){ lampOn = on; lampEl.classList.toggle('on', on); } }
+/* paper tape: moves in real time, 1 time unit (dot) = 8 px, so marks and gaps follow the actual tempo */
+const tapeCv = $('#tape'), tctx = tapeCv.getContext('2d');
+const TAPE = {segs:[], base:0, runStart:0, running:false, stopT:null};
+const tNow = () => TAPE.running ? TAPE.base + (performance.now() - TAPE.runStart)/1000 : TAPE.base;
+function tapeRun(){ clearTimeout(TAPE.stopT); if (!TAPE.running){ TAPE.runStart = performance.now(); TAPE.running = true; requestAnimationFrame(tapeDraw); } }
+function tapeIdle(delay){ clearTimeout(TAPE.stopT); TAPE.stopT = setTimeout(() => { if (!TAPE.running) return; TAPE.base = tNow(); TAPE.running = false; tapeDraw(); }, delay*1000); }
+function tapeCut(){ const n = tNow(); TAPE.segs = TAPE.segs.filter(g => g.s <= n); TAPE.segs.forEach(g => { if (g.e !== null && g.e > n) g.e = n; }); }
+function tapeDraw(){
+  const w = tapeCv.clientWidth, h = tapeCv.clientHeight, dpr = window.devicePixelRatio || 1;
+  if (!w || !h){ if (TAPE.running) requestAnimationFrame(tapeDraw); return; }
+  if (tapeCv.width !== Math.round(w*dpr) || tapeCv.height !== Math.round(h*dpr)){ tapeCv.width = Math.round(w*dpr); tapeCv.height = Math.round(h*dpr); }
+  tctx.setTransform(dpr,0,0,dpr,0,0); tctx.clearRect(0,0,w,h);
+  const now = tNow(), pps = 8 / timing().dot, right = w - 16, y = h/2;
+  tctx.fillStyle = getComputedStyle(tapeCv).color;
+  const minT = now - (right + 40)/pps;
+  while (TAPE.segs.length && TAPE.segs[0].e !== null && TAPE.segs[0].e < minT) TAPE.segs.shift();
+  for (const g of TAPE.segs){
+    if (g.s > now) break;
+    const e = g.e === null ? now : Math.min(g.e, now);
+    const x1 = right - (now - g.s)*pps, len = Math.max((e - g.s)*pps, 2);
+    tctx.beginPath();
+    if (tctx.roundRect) tctx.roundRect(x1, y-4, len, 8, 4); else tctx.rect(x1, y-4, len, 8);
+    tctx.fill();
+  }
+  if (TAPE.running) requestAnimationFrame(tapeDraw);
+}
+$('#tapeClear').addEventListener('click', () => { TAPE.segs = []; tapeDraw(); });
+window.addEventListener('resize', () => { if (!TAPE.running) tapeDraw(); });
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (!TAPE.running) tapeDraw(); }); } catch(e){}
+
+let cur = null;
+function play(tokens, opts={}){
+  stopPlay();
+  if (!tokens.length){ opts.onEnd && opts.onEnd(false); return; }
+  const c = ac(), T = timing(), sch = build(tokens, T);
+  const osc = c.createOscillator(), g = c.createGain();
+  osc.type = 'sine'; osc.frequency.value = S.freq; g.gain.value = 0;
+  osc.connect(g).connect(c.destination);
+  const t0 = c.currentTime + 0.08, vol = Math.pow(S.vol/100, 1.6) * 0.6, r = 0.005;
+  sch.tones.forEach(tn => {
+    g.gain.setValueAtTime(0, t0+tn.s);
+    g.gain.linearRampToValueAtTime(vol, t0+tn.s+r);
+    g.gain.setValueAtTime(vol, t0+tn.e-r);
+    g.gain.linearRampToValueAtTime(0, t0+tn.e);
+  });
+  osc.start(t0); osc.stop(t0 + sch.total + 0.15);
+  tapeRun(); const tb = tNow() + 0.08;
+  sch.tones.forEach(tn => TAPE.segs.push({s:tb+tn.s, e:tb+tn.e}));
+  cur = {osc, g, t0, sch, tokens, ti:0, ci:0, opts};
+  requestAnimationFrame(tick);
+}
+function tick(){
+  if (!cur) return;
+  const t = ctx.currentTime - cur.t0, sch = cur.sch;
+  while (cur.ci < sch.chars.length && sch.chars[cur.ci].s <= t){
+    const ch = sch.chars[cur.ci];
+    cur.opts.onChar && cur.opts.onChar(ch.i);
+    cur.ci++;
+  }
+  while (cur.ti < sch.tones.length && sch.tones[cur.ti].s <= t) cur.ti++;
+  const last = sch.tones[cur.ti-1];
+  setLamp(!!last && t < last.e);
+  if (t >= sch.total + 0.02){
+    const o = cur.opts; cur = null; setLamp(false);
+    tapeIdle(0.6);
+    o.onEnd && o.onEnd(false);
+    return;
+  }
+  requestAnimationFrame(tick);
+}
+function stopPlay(){
+  if (!cur) return;
+  const o = cur.opts;
+  try { cur.g.gain.cancelScheduledValues(ctx.currentTime); cur.g.gain.setValueAtTime(0, ctx.currentTime); cur.osc.stop(); } catch(e){}
+  cur = null; setLamp(false); tapeCut(); tapeIdle(0.3);
+  o.onEnd && o.onEnd(true);
+}
+const symHTML = code => '<span class="sym">' + [...code].map(s => `<i class="${s==='.'?'d':'l'}"></i>`).join('') + '</span>';
+const esc = s => String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+/* ---------- console ---------- */
+const ruler = $('#ruler');
+const pos = w => ((w-5)/35*100) + '%';
+[5,10,20,30,40].forEach(w => { const s = document.createElement('span'); s.className='scale'; s.style.left = pos(w); s.textContent = w + (w===40?' WPM':''); ruler.appendChild(s); });
+PRESETS.forEach(p => { const t = document.createElement('span'); t.className='tick'; t.style.left = pos(p.wpm); ruler.appendChild(t); });
+const me = document.createElement('span'); me.className='me'; ruler.appendChild(me);
+$('#presets').innerHTML = PRESETS.map((p,i) => `<button class="preset" data-i="${i}"><span class="n">${p.wpm}</span><span class="t">${p.t}</span><span class="w">${p.w}</span></button>`).join('');
+$('#presets').addEventListener('click', e => { const b = e.target.closest('.preset'); if (!b) return; S.wpm = PRESETS[b.dataset.i].wpm; S.farn = false; syncConsole(); saveS(); play(tokenize('CQ CQ'), {}); });
+
+function syncConsole(){
+  if (S.eff > S.wpm) S.eff = S.wpm;
+  $('#wpm').value = S.wpm; $('#wpmv').textContent = S.wpm; $('#cpm').textContent = S.wpm*5;
+  $('#farn').checked = S.farn; $('#eff').value = S.eff; $('#eff').max = S.wpm; $('#eff').disabled = !S.farn; $('#effv').textContent = S.farn ? S.eff : S.wpm;
+  $('#freq').value = S.freq; $('#freqv').textContent = S.freq;
+  $('#vol').value = S.vol; $('#volv').textContent = S.vol;
+  $('#dotms').textContent = Math.round(1200/S.wpm); $('#hdrwpm').textContent = S.wpm;
+  $('#sTempo').textContent = `${S.wpm} WPM, tečka ${Math.round(1200/S.wpm)} ms`;
+  me.style.left = pos(S.wpm);
+  if (typeof TAPE !== 'undefined' && !TAPE.running) tapeDraw();
+  document.querySelectorAll('.preset').forEach(b => b.classList.toggle('active', PRESETS[b.dataset.i].wpm === S.wpm));
+  updateMeta();
+}
+$('#wpm').addEventListener('input', e => { S.wpm = +e.target.value; syncConsole(); saveS(); });
+$('#farn').addEventListener('change', e => { S.farn = e.target.checked; if (S.farn && S.eff >= S.wpm) S.eff = Math.max(3, Math.round(S.wpm/2)); syncConsole(); saveS(); });
+$('#eff').addEventListener('input', e => { S.eff = +e.target.value; syncConsole(); saveS(); });
+$('#freq').addEventListener('input', e => { S.freq = +e.target.value; syncConsole(); saveS(); if (cur) cur.osc.frequency.value = S.freq; });
+$('#vol').addEventListener('input', e => { S.vol = +e.target.value; syncConsole(); saveS(); });
+
+/* ---------- tabs ---------- */
+const TABS = ['abeceda','trenink','prehravac'];
+let activeTab = 'abeceda';
+function showTab(id){
+  if (!TABS.includes(id)) id = 'abeceda';
+  activeTab = id;
+  TABS.forEach(t => { $('#'+t).hidden = t !== id; $('#t-'+t).setAttribute('aria-selected', t===id); });
+  if (id !== 'trenink') stopListen();
+}
+document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (!b) return; stopPlay(); showTab(b.id.slice(2)); });
+
+/* ---------- alphabet ---------- */
+const GROUPS = {
+  letters: 'ABCDEFGH'.split('').concat(['CH'], 'IJKLMNOPQRSTUVWXYZ'.split('')),
+  digits: '0123456789'.split(''),
+  punct: Object.keys(PUNCT_NAMES)
+};
+function mnemoHTML(ch){
+  const m = MNEMO[ch]; if (!m) return '';
+  const code = MORSE[ch]; let k = 0;
+  return m.split(' ').map(word => word.split('·').map(syl => `<span class="${code[k++]==='.'?'s':'l'}">${syl}</span>`).join('')).join(' ');
+}
+function renderAlpha(g){
+  $('#alphaGrid').innerHTML = GROUPS[g].map(ch => `
+    <button class="card" data-ch="${esc(ch)}" aria-label="${esc(ch)} ${MORSE[ch]}">
+      <span class="top"><span class="ch">${esc(ch)}</span>${symHTML(MORSE[ch])}</span>
+      <span class="mn">${g==='letters' ? mnemoHTML(ch) : g==='punct' ? PUNCT_NAMES[ch] : '&nbsp;'}</span>
+      <span class="code">${MORSE[ch]}</span>
+    </button>`).join('');
+}
+$('#alphaSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+  $('#alphaSeg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x===b)); renderAlpha(b.dataset.g); });
+$('#alphaGrid').addEventListener('click', e => {
+  const b = e.target.closest('.card'); if (!b) return;
+  document.querySelectorAll('.card.playing').forEach(x => x.classList.remove('playing'));
+  b.classList.add('playing');
+  const ch = b.dataset.ch;
+  play([{ch, code:MORSE[ch]}], {onEnd: () => b.classList.remove('playing')});
+});
+renderAlpha('letters');
+
+/* ---------- player ---------- */
+let pTokens = [];
+function renderCells(){
+  pTokens = tokenize($('#ptext').value);
+  $('#cells').innerHTML = pTokens.map((tk,i) => tk.space ? `<span class="cell sp" data-i="${i}"></span>` :
+    `<span class="cell" data-i="${i}"><b>${esc(tk.ch)}</b>${symHTML(tk.code)}</span>`).join('');
+  updateMeta();
+}
+function updateMeta(){
+  if (!$('#pMeta')) return;
+  const n = pTokens.filter(t => !t.space).length;
+  const sec = build(pTokens, timing()).total;
+  $('#pMeta').textContent = n ? `${n} znaků · ${sec < 60 ? sec.toFixed(1)+' s' : Math.floor(sec/60)+' min '+Math.round(sec%60)+' s'}` : '';
+}
+let pPlaying = false;
+function playText(){
+  if (!pTokens.length) return;
+  const cells = [...document.querySelectorAll('#cells .cell')];
+  cells.forEach(c => c.classList.remove('now','done'));
+  pPlaying = true; $('#pPlay').disabled = true; $('#pStop').disabled = false;
+  let prev = null;
+  play(pTokens, {
+    onChar: i => { if (prev) { prev.classList.remove('now'); prev.classList.add('done'); } prev = cells[i]; prev && prev.classList.add('now'); },
+    onEnd: stopped => {
+      cells.forEach(c => c.classList.remove('now','done'));
+      if (!stopped && pPlaying && $('#pLoop').checked){ setTimeout(() => { if (pPlaying) playText(); }, 700); return; }
+      pPlaying = false; $('#pPlay').disabled = false; $('#pStop').disabled = true;
+    }
+  });
+}
+$('#ptext').addEventListener('input', () => { if (!pPlaying) renderCells(); });
+$('#pPlay').addEventListener('click', () => { renderCells(); playText(); });
+$('#pStop').addEventListener('click', () => { pPlaying = false; stopPlay(); });
+$('#chMode').checked = S.ch;
+$('#chMode').addEventListener('change', e => { S.ch = e.target.checked; saveS(); renderCells(); });
+$('#pCopy').addEventListener('click', async e => {
+  const txt = pTokens.map(t => t.space ? '/' : t.code).join(' ');
+  const b = e.currentTarget;
+  try { await navigator.clipboard.writeText(txt); b.textContent = 'Zkopírováno'; }
+  catch(err){ $('#dtext').value = txt; decodeNow(); $('#dtext').select(); b.textContent = 'Kód je v poli níže'; }
+  setTimeout(() => b.textContent = 'Kopírovat kód', 1800);
+});
+function decode(s){
+  return s.trim().replace(/[·•∙]/g,'.').replace(/[–—_−]/g,'-')
+    .split(/\s*[\/|]\s*|\s{2,}/).map(w => w.split(/\s+/).filter(Boolean).map(c => REV[c] ?? '¿').join('')).join(' ');
+}
+function decodeNow(){ $('#dout').textContent = decode($('#dtext').value) || '—'; }
+$('#dtext').addEventListener('input', decodeNow);
+$('#dPlay').addEventListener('click', () => { const saved = S.ch; S.ch = true; const t = tokenize(decode($('#dtext').value).replace(/¿/g,'')); S.ch = saved; play(t, {}); });
+renderCells(); decodeNow();
+
+/* ---------- training ---------- */
+let mode = 'listen';
+const STATS = store.get('radista-stats', {listen:{ok:0,bad:0,streak:0,miss:{}}, send:{ok:0,bad:0,streak:0,miss:{}}});
+const saveStats = () => store.set('radista-stats', STATS);
+const pool = () => KOCH.slice(0, S.level);
+function renderPool(){
+  $('#levelv').textContent = S.level; $('#level').value = S.level;
+  $('#pool').innerHTML = pool().map((c,i,a) => `<button class="${i===a.length-1?'new':''}" data-ch="${esc(c)}" title="${MORSE[c]}">${esc(c)}</button>`).join('');
+}
+$('#level').addEventListener('input', e => { S.level = +e.target.value; saveS(); renderPool(); });
+$('#pool').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; play([{ch:b.dataset.ch, code:MORSE[b.dataset.ch]}], {}); });
+$('#group').value = S.group;
+$('#group').addEventListener('change', e => { S.group = +e.target.value; saveS(); });
+function renderStats(){
+  const st = STATS[mode], tot = st.ok + st.bad;
+  $('#stOk').textContent = st.ok; $('#stBad').textContent = st.bad;
+  $('#stPct').textContent = tot ? Math.round(st.ok/tot*100) + ' %' : '–';
+  $('#stStreak').textContent = st.streak;
+  const top = Object.entries(st.miss).sort((a,b) => b[1]-a[1]).slice(0,5);
+  $('#misses').innerHTML = top.length ? 'Nejčastější chyby: ' + top.map(([c,n]) => `<b>${esc(c)}</b> ${MORSE[c]||''} ×${n}`).join(' · ') : '';
+}
+function record(ch, ok){ const st = STATS[mode]; if (ok) st.ok++; else { st.bad++; st.miss[ch] = (st.miss[ch]||0)+1; } }
+$('#resetStats').addEventListener('click', () => { STATS[mode] = {ok:0,bad:0,streak:0,miss:{}}; saveStats(); renderStats(); });
+$('#modeSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  mode = b.dataset.m;
+  $('#modeSeg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x===b));
+  $('#listenUI').hidden = mode !== 'listen'; $('#sendUI').hidden = mode !== 'send';
+  $('#groupCtl').hidden = mode !== 'listen';
+  stopListen(); if (mode === 'send') nextSend();
+  renderStats();
+});
+
+/* listening */
+let lRun = false, lTarget = '', lLock = false, lTimer = null;
+const lInput = $('#lInput');
+const randFrom = a => a[Math.floor(Math.random()*a.length)];
+function lPlay(){ play([...lTarget].map(ch => ({ch, code:MORSE[ch]})), {}); }
+function lNext(){
+  if (!lRun) return;
+  const p = pool(); let t = '';
+  for (let i=0;i<S.group;i++){ let c; do { c = randFrom(p); } while (S.group===1 && c===lTarget && p.length>1); t += c; }
+  lTarget = t; lLock = false; lInput.value = ''; lInput.maxLength = S.group;
+  $('#lFb').innerHTML = `<span class="muted small">Poslouchejte… (${S.group===1?'1 znak':S.group+' znaků'})</span>`;
+  lPlay(); lInput.focus();
+}
+function lCheck(){
+  if (lLock) return; lLock = true;
+  const got = lInput.value.toUpperCase();
+  let all = true;
+  $('#lFb').innerHTML = [...lTarget].map((c,i) => {
+    const ok = got[i] === c; if (!ok) all = false; record(c, ok);
+    return `<span class="c ${ok?'ok':'no'}"><b>${esc(c)}</b>${symHTML(MORSE[c])}<small>${ok ? '✓' : 'vy: '+esc(got[i]||'–')}</small></span>`;
+  }).join('');
+  const st = STATS.listen; st.streak = all ? st.streak+1 : 0;
+  saveStats(); renderStats();
+  lTimer = setTimeout(lNext, all ? 700 : 2200);
+}
+lInput.addEventListener('input', () => {
+  lInput.value = lInput.value.replace(/\s/g,'').toUpperCase();
+  if (lRun && lInput.value.length >= lTarget.length) lCheck();
+});
+function stopListen(){
+  lRun = false; clearTimeout(lTimer); stopPlay();
+  $('#lStart').textContent = '▶ Spustit'; $('#lReplay').disabled = true; $('#lSkip').disabled = true; lInput.disabled = true;
+}
+$('#lStart').addEventListener('click', () => {
+  if (lRun){ stopListen(); return; }
+  lRun = true; $('#lStart').textContent = '■ Zastavit'; $('#lReplay').disabled = false; $('#lSkip').disabled = false; lInput.disabled = false;
+  lNext();
+});
+$('#lReplay').addEventListener('click', () => { if (lRun){ lPlay(); lInput.focus(); } });
+$('#lSkip').addEventListener('click', () => { if (!lRun || lLock) return; lInput.value = ''; lCheck(); });
+
+/* sending */
+let kSeg = null, sTarget = 'K', kOsc = null, kG = null, kDown = 0, kSyms = '', kTimer = null, sLock = false;
+function nextSend(){
+  const p = pool(); let c; do { c = randFrom(p); } while (c === sTarget && p.length > 1);
+  sTarget = c; kSyms = ''; sLock = false; $('#sSent').textContent = '';
+  $('#sTarget').textContent = c; renderHint(); $('#sFb').innerHTML = '';
+}
+function renderHint(){
+  $('#sHintBox').innerHTML = $('#sHint').checked ? `${symHTML(MORSE[sTarget])}<span class="mn small muted">${MNEMO[sTarget] ? mnemoHTML(sTarget) : MORSE[sTarget]}</span>` : '';
+}
+$('#sHint').addEventListener('change', renderHint);
+function keyDown(){
+  if (kDown || sLock) return;
+  stopPlay();
+  const c = ac();
+  if (!kOsc){ kOsc = c.createOscillator(); kG = c.createGain(); kG.gain.value = 0; kOsc.connect(kG).connect(c.destination); kOsc.start(); }
+  kOsc.frequency.value = S.freq;
+  kG.gain.cancelScheduledValues(c.currentTime); kG.gain.setTargetAtTime(Math.pow(S.vol/100,1.6)*0.6, c.currentTime, 0.003);
+  kDown = performance.now(); clearTimeout(kTimer);
+  tapeRun(); kSeg = {s:tNow(), e:null}; TAPE.segs.push(kSeg);
+  setLamp(true); $('#key').classList.add('down');
+}
+function keyUp(){
+  if (!kDown) return;
+  kG.gain.cancelScheduledValues(ctx.currentTime); kG.gain.setTargetAtTime(0, ctx.currentTime, 0.003);
+  const dur = (performance.now() - kDown)/1000; kDown = 0;
+  setLamp(false); $('#key').classList.remove('down');
+  const dot = timing().dot, sym = dur < 2*dot ? '.' : '-';
+  kSyms += sym; if (kSeg){ kSeg.e = tNow(); kSeg = null; }
+  $('#sSent').textContent = kSyms.replace(/\./g,'·').replace(/-/g,'–');
+  kTimer = setTimeout(finishLetter, Math.max(3.5*dot*1000, 320));
+}
+function finishLetter(){
+  tapeIdle(0.8);
+  const got = REV[kSyms], ok = got === sTarget;
+  record(sTarget, ok);
+  const st = STATS.send; st.streak = ok ? st.streak+1 : 0; saveStats(); renderStats();
+  $('#sFb').innerHTML = ok
+    ? `<span class="c ok"><b>${esc(sTarget)}</b><small>✓ správně</small></span>`
+    : `<span class="c no"><b>${esc(got||'?')}</b><small>vysláno ${kSyms}</small></span><span class="c ok"><b>${esc(sTarget)}</b><small>má být ${MORSE[sTarget]}</small></span>`;
+  kSyms = '';
+  if (ok){ sLock = true; setTimeout(nextSend, 700); }
+  else setTimeout(() => { $('#sSent').textContent = ''; }, 900);
+}
+const keyBtn = $('#key');
+keyBtn.addEventListener('pointerdown', e => { e.preventDefault(); try{ keyBtn.setPointerCapture(e.pointerId); }catch(_){} keyDown(); });
+['pointerup','pointercancel','lostpointercapture'].forEach(ev => keyBtn.addEventListener(ev, keyUp));
+keyBtn.addEventListener('keydown', e => { if (e.code === 'Enter') e.preventDefault(); });
+const sendActive = () => activeTab === 'trenink' && mode === 'send';
+const typing = el => (el.tagName === 'INPUT' && el.type === 'text') || el.tagName === 'TEXTAREA';
+document.addEventListener('keydown', e => {
+  if (e.code !== 'Space' || !sendActive() || typing(e.target)) return;
+  e.preventDefault(); if (!e.repeat) keyDown();
+});
+document.addEventListener('keyup', e => {
+  if (e.code !== 'Space' || !sendActive() || typing(e.target)) return;
+  e.preventDefault(); keyUp();
+});
+
+renderPool(); renderStats(); syncConsole(); tapeDraw();
+showTab((location.hash||'').slice(1));
+})();
+</script>
+</body>
+</html>
