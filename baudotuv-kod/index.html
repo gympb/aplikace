@@ -108,10 +108,22 @@ label.chk{display:inline-flex;gap:6px;align-items:center;font-size:14px}
 .mode span.on{background:var(--accent);color:var(--surface)}
 
 /* děrovačka */
-.punch{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.bitbtn{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:var(--bg);font-family:var(--f-mono);font-size:13px;color:var(--muted);cursor:pointer;display:grid;place-items:center}
+/* děrovačka: hlava vlevo, řádky zarovnané s velkou páskou */
+.puncher{display:flex;align-items:flex-start;gap:12px}
+.puncher .tape-scroll{flex:1;min-width:0}
+.punch,.tape.big .col,.tape.big .axis{grid-template-rows:34px 34px 20px 34px 34px 34px 34px}
+.punch{display:grid;justify-items:center;align-items:center;flex:none;width:64px;padding-block:7px;margin-top:6px;border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:0 1px 0 var(--line)}
+.bitbtn{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:var(--bg);font-family:var(--f-mono);font-size:12px;color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:0}
 .bitbtn.on{background:var(--hole);border-color:var(--hole);color:var(--paper)}
 .punch-sep{width:8px;height:8px;border-radius:50%;background:var(--muted);opacity:.6}
+.pnow{font-family:var(--f-print);font-size:24px;font-weight:700;line-height:1;color:var(--accent)}
+.pnow.ctl{font-family:var(--f-mono);font-size:12px;font-weight:600}
+.tape.big .col{width:36px}
+.tape.big .hole{width:22px;height:22px}
+.tape.big .sprocket{width:8px;height:8px}
+.tape.big .lbl{font-size:13px}
+.tape.big .lbl.ctl{font-size:9.5px}
+.preview b{color:var(--accent)}
 .preview{font-family:var(--f-mono);font-size:14px}
 
 /* tabulka */
@@ -211,7 +223,6 @@ footer{font-size:13px;color:var(--muted);max-width:75ch}
 
   <section class="panel" aria-labelledby="h-punch">
     <div class="panel-head"><h2 id="h-punch">Ruční děrovačka</h2><span class="preview" id="punchPrev"></span></div>
-    <div class="punch" id="punch"></div>
     <div class="row">
       <button class="primary" id="btnPunch">Vyděrovat sloupec</button>
       <button data-code="31">LTR</button>
@@ -223,8 +234,11 @@ footer{font-size:13px;color:var(--muted);max-width:75ch}
       <button id="btnPClear">Vymazat pásku</button>
       <button id="btnPSend">Založit na linku</button>
     </div>
-    <div class="panel-head"><span class="hint">Páska děrovačky</span><span class="stat" id="ptStat"></span></div>
-    <div class="tape-scroll" id="tapeScroll2"><div class="tape" id="tape2"></div></div>
+    <div class="panel-head"><span class="hint">Vlevo děrovací hlava: kliknutím vyberte otvory a stiskněte Vyděrovat sloupec. Pod hlavou je znak, který právě kódujete.</span><span class="stat" id="ptStat"></span></div>
+    <div class="puncher">
+      <div class="punch" id="punch" aria-label="Děrovací hlava"></div>
+      <div class="tape-scroll" id="tapeScroll2"><div class="tape big" id="tape2"></div></div>
+    </div>
     <div class="row"><span class="hint">Čte se jako:</span><span class="preview" id="ptRead"></span></div>
     <p class="hint">Tato páska je nezávislá na vysílači. Kliknutím na otvor překlopíte bit. Tlačítko Založit na linku ji předá do vysílání místo pásky z textu.</p>
   </section>
@@ -495,10 +509,16 @@ function renderPunch(){
     if(r===2) h+='<span class="punch-sep" aria-hidden="true"></span>';
     h+=`<button class="bitbtn${v?' on':''}" data-r="${r}" aria-pressed="${!!v}" aria-label="Bit ${r+1}">${r+1}</button>`;
   });
-  $('punch').innerHTML=h;
   const c=parseInt(punchBits.join(''),2);
   const L=CTL[c]||letters[c], F=CTL[c]||figures[c];
-  $('punchPrev').textContent=`${punchBits.join('')} = ${c} → písmena: ${L} · číslice: ${F}`;
+  const dec=decode(ptape), mode=dec.length?dec[dec.length-1].mode:'L';
+  const now = c in CTL ? CTL[c] : (mode==='L'?L:F);
+  const isCtl = (c in CTL) || now.length>1;
+  h+=`<span class="pnow${isCtl?' ctl':''}" id="pnow" title="Znak, který právě kódujete">${esc(now==='nár.'?'?':now)}</span>`;
+  $('punch').innerHTML=h;
+  const hl=(t,on)=> on?`<b>${esc(t)}</b>`:esc(t);
+  $('punchPrev').innerHTML = c in CTL ? `${punchBits.join('')} = ${c} → <b>${CTL[c]}</b>`
+    : `${punchBits.join('')} = ${c} → písmena: ${hl(L,mode==='L')} · číslice: ${hl(F,mode==='F')}`;
 }
 $('punch').addEventListener('click',e=>{ const b=e.target.closest('.bitbtn'); if(!b) return; punchBits[+b.dataset.r]^=1; renderPunch(); });
 /* samostatná páska děrovačky */
@@ -513,11 +533,11 @@ function renderPTape(animFrom=Infinity, toEnd=false){
   $('ptStat').textContent = `${ptape.length} znaků · ${ptape.length*5} bitů`;
   $('btnPSend').disabled = !ptape.length;
 }
-function appendCode(c){ ptape.push(c); renderPTape(ptape.length-1,true); if (decode(ptape)[ptape.length-1].bell) ring(); }
+function appendCode(c){ ptape.push(c); renderPTape(ptape.length-1,true); renderPunch(); if (decode(ptape)[ptape.length-1].bell) ring(); }
 $('btnPunch').onclick=()=>appendCode(parseInt(punchBits.join(''),2));
 document.querySelectorAll('[data-code]').forEach(b=>b.onclick=()=>appendCode(+b.dataset.code));
-$('btnBack').onclick=()=>{ ptape.pop(); [...pflipped].forEach(k=>{ if(+k.split(':')[0]>=ptape.length) pflipped.delete(k); }); renderPTape(); };
-$('btnPClear').onclick=()=>{ ptape=[]; pflipped.clear(); renderPTape(); };
+$('btnBack').onclick=()=>{ ptape.pop(); [...pflipped].forEach(k=>{ if(+k.split(':')[0]>=ptape.length) pflipped.delete(k); }); renderPTape(); renderPunch(); };
+$('btnPClear').onclick=()=>{ ptape=[]; pflipped.clear(); renderPTape(); renderPunch(); };
 $('btnPSend').onclick=()=>{
   if(playing) stop();
   tape=[...ptape]; flipped=new Set(pflipped); pos=0;
@@ -530,7 +550,7 @@ $('tape2').addEventListener('click',e=>{
   const h=e.target.closest('.hole'); if(!h) return;
   const i=+h.dataset.i, r=+h.dataset.r;
   ptape[i]^=(1<<(4-r)); const k=i+':'+r; pflipped.has(k)?pflipped.delete(k):pflipped.add(k);
-  renderPTape();
+  renderPTape(); renderPunch();
 });
 
 /* ---------- tabulka ---------- */
