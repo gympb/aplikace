@@ -230,7 +230,14 @@ const f={s:'Vše',g:'Vše',q:''};
 
 function chips(el,list,key){
   $(el).innerHTML=list.map(v=>`<button class="chip" data-v="${esc(v)}" aria-pressed="${String(f[key])===String(v)}">${esc(v)}</button>`).join('');
-  $(el).onclick=e=>{const b=e.target.closest('button');if(!b)return;f[key]=b.dataset.v;chips(el,list,key);render();};
+  $(el).onclick=e=>{const b=e.target.closest('button');if(!b)return;f[key]=b.dataset.v;chips(el,list,key);render();toResults();};
+}
+// po změně filtru ukázat začátek výsledků (první vyhovující aplikaci), ne místo, kde stránka zrovna je
+function toResults(){
+  const bar=document.querySelector('.bar'), sticky=getComputedStyle(bar).position==='sticky';
+  const off=(sticky?bar.offsetHeight:0)+12;
+  const top=$('count').getBoundingClientRect().top;
+  if(top<off||top>innerHeight*.6) scrollTo({top:scrollY+top-off,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
 }
 function render(){
   const q=norm(f.q.trim());
