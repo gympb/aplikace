@@ -31,7 +31,7 @@ caesarova-sifra/    jedna složka = jedna aplikace
   "nazev": "Vigenèrova šifra",
   "popis": "Jedna až dvě věty o tom, co aplikace ukazuje.",
   "predmet": ["Informatika"],
-  "rocnik": [2],
+  "rocnik": ["2R"],
   "temata": ["kryptografie", "heslo"],
   "motiv": "KLÍČ",
   "autor": "Jméno Příjmení",
@@ -43,12 +43,25 @@ caesarova-sifra/    jedna složka = jedna aplikace
 | Pole | Význam |
 |---|---|
 | `slug` | název složky aplikace |
-| `predmet`, `rocnik` | podle nich fungují filtry v katalogu; ročník je číslo 1–4 (čtyřleté studium) nebo název třídy osmiletého studia, např. `"tercie"` |
+| `predmet` | jeden nebo více předmětů; podle nich funguje filtr. Nový předmět lze založit, ale celým českým názvem s velkým počátečním písmenem (např. `"Dějepis"`) a jen pokud už neexistuje v jiném zápisu. Hodnota `TEST` není povolená. |
+| `rocnik` | jeden nebo více štítků z pevného seznamu níže, seznam nelze rozšiřovat ani nechat prázdný |
 | `temata` | slova, podle kterých aplikaci najde hledání |
 | `obrazek` | ilustrace karty ve složce aplikace, např. `karta.svg` (poměr stran 8 : 3) |
 | `motiv` | krátký text na kartě, pokud aplikace nemá ilustraci |
 | `stav` | `nove`, `priprava` (karta bez odkazu), `archiv` (skryto z katalogu, adresa dál funguje) |
 | `odkaz` | volitelné: adresa aplikace mimo tento repozitář |
+
+### Štítky ročníků
+
+| Štítek | Význam |
+|---|---|
+| `PRI`, `SEK`, `TER`, `KVA` | prima, sekunda, tercie, kvarta |
+| `1R`, `2R`, `3R`, `4R` | 1.–4. ročník (zároveň kvinta–oktáva) |
+| `NG` | nižší gymnázium: PRI, SEK, TER, KVA |
+| `VG` | vyšší gymnázium: 1R, 2R, 3R, 4R |
+| `All` | všechny ročníky |
+
+Filtr v katalogu nabízí ročníky PRI až 4R. Skupiny se při filtrování rozbalí: aplikace se štítkem `NG` se ukáže u PRI, SEK, TER i KVA, aplikace se štítkem `All` u všech. Na kartě se zobrazují zkratky tak, jak jsou zapsané.
 
 Po uložení se změna do minuty objeví na webu.
 
