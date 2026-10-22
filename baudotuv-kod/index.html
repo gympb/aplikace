@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Baudotův kód</title>
+<meta name="description" content="Simulátor dálnopisu: převod textu do 5bitového kódu ITA2, děrná páska, průběh signálu na lince, výtisk, zvonek a dotaz WRU.">
+<meta name="author" content="Ivo Bešťák, Gymnázium Příbram">
+<meta property="og:title" content="Baudotův kód">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+/* Layout: pracovní stůl dálnopisu — vysílač nahoře, děrná páska přes celou šířku, pod ní přenos a přijímač, dole děrovačka a tabulka kódu */
+:root{
+  --bg:#eaeef2; --surface:#ffffff; --ink:#16202b; --muted:#5a6676; --line:#d2d9e1;
+  --accent:#2346a0; --accent-soft:#e3e9f8;
+  --paper:#f1e3b8; --paper-edge:#d4bd80; --hole:#26292e; --ghost:rgba(60,45,10,.13);
+  --hl:#ffcc33; --warn:#b4231a;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --f-print:"Courier Prime","Courier New",Courier,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161c; --surface:#19212a; --ink:#e5eaf0; --muted:#97a3b1; --line:#2b3540;
+  --accent:#8eabff; --accent-soft:#223052;
+  --paper:#cbb985; --paper-edge:#9f8b55; --hole:#0b0e12; --ghost:rgba(40,30,5,.22);
+  --hl:#e3b230; --warn:#ff7b6e; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#11161c; --surface:#19212a; --ink:#e5eaf0; --muted:#97a3b1; --line:#2b3540;
+  --accent:#8eabff; --accent-soft:#223052;
+  --paper:#cbb985; --paper-edge:#9f8b55; --hole:#0b0e12; --ghost:rgba(40,30,5,.22);
+  --hl:#e3b230; --warn:#ff7b6e; color-scheme:dark }
+
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+.back{font-size:14px;color:var(--accent);text-decoration:none;justify-self:start}
+.back:hover{text-decoration:underline}
+footer a{color:inherit}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px;display:grid;gap:20px}
+h1,h2{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:.01em}
+h1{font-size:clamp(28px,4.4vw,42px);line-height:1.05}
+h2{font-size:19px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+header{display:grid;gap:8px}
+header p{margin:0;max-width:68ch;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:12px;min-width:0}
+.panel-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.grid2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+
+textarea{width:100%;min-height:84px;resize:vertical;font-family:var(--f-print);font-size:17px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select{font:inherit;font-size:14px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:600}
+button:focus-visible,select:focus-visible,textarea:focus-visible,.hole:focus-visible,.bitbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+label.chk{display:inline-flex;gap:6px;align-items:center;font-size:14px}
+.stat{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.warn{color:var(--warn);font-size:13px;margin:0}
+
+/* páska */
+.tape-scroll{overflow-x:auto;padding:6px 0 4px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:14px;padding:10px 12px;border-radius:8px;background:var(--paper);color:#3d2f0a}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend b{font-weight:600}
+.lg-hole{width:15px;height:15px;border-radius:50%;background:var(--ghost);display:inline-block;flex:none}
+.lg-hole.on{background:var(--hole)}
+.lg-spr{width:7px;height:7px;border-radius:50%;background:var(--hole);display:inline-block;flex:none;margin-inline:4px}
+#ptRead{white-space:pre-wrap}
+.tape{display:inline-flex;align-items:stretch;background:var(--paper);border-top:2px solid var(--paper-edge);border-bottom:2px solid var(--paper-edge);padding:6px 10px;min-width:100%;position:relative}
+.tape .axis{display:grid;grid-template-rows:repeat(6,18px) 22px;align-items:center;justify-items:end;padding-right:8px;font-family:var(--f-mono);font-size:10px;color:rgba(60,45,10,.7);position:sticky;left:0;background:var(--paper);z-index:1}
+.col{display:grid;grid-template-rows:repeat(6,18px) 22px;justify-items:center;align-items:center;width:24px;border-radius:4px}
+.col.cur{background:color-mix(in srgb,var(--hl) 55%,transparent)}
+.hole{width:13px;height:13px;border-radius:50%;background:var(--ghost);border:0;padding:0;cursor:pointer}
+.hole.on{background:var(--hole)}
+.hole.flip{box-shadow:0 0 0 2px var(--warn)}
+.sprocket{width:6px;height:6px;border-radius:50%;background:var(--hole);opacity:.85}
+.lbl{font-family:var(--f-mono);font-size:11px;font-weight:600;color:#3d2f0a;white-space:nowrap}
+.lbl.ctl{font-size:8.5px;letter-spacing:.02em;color:#7a5d12}
+.tape-empty{font-family:var(--f-mono);font-size:13px;color:#6b5418;padding:20px}
+
+/* přenos */
+.wave{width:100%;height:auto;display:block}
+.printer{font-family:var(--f-print);font-size:20px;line-height:1.35;min-height:120px;padding:14px 16px;border-radius:8px;background:var(--bg);border:1px dashed var(--line);white-space:pre-wrap;word-break:break-word}
+.printer .ab{color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:0 4px}
+.ab-input{font-family:var(--f-print);font-size:15px;padding:5px 10px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);text-transform:uppercase;width:16em;max-width:100%}
+.ab-input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.printer.ring{animation:ring .6s ease-out}
+@keyframes ring{0%{background:color-mix(in srgb,var(--hl) 70%,var(--bg));transform:translateX(-3px)}15%{transform:translateX(3px)}30%{transform:translateX(-2px)}45%{transform:translateX(0)}100%{background:var(--bg)}}
+.col.new{animation:punchin .35s ease-out}
+@keyframes punchin{from{transform:translateY(-6px);opacity:.2}to{transform:none;opacity:1}}
+.caret{display:inline-block;width:.6em;border-bottom:2px solid var(--accent);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.mode{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-family:var(--f-mono);font-size:12px}
+.mode span{padding:3px 10px;color:var(--muted)}
+.mode span.on{background:var(--accent);color:var(--surface)}
+
+/* děrovačka */
+.punch{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bitbtn{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:var(--bg);font-family:var(--f-mono);font-size:13px;color:var(--muted);cursor:pointer;display:grid;place-items:center}
+.bitbtn.on{background:var(--hole);border-color:var(--hole);color:var(--paper)}
+.punch-sep{width:8px;height:8px;border-radius:50%;background:var(--muted);opacity:.6}
+.preview{font-family:var(--f-mono);font-size:14px}
+
+/* tabulka */
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.code{font-family:var(--f-mono)}
+td.ch{font-family:var(--f-print);font-size:17px;font-weight:700}
+td.ctl{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+tr.cur td{background:color-mix(in srgb,var(--hl) 40%,transparent)}
+.mini{display:inline-flex;gap:3px;vertical-align:middle;align-items:center}
+.mini i{width:8px;height:8px;border-radius:50%;background:var(--line);display:block}
+.mini i.on{background:var(--ink)}
+.mini b{width:4px;height:4px;border-radius:50%;background:var(--muted);display:block}
+.tables{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (max-width:700px){.tables{grid-template-columns:minmax(0,1fr)}}
+footer{font-size:13px;color:var(--muted);max-width:75ch}
+@media (prefers-reduced-motion:reduce){.caret,.printer.ring,.col.new{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <header>
+    <div class="eyebrow">5bitový telegrafní kód · ITA2</div>
+    <h1>Dálnopis s Baudotovým kódem</h1>
+    <p>Napište zprávu, vysílač ji převede na 5bitové kódy a vyděruje do pásky. Na pásce znamená černý bod díru (bit 1), světlé místo je bez díry (bit 0). Pak ji „odvysílejte“ po lince a sledujte, jak přijímač tiskne znaky. Kliknutím na otvor v pásce překlopíte bit a uvidíte, co chyba udělá se zprávou.</p>
+  </header>
+
+  <section class="panel" aria-labelledby="h-tx">
+    <div class="panel-head"><h2 id="h-tx">Vysílač</h2><span class="stat" id="txStat"></span></div>
+    <textarea id="msg" spellcheck="false" aria-label="Text zprávy" placeholder="Pište zprávu, např. ZPRAVA C. 42 DORAZILA V 7:30"></textarea>
+    <p class="warn" id="skipped" hidden></p>
+    <div class="row">
+      <button class="primary" id="btnBell" title="Vloží na pozici kurzoru kód zvonku (FIG + J)">Vložit zvonek ␇</button>
+      <button class="primary" id="btnWru" title="Vloží na pozici kurzoru dotaz Kdo jste? (FIG + D)">Vložit dotaz WRU ␅</button>
+      <button id="btnSample">Ukázka chyby posunu</button>
+      <button id="btnFlip">Náhodná chyba bitu</button>
+      <button id="btnClear">Vymazat pásku</button>
+    </div>
+    <p class="hint">Páska se děruje průběžně, jak píšete. Enter se kóduje jako dvojice CR + LF, symbol ␇ jako zvonek (BEL), který na přijímači opravdu cinkne, a symbol ␅ jako dotaz WRU („Who are you?“), na který přijímací stanice odpoví svou volačkou. Kód zná jen velká písmena bez diakritiky, číslice a znaky - ? : ( ) . , ' = / +. Háčky a čárky se odstraní automaticky (Ř → R).</p>
+  </section>
+
+  <section class="panel" aria-labelledby="h-tape">
+    <div class="panel-head"><h2 id="h-tape">Děrná páska</h2><span class="stat" id="tapeStat"></span></div>
+    <div class="legend" aria-label="Legenda pásky">
+      <span><i class="lg-hole on"></i><b>Černý bod = díra</b> (proražený otvor, bit 1, mark)</span>
+      <span><i class="lg-hole"></i>Světlé místo = bez díry (bit 0, space)</span>
+      <span><i class="lg-spr"></i>Malá díra = posuvná (vodicí), nenese data</span>
+    </div>
+    <div class="tape-scroll" id="tapeScroll"><div class="tape" id="tape"></div></div>
+    <p class="hint">Řádky 1–5 jsou datové bity, malé otvory mezi 2. a 3. stopou slouží k posuvu pásky. Pod sloupcem je znak, jak ho přečte přijímač. LTR = přepnutí na písmena, FIG = na číslice.</p>
+  </section>
+
+  <div class="grid2">
+    <section class="panel" aria-labelledby="h-line">
+      <div class="panel-head"><h2 id="h-line">Linka</h2>
+        <div class="mode" aria-label="Režim přijímače"><span id="modeL" class="on">PÍSMENA</span><span id="modeF">ČÍSLICE</span></div>
+      </div>
+      <div class="row">
+        <button class="primary" id="btnPlay">Vysílat</button>
+        <button id="btnStep">Jeden znak</button>
+        <button id="btnReset">Na začátek</button>
+        <select id="speed" aria-label="Rychlost">
+          <option value="2">2 Bd (výuková)</option>
+          <option value="6" selected>6 Bd (pomalá)</option>
+          <option value="45.45">45,45 Bd (US dálnopis)</option>
+          <option value="50">50 Bd (telex)</option>
+          <option value="75">75 Bd</option>
+        </select>
+        <label class="chk"><input type="checkbox" id="sound"> Zvuk FSK</label>
+      </div>
+      <svg class="wave" id="wave" viewBox="0 0 640 150" role="img" aria-label="Průběh signálu na lince pro aktuální znak"></svg>
+      <p class="stat" id="lineStat">—</p>
+    </section>
+
+    <section class="panel" aria-labelledby="h-rx">
+      <div class="panel-head"><h2 id="h-rx">Výtisk</h2><span class="stat" id="rxStat"></span></div>
+      <div class="printer" id="printer" aria-live="polite"></div>
+      <div class="row">
+        <label for="answerback" class="hint">Volačka přijímací stanice</label>
+        <input id="answerback" class="ab-input" maxlength="20" spellcheck="false" value="GYMPB PRIBRAM">
+      </div>
+      <p class="hint">Přijímač začíná v režimu písmen. Když se ztratí znak FIG, číslice se vytisknou jako písmena. Na dotaz WRU vyšle bubínek přijímací stanice zpět po lince svou volačku (ve výtisku modře).</p>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="h-tbl">
+    <div class="panel-head"><h2 id="h-tbl">Tabulka kódu ITA2</h2><span class="hint">1 = otvor (mark), 0 = bez otvoru (space) · dekadická hodnota čte bity 1–5 zleva doprava</span></div>
+    <div class="tables" id="tables"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-punch">
+    <div class="panel-head"><h2 id="h-punch">Ruční děrovačka</h2><span class="preview" id="punchPrev"></span></div>
+    <div class="punch" id="punch"></div>
+    <div class="row">
+      <button class="primary" id="btnPunch">Vyděrovat sloupec</button>
+      <button data-code="31">LTR</button>
+      <button data-code="27">FIG</button>
+      <button data-code="4">Mezera</button>
+      <button data-code="2">CR</button>
+      <button data-code="8">LF</button>
+      <button id="btnBack">Smazat poslední</button>
+      <button id="btnPClear">Vymazat pásku</button>
+      <button id="btnPSend">Založit na linku</button>
+    </div>
+    <div class="panel-head"><span class="hint">Páska děrovačky</span><span class="stat" id="ptStat"></span></div>
+    <div class="tape-scroll" id="tapeScroll2"><div class="tape" id="tape2"></div></div>
+    <div class="row"><span class="hint">Čte se jako:</span><span class="preview" id="ptRead"></span></div>
+    <p class="hint">Tato páska je nezávislá na vysílači. Kliknutím na otvor překlopíte bit. Tlačítko Založit na linku ji předá do vysílání místo pásky z textu.</p>
+  </section>
+
+  <footer>Émile Baudot sestrojil svůj pětibitový telegraf v roce 1874. Simulace používá jeho nástupce ITA2 (Mezinárodní telegrafní abeceda č. 2, odvozená z Murrayova kódu), kterou používaly dálnopisy a telex po většinu 20. století. Každý znak se na lince vysílá se startovním bitem (space) a stop bitem dlouhým 1,5 jednotky (mark).<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 22. 10. 2026</footer>
+</div>
+
+<script>
+(() => {
+const LET = {A:'11000',B:'10011',C:'01110',D:'10010',E:'10000',F:'10110',G:'01011',H:'00101',I:'01100',J:'11010',K:'11110',L:'01001',M:'00111',N:'00110',O:'00011',P:'01101',Q:'11101',R:'01010',S:'10100',T:'00001',U:'11100',V:'01111',W:'11001',X:'10111',Y:'10101',Z:'10001'};
+const FIG = {A:'-',B:'?',C:':',D:'WRU',E:'3',F:'nár.',G:'nár.',H:'nár.',I:'8',J:'BEL',K:'(',L:')',M:'.',N:',',O:'9',P:'0',Q:'1',R:'4',S:"'",T:'5',U:'7',V:'=',W:'2',X:'/',Y:'6',Z:'+'};
+const NUL=0, SP=4, CR=2, LF=8, FIGS=27, LTRS=31;
+const letters = Array(32).fill(null), figures = Array(32).fill(null);
+for (const k in LET){ const c=parseInt(LET[k],2); letters[c]=k; figures[c]=FIG[k]; }
+const CTL = {0:'NUL',4:'SP',2:'CR',8:'LF',27:'FIG',31:'LTR'};
+const figEnc = {}; for (const k in FIG){ if (FIG[k].length===1) figEnc[FIG[k]] = parseInt(LET[k],2); }
+const bits = c => c.toString(2).padStart(5,'0');
+
+let tape = [];          // pole kódů 0–31
+let flipped = new Set();
+let pos = 0;            // kolik znaků už bylo odvysíláno
+let playing = false, t0 = 0, pos0 = 0, raf = 0, audio = null, osc = null;
+let punchBits = [0,0,0,0,0];
+let newFrom = Infinity;  // od kterého sloupce animovat nové děrování
+
+const $ = id => document.getElementById(id);
+
+function normalize(s){
+  return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/\r\n?/g,'\n');
+}
+function encode(text){
+  if (!text.length) return {codes:[], skipped:[]};
+  const out=[LTRS]; let mode='L'; const skipped=new Set();
+  for (const ch of normalize(text)){
+    if (ch===' '){ out.push(SP); continue; }
+    if (ch==='\n'){ out.push(CR,LF); continue; }
+    if (ch==='␅'){ if (mode!=='F'){ out.push(FIGS); mode='F'; } out.push(parseInt(LET.D,2)); continue; }
+    if (ch==='␇'){ if (mode!=='F'){ out.push(FIGS); mode='F'; } out.push(parseInt(LET.J,2)); continue; }
+    if (LET[ch]){ if (mode!=='L'){ out.push(LTRS); mode='L'; } out.push(parseInt(LET[ch],2)); continue; }
+    if (ch in figEnc){ if (mode!=='F'){ out.push(FIGS); mode='F'; } out.push(figEnc[ch]); continue; }
+    skipped.add(ch);
+  }
+  return {codes:out, skipped:[...skipped]};
+}
+function decode(codes){
+  let mode='L'; const res=[];
+  for (const c of codes){
+    let label, text='', ctl=false, bell=false, wru=false;
+    if (c===LTRS){ mode='L'; label='LTR'; ctl=true; }
+    else if (c===FIGS){ mode='F'; label='FIG'; ctl=true; }
+    else if (c===SP){ label='␣'; text=' '; }
+    else if (c===CR){ label='CR'; ctl=true; }
+    else if (c===LF){ label='LF'; text='\n'; ctl=true; }
+    else if (c===NUL){ label='NUL'; ctl=true; }
+    else {
+      const v = mode==='L' ? letters[c] : figures[c];
+      if (v.length===1){ label=v; text=v; }
+      else { label=(v==='nár.'||v==='')?'?':v; ctl=true; bell = v==='BEL'; wru = v==='WRU'; }
+    }
+    res.push({label,text,ctl,mode,bell,wru});
+  }
+  return res;
+}
+
+/* ---------- páska ---------- */
+function tapeHTML(codes, flips, cur, animFrom, emptyMsg){
+  const dec=decode(codes);
+  let h='<div class="axis"><span>1</span><span>2</span><span>·</span><span>3</span><span>4</span><span>5</span><span></span></div>';
+  if (!codes.length) h+=`<div class="tape-empty">${emptyMsg}</div>`;
+  codes.forEach((c,i)=>{
+    const b=bits(c); let cells='';
+    for (let r=0;r<5;r++){
+      if (r===2) cells+='<span class="sprocket"></span>';
+      const on=b[r]==='1'; const fl=flips.has(i+':'+r);
+      cells+=`<button class="hole${on?' on':''}${fl?' flip':''}" data-i="${i}" data-r="${r}" aria-label="Znak ${i+1}, bit ${r+1}: ${on?'otvor':'bez otvoru'}" title="Překlopit bit ${r+1}"></button>`;
+    }
+    const d=dec[i];
+    cells+=`<span class="lbl${d.ctl?' ctl':''}">${esc(d.label)}</span>`;
+    h+=`<div class="col${i===cur?' cur':''}${i>=animFrom?' new':''}" data-col="${i}">${cells}</div>`;
+  });
+  return h;
+}
+function renderTape(){
+  $('tape').innerHTML=tapeHTML(tape,flipped,pos,newFrom,'Páska je prázdná. Napište zprávu do vysílače.');
+  $('tapeStat').textContent = `${tape.length} znaků · ${tape.length*5} bitů`;
+  renderRx(); renderTables();
+}
+function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+
+$('tape').addEventListener('click',e=>{
+  const h=e.target.closest('.hole'); if(!h) return;
+  const i=+h.dataset.i, r=+h.dataset.r;
+  const keep=$('tapeScroll').scrollLeft;
+  tape[i] ^= (1<<(4-r));
+  const k=i+':'+r; flipped.has(k)?flipped.delete(k):flipped.add(k);
+  renderTape(); renderWave(Math.min(pos,tape.length-1),-1);
+  $('tapeScroll').scrollLeft=keep;
+});
+
+function setCur(){
+  $('tape').querySelectorAll('.col.cur').forEach(c=>c.classList.remove('cur'));
+  const c=$('tape').querySelector(`.col[data-col="${pos}"]`);
+  if(c){ c.classList.add('cur');
+    const sc=$('tapeScroll'); const x=c.offsetLeft - sc.clientWidth/2;
+    sc.scrollTo({left:Math.max(0,x),behavior:playing?'auto':'smooth'}); }
+}
+
+/* ---------- přijímač ---------- */
+function renderRx(){
+  const dec=decode(tape.slice(0,pos));
+  const ab=normalize($('answerback').value).trim() || 'BEZ VOLACKY';
+  const html=dec.map(d=> d.wru ? `<span class="ab" title="Volačka vyslaná zpět jako odpověď na WRU">${esc(ab)}</span>` : esc(d.text)).join('');
+  $('printer').innerHTML = html + (pos<tape.length?'<span class="caret">&nbsp;</span>':'');
+  const mode = dec.length? dec[dec.length-1].mode : 'L';
+  $('modeL').classList.toggle('on',mode==='L'); $('modeF').classList.toggle('on',mode==='F');
+  $('rxStat').textContent = `${pos} / ${tape.length}`;
+  setCur();
+}
+
+/* ---------- signál ---------- */
+const UNITS=[['start',1],['1',1],['2',1],['3',1],['4',1],['5',1],['stop',1.5]];
+function renderWave(i, frac){
+  const svg=$('wave'); const W=640, x0=40, unit=(W-x0-20)/7.5, yM=34, yS=96;
+  if (i<0 || i>=tape.length){
+    svg.innerHTML=`<text x="${W/2}" y="70" text-anchor="middle" fill="var(--muted)" font-family="var(--f-mono)" font-size="13">Linka v klidu (mark)</text>
+    <line x1="${x0}" x2="${W-20}" y1="${yM}" y2="${yM}" stroke="var(--accent)" stroke-width="3"/>`;
+    $('lineStat').textContent='—'; return;
+  }
+  const b=bits(tape[i]); const lv=[0,...b.split('').map(Number),1];
+  let x=x0, d=`M ${x0-30} ${yM} L ${x0} ${yM}`, labels='', grid='';
+  UNITS.forEach(([name,w],k)=>{
+    const y=lv[k]?yM:yS;
+    d+=` L ${x} ${y} L ${x+w*unit} ${y}`;
+    grid+=`<line x1="${x}" x2="${x}" y1="20" y2="110" stroke="var(--line)" stroke-dasharray="3 3"/>`;
+    labels+=`<text x="${x+w*unit/2}" y="132" text-anchor="middle" fill="var(--muted)" font-family="var(--f-mono)" font-size="12">${name}</text>`;
+    if (k>0&&k<6) labels+=`<text x="${x+unit/2}" y="${(lv[k]?yM:yS)-8}" text-anchor="middle" fill="var(--ink)" font-family="var(--f-mono)" font-size="13" font-weight="600">${lv[k]}</text>`;
+    x+=w*unit;
+  });
+  const cur = frac>=0 ? `<line x1="${x0+frac*7.5*unit}" x2="${x0+frac*7.5*unit}" y1="16" y2="114" stroke="var(--warn)" stroke-width="2"/>` : '';
+  svg.innerHTML=`${grid}
+    <text x="4" y="${yM+4}" fill="var(--muted)" font-family="var(--f-mono)" font-size="11">mark</text>
+    <text x="4" y="${yS+4}" fill="var(--muted)" font-family="var(--f-mono)" font-size="11">space</text>
+    <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>${labels}${cur}`;
+  const dec=decode(tape.slice(0,i+1))[i];
+  const baud=+$('speed').value;
+  $('lineStat').textContent=`Znak ${i+1}: ${b} → ${dec.label}  ·  ${(1000/baud).toFixed(1).replace('.',',')} ms/bit · ${Math.round(60*baud/7.5)} znaků/min`;
+}
+
+/* ---------- vysílání ---------- */
+function charDur(){ return 7.5/+$('speed').value; }
+function play(){
+  if (!tape.length) return;
+  if (pos>=tape.length) pos=0;
+  playing=true; pos0=pos; t0=performance.now();
+  $('btnPlay').textContent='Zastavit';
+  if ($('sound').checked) startSound();
+  raf=requestAnimationFrame(tick);
+}
+function stop(){
+  playing=false; cancelAnimationFrame(raf); stopSound();
+  $('btnPlay').textContent = pos>=tape.length?'Vysílat znovu':'Pokračovat';
+  renderWave(Math.min(pos,tape.length-1),-1);
+}
+function tick(now){
+  const el=Math.max(0,(now-t0)/1000), cd=charDur();
+  const p=pos0+el/cd; const i=Math.floor(p);
+  if (i!==pos){ const old=pos; pos=Math.min(i,tape.length); checkBell(old,pos); renderRx(); renderTables(); }
+  if (pos>=tape.length){ stop(); renderWave(-1); return; }
+  renderWave(pos,p-i);
+  raf=requestAnimationFrame(tick);
+}
+function startSound(){
+  try{
+    audio = audio || new (window.AudioContext||window.webkitAudioContext)();
+    const MARK=2125, SPACE=2295, bd=1/+$('speed').value;
+    osc=audio.createOscillator(); const g=audio.createGain(); g.gain.value=.06;
+    osc.type='sine'; osc.connect(g).connect(audio.destination);
+    let t=audio.currentTime+.02; osc.frequency.setValueAtTime(MARK,audio.currentTime);
+    for (let i=pos;i<tape.length;i++){
+      const lv=[0,...bits(tape[i]).split('').map(Number)];
+      lv.forEach(v=>{ osc.frequency.setValueAtTime(v?MARK:SPACE,t); t+=bd; });
+      osc.frequency.setValueAtTime(MARK,t); t+=1.5*bd;
+    }
+    osc.start(); osc.stop(t+.05);
+  }catch(e){ osc=null; }
+}
+function stopSound(){ try{ osc&&osc.stop(); }catch(e){} osc=null; }
+function getAudio(){ try{ audio = audio || new (window.AudioContext||window.webkitAudioContext)(); if(audio.state==='suspended') audio.resume(); }catch(e){ audio=null; } return audio; }
+function ring(){
+  const pr=$('printer'); pr.classList.remove('ring'); void pr.offsetWidth; pr.classList.add('ring');
+  const a=getAudio(); if(!a) return;
+  const t=a.currentTime;
+  // zvonek: základní tón + neharmonické alikvoty s doznívajícím útlumem
+  [[1320,1,1.6],[2640*1.01,.45,1.0],[3960*1.03,.25,.6],[5280*0.98,.12,.35]].forEach(([f,amp,dur])=>{
+    const o=a.createOscillator(), g=a.createGain();
+    o.type='sine'; o.frequency.value=f;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.18*amp,t+.004);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+.05);
+  });
+}
+function checkBell(from,to){
+  if (to<=from) return;
+  const dec=decode(tape.slice(0,to));
+  for (let k=from;k<to;k++) if (dec[k].bell){ ring(); break; }
+  for (let k=from;k<to;k++) if (dec[k].wru){ const pr=$('printer'); pr.classList.remove('ring'); void pr.offsetWidth; pr.classList.add('ring'); break; }
+}
+document.addEventListener('pointerdown',()=>getAudio(),{once:true});
+$('answerback').addEventListener('input',()=>renderRx());
+
+$('btnPlay').onclick=()=> playing?stop():play();
+$('btnStep').onclick=()=>{ if(playing) stop(); if(pos<tape.length){ renderWave(pos,-1); pos++; checkBell(pos-1,pos); renderRx(); renderTables(); } $('btnPlay').textContent=pos>=tape.length?'Vysílat znovu':'Pokračovat'; };
+$('btnReset').onclick=()=>{ if(playing) stop(); pos=0; renderRx(); renderTables(); renderWave(tape.length?0:-1,-1); $('btnPlay').textContent='Vysílat'; };
+$('speed').onchange=()=>{ if(playing){ stop(); play(); } else renderWave(Math.min(pos,tape.length-1),-1); updateTxStat(); };
+
+/* ---------- vysílač ---------- */
+function updateTxStat(){
+  const baud=+$('speed').value; const s=tape.length*7.5/baud;
+  $('txStat').textContent = tape.length ? `doba přenosu ${s<60?s.toFixed(1).replace('.',',')+' s':(s/60).toFixed(1).replace('.',',')+' min'} při ${String(baud).replace('.',',')} Bd` : '';
+}
+function loadText(live){
+  if(playing) stop();
+  const {codes,skipped}=encode($('msg').value);
+  // spočítat, kolik sloupců na začátku zůstalo stejných → nové se vyděrují s animací
+  let same=0; while(same<codes.length && same<tape.length && codes[same]===tape[same]) same++;
+  tape=codes; flipped.clear(); pos=0; newFrom = live ? same : tape.length;
+  const sk=$('skipped');
+  if (skipped.length){ sk.hidden=false; sk.textContent='Vynechané znaky, které ITA2 nezná: '+skipped.map(c=>c==='\t'?'tab':c).join(' '); }
+  else sk.hidden=true;
+  renderTape(); renderWave(tape.length?0:-1,-1); updateTxStat();
+  newFrom = Infinity;
+  $('btnPlay').textContent='Vysílat';
+  if (live){ const c=document.querySelector(`.col[data-col="${Math.min(same,tape.length-1)}"]`), sc=$('tapeScroll');
+    if (c) sc.scrollLeft = Math.max(0, c.offsetLeft - sc.clientWidth + 80); }
+}
+$('msg').addEventListener('input',()=>loadText(true));
+function insertSym(sym){
+  const ta=$('msg'), s=ta.selectionStart??ta.value.length, e=ta.selectionEnd??s;
+  ta.value = ta.value.slice(0,s)+sym+ta.value.slice(e);
+  ta.focus(); ta.setSelectionRange(s+1,s+1);
+  loadText(true);
+}
+$('btnBell').onclick=()=>insertSym('␇');
+$('btnWru').onclick=()=>insertSym('␅');
+$('btnClear').onclick=()=>{ if(playing) stop(); tape=[]; flipped.clear(); pos=0; renderTape(); renderWave(-1); updateTxStat(); };
+$('btnSample').onclick=()=>{
+  loadText();
+  const k=tape.indexOf(FIGS);
+  if (k<0){ $('skipped').hidden=false; $('skipped').textContent='Pro ukázku napište zprávu, která obsahuje číslice nebo interpunkci (např. TEPLOTA 12 C).'; return; }
+  tape.splice(k,1);
+  renderTape(); renderWave(0,-1); updateTxStat();
+  $('skipped').hidden=false;
+  $('skipped').textContent=`Z pásky byl odstraněn ${k+1}. znak (FIG). Přijímač zůstane v režimu písmen, takže následující číslice vytiskne jako písmena.`;
+};
+$('btnFlip').onclick=()=>{
+  if(!tape.length) loadText();
+  if(!tape.length){ $('skipped').hidden=false; $('skipped').textContent='Páska je prázdná. Nejdřív napište zprávu.'; return; }
+  const i=Math.floor(Math.random()*tape.length), r=Math.floor(Math.random()*5);
+  tape[i]^=(1<<(4-r)); const k=i+':'+r; flipped.has(k)?flipped.delete(k):flipped.add(k);
+  renderTape(); renderWave(i,-1);
+  $('skipped').hidden=false; $('skipped').textContent=`Překlopen bit ${r+1} ve znaku ${i+1} (červeně orámovaný otvor). Kód nemá paritu, takže přijímač chybu nepozná.`;
+};
+
+/* ---------- děrovačka ---------- */
+function renderPunch(){
+  let h='';
+  punchBits.forEach((v,r)=>{
+    if(r===2) h+='<span class="punch-sep" aria-hidden="true"></span>';
+    h+=`<button class="bitbtn${v?' on':''}" data-r="${r}" aria-pressed="${!!v}" aria-label="Bit ${r+1}">${r+1}</button>`;
+  });
+  $('punch').innerHTML=h;
+  const c=parseInt(punchBits.join(''),2);
+  const L=CTL[c]||letters[c], F=CTL[c]||figures[c];
+  $('punchPrev').textContent=`${punchBits.join('')} = ${c} → písmena: ${L} · číslice: ${F}`;
+}
+$('punch').addEventListener('click',e=>{ const b=e.target.closest('.bitbtn'); if(!b) return; punchBits[+b.dataset.r]^=1; renderPunch(); });
+/* samostatná páska děrovačky */
+let ptape=[], pflipped=new Set();
+function renderPTape(animFrom=Infinity, toEnd=false){
+  const sc=$('tapeScroll2'), keep=sc.scrollLeft;
+  $('tape2').innerHTML=tapeHTML(ptape,pflipped,-1,animFrom,'Páska děrovačky je prázdná. Nastavte bity a stiskněte Vyděrovat sloupec.');
+  sc.scrollLeft = toEnd ? sc.scrollWidth : keep;
+  const dec=decode(ptape);
+  const html=dec.map(d=> d.wru ? '<span class="ab">WRU</span>' : d.bell ? '<span class="ab">␇</span>' : esc(d.text)).join('');
+  $('ptRead').innerHTML = ptape.length ? html : '<span class="hint">—</span>';
+  $('ptStat').textContent = `${ptape.length} znaků · ${ptape.length*5} bitů`;
+  $('btnPSend').disabled = !ptape.length;
+}
+function appendCode(c){ ptape.push(c); renderPTape(ptape.length-1,true); if (decode(ptape)[ptape.length-1].bell) ring(); }
+$('btnPunch').onclick=()=>appendCode(parseInt(punchBits.join(''),2));
+document.querySelectorAll('[data-code]').forEach(b=>b.onclick=()=>appendCode(+b.dataset.code));
+$('btnBack').onclick=()=>{ ptape.pop(); [...pflipped].forEach(k=>{ if(+k.split(':')[0]>=ptape.length) pflipped.delete(k); }); renderPTape(); };
+$('btnPClear').onclick=()=>{ ptape=[]; pflipped.clear(); renderPTape(); };
+$('btnPSend').onclick=()=>{
+  if(playing) stop();
+  tape=[...ptape]; flipped=new Set(pflipped); pos=0;
+  renderTape(); renderWave(tape.length?0:-1,-1); updateTxStat();
+  $('btnPlay').textContent='Vysílat';
+  $('skipped').hidden=false; $('skipped').textContent='Na linku je založená páska z ruční děrovačky. Text ve vysílači jí neodpovídá, dalším psaním se páska přepíše.';
+  document.getElementById('h-line').scrollIntoView({behavior:'smooth',block:'start'});
+};
+$('tape2').addEventListener('click',e=>{
+  const h=e.target.closest('.hole'); if(!h) return;
+  const i=+h.dataset.i, r=+h.dataset.r;
+  ptape[i]^=(1<<(4-r)); const k=i+':'+r; pflipped.has(k)?pflipped.delete(k):pflipped.add(k);
+  renderPTape();
+});
+
+/* ---------- tabulka ---------- */
+const order=[...Array(32).keys()].sort((a,b)=>{
+  const ka = letters[a]? 'A'+letters[a] : 'Z'+String(a).padStart(2,'0');
+  const kb = letters[b]? 'A'+letters[b] : 'Z'+String(b).padStart(2,'0');
+  return ka<kb?-1:1;
+});
+function mini(c){ const b=bits(c); let h='<span class="mini">'; for(let r=0;r<5;r++){ if(r===2) h+='<b></b>'; h+=`<i class="${b[r]==='1'?'on':''}"></i>`; } return h+'</span>'; }
+const CTLNAME={0:'prázdný znak',4:'mezera',2:'návrat vozu',8:'nový řádek',27:'přepni na číslice',31:'přepni na písmena'};
+function renderTables(){
+  const cur = pos<tape.length && pos>0 ? tape[pos-1] : (pos>0?tape[pos-1]:-1);
+  const half=[order.slice(0,16),order.slice(16)];
+  $('tables').innerHTML = half.map(list=>`<div class="tbl-wrap"><table><thead><tr><th>Páska</th><th>Bity</th><th>Dek.</th><th>Písm.</th><th>Čísl.</th></tr></thead><tbody>${
+    list.map(c=>{
+      const isCtl = c in CTL;
+      const l = isCtl? `<td class="ctl" colspan="2">${CTL[c]} · ${CTLNAME[c]}</td>` :
+        `<td class="ch">${letters[c]}</td><td class="${figures[c].length>1?'ctl':'ch'}">${esc(figures[c])}</td>`;
+      return `<tr class="${c===cur?'cur':''}"><td>${mini(c)}</td><td class="code">${bits(c)}</td><td class="code">${c}</td>${l}</tr>`;
+    }).join('')}</tbody></table></div>`).join('');
+}
+
+renderPunch();
+loadText();
+renderPTape();
+})();
+</script>
+</body>
+</html>
