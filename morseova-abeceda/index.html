@@ -260,7 +260,7 @@ footer a{color:var(--olive)}
         <div id="listenUI">
           <div class="row" style="justify-content:space-between;margin-bottom:10px">
             <h3>Příjem</h3>
-            <span class="small muted">Napište, co slyšíte.</span>
+            <span class="small muted">Napište, co slyšíte. Páska i lampa jsou skryté.</span>
           </div>
           <div class="row" style="margin-bottom:12px">
             <button class="btn" id="lStart">▶ Spustit</button>
@@ -480,7 +480,8 @@ function ac(){
   return ctx;
 }
 const lampEl = $('#lamp'); let lampOn = false;
-function setLamp(on){ if (on !== lampOn){ lampOn = on; lampEl.classList.toggle('on', on); } }
+let blind = false;
+function setLamp(on){ if (blind) on = false; if (on !== lampOn){ lampOn = on; lampEl.classList.toggle('on', on); } }
 /* paper tape: moves in real time, 1 time unit (dot) = 8 px, so marks and gaps follow the actual tempo */
 const tapeCv = $('#tape'), tctx = tapeCv.getContext('2d');
 const TAPE = {segs:[], base:0, runStart:0, running:false, stopT:null};
@@ -607,6 +608,12 @@ function showTab(id){
   activeTab = id;
   TABS.forEach(t => { $('#'+t).hidden = t !== id; $('#t-'+t).setAttribute('aria-selected', t===id); });
   if (id !== 'trenink') stopListen();
+  updateBlind();
+}
+function updateBlind(){
+  blind = activeTab === 'trenink' && mode === 'listen';
+  $('.taperow').hidden = blind;
+  if (blind) setLamp(false);
 }
 document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (!b) return; stopPlay(); showTab(b.id.slice(2)); });
 
@@ -721,6 +728,7 @@ $('#modeSeg').addEventListener('click', e => {
   $('#listenUI').hidden = mode !== 'listen'; $('#sendUI').hidden = mode !== 'send';
   $('#groupCtl').hidden = mode !== 'listen';
   stopListen(); if (mode === 'send') nextSend();
+  updateBlind();
   renderStats();
 });
 
