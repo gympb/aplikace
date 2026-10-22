@@ -109,12 +109,14 @@ label.chk{display:inline-flex;gap:6px;align-items:center;font-size:14px}
 
 /* děrovačka */
 /* děrovačka: velká páska s prázdným sloupcem na konci */
-.tape.big .col,.tape.big .axis{grid-template-rows:34px 34px 20px 34px 34px 34px 34px}
+.tape.big .col,.tape.big .axis{grid-template-rows:34px 34px 20px 34px 34px 34px 40px}
 .col.draft{outline:2px dashed var(--accent);outline-offset:-1px;border-radius:6px;margin-left:4px;background:color-mix(in srgb,var(--surface) 30%,transparent)}
 .col.draft .hole:not(.on){background:transparent;box-shadow:inset 0 0 0 2px rgba(60,45,10,.28)}
 .col.draft .hole:hover{box-shadow:inset 0 0 0 2px var(--accent)}
-.pnow{font-family:var(--f-print);font-size:22px;font-weight:700;line-height:1;color:var(--accent)}
-.pnow.ctl{font-family:var(--f-mono);font-size:11px;font-weight:600}
+.pnew{display:grid;justify-items:center;gap:2px}
+.ptag{font-family:var(--f-mono);font-size:8.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--surface);background:var(--accent);border-radius:3px;padding:1px 4px;line-height:1.2}
+.pnow{font-family:var(--f-print);font-size:18px;font-weight:700;line-height:1;color:var(--accent)}
+.pnow.ctl{font-family:var(--f-mono);font-size:10px;font-weight:600}
 .tape.big .col{width:36px}
 .tape.big .hole{width:22px;height:22px}
 .tape.big .sprocket{width:8px;height:8px}
@@ -221,7 +223,7 @@ footer{font-size:13px;color:var(--muted);max-width:75ch}
   <section class="panel" aria-labelledby="h-punch">
     <div class="panel-head"><h2 id="h-punch">Ruční děrovačka</h2><span class="preview" id="punchPrev"></span></div>
     <div class="row">
-      <button class="primary" id="btnPunch">Vyděrovat sloupec</button>
+      <button class="primary" id="btnPunch" title="Vyděruje rozpracovaný sloupec (také klávesa Enter)">Vyděrovat sloupec</button>
       <button data-code="31">LTR</button>
       <button data-code="27">FIG</button>
       <button data-code="4">Mezera</button>
@@ -231,7 +233,7 @@ footer{font-size:13px;color:var(--muted);max-width:75ch}
       <button id="btnPClear">Vymazat pásku</button>
       <button id="btnPSend">Založit na linku</button>
     </div>
-    <div class="panel-head"><span class="hint">Klikáním do čárkovaně orámovaného sloupce na konci pásky prorazíte díry, pod sloupcem vidíte znak, který právě kódujete. Vyděrovat sloupec ho potvrdí a připraví další prázdný.</span><span class="stat" id="ptStat"></span></div>
+    <div class="panel-head"><span class="hint">Klikáním do čárkovaného sloupce na konci pásky nastavte otvory a stiskněte Vyděrovat sloupec.</span><span class="stat" id="ptStat"></span></div>
     <div class="tape-scroll" id="tapeScroll2"><div class="tape big" id="tape2"></div></div>
     <div class="row"><span class="hint">Čte se jako:</span><span class="preview" id="ptRead"></span></div>
     <p class="hint">Tato páska je nezávislá na vysílači. Kliknutím na otvor překlopíte bit. Tlačítko Založit na linku ji předá do vysílání místo pásky z textu.</p>
@@ -509,7 +511,7 @@ function draftHTML(){
     if (r===2) cells+='<span class="sprocket"></span>';
     cells+=`<button class="hole dhole${v?' on':''}" data-d="${r}" aria-pressed="${!!v}" aria-label="Nový sloupec, bit ${r+1}: ${v?'díra':'bez díry'}" title="Prorazit / zrušit díru ${r+1}"></button>`;
   });
-  cells+=`<span class="pnow${isCtl?' ctl':''}" title="Znak, který právě kódujete">${esc(now==='nár.'?'?':now)}</span>`;
+  cells+=`<span class="pnew"><span class="pnow${isCtl?' ctl':''}" title="Znak, který právě kódujete">${esc(now==='nár.'?'?':now)}</span><span class="ptag">nový</span></span>`;
   return `<div class="col draft" aria-label="Nový sloupec">${cells}</div>`;
 }
 function renderPunch(animFrom=Infinity, toEnd=false){
@@ -527,12 +529,21 @@ function renderPunch(animFrom=Infinity, toEnd=false){
   $('ptStat').textContent = `${ptape.length} znaků · ${ptape.length*5} bitů`;
   $('btnPSend').disabled = !ptape.length;
 }
-function appendCode(c){
-  ptape.push(c); punchBits=[0,0,0,0,0];
+function appendCode(c, fromDraft=false){
+  ptape.push(c); if (fromDraft) punchBits=[0,0,0,0,0];
   renderPunch(ptape.length-1,true);
   if (decode(ptape)[ptape.length-1].bell) ring();
 }
-$('btnPunch').onclick=()=>appendCode(parseInt(punchBits.join(''),2));
+$('btnPunch').onclick=()=>appendCode(parseInt(punchBits.join(''),2), true);
+// Enter v panelu děrovačky (mimo textová pole) vyděruje rozpracovaný sloupec
+document.addEventListener('keydown',e=>{
+  if (e.key!=='Enter' || e.isComposing || e.repeat) return;
+  const t=e.target, sec=document.querySelector('section[aria-labelledby="h-punch"]');
+  if (t.matches('textarea,input,select')) return;
+  if (!(sec.contains(t) || t===document.body)) return;
+  if (t.matches('button') && !t.classList.contains('dhole')) return;  // Enter na jiném tlačítku ho normálně stiskne
+  e.preventDefault(); appendCode(parseInt(punchBits.join(''),2), true);
+});
 document.querySelectorAll('[data-code]').forEach(b=>b.onclick=()=>appendCode(+b.dataset.code));
 $('btnBack').onclick=()=>{ ptape.pop(); [...pflipped].forEach(k=>{ if(+k.split(':')[0]>=ptape.length) pflipped.delete(k); }); renderPunch(); };
 $('btnPClear').onclick=()=>{ ptape=[]; pflipped.clear(); punchBits=[0,0,0,0,0]; renderPunch(); };
