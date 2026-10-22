@@ -86,7 +86,7 @@ Používej **jen** tyto štítky. Nové nevytvářej.
 | `priprava` | rozpracovaná aplikace: karta bez odkazu, se štítkem „V přípravě“ |
 | `archiv` | vyřazená aplikace: skrytá z katalogu, adresa a QR kód dál fungují |
 
-- Štítek **„Nové“** si úvodní stránka spočítá sama z pole `zverejneno`: zobrazuje se 30 dní od zveřejnění a pak sám zmizí.
+- Štítek **„Nové“** si úvodní stránka spočítá sama z pole `zverejneno`: zobrazuje se 14 dní od zveřejnění a pak sám zmizí.
 - Stav se proto kvůli štítku „Nové“ nepřepíná. Stavy `nove` a `bezne` se už nepoužívají.
 - Novou aplikaci zveřejni se stavem `nasazeno` a s dnešním datem v `zverejneno` i `aktualizace`.
 

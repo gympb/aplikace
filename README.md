@@ -51,7 +51,7 @@ caesarova-sifra/    jedna složka = jedna aplikace
 | `temata` | slova, podle kterých aplikaci najde hledání |
 | `obrazek` | ilustrace karty ve složce aplikace, např. `karta.svg` (poměr stran 8 : 3) |
 | `motiv` | krátký text na kartě, pokud aplikace nemá ilustraci |
-| `zverejneno` | datum prvního zveřejnění; vyplní se jednou a nemění se. Štítek „Nové“ se z něj počítá 30 dní. |
+| `zverejneno` | datum prvního zveřejnění; vyplní se jednou a nemění se. Štítek „Nové“ se z něj počítá 14 dní. |
 | `aktualizace` | datum poslední úpravy |
 | `stav` | `nasazeno`, `priprava` (karta bez odkazu), `archiv` (skryto z katalogu, adresa dál funguje) |
 | `odkaz` | volitelné: adresa aplikace mimo tento repozitář |
