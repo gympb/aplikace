@@ -168,10 +168,10 @@ footer{font-size:13px;color:var(--muted);max-width:78ch}
     <div class="panel-head"><h2 id="h-tx">Vysílač</h2><span class="stat" id="txStat"></span></div>
     <div class="cpbox" id="boxBasic">
       <label class="sel" for="parity">8. stopa pásky
-        <select id="parity">
-          <option value="even" selected>sudá parita</option>
+        <select id="parity" autocomplete="off">
+          <option value="even">sudá parita</option>
           <option value="odd">lichá parita</option>
-          <option value="none">bez parity (vždy 0)</option>
+          <option value="none" selected>bez parity (vždy 0)</option>
         </select>
       </label>
       <span class="hint" id="parityHint"></span>
@@ -206,7 +206,7 @@ footer{font-size:13px;color:var(--muted);max-width:78ch}
       <span><i class="lg-spr"></i>Malá díra = vodicí, nenese data</span>
     </div>
     <div class="tape-scroll" id="tapeScroll"><div class="tape" id="tape"></div></div>
-    <p class="hint">Stopy jsou shora 8 až 1, takže sloupec čtený shora dolů dává binární číslo od nejvyššího bitu: A = 01000001 (65). V základní sadě je 8. stopa paritní: A má dvě díry, při sudé paritě se proto 8. stopa nevyděruje, C = 1000011 má tři díry, a tak dostane paritní díru navíc. V rozšířené sadě nese 8. stopa data. Vodicí díry leží mezi 3. a 4. stopou. Pod sloupcem je znak, jak ho přečte přijímač. Kliknutím na otvor překlopíte bit.</p>
+    <p class="hint">Stopy jsou shora 8 až 1, takže sloupec čtený shora dolů dává binární číslo od nejvyššího bitu: A = 01000001 (65). V základní sadě je 8. stopa ve výchozím nastavení prázdná (bez parity). Zvolíte-li paritu, nese 8. stopa paritní bit: A má dvě díry, při sudé paritě se proto 8. stopa nevyděruje, C = 1000011 má tři díry, a tak dostane paritní díru navíc. V rozšířené sadě nese 8. stopa data. Vodicí díry leží mezi 3. a 4. stopou. Pod sloupcem je znak, jak ho přečte přijímač. Kliknutím na otvor překlopíte bit.</p>
   </section>
 
   <div class="grid2">
@@ -287,7 +287,7 @@ const BEL=7, ENQ=5, CR=13, LF=10;
 const enc = {}; // znak → bajt pro každou kódovou stránku
 for (const k in CP){ enc[k]=new Map(); CP[k].forEach((ch,i)=>{ if(ch!==null) enc[k].set(ch,128+i); }); }
 
-let mode='basic', parity='even', txCp='cp1250', rxCp='cp1250', tblCp='cp1250';
+let mode='basic', parity='none', txCp='cp1250', rxCp='cp1250', tblCp='cp1250';
 let tape=[], flipped=new Set(), pos=0, newFrom=Infinity;
 let playing=false, t0=0, pos0=0, raf=0, audio=null, osc=null;
 let ptape=[], pflipped=new Set(), draft=0;
