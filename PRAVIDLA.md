@@ -33,6 +33,7 @@ Platí pro každého, kdo do repozitáře `gympb/aplikace` (web https://aplikace
 | `stav` | ano | `nasazeno`, `priprava` nebo `archiv`, viz bod 6 |
 | `obrazek` | ano | `karta.svg`, viz bod 7 |
 | `odkaz` | ne | adresa aplikace, pokud není v tomto repozitáři |
+| `pripnuto` | ne | datum připnutí na začátek výpisu `RRRR-MM-DD`, viz bod 6a |
 
 Ukázka:
 
@@ -89,6 +90,17 @@ Používej **jen** tyto štítky. Nové nevytvářej.
 - Štítek **„Nové“** si úvodní stránka spočítá sama z pole `zverejneno`: zobrazuje se 14 dní od zveřejnění a pak sám zmizí.
 - Stav se proto kvůli štítku „Nové“ nepřepíná. Stavy `nove` a `bezne` se už nepoužívají.
 - Novou aplikaci zveřejni se stavem `nasazeno` a s dnešním datem v `zverejneno` i `aktualizace`.
+
+## 6a. Pořadí a připnutí
+
+- Úvodní stránka řadí aplikace sama, pořadí záznamů v `katalog.json` na výpis nemá vliv:
+  1. připnuté aplikace (naposledy připnutá první),
+  2. ostatní od nejnovější podle `zverejneno`,
+  3. aplikace ve stavu `priprava` na konci.
+- Připnutí = pole `pripnuto` s dnešním datem. Připnutá karta má vpravo v řádku štítků bombu, po najetí na ni se rozvine vlaječka „BOMBA!“.
+- Připnutí platí 30 dní od data v `pripnuto`, pak se aplikace zařadí mezi ostatní sama. Pole lze smazat i dříve (odepnutí).
+- Připnuté smějí být nejvýš 3 aplikace. Při připnutí čtvrté se pole `pripnuto` odstraní u té, která je připnutá nejdéle.
+- Připínat a odepínat smí jen správce katalogu. Aplikace ve stavu `priprava` se nepřipínají.
 
 ## 7. Složka aplikace
 

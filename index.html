@@ -116,6 +116,20 @@ a{color:inherit}
 .tag.g{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
 .tag.a{background:var(--panel);border-color:var(--line);color:var(--ink)}
 .tag.d{background:transparent;border:1px dashed var(--muted);color:var(--muted);font-weight:500}
+/* připnutá aplikace: bomba s doutnákem vpravo v řádku štítků, po najetí (nebo klepnutí) se rozvine vlaječka BOMBA! */
+.meta{align-items:center}
+.bomba{color:var(--ink);margin-left:auto;position:relative;width:34px;height:34px;padding:0;border:0;background:none;cursor:pointer;flex:none;align-self:center}
+.bomba svg{display:block;width:34px;height:34px;overflow:visible}
+.bomba .jiskra{transform-origin:27px 6px;animation:jiskra .5s steps(2) infinite}
+.bomba .doutnak{stroke-dasharray:2 2;animation:hori 1.2s linear infinite}
+@keyframes jiskra{0%{transform:scale(.7) rotate(0deg);opacity:1}50%{transform:scale(1.15) rotate(25deg);opacity:.75}100%{transform:scale(.8) rotate(50deg);opacity:1}}
+@keyframes hori{to{stroke-dashoffset:-8}}
+.bomba .vlajka{position:absolute;right:calc(100% + 2px);top:50%;margin-top:-14px;height:28px;display:flex;align-items:center;padding:0 12px 0 18px;
+  background:var(--brand);color:var(--on-brand);font:800 13px var(--f-display);letter-spacing:.14em;white-space:nowrap;
+  clip-path:polygon(0 0,100% 0,100% 100%,0 100%,10px 50%);transform:scaleX(0);transform-origin:right center;transition:transform .28s cubic-bezier(.3,1.4,.6,1);pointer-events:none;z-index:2}
+.bomba:hover .vlajka,.bomba:focus-visible .vlajka,.bomba.open .vlajka{transform:scaleX(1)}
+.bomba:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.bomba .jiskra,.bomba .doutnak{animation:none}.bomba .vlajka{transition:none}}
 .card-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--card-line);padding:12px 18px}
 .status{font:700 11px var(--f-display);letter-spacing:.1em;text-transform:uppercase;display:inline-flex;align-items:center;gap:7px}
 .status::before{content:"";width:10px;height:10px;background:var(--ink)}
@@ -225,6 +239,27 @@ const $=id=>document.getElementById(id);
 const NOVE_DNI=14;
 const jeNova=a=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(a.zverejneno||'');if(!m)return false;
   return (Date.now()-new Date(+m[1],m[2]-1,+m[3]).getTime())/864e5<NOVE_DNI;};
+// připnutí: pole „pripnuto“ (datum připnutí) drží aplikaci na začátku výpisu PRIPNUTI_DNI dní, nejvýš PRIPNUTI_MAX aplikací
+const PRIPNUTI_DNI=30, PRIPNUTI_MAX=3;
+const dny=d=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');return m?(Date.now()-new Date(+m[1],m[2]-1,+m[3]).getTime())/864e5:Infinity;};
+let PINNED=new Set();
+// pořadí: připnuté (naposledy připnutá první), pak nejnovější podle data zveřejnění, aplikace v přípravě na konci
+function seradit(list){
+  PINNED=new Set(list.filter(a=>a.stav!=='priprava'&&dny(a.pripnuto)<PRIPNUTI_DNI)
+    .sort((x,y)=>y.pripnuto.localeCompare(x.pripnuto)).slice(0,PRIPNUTI_MAX).map(a=>a.slug));
+  const rank=a=>PINNED.has(a.slug)?0:a.stav==='priprava'?2:1;
+  return list.sort((x,y)=>rank(x)-rank(y)
+    ||(rank(x)===0?(y.pripnuto||'').localeCompare(x.pripnuto||''):0)
+    ||(y.zverejneno||y.aktualizace||'').localeCompare(x.zverejneno||x.aktualizace||'')
+    ||x.nazev.localeCompare(y.nazev,'cs'));
+}
+const BOMBA=`<button type="button" class="bomba" aria-label="BOMBA! Doporučená aplikace" title="BOMBA!"><span class="vlajka" aria-hidden="true">BOMBA!</span><svg viewBox="0 0 34 34" aria-hidden="true">
+  <path class="doutnak" d="M21 10c2-4 4-5 6-4" fill="none" stroke="#7a5a3a" stroke-width="2" stroke-linecap="round"/>
+  <rect x="16.5" y="9" width="7" height="5" rx="1" transform="rotate(35 20 11.5)" fill="#333" stroke="currentColor" stroke-width="1"/>
+  <circle cx="15" cy="20" r="11" fill="#1d1d1d" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M9 15a7 7 0 0 1 5-4" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2" stroke-linecap="round"/>
+  <g class="jiskra"><path d="M27 1v3M27 8v3M22 6h3M29 6h3M23.5 2.5l2 2M30.5 9.5l-2-2M30.5 2.5l-2 2M23.5 9.5l2-2" stroke="#f39a1f" stroke-width="1.6" stroke-linecap="round"/><circle cx="27" cy="6" r="1.8" fill="#ffd34d"/></g>
+</svg></button>`;
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const datum=d=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');return m?`${+m[3]}. ${+m[2]}. ${m[1]}`:'';};
@@ -262,7 +297,7 @@ function render(){
       <div class="card-body">
         <h3>${esc(a.nazev)}</h3>
         <p>${esc(a.popis)}</p>
-        <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag g" title="Ročník">${esc(t)}</span>`).join('')}${a.autor?`<span class="tag a" title="Autor">${esc(a.autor)}</span>`:''}${(a.zverejneno||a.aktualizace)?`<span class="tag d" title="Zveřejněno">${datum(a.zverejneno||a.aktualizace)}</span>`:''}</div>
+        <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag g" title="Ročník">${esc(t)}</span>`).join('')}${a.autor?`<span class="tag a" title="Autor">${esc(a.autor)}</span>`:''}${(a.zverejneno||a.aktualizace)?`<span class="tag d" title="Zveřejněno">${datum(a.zverejneno||a.aktualizace)}</span>`:''}${PINNED.has(a.slug)?BOMBA:''}</div>
       </div>
       <div class="card-foot">
         ${prep?'<span class="status prep">V přípravě</span>':jeNova(a)?'<span class="status new">Nové</span>':'<span></span>'}
@@ -274,7 +309,7 @@ function render(){
     </article>`;}).join(''):`<div class="empty">Žádná aplikace neodpovídá hledání. Zkuste jiné slovo nebo zrušte filtr.</div>`;
 }
 fetch('katalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(d=>{
-  APPS=(d.aplikace||[]).filter(a=>a.stav!=='archiv');
+  APPS=seradit((d.aplikace||[]).filter(a=>a.stav!=='archiv'));
   SUBJ=['Vše',...[...new Set(APPS.flatMap(a=>a.predmet))].sort((a,b)=>a.localeCompare(b,'cs'))];
   GRADES=[...ROCNIKY];
   const pl=(n,a,b,c)=>n===1?a:(n>=2&&n<=4?b:c);
@@ -290,6 +325,10 @@ fetch('katalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.sta
   $('grid').innerHTML='<div class="empty">Katalog se nepodařilo načíst. Soubor katalog.json se načítá jen přes webový server, ne z disku. Otevřete stránku na adrese aplikace.gympb.cz, nebo ji spusťte lokálně příkazem <code>python3 -m http.server</code>.</div>';
 });
 $('q').oninput=e=>{f.q=e.target.value;render();};
+// na dotykových zařízeních není najetí myší: vlaječku rozvine klepnutí na bombu, klepnutí jinam ji svine
+document.addEventListener('click',e=>{const b=e.target.closest('.bomba');
+  document.querySelectorAll('.bomba.open').forEach(x=>{if(x!==b)x.classList.remove('open');});
+  if(b)b.classList.toggle('open');});
 </script>
 </body>
 </html>

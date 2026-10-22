@@ -54,6 +54,7 @@ caesarova-sifra/    jedna složka = jedna aplikace
 | `zverejneno` | datum prvního zveřejnění; vyplní se jednou a nemění se. Štítek „Nové“ se z něj počítá 14 dní. |
 | `aktualizace` | datum poslední úpravy |
 | `stav` | `nasazeno`, `priprava` (karta bez odkazu), `archiv` (skryto z katalogu, adresa dál funguje) |
+| `pripnuto` | nepovinné; datum připnutí `RRRR-MM-DD`. Aplikace je 30 dní na začátku výpisu a má na kartě bombu „BOMBA!“. Připíná jen správce, nejvýš 3 aplikace. |
 | `odkaz` | volitelné: adresa aplikace mimo tento repozitář |
 
 ### Štítky ročníků
