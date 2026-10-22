@@ -84,14 +84,14 @@ textarea{width:100%;min-height:110px;resize:vertical;font:500 17px/1.6 var(--f-m
 .plug-row label{display:flex;align-items:center;gap:8px}
 .note{font-size:15px;color:var(--muted);margin:0}
 
-/* přepínač Simulace / Výklad */
+/* záložky Simulace / Princip / Historie */
 .tabs{display:flex;gap:0;border:2px solid var(--ink);width:max-content;max-width:100%}
 .tabs button{font:700 15px var(--f-display);padding:10px 22px;border:0;background:var(--bg);color:var(--ink);cursor:pointer;min-height:44px}
 .tabs button+button{border-left:2px solid var(--ink)}
 .tabs button[aria-selected="true"]{background:var(--brand);color:var(--on-brand)}
 .tabs button:not([aria-selected="true"]):hover{background:var(--panel)}
 .pane{display:grid;gap:40px}
-/* výklad */
+/* text záložek Princip a Historie */
 .vy p{margin:0;max-width:70ch}
 .vy .txt{display:grid;gap:12px}
 .vy ul,.vy ol{margin:0;padding-left:22px;max-width:68ch;display:grid;gap:6px}
@@ -124,6 +124,12 @@ textarea{width:100%;min-height:110px;resize:vertical;font:500 17px/1.6 var(--f-m
 .nums div{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:2px}
 .nums small{font-size:14px;color:var(--muted)}
 
+/* historie: časová osa */
+.osa{list-style:none;margin:0;padding:0;border-left:4px solid var(--brand);display:grid;gap:0;max-width:72ch}
+.osa li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 16px;padding:8px 0 8px 18px;position:relative;border-bottom:1px solid var(--line)}
+.osa li::before{content:"";position:absolute;left:-10px;top:14px;width:12px;height:12px;background:var(--bg);border:3px solid var(--brand);border-radius:50%;box-sizing:border-box;width:16px;height:16px}
+.osa b{font-family:var(--f-display)}
+@media (max-width:520px){.osa li{grid-template-columns:minmax(0,1fr)}}
 /* fotografie stroje s očíslovanými částmi */
 .stroj{display:grid;grid-template-columns:minmax(0,330px) minmax(0,1fr);gap:24px;align-items:start}
 .stroj .parts{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -227,7 +233,8 @@ footer a{color:inherit}
     <p class="lede">Šifrovací stroj německé armády z druhé světové války. Každé písmeno projde propojovací deskou, třemi rotory a reflektorem a vrátí se zpět jako jiné písmeno. Po každém stisku se pravý rotor pootočí, takže stejné písmeno se pokaždé zašifruje jinak.</p>
     <div class="tabs" role="tablist" aria-label="Režim stránky">
       <button role="tab" id="tab-sim" aria-selected="true" aria-controls="pane-sim">Simulace</button>
-      <button role="tab" id="tab-vyklad" aria-selected="false" aria-controls="pane-vyklad" tabindex="-1">Výklad</button>
+      <button role="tab" id="tab-vyklad" aria-selected="false" aria-controls="pane-vyklad" tabindex="-1">Princip</button>
+      <button role="tab" id="tab-historie" aria-selected="false" aria-controls="pane-historie" tabindex="-1">Historie</button>
     </div>
   </header>
 
@@ -309,8 +316,8 @@ footer a{color:inherit}
   </div>
 
   <div class="pane vy" id="pane-vyklad" role="tabpanel" aria-labelledby="tab-vyklad" hidden>
-  <nav class="toc" aria-label="Obsah výkladu">
-    <span class="lab">Obsah výkladu</span>
+  <nav class="toc" aria-label="Obsah principu">
+    <span class="lab">Jak Enigma funguje</span>
     <ol>
       <li><a href="#v-co">Co je Enigma</a></li>
       <li><a href="#v-casti">Z čeho se stroj skládá</a></li>
@@ -321,7 +328,7 @@ footer a{color:inherit}
       <li><a href="#v-deska">Propojovací deska</a></li>
       <li><a href="#v-pocet">Kolik má Enigma nastavení</a></li>
       <li><a href="#v-postup">Jak se šifrovalo v praxi</a></li>
-      <li><a href="#v-prolomeni">Jak byla Enigma prolomena</a></li>
+      <li><a href="#v-prolomeni">Proč šla Enigma prolomit</a></li>
       <li><a href="#v-ukoly">Úlohy do simulace</a></li>
     </ol>
   </nav>
@@ -480,24 +487,17 @@ footer a{color:inherit}
   </section>
 
   <section id="v-prolomeni">
-    <div class="sec-head"><div class="eyebrow">10 · Historie kryptoanalýzy</div><h2>Jak byla Enigma prolomena</h2></div>
+    <div class="sec-head"><div class="eyebrow">10 · Slabiny</div><h2>Proč šla Enigma prolomit</h2></div>
     <div class="txt">
-      <p><b>Polsko, 1932.</b> Matematik <b>Marian Rejewski</b> z polského Šifrového úřadu pomocí teorie permutací a dokumentů, které získala francouzská rozvědka, zrekonstruoval zapojení rotorů vojenské Enigmy. S kolegy <b>Jerzym Różyckim</b> a <b>Henrykem Zygalskim</b> pak léta četli německé zprávy. Sestrojili repliky stroje, Zygalského děrované listy a elektromechanickou „bombu“ na hledání klíčů. V červenci 1939, několik týdnů před napadením Polska, předali své poznatky Francouzům a Britům.</p>
-      <p><b>Británie, Bletchley Park.</b> <b>Alan Turing</b> a <b>Gordon Welchman</b> navrhli výkonnější elektromechanický stroj <i>Bombe</i>. Hledal nastavení rotorů, při kterém by šifrový text mohl odpovídat tušenému kousku otevřeného textu (<i>crib</i>), například slovu WETTERVORHERSAGE (předpověď počasí) z pravidelných hlášení. Na konci války běžely ve Velké Británii a v USA stovky takových strojů.</p>
-      <a class="video" href="https://www.youtube.com/watch?v=nuPZUUED5uk" target="_blank" rel="noopener">
-        <span class="play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 2l14 8-14 8z"/></svg></span>
-        <span><b>Film: Kód Enigmy (The Imitation Game, 2014)</b><small>oficiální trailer, 2,5 min · příběh Alana Turinga v Bletchley Parku, v hlavní roli Benedict Cumberbatch · film s fakty zachází volně: Bombe nestavěl Turing sám a navazoval na polskou práci · otevře se na YouTube v novém okně</small></span>
-      </a>
-      <p>Prolomení usnadnily <b>slabiny stroje i chyby lidí</b>:</p>
+      <p>Enigma má astronomický počet nastavení, přesto ji luštitelé četli. Nezkoušeli totiž všechna nastavení, ale využili <b>slabin stroje i chyb lidí</b>:</p>
       <ul>
         <li>Písmeno se nikdy nezašifruje samo na sebe. Tušený text šlo k šifře přiložit jen na místa, kde se žádné písmeno neshoduje, a mnoho poloh tak hned odpadlo.</li>
         <li>Zprávy měly stále stejné obraty: hlášení o počasí, „nic zvláštního k hlášení“, podpisy a hodnosti.</li>
         <li>Operátoři volili líné klíče zpráv jako AAA nebo písmena vedle sebe na klávesnici.</li>
         <li>Zdvojený klíč zprávy na začátku vysílání do roku 1940.</li>
       </ul>
-      <p>Informace z rozluštěných zpráv nesly krycí název <b>Ultra</b>. Podle řady historiků pomohly zkrátit válku o několik let, zejména v bitvě o Atlantik proti německým ponorkám.</p>
-      <div class="callout"><p><b>Mýtus o Coventry.</b> Traduje se, že Britové díky Enigmě předem věděli o náletu na Coventry 14. listopadu 1940 a Winston Churchill nedal město varovat, aby Němci nepoznali, že jejich šifry jsou prolomené. Příběh se rozšířil hlavně po vydání knihy F. W. Winterbothama <i>The Ultra Secret</i> (1974), historici ho ale odmítají. Rozluštěné zprávy z 12. listopadu sice prozradily, že se chystá velký nálet s krycím názvem <i>Mondscheinsonate</i> (Měsíční sonáta), jeho cíl však ne. Britové čekali útok spíš na Londýn nebo jih Anglie. Že bombardéry míří na Coventry, se ukázalo až 14. listopadu podle německých navigačních rádiových paprsků, ne z Enigmy. Obrana se pak sice dala do pohybu, nálet ale nezastavila a zahynulo přes 500 civilistů.</p>
-      <p style="margin-top:8px">Skutečné dilema přesto existovalo. Spojenci s informacemi z Ultra zacházeli velmi opatrně a k mnoha zásahům vymýšleli krycí vysvětlení. Například před útokem na konvoj nejdřív poslali průzkumné letadlo, aby to vypadalo, že nepřítele objevilo náhodou.</p></div>
+      <p>Britský elektromechanický stroj <b>Bombe</b> hledal nastavení rotorů, při kterém by šifrový text mohl odpovídat tušenému kousku otevřeného textu (<i>crib</i>), například slovu WETTERVORHERSAGE (předpověď počasí) z pravidelných hlášení. Každý spor mezi cribem a zapojením stroje vyřadil najednou obrovské množství nastavení.</p>
+      <p>Kdo Enigmu prolomil, jak to ovlivnilo válku a jaký byl osud Alana Turinga, popisuje záložka <a href="#historie" data-go="historie">Historie</a>.</p>
     </div>
   </section>
 
@@ -517,7 +517,138 @@ footer a{color:inherit}
   </section>
   </div>
 
-  <footer>Rotory I–V a reflektory B a C mají historické zapojení. Při nastavení rotorů I-II-III na AAA se zpráva AAAAA zašifruje jako BDZGO. Enigma šifruje vratně: zašifrovaný text se stejným nastavením stroje znovu zadaný vrátí původní zprávu.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 21. 10. 2026</footer>
+  <div class="pane vy" id="pane-historie" role="tabpanel" aria-labelledby="tab-historie" hidden>
+  <nav class="toc" aria-label="Obsah historie">
+    <span class="lab">Obsah historie</span>
+    <ol>
+      <li><a href="#h-osa">Časová osa</a></li>
+      <li><a href="#h-vznik">Proč Enigma vznikla</a></li>
+      <li><a href="#h-predvalkou">Enigma před válkou</a></li>
+      <li><a href="#h-polsko">Polští matematici</a></li>
+      <li><a href="#h-valka">Enigma ve válce</a></li>
+      <li><a href="#h-bletchley">Bletchley Park a stroje Bombe</a></li>
+      <li><a href="#h-ultra">Ultra: tajemství, které se nesmělo prozradit</a></li>
+      <li><a href="#h-turing">Alan Turing</a></li>
+      <li><a href="#h-verejnost">Jak se tajemství dostalo na veřejnost</a></li>
+    </ol>
+  </nav>
+
+  <section id="h-osa">
+    <div class="sec-head"><div class="eyebrow">1 · Přehled</div><h2>Časová osa</h2></div>
+    <ol class="osa">
+      <li><b>1918</b><span>Arthur Scherbius si patentuje rotorový šifrovací stroj.</span></li>
+      <li><b>1926–1928</b><span>Enigmu zavádí německé námořnictvo, o dva roky později armáda.</span></li>
+      <li><b>1932</b><span>Marian Rejewski v Polsku zrekonstruuje zapojení rotorů vojenské Enigmy.</span></li>
+      <li><b>červenec 1939</b><span>Poláci předávají své znalosti Francouzům a Britům. V září začíná válka.</span></li>
+      <li><b>1940</b><span>V Bletchley Parku začíná pracovat první britský stroj Bombe.</span></li>
+      <li><b>1942</b><span>Ponorky dostávají Enigmu se čtvrtým rotorem, Britové jejich zprávy deset měsíců nečtou.</span></li>
+      <li><b>1943</b><span>Spojenci vyhrávají bitvu o Atlantik, i díky rozluštěným zprávám.</span></li>
+      <li><b>1952–1954</b><span>Alan Turing je odsouzen kvůli vztahu s mužem a o dva roky později umírá.</span></li>
+      <li><b>1974</b><span>Kniha <i>The Ultra Secret</i> odhalí veřejnosti, že Britové Enigmu četli.</span></li>
+      <li><b>2009–2013</b><span>Britská vláda se Turingovi omlouvá, královna mu uděluje milost.</span></li>
+    </ol>
+  </section>
+
+  <section id="h-vznik">
+    <div class="sec-head"><div class="eyebrow">2 · Příčiny</div><h2>Proč Enigma vznikla</h2></div>
+    <div class="txt">
+      <p>V <b>první světové válce</b> se zprávy poprvé ve velkém posílaly rádiem. Rádiové vysílání ale může zachytit kdokoli, takže bezpečnost zprávy stojí jen na kvalitě šifry. Britští luštitelé ze skupiny <b>Room 40</b> četli velkou část německé námořní i diplomatické komunikace. Nejslavnějším úlovkem byl <b>Zimmermannův telegram</b> (1917), v němž Německo nabízelo Mexiku spojenectví proti USA. Jeho zveřejnění přispělo ke vstupu Spojených států do války.</p>
+      <p>Že byly jejich šifry čteny, se Němci dozvěděli až po válce, mimo jiné z pamětí Winstona Churchilla (1923). Bylo jasné, že ruční šifry psané tužkou na papír nestačí: jsou pomalé, obsluha dělá chyby a dají se luštit.</p>
+      <p>Řešením byl stroj. Inženýr <b>Arthur Scherbius</b> si rotorový šifrátor patentoval v roce <b>1918</b> a od roku 1923 nabízel <b>komerční Enigmu</b> bankám a firmám. Velký obchodní úspěch to nebyl, o stroj se ale začala zajímat armáda. Upravenou Enigmu zavedlo v roce <b>1926</b> námořnictvo a v roce <b>1928</b> pozemní vojsko. Armádní verze <b>Enigma I</b> dostala kolem roku 1930 propojovací desku, která počet nastavení obrovsky zvýšila.</p>
+      <p>Stroj přesně zapadal do nové vojenské doktríny. Rychlá válka tankových a leteckých svazků potřebovala spojení rádiem a šifrování, které zvládne i voják bez znalosti kryptografie: stačí nastavit denní klíč a psát.</p>
+    </div>
+  </section>
+
+  <section id="h-predvalkou">
+    <div class="sec-head"><div class="eyebrow">3 · Třicátá léta</div><h2>Enigma před válkou</h2></div>
+    <div class="txt">
+      <p>Po nástupu nacistů k moci v roce 1933 Německo rychle zbrojilo a Enigma se stala standardem. Používalo ji pozemní vojsko, letectvo, námořnictvo, SS, vojenská rozvědka Abwehr i železnice. Každá složka měla vlastní sítě a vlastní denní klíče. Do konce války se vyrobily desítky tisíc strojů.</p>
+      <p>Enigmy bez propojovací desky dodalo Německo i Frankovým vojskům ve <b>španělské občanské válce</b>. Britský luštitel <b>Dilly Knox</b> tuto verzi prolomil už v roce 1937.</p>
+      <p>Němci považovali vojenskou Enigmu za nerozluštitelnou, protože počet jejích nastavení byl astronomický (viz záložka Princip). Přesto ji průběžně zesilovali: v září 1938 změnili postup zadávání klíče zprávy, v prosinci 1938 přibyly rotory IV a V (do stroje se vybírají 3 z 5) a od ledna 1939 se propojovalo víc párů písmen.</p>
+    </div>
+  </section>
+
+  <section id="h-polsko">
+    <div class="sec-head"><div class="eyebrow">4 · První průlom</div><h2>Polští matematici</h2></div>
+    <div class="txt">
+      <p>Polsko se sousedního Německa obávalo nejvíc, a proto jeho Šifrový úřad (<i>Biuro Szyfrów</i>) jako první pochopil, že na strojovou šifru nestačí lingvisté a jsou potřeba <b>matematici</b>. V roce 1929 uspořádal kurz kryptologie pro studenty matematiky na univerzitě v Poznani a nejlepší z nich, <b>Mariana Rejewského</b>, <b>Jerzyho Różyckého</b> a <b>Henryka Zygalského</b>, přijal do služby.</p>
+      <p>Koncem roku <b>1932</b> Rejewski pomocí teorie permutací zrekonstruoval vnitřní zapojení rotorů vojenské Enigmy. Pomohly mu dokumenty, které francouzské rozvědce prodal zaměstnanec německého šifrového úřadu <b>Hans-Thilo Schmidt</b>: návod k obsluze a denní klíče na dva měsíce. Poláci pak postavili repliky Enigmy a léta četli německé zprávy. Na hledání klíčů vymysleli cyklometr, Zygalského děrované listy a elektromechanickou <b>„bombu“</b> (1938).</p>
+      <p>Po německých změnách na konci roku 1938 už Polsku chyběly peníze i lidé. Ve dnech <b>25.–26. července 1939</b> proto v lese u Pyr nedaleko Varšavy předali Poláci Francouzům a Britům repliky stroje i všechny své postupy. O pět týdnů později Německo Polsko napadlo.</p>
+      <p>Trojice luštitelů utekla přes Rumunsko do Francie a pracovala dál s Francouzi. Różycki zahynul v roce 1942 při potopení lodi ve Středozemním moři. Rejewski a Zygalski se dostali do Británie, k práci na Enigmě je tam ale nepřizvali. Rejewski se po válce vrátil do Polska, kde pracoval jako úředník, a jeho zásluhy se veřejně uznávaly až od 70. let.</p>
+    </div>
+  </section>
+
+  <section id="h-valka">
+    <div class="sec-head"><div class="eyebrow">5 · 1939–1945</div><h2>Enigma ve válce</h2></div>
+    <div class="txt">
+      <p>Bleskovou válku řídilo rádio: tanky, letadla a štáby si posílaly rozkazy a hlášení šifrované Enigmou. Denní klíče byly vytištěné v měsíčních tabulkách. Námořnictvo je tisklo inkoustem rozpustným ve vodě, aby se při potopení lodi rychle zničily.</p>
+      <p>Nejdůležitější byla válka na moři. Británie závisela na dovozu potravin, paliva a zbraní přes Atlantik a německé ponorky útočily na konvoje ve „vlčích smečkách“ řízených rádiem z velitelství. Kdo četl tyto zprávy, věděl, kam ponorky míří, a mohl konvoje odklonit.</p>
+      <ul>
+        <li><b>1941:</b> Britové se zmocnili šifrovacích materiálů z ukořistěných lodí, například z ponorky <b>U-110</b> v květnu 1941. Posádka nesměla o úlovku nikdy mluvit.</li>
+        <li><b>Únor 1942:</b> ponorky přešly na Enigmu <b>M4 se čtvrtým rotorem</b>. Britové jejich zprávy asi <b>deset měsíců</b> nedokázali číst a ztráty lodí prudce vzrostly.</li>
+        <li><b>Říjen 1942:</b> námořníci z torpédoborce HMS Petard vynesli z potápějící se ponorky <b>U-559</b> šifrovací tabulky. Dva z nich přitom zahynuli. Od prosince 1942 se ponorkové zprávy opět četly.</li>
+        <li><b>Květen 1943:</b> Němci ztratili desítky ponorek a stáhli je ze severního Atlantiku. Rozluštěné zprávy k tomu přispěly spolu s radary, letadly a doprovodem konvojů.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="h-bletchley">
+    <div class="sec-head"><div class="eyebrow">6 · Luštitelé</div><h2>Bletchley Park a stroje Bombe</h2></div>
+    <div class="txt">
+      <p>Britská luštitelská služba GC&amp;CS se v srpnu 1939 přestěhovala do zámečku <b>Bletchley Park</b> asi 80 km severozápadně od Londýna. Hledala matematiky, jazykovědce, šachisty i luštitele křížovek. V roce 1942 dokonce oslovila čtenáře deníku Daily Telegraph, kteří rychle vyluštili soutěžní křížovku.</p>
+      <p>Práce se dělila do dřevěných „chatrčí“ (<i>huts</i>): <b>Hut 6</b> luštila zprávy pozemního vojska a letectva pod vedením <b>Gordona Welchmana</b>, <b>Hut 8</b> zprávy námořnictva pod vedením <b>Alana Turinga</b> a další chatrče rozluštěné zprávy překládaly a vyhodnocovaly. Na konci války tu pracovalo kolem 10 000 lidí a asi <b>tři čtvrtiny byly ženy</b>. Obsluhovaly stroje, vedly kartotéky a mnohé luštily: <b>Joan Clarke</b> v Hut 8, <b>Mavis Leverová</b> prolomila italskou námořní Enigmu před bitvou u mysu Matapan (1941).</p>
+      <p>Hlavním nástrojem byl <b>Bombe</b>, elektromechanický stroj, který navrhl Turing podle polské bomby a vylepšil Welchman. Bombe <b>nebyl počítač</b> v dnešním smyslu: neměl program, jen desítky rychle se točících bubnů, které napodobovaly rotory mnoha Enigem najednou. Pro zvolený tušený text (<i>crib</i>) zkoušel polohy rotorů a vyřazoval ty, které vedly ke sporu. Zbylé možnosti luštitelé ověřili ručně. První Bombe začal pracovat v březnu 1940, na konci války jich v Británii běželo přes 200 a v USA přes 100 dalších, většinou pro námořní Enigmu.</p>
+      <div class="callout"><p><b>Colossus není stroj na Enigmu.</b> V Bletchley Parku vznikl i <b>Colossus</b> (1944) inženýra Tommyho Flowerse, jeden z prvních elektronických počítačů. Luštil ale jinou šifru, dálnopisný stroj Lorenz, kterým komunikovalo nejvyšší německé velení.</p></div>
+      <p>V říjnu 1941 napsali Turing, Welchman a jejich kolegové Hugh Alexander a Stuart Milner-Barry přímo Churchillovi, že jim chybí lidé a práce se zdržuje. Churchill dopis označil poznámkou <b>„Action this day“</b> (Vyřídit ještě dnes) a pomoc přišla.</p>
+    </div>
+  </section>
+
+  <section id="h-ultra">
+    <div class="sec-head"><div class="eyebrow">7 · Využití</div><h2>Ultra: tajemství, které se nesmělo prozradit</h2></div>
+    <div class="txt">
+      <p>Informace z rozluštěných zpráv nesly krycí název <b>Ultra</b>. Dostávalo je jen několik velitelů přes zvláštní spojovací důstojníky, kteří hlídali, aby se nedostaly do nepovolaných rukou. Kromě bitvy o Atlantik pomohly například v severní Africe, kde Britové potápěli konvoje se zásobami pro Rommelovu armádu, a před vyloděním v Normandii, kdy potvrdily, že Němci uvěřili klamné operaci. Podle řady historiků zkrátila Ultra válku o dva až čtyři roky.</p>
+      <div class="callout"><p><b>Mýtus o Coventry.</b> Traduje se, že Britové díky Enigmě předem věděli o náletu na Coventry 14. listopadu 1940 a Winston Churchill nedal město varovat, aby Němci nepoznali, že jejich šifry jsou prolomené. Příběh se rozšířil hlavně po vydání knihy F. W. Winterbothama <i>The Ultra Secret</i> (1974), historici ho ale odmítají. Rozluštěné zprávy z 12. listopadu sice prozradily, že se chystá velký nálet s krycím názvem <i>Mondscheinsonate</i> (Měsíční sonáta), jeho cíl však ne. Britové čekali útok spíš na Londýn nebo jih Anglie. Že bombardéry míří na Coventry, se ukázalo až 14. listopadu podle německých navigačních rádiových paprsků, ne z Enigmy. Obrana se pak sice dala do pohybu, nálet ale nezastavila a zahynulo přes 500 civilistů.</p>
+      <p style="margin-top:8px">Skutečné dilema přesto existovalo. Spojenci s informacemi z Ultra zacházeli velmi opatrně a k mnoha zásahům vymýšleli krycí vysvětlení. Například před útokem na konvoj nejdřív poslali průzkumné letadlo, aby to vypadalo, že nepřítele objevilo náhodou.</p></div>
+    </div>
+  </section>
+
+  <section id="h-turing">
+    <div class="sec-head"><div class="eyebrow">8 · Osobnost</div><h2>Alan Turing (1912–1954)</h2></div>
+    <div class="txt">
+      <p><b>Alan Mathison Turing</b> se narodil 23. června 1912 v Londýně. Studoval matematiku v Cambridgi a ve 24 letech publikoval práci <i>On Computable Numbers</i> (1936). Popsal v ní myšlený <b>Turingův stroj</b>, jednoduchý model, který umí provést jakýkoli výpočet popsatelný postupem. Tím položil teoretické základy informatiky dřív, než existoval první počítač. Doktorát získal v Princetonu v USA.</p>
+      <p>Do Bletchley Parku nastoupil <b>4. září 1939</b>, den po vyhlášení války Německu. Navrhl stroj Bombe, vedl Hut 8 a vymyslel statistickou metodu <i>Banburismus</i>, která výrazně zkrátila hledání klíčů námořní Enigmy. Kolegové ho znali jako geniálního, trochu podivínského „Profa“, který jezdil do práce na kole a hrnek si připoutával k topení. V roce 1942 odjel do USA radit Američanům při stavbě jejich strojů. Za válečné zásluhy dostal v roce 1946 Řád britského impéria (OBE), zdůvodnění ale zůstalo tajné.</p>
+      <p>Po válce navrhl jeden z prvních počítačů s uloženým programem (ACE) a v Manchesteru programoval počítač Manchester Mark 1. V článku <i>Computing Machinery and Intelligence</i> (1950) položil otázku „Mohou stroje myslet?“ a navrhl zkoušku, dnes zvanou <b>Turingův test</b>: stroj obstojí, pokud ho v písemném rozhovoru nerozeznáme od člověka. Zabýval se i tím, jak vznikají vzory na srsti zvířat.</p>
+      <p>V roce <b>1952</b> Turing při vyšetřování vloupání do svého domu přiznal policii vztah s mužem. Homosexualita byla tehdy v Británii trestným činem. Byl odsouzen a místo vězení přijal hormonální „léčbu“. Přišel o bezpečnostní prověrku a s ní o možnost dál spolupracovat s luštitelskou službou. <b>7. června 1954</b> zemřel na otravu kyanidem. Vyšetřování uzavřelo případ jako sebevraždu, někteří životopisci ale připouštějí i nehodu.</p>
+      <a class="video" href="https://www.youtube.com/watch?v=nuPZUUED5uk" target="_blank" rel="noopener">
+        <span class="play" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 2l14 8-14 8z"/></svg></span>
+        <span><b>Film: Kód Enigmy (The Imitation Game, 2014)</b><small>oficiální trailer, 2,5 min · příběh Alana Turinga v Bletchley Parku, v hlavní roli Benedict Cumberbatch · film s fakty zachází volně: Bombe nestavěl Turing sám a navazoval na polskou práci · otevře se na YouTube v novém okně</small></span>
+      </a>
+    </div>
+  </section>
+
+  <section id="h-verejnost">
+    <div class="sec-head"><div class="eyebrow">9 · Po válce</div><h2>Jak se tajemství dostalo na veřejnost</h2></div>
+    <div class="txt">
+      <p>Všichni pracovníci Bletchley Parku podepsali zákon o státním tajemství (<i>Official Secrets Act</i>) a skoro 30 let mlčeli, mnozí ani před vlastní rodinou. Většina strojů a dokumentů se po válce zničila. Británie navíc dál luštila šifrovací stroje podobné Enigmě, které po válce používaly jiné státy, a nechtěla, aby se o tom vědělo.</p>
+      <p>Turing tak za svého života platil jen za vynikajícího matematika a průkopníka počítačů. Když byl v roce 1952 souzen, soud ani veřejnost netušili, že stojí před jedním z lidí, kteří nejvíc přispěli k vítězství ve válce.</p>
+      <ul>
+        <li><b>1967:</b> polský historik Władysław Kozaczuk v knize <i>Bitwa o tajemnice</i> jako první uvedl, že Enigmu prolomili Poláci už před válkou. Na Západě si toho skoro nikdo nevšiml.</li>
+        <li><b>1973:</b> francouzský generál Gustave Bertrand, který za války řídil francouzské luštitele, popsal ve své knize spolupráci s Poláky.</li>
+        <li><b>1974:</b> bývalý důstojník britského letectva F. W. Winterbotham vydal se souhlasem úřadů knihu <i>The Ultra Secret</i>. Teprve tehdy se svět dozvěděl, že Britové Enigmu za války četli. Kniha ale psala zpaměti a obsahovala i chyby, například mýtus o Coventry.</li>
+        <li><b>1979–1990:</b> vyšla oficiální britská historie zpravodajství za druhé světové války, kterou vedl Harry Hinsley, sám bývalý pracovník Bletchley Parku. Turingova role se v ní i v pamětech kolegů postupně vyjasňovala.</li>
+        <li><b>1983:</b> matematik Andrew Hodges vydal životopis <i>Alan Turing: The Enigma</i>, který poprvé spojil Turingovu válečnou práci, vědecké dílo i soudní proces. Podle knihy vznikla divadelní hra <i>Breaking the Code</i> (1986) a později film <i>Kód Enigmy</i> (2014).</li>
+        <li><b>2009:</b> po internetové petici se britský premiér Gordon Brown Turingovi jménem vlády veřejně omluvil za to, jak s ním stát zacházel.</li>
+        <li><b>2012:</b> ke stému výročí narození zveřejnila britská luštitelská služba GCHQ dvě jeho dosud tajné práce o využití pravděpodobnosti v kryptografii.</li>
+        <li><b>2013:</b> královna Alžběta II. udělila Turingovi posmrtnou milost. Zákon z roku 2017, přezdívaný „Turingův zákon“, pak omilostnil tisíce dalších mužů odsouzených podle stejných zákonů.</li>
+        <li><b>2021:</b> Turingův portrét se objevil na britské bankovce 50 liber. Nejvyšší ocenění v informatice, <b>Turingova cena</b>, nese jeho jméno už od roku 1966.</li>
+      </ul>
+      <p><button class="btn" data-go="sim">Přejít do simulace</button></p>
+    </div>
+  </section>
+  </div>
+
+
+  <footer>Rotory I–V a reflektory B a C mají historické zapojení. Při nastavení rotorů I-II-III na AAA se zpráva AAAAA zašifruje jako BDZGO. Enigma šifruje vratně: zašifrovaný text se stejným nastavením stroje znovu zadaný vrátí původní zprávu.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 22. 10. 2026</footer>
 </div>
 
 <script>
@@ -744,8 +875,15 @@ footer a{color:inherit}
         updateUI();
 
 
-        /* ---------- přepínač Simulace / Výklad (pamatuje se v adrese jako #vyklad) ---------- */
-        const tabs = { sim: document.getElementById('tab-sim'), vyklad: document.getElementById('tab-vyklad') };
+        /* ---------- záložky Simulace / Princip / Historie (pamatují se v adrese jako #princip a #historie) ---------- */
+        const tabs = { sim: document.getElementById('tab-sim'), vyklad: document.getElementById('tab-vyklad'), historie: document.getElementById('tab-historie') };
+        const HASH = { sim: '', vyklad: '#princip', historie: '#historie' };
+        const order = Object.keys(tabs);
+        function paneOfHash(h) {
+            if (h === '#historie' || h.startsWith('#h-')) return 'historie';
+            if (h === '#princip' || h === '#vyklad' || h.startsWith('#v-')) return 'vyklad';
+            return 'sim';
+        }
         function showPane(name, focus) {
             for (const [k, t] of Object.entries(tabs)) {
                 const on = k === name;
@@ -754,16 +892,24 @@ footer a{color:inherit}
             }
             document.getElementById('reset-btn').hidden = name !== 'sim';
             if (focus) tabs[name].focus();
-            const want = name === 'vyklad' ? '#vyklad' : '';
-            if (location.hash !== want && !(name === 'vyklad' && location.hash.startsWith('#v-'))) history.replaceState(null, '', want || location.pathname + location.search);
+            if (paneOfHash(location.hash) !== name || (name !== 'sim' && location.hash !== HASH[name] && !/^#[vh]-/.test(location.hash)))
+                history.replaceState(null, '', HASH[name] || location.pathname + location.search);
         }
-        tabs.sim.addEventListener('click', () => showPane('sim'));
-        tabs.vyklad.addEventListener('click', () => showPane('vyklad'));
+        for (const k of order) tabs[k].addEventListener('click', () => showPane(k));
         document.querySelector('.tabs').addEventListener('keydown', e => {
-            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { showPane(tabs.sim.getAttribute('aria-selected') === 'true' ? 'vyklad' : 'sim', true); e.preventDefault(); }
+            if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+            const cur = order.findIndex(k => tabs[k].getAttribute('aria-selected') === 'true');
+            showPane(order[(cur + (e.key === 'ArrowRight' ? 1 : order.length - 1)) % order.length], true); e.preventDefault();
         });
-        document.getElementById('to-sim').addEventListener('click', () => { showPane('sim'); window.scrollTo({ top: 0 }); });
-        if (location.hash === '#vyklad' || location.hash.startsWith('#v-')) showPane('vyklad');
+        // odkazy a tlačítka s data-go přepnou záložku a skočí na začátek stránky
+        document.addEventListener('click', e => {
+            const go = e.target.closest('[data-go], #to-sim'); if (!go) return;
+            e.preventDefault(); showPane(go.dataset.go || 'sim'); window.scrollTo({ top: 0 });
+        });
+        // odkazy z obsahu (#v-…, #h-…) fungují i z jiné záložky
+        window.addEventListener('hashchange', () => { const p = paneOfHash(location.hash); if (tabs[p].getAttribute('aria-selected') !== 'true') { showPane(p); if (/^#[vh]-/.test(location.hash)) document.querySelector(location.hash)?.scrollIntoView(); } });
+        showPane(paneOfHash(location.hash));
+        if (/^#[vh]-/.test(location.hash)) addEventListener('load', () => document.querySelector(location.hash)?.scrollIntoView());
 
         /* ---------- laboratoř: cesta písmene strojem I-II-III, prstence 01, reflektor B ---------- */
         const lab = new EnigmaMachine();
