@@ -76,7 +76,7 @@ Používej **jen** tyto štítky. Nové nevytvářej.
 - Nový předmět lze založit, když je potřeba:
   - celým českým názvem s velkým počátečním písmenem (`"Dějepis"`, ne `"dějepis"` ani `"D"`),
   - jen pokud už neexistuje v jiném zápisu.
-- Hodnotu `TEST` nikdy nepoužívej.
+- Pro zkušební aplikace je povolený předmět `Test` (zapisuje se takto, ne `TEST`).
 
 ## 6. Stav a štítek „Nové“
 

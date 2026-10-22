@@ -46,7 +46,7 @@ caesarova-sifra/    jedna složka = jedna aplikace
 | Pole | Význam |
 |---|---|
 | `slug` | název složky aplikace |
-| `predmet` | jeden nebo více předmětů; podle nich funguje filtr. Nový předmět lze založit, ale celým českým názvem s velkým počátečním písmenem (např. `"Dějepis"`) a jen pokud už neexistuje v jiném zápisu. Hodnota `TEST` není povolená. |
+| `predmet` | jeden nebo více předmětů; podle nich funguje filtr. Nový předmět lze založit, ale celým českým názvem s velkým počátečním písmenem (např. `"Dějepis"`) a jen pokud už neexistuje v jiném zápisu. Pro zkušební aplikace je povolený předmět `Test`. |
 | `rocnik` | jeden nebo více štítků z pevného seznamu níže, seznam nelze rozšiřovat ani nechat prázdný |
 | `temata` | slova, podle kterých aplikaci najde hledání |
 | `obrazek` | ilustrace karty ve složce aplikace, např. `karta.svg` (poměr stran 8 : 3) |
