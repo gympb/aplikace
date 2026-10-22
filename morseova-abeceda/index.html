@@ -76,8 +76,30 @@ input[type=range]{width:100%;accent-color:var(--olive)}
 .ruler .scale{position:absolute;top:26px;transform:translateX(-50%);font:11px var(--f-mono);color:var(--muted)}
 .ruler .me{position:absolute;top:0;width:14px;height:14px;transform:translateX(-7px);background:var(--lamp);clip-path:polygon(0 0,100% 0,50% 100%);transition:left .15s}
 .presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
-.preset{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:baseline;text-align:left;background:transparent;border:1px solid var(--line);border-radius:4px;padding:8px 10px;cursor:pointer}
+.preset{border:1px solid var(--line);border-radius:4px;display:flex;flex-direction:column}
+.pset{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:baseline;text-align:left;background:transparent;border:0;padding:8px 10px;cursor:pointer;width:100%;flex:1}
+.story{margin:0 10px 9px;align-self:flex-start;background:none;border:0;padding:0;color:var(--olive);font-weight:600;font-size:12.5px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.soe{max-width:78ch;font-size:13.5px;line-height:1.55;background:var(--soft);border-radius:4px;padding:12px 14px}
+.soe p{margin:0}
+.soe b{font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:.03em;text-transform:uppercase;margin-right:6px}
+dialog{border:0;padding:0;border-radius:8px;width:min(880px,calc(100vw - 32px));max-height:calc(100dvh - 32px);background:var(--panel);color:var(--ink);overflow:auto}
+dialog::backdrop{background:rgba(10,14,10,.62)}
+.dlg{display:grid;grid-template-columns:minmax(0,270px) minmax(0,1fr);gap:24px;padding:24px;position:relative}
+.dlg-x{position:absolute;top:8px;right:10px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--panel);font-size:20px;line-height:1;cursor:pointer}
+.dlg figure{margin:0;display:flex;flex-direction:column;gap:6px}
+.dlg img{width:100%;height:auto;border-radius:4px;display:block}
+.dlg figcaption{font-size:12px;color:var(--muted)}
+.dlg-body{display:flex;flex-direction:column;gap:10px;min-width:0;max-width:62ch}
+.dlg-body h2{font-family:var(--f-display);font-weight:800;font-size:34px;line-height:1;text-transform:uppercase;padding-right:40px}
+.dlg-body h3{font-family:var(--f-display);font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.03em;margin-top:6px}
+.dlg-body p{margin:0}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:4px 0}
+.facts div{border-top:2px solid var(--olive);padding-top:4px}
+.facts b{display:block;font-family:var(--f-display);font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.facts span{font-size:12px;color:var(--muted);line-height:1.25;display:block}
+@media (max-width:640px){.dlg{grid-template-columns:1fr;padding:18px}.dlg figure{max-width:170px}.facts{grid-template-columns:repeat(2,1fr)}}
 .preset:hover{border-color:var(--olive)}
+.preset .pset:focus-visible{outline-offset:-2px}
 .preset.active{border-color:var(--olive);background:var(--soft)}
 .preset .n{grid-row:span 2;font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;color:var(--olive);font-variant-numeric:tabular-nums}
 .preset .t{font-weight:600;font-size:13.5px;line-height:1.25}
@@ -345,6 +367,7 @@ footer a{color:var(--olive)}
       </div>
       <div class="ruler" id="ruler" aria-hidden="true"><div class="bar"></div></div>
       <div class="presets" id="presets"></div>
+      <div class="soe"><p><b>Co bylo SOE?</b>Special Operations Executive (Útvar pro zvláštní operace) byla tajná britská organizace, kterou v červenci 1940, po pádu Francie, nechal založit Winston Churchill. Podporovala odboj v okupované Evropě sabotážemi, zásobováním a výcvikem odbojářů a zpravodajstvím. Agenti se do týlu nepřítele dostávali většinou na padácích. Radista nosil vysílačku v kufru a zprávy do Londýna posílal zašifrované Morseovou abecedou. Čím rychleji vysílal, tím kratší dobu měli Němci na zaměření jeho stanice. SOE pomáhala i s výcvikem a vysazením československých parašutistů. Ze 470 agentů vyslaných do Francie se 118 nevrátilo.</p></div>
     </div>
   </section>
 
@@ -354,6 +377,37 @@ footer a{color:var(--olive)}
     <span>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 22. 10. 2026</span>
   </footer>
 </div>
+
+<dialog id="storyDlg" aria-labelledby="storyTitle">
+  <div class="dlg">
+    <button class="dlg-x" id="storyClose" aria-label="Zavřít">×</button>
+    <figure>
+      <img src="cormeau.jpg" alt="Portrét Yvonne Cormeau v uniformě s řadou vyznamenání na prsou" width="493" height="622">
+      <figcaption>Yvonne Cormeau v uniformě, s pruhy vyznamenání na prsou.</figcaption>
+    </figure>
+    <div class="dlg-body">
+      <span class="eyebrow">Krycí jméno Annette · radistka SOE</span>
+      <h2 id="storyTitle">Yvonne Cormeau</h2>
+      <span class="muted small">18. 12. 1909 Šanghaj – 25. 12. 1997</span>
+      <div class="facts">
+        <div><b>13</b><span>měsíců v okupované Francii</span></div>
+        <div><b>484</b><span>odeslaných zpráv</span></div>
+        <div><b>300+</b><span>přijatých zpráv</span></div>
+        <div><b>18–22</b><span>WPM, průměr agentů byl 12</span></div>
+      </div>
+      <h3>Mládí a válka</h3>
+      <p>Narodila se jako Beatrice Yvonne Biesterfeld v Šanghaji a odmala mluvila francouzsky i anglicky. V roce 1937 se provdala za Charlese Cormeaua a narodila se jim dcera Yvette. Manžel zahynul v roce 1940 při německém náletu na Londýn. Yvonne přežila jen náhodou: před sutinami ji ochránila vana, která na ni spadla.</p>
+      <p>V roce 1941 vstoupila do ženského pomocného letectva WAAF. Kvůli dokonalé francouzštině si ji počátkem roku 1943 vybrala SOE a vycvičila ji na radistku. Malou dceru musela na dobu války svěřit do péče kláštera.</p>
+      <h3>Radistka sítě Wheelwright</h3>
+      <p>V noci na 23. srpna 1943 seskočila na padáku u obce Saint-Antoine-du-Queyret severovýchodně od Bordeaux. Pod krycím jménem Annette se stala radistkou sítě Wheelwright, kterou vedl George Starr a která patřila k největším sítím SOE ve Francii. Přes 13 měsíců udržovala spojení s Londýnem a pomohla připravit víc než 140 shozů zbraní pro odboj.</p>
+      <p>Jednou ji se Starrem zastavila německá hlídka. Vydala se za zdravotní sestru a vysílačku v kufru vydávala za rentgenový přístroj. Při německém útoku na Castelnau-sur-l'Auvignon 21. června 1944 byla zraněna do nohy, ale vysílačku při ústupu zachránila. Potom se s praporem Armagnac účastnila osvobozování jihozápadní Francie včetně Toulouse.</p>
+      <h3>Po válce</h3>
+      <p>Koncem listopadu 1944 se do Francie vrátila ještě s misí Judex. V roce 1945 odešla z WAAF v hodnosti Flight Officer, krátce pracovala pro sekci SOE na britském ministerstvu zahraničí a pak se vrátila do civilu a k dceři. Dostala britský Řád britského impéria (MBE) a francouzský Řád čestné legie, Válečný kříž 1939–1945 a Medaili odboje. Zemřela na Vánoce roku 1997 ve věku 88 let.</p>
+      <div class="row" style="margin-top:6px"><button class="btn" id="storyPlay">▶ Poslechnout jejím tempem (20 WPM)</button><span class="small muted">vysílá krycí jméno ANNETTE</span></div>
+      <p class="small muted">Zdroje: <a href="https://www.iwm.org.uk/history/soe-the-secret-british-organisation-of-the-second-world-war" target="_blank" rel="noopener">Imperial War Museums</a>, <a href="https://en.wikipedia.org/wiki/Yvonne_Cormeau" target="_blank" rel="noopener">Wikipedie</a>, <a href="https://theatrum-belli.com/in-memoriam-yvonne-cormeau-soe-decedee-le-25-decembre-1997/" target="_blank" rel="noopener">Theatrum Belli</a>, <a href="https://tracesofwar.com/persons/35724/Cormeau-Biesterfeld-Beatrice-Yvonne.htm" target="_blank" rel="noopener">TracesOfWar</a>.</p>
+    </div>
+  </div>
+</dialog>
 
 <script>
 (() => {
@@ -369,7 +423,7 @@ const PRESETS = [
  {wpm:12, t:'Průměrný agent SOE', w:'běžný radista v týlu nepřítele'},
  {wpm:13, t:'Radista US Army', w:'minimum 13 skupin/min, příjem i klíč (MOS 776)'},
  {wpm:16, t:'Radista letectva USAAF', w:'minimum 16 skupin/min (MOS 756)'},
- {wpm:20, t:'Yvonne Cormeau, SOE', w:'špičková agentka, 18–22 slov/min'}
+ {wpm:20, t:'Yvonne Cormeau, SOE', w:'špičková agentka, 18–22 slov/min', story:true}
 ];
 
 const $ = s => document.querySelector(s);
@@ -513,8 +567,18 @@ const pos = w => ((w-5)/35*100) + '%';
 [5,10,20,30,40].forEach(w => { const s = document.createElement('span'); s.className='scale'; s.style.left = pos(w); s.textContent = w + (w===40?' WPM':''); ruler.appendChild(s); });
 PRESETS.forEach(p => { const t = document.createElement('span'); t.className='tick'; t.style.left = pos(p.wpm); ruler.appendChild(t); });
 const me = document.createElement('span'); me.className='me'; ruler.appendChild(me);
-$('#presets').innerHTML = PRESETS.map((p,i) => `<button class="preset" data-i="${i}"><span class="n">${p.wpm}</span><span class="t">${p.t}</span><span class="w">${p.w}</span></button>`).join('');
-$('#presets').addEventListener('click', e => { const b = e.target.closest('.preset'); if (!b) return; S.wpm = PRESETS[b.dataset.i].wpm; S.farn = false; syncConsole(); saveS(); play(tokenize('CQ CQ'), {}); });
+$('#presets').innerHTML = PRESETS.map((p,i) => `<div class="preset" data-i="${i}"><button class="pset" data-i="${i}"><span class="n">${p.wpm}</span><span class="t">${p.t}</span><span class="w">${p.w}</span></button>${p.story ? '<button class="story" type="button">Životní příběh →</button>' : ''}</div>`).join('');
+$('#presets').addEventListener('click', e => {
+  if (e.target.closest('.story')){ openStory(); return; }
+  const b = e.target.closest('.pset'); if (!b) return;
+  S.wpm = PRESETS[b.dataset.i].wpm; S.farn = false; syncConsole(); saveS(); play(tokenize('CQ CQ'), {});
+});
+const dlg = $('#storyDlg');
+function openStory(){ try { dlg.showModal(); } catch(e){ dlg.setAttribute('open',''); } dlg.scrollTop = 0; }
+function closeStory(){ try { dlg.close(); } catch(e){ dlg.removeAttribute('open'); } }
+$('#storyClose').addEventListener('click', closeStory);
+dlg.addEventListener('click', e => { if (e.target === dlg) closeStory(); });
+$('#storyPlay').addEventListener('click', () => { S.wpm = 20; S.farn = false; syncConsole(); saveS(); play(tokenize('ANNETTE'), {}); });
 
 function syncConsole(){
   if (S.eff > S.wpm) S.eff = S.wpm;
