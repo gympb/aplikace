@@ -109,6 +109,10 @@ a{color:inherit}
 .card p{margin:0;font-size:16px}
 .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
 .tag{font:600 12px var(--f-display);padding:3px 8px;background:var(--panel);border:1px solid var(--line)}
+/* typy štítků na kartě: ročník (oranžový), autor (papírový), datum zveřejnění (jen obrys) */
+.tag.g{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.tag.a{background:var(--panel);border-color:var(--line);color:var(--ink)}
+.tag.d{background:transparent;border:1px dashed var(--muted);color:var(--muted);font-weight:500}
 .card-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--card-line);padding:12px 18px}
 .status{font:700 11px var(--f-display);letter-spacing:.1em;text-transform:uppercase;display:inline-flex;align-items:center;gap:7px}
 .status::before{content:"";width:10px;height:10px;background:var(--ink)}
@@ -254,7 +258,7 @@ function render(){
       <div class="card-body">
         <h3>${esc(a.nazev)}</h3>
         <p>${esc(a.popis)}</p>
-        <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}${a.autor?`<span class="tag">${esc(a.autor)}</span>`:''}${a.aktualizace?`<span class="tag">${datum(a.aktualizace)}</span>`:''}</div>
+        <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag g" title="Ročník">${esc(t)}</span>`).join('')}${a.autor?`<span class="tag a" title="Autor">${esc(a.autor)}</span>`:''}${(a.zverejneno||a.aktualizace)?`<span class="tag d" title="Zveřejněno">${datum(a.zverejneno||a.aktualizace)}</span>`:''}</div>
       </div>
       <div class="card-foot">
         ${prep?'<span class="status prep">V přípravě</span>':jeNova(a)?'<span class="status new">Nové</span>':'<span></span>'}
