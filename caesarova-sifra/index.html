@@ -128,6 +128,30 @@ table.alpha tr.p td.on{color:var(--ink)}
 .note{font-size:14px;color:var(--muted);max-width:70ch;margin:0}
 .verdict{font-size:15px}
 .verdict b{color:var(--accent)}
+/* záložky Simulace / Historie */
+.tabs{display:flex;gap:4px;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--panel);width:max-content;max-width:100%;margin-top:14px}
+.tabs button{border:0;background:none;color:var(--muted);font:700 15px var(--f-display);letter-spacing:.06em;padding:8px 20px;border-radius:999px;cursor:pointer;min-height:40px}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--panel)}
+.tabs button:not([aria-selected="true"]):hover{color:var(--accent)}
+.pane{display:grid;gap:40px}
+/* historie */
+.hist section{scroll-margin-top:12px;border-top:1px solid var(--line);padding-top:18px}
+.hist .txt{display:grid;gap:12px}
+.hist p{margin:0;max-width:70ch}
+.hist ul,.hist ol{margin:0;padding-left:22px;max-width:68ch;display:grid;gap:8px}
+.hist a{color:var(--accent)}
+.hist blockquote{margin:0;max-width:66ch;padding:4px 0 4px 18px;border-left:3px solid var(--gold);font-style:italic;color:var(--ink)}
+.toc{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 18px;display:grid;gap:8px}
+.hist .toc ol{columns:2 260px;column-gap:28px;display:block;padding-left:22px;margin:0}
+.toc li{margin-bottom:4px;break-inside:avoid}
+.toc a{color:var(--ink);text-decoration-color:var(--gold);text-decoration-thickness:2px;text-underline-offset:3px}
+.osa{list-style:none;padding:0!important;border-left:4px solid var(--accent);gap:0!important;max-width:74ch!important}
+.osa li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:2px 16px;padding:8px 0 8px 18px;position:relative;border-bottom:1px solid var(--line)}
+.osa li::before{content:"";position:absolute;left:-10px;top:14px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:3px solid var(--gold);box-sizing:border-box}
+.osa b{font-family:var(--f-display);font-size:14px;letter-spacing:.04em}
+@media (max-width:520px){.osa li{grid-template-columns:minmax(0,1fr)}}
+.callout{border-left:6px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 8px 8px 0;max-width:72ch}
+.callout p{margin:0}
 footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
 </style>
 <style>body{margin:0}[hidden]{display:none!important}.back{font:600 14px var(--f-body);color:var(--muted);text-decoration:none}.back:hover{color:var(--accent)}</style>
@@ -141,8 +165,13 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <div class="eyebrow">Kryptografie · substituční šifry</div>
     <h1>Caesarova šifra</h1>
     <p class="lede">Každé písmeno zprávy se posune v abecedě o stejný počet míst. Julius Caesar podle Suetonia používal posun o tři. Otočte vnitřním kotoučem a sledujte, co se stane s textem.</p>
+    <div class="tabs" role="tablist" aria-label="Režim stránky">
+      <button role="tab" id="tab-sim" aria-selected="true" aria-controls="pane-sim">Simulace</button>
+      <button role="tab" id="tab-historie" aria-selected="false" aria-controls="pane-historie" tabindex="-1">Historie</button>
+    </div>
   </header>
 
+  <div class="pane" id="pane-sim" role="tabpanel" aria-labelledby="tab-sim">
   <div class="hero">
     <div class="wheel-box">
       <svg id="wheel" viewBox="0 0 360 360" role="slider" tabindex="0" aria-label="Šifrovací kotouč, posun" aria-valuemin="0" aria-valuemax="25" aria-valuenow="3"></svg>
@@ -226,10 +255,143 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p class="verdict" id="verdict"></p>
   </section>
 
-  <footer>Šifrování: C = (P + k) mod 26 · Dešifrování: P = (C − k) mod 26 · Znaky mimo anglickou abecedu (číslice, mezery, interpunkce) zůstávají beze změny, pokud je neodstraníte. Ponechané mezery prozrazují délky slov, proto se šifrogramy tradičně psaly ve skupinách po pěti písmenech.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" style="color:inherit">CC BY 4.0</a> · Aktualizace: 19. 10. 2026</footer>
+  </div>
+
+  <div class="pane hist" id="pane-historie" role="tabpanel" aria-labelledby="tab-historie" hidden>
+  <nav class="toc" aria-label="Obsah historie">
+    <span class="eyebrow">Obsah historie</span>
+    <ol>
+      <li><a href="#h-osa">Časová osa</a></li>
+      <li><a href="#h-pred">Šifry před Caesarem</a></li>
+      <li><a href="#h-caesar">Caesar a jeho šifra</a></li>
+      <li><a href="#h-proc">Proč šifra tehdy stačila</a></li>
+      <li><a href="#h-kindi">Jak se šifra luští: al-Kindí</a></li>
+      <li><a href="#h-potomci">Potomci Caesarovy šifry</a></li>
+      <li><a href="#h-dnes">Caesarova šifra v novověku a dnes</a></li>
+    </ol>
+  </nav>
+
+  <section id="h-osa">
+    <div class="sec-head"><div class="eyebrow">1 · Přehled</div><h2>Časová osa</h2></div>
+    <ol class="osa">
+      <li><b>asi 1900 př. n. l.</b><span>Egyptský písař používá v hrobce neobvyklé hieroglyfy, nejstarší známá úprava písma.</span></li>
+      <li><b>6. stol. př. n. l.</b><span>Hebrejská šifra atbaš obrací abecedu: první písmeno za poslední.</span></li>
+      <li><b>5. stol. př. n. l.</b><span>Sparťané šifrují skytalou, páskem navinutým na hůl.</span></li>
+      <li><b>58–50 př. n. l.</b><span>Galské války. Caesar posílá důvěrné zprávy s písmeny posunutými o tři.</span></li>
+      <li><b>asi 121 n. l.</b><span>Suetonius popisuje Caesarovu šifru v životopisech císařů.</span></li>
+      <li><b>9. století</b><span>Arabský učenec al-Kindí popisuje frekvenční analýzu. Caesarova šifra je prolomena navždy.</span></li>
+      <li><b>1467</b><span>Leon Battista Alberti sestrojí šifrovací kotouč se střídáním abeced.</span></li>
+      <li><b>1553 / 1586</b><span>Bellaso a Vigenère: mnoho Caesarových šifer za sebou, řízených heslem.</span></li>
+      <li><b>1915</b><span>Ruská armáda se v první světové válce vrací k jednoduché posunové šifře. Němci ji čtou.</span></li>
+      <li><b>2006</b><span>Šéf sicilské mafie je dopaden i díky lístkům psaným variantou Caesarovy šifry.</span></li>
+    </ol>
+  </section>
+
+  <section id="h-pred">
+    <div class="sec-head"><div class="eyebrow">2 · Předchůdci</div><h2>Šifry před Caesarem</h2></div>
+    <div class="txt">
+      <p>Touha utajit zprávu je stará jako písmo samo. Už kolem roku 1900 př. n. l. použil egyptský písař v nápisu v hrobce neobvyklé hieroglyfy místo běžných. Nešlo ještě o skutečné utajení, spíš o hru a vážnost textu.</p>
+      <p><b>Atbaš</b> je hebrejská šifra, která obrací abecedu: první písmeno (alef) nahradí posledním (taw), druhé předposledním a tak dál. Objevuje se v knize proroka Jeremiáše, kde jméno Babylon (Bavel) je zapsáno jako „Šešak“.</p>
+      <p>Sparťanští velitelé v 5. století př. n. l. používali <b>skytalu</b>: na hůl namotali kožený pásek, napsali zprávu podél hole a pásek odmotali. Písmena na pásku vypadala jako nesmyslná řada. Přečíst ji mohl jen ten, kdo měl hůl stejné tloušťky. Na rozdíl od Caesarovy šifry písmena nemění, ale přeskupuje (transpozice).</p>
+      <p>Řecký historik <b>Polybios</b> ve 2. století př. n. l. popsal tabulku 5 × 5, ve které každé písmeno nahradí dvojice čísel řádku a sloupce. Šlo ji vysílat i signálními pochodněmi. Stejný princip později používali vězni, kteří si klepali do zdi.</p>
+    </div>
+  </section>
+
+  <section id="h-caesar">
+    <div class="sec-head"><div class="eyebrow">3 · Řím</div><h2>Caesar a jeho šifra</h2></div>
+    <div class="txt">
+      <p><b>Gaius Julius Caesar</b> (100–44 př. n. l.) dobýval v letech 58–50 př. n. l. Galii, území dnešní Francie a Belgie. Velel legiím rozmístěným stovky kilometrů od sebe a s nimi i s Římem komunikoval dopisy, které nesli jezdci a poslové. Posla mohl nepřítel zajmout a dopis přečíst, a proto Caesar důvěrné zprávy šifroval.</p>
+      <p>Jak to dělal, víme od římského životopisce <b>Suetonia</b>, který asi 160 let po Caesarově smrti napsal <i>Životopisy dvanácti císařů</i>:</p>
+      <blockquote>„Měl-li někomu sdělit něco důvěrného, psal šifrou, tedy tak změnil pořadí písmen, že nebylo možné sestavit jediné slovo. Kdo by to chtěl rozluštit a pochopit, musí zaměnit čtvrté písmeno abecedy, tedy D, za A, a tak dále s ostatními.“</blockquote>
+      <p>Suetonius také uvádí, že Caesarův nástupce <b>Augustus</b> posouval písmena jen o jedno (B místo A) a místo posledního písmene X psal AA. Abecedu tedy „neuzavíral do kruhu“ jako kotouč v této aplikaci.</p>
+      <p>Latinská abeceda té doby měla jen asi 21–23 písmen, chyběla například J, U a W. Skutečná Caesarova šifra tedy počítala „modulo 23“, ne 26.</p>
+      <div class="callout"><p><b>Dopis na oštěpu.</b> Caesar sám ve svých <i>Zápiscích o válce galské</i> líčí, jak v roce 54 př. n. l. posílal zprávu obleženému táboru svého legáta Quinta Cicerona. Dopis napsal <b>řeckými písmeny</b>, aby ho nepřítel nepřečetl, přivázal ho na oštěp a jezdec ho vrhl přes val. Oštěp se zabodl do věže a dopisu si vojáci všimli až třetí den. Zpráva, že Caesar je na cestě, pak obránce povzbudila vydržet.</p></div>
+    </div>
+  </section>
+
+  <section id="h-proc">
+    <div class="sec-head"><div class="eyebrow">4 · Bezpečnost</div><h2>Proč šifra tehdy stačila</h2></div>
+    <div class="txt">
+      <p>Dnes Caesarovu šifru rozluští každý žák za pár minut (zkuste útok hrubou silou nebo frekvenční analýzu v záložce Simulace). Ve starověku přesto fungovala:</p>
+      <ul>
+        <li>Většina nepřátel <b>neuměla číst</b>, a už vůbec ne latinsky.</li>
+        <li>Neexistovala věda o luštění šifer. Když zajatý dopis vypadal jako nesmysl, nikdo nevěděl, jak postupovat.</li>
+        <li>Utajený byl hlavně <b>samotný postup</b>. Kdo ho neznal, neměl kde začít.</li>
+      </ul>
+      <p>Spoléhat na utajení postupu je ale chyba. Nizozemský kryptograf Auguste Kerckhoffs v roce 1883 formuloval pravidlo, které platí dodnes: <b>šifra musí zůstat bezpečná, i když nepřítel zná celý postup. Utajený smí být jen klíč.</b> Caesarova šifra má klíčů jen 25, takže tímto testem neprojde.</p>
+    </div>
+  </section>
+
+  <section id="h-kindi">
+    <div class="sec-head"><div class="eyebrow">5 · Prolomení</div><h2>Jak se šifra luští: al-Kindí</h2></div>
+    <div class="txt">
+      <p>Arabský filozof a matematik <b>Abú Júsuf al-Kindí</b> (asi 801–873) působil v Bagdádu v době, kdy tamní učenci překládali řecké vědecké knihy a pečlivě zkoumali text Koránu. Při počítání slov a písmen si všimli, že každý jazyk má typickou četnost písmen.</p>
+      <p>Al-Kindí v pojednání o luštění šifrovaných zpráv popsal postup, kterému dnes říkáme <b>frekvenční analýza</b>: spočítej písmena v šifrovém textu, nejčastější znak nejspíš zastupuje nejčastější písmeno jazyka, a podle toho dosazuj. Rukopis byl znovu objeven až v roce 1987 v archivu v Istanbulu.</p>
+      <p>Od té chvíle šlo prolomit nejen Caesarovu šifru, ale jakoukoli šifru, která každé písmeno nahrazuje stále stejným znakem (monoalfabetickou substituci). Právě to ukazuje graf četnosti v této aplikaci.</p>
+    </div>
+  </section>
+
+  <section id="h-potomci">
+    <div class="sec-head"><div class="eyebrow">6 · Vývoj</div><h2>Potomci Caesarovy šifry</h2></div>
+    <div class="txt">
+      <p>Kryptografové hledali, jak frekvenční analýzu přelstít. Odpověď byla střídat <b>více posunutých abeced</b> (polyalfabetická šifra):</p>
+      <ul>
+        <li><b>Albertiho kotouč (1467).</b> Italský architekt Leon Battista Alberti sestrojil dva soustředné kotouče s abecedami, stejné jako kotouč v této aplikaci. Novinkou bylo, že se kotouč během psaní zprávy přetáčel.</li>
+        <li><b>Vigenèrova šifra (1553 / 1586).</b> Každé písmeno zprávy se posune o jiný klíč podle písmen hesla. Je to vlastně řada Caesarových šifer za sebou. Popsal ji Giovan Battista Bellaso, jméno dostala po Blaisi de Vigenère. Tři sta let se jí říkalo „nerozluštitelná šifra“, než ji v 19. století prolomili Charles Babbage a Friedrich Kasiski.</li>
+        <li><b>Šifrovací kotouče a válce</b> používali v 19. století například vojáci v americké občanské válce.</li>
+        <li><b>Enigma (20. století).</b> Rotory Enigmy jsou mechanizovaná polyalfabetická šifra: po každém písmenu se posunou a změní substituci. Podívejte se na aplikaci <a href="../enigma/">Enigma</a>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="h-dnes">
+    <div class="sec-head"><div class="eyebrow">7 · Novověk</div><h2>Caesarova šifra v novověku a dnes</h2></div>
+    <div class="txt">
+      <ul>
+        <li><b>Ruská armáda, 1915.</b> Podle historika Davida Kahna se ruská armáda v první světové válce vrátila k posunové šifře, protože složitější šifry vojáci nezvládali. Německé a rakousko-uherské zpravodajství ji snadno četlo.</li>
+        <li><b>Dekodérové prstýnky.</b> Ve 30. letech 20. století rozdávaly americké rozhlasové pořady pro děti šifrovací kotoučky, kterými posluchači luštili tajné zprávy na konci vysílání.</li>
+        <li><b>ROT13.</b> Na internetových diskusních fórech v 80. letech se texty, které nechtěl každý hned vidět (pointy vtipů, rozuzlení filmů), posouvaly o 13. Protože 13 je polovina z 26, stejný posun text zašifruje i dešifruje.</li>
+        <li><b>Mafie, 2006.</b> Bernardo Provenzano, šéf sicilské mafie, se 43 let skrýval a se svými lidmi komunikoval ručně psanými lístky. Písmena v nich nahrazoval čísly posunutými o tři (A = 4, B = 5 …). Policie šifru snadno rozluštila a v dubnu 2006 byl dopaden.</li>
+        <li><b>Dnes</b> se Caesarova šifra používá hlavně ve výuce a hrách. Je to první krok ke kryptografii: ukazuje pojmy otevřený text, šifrový text, klíč, útok hrubou silou i frekvenční analýzu.</li>
+      </ul>
+      <div class="callout"><p><b>Co si odnést.</b> Šifra je tak silná, kolik má možných klíčů a jak dobře skrývá vlastnosti jazyka. Caesarova šifra má jen 25 klíčů a zachovává četnost písmen, takže ji dnes prolomí kdokoli. Ve starověku stačila, protože luštit nikdo neuměl.</p></div>
+      <p><button class="btn" data-go="sim">Přejít do simulace</button></p>
+    </div>
+  </section>
+  </div>
+
+  <footer>Šifrování: C = (P + k) mod 26 · Dešifrování: P = (C − k) mod 26 · Znaky mimo anglickou abecedu (číslice, mezery, interpunkce) zůstávají beze změny, pokud je neodstraníte. Ponechané mezery prozrazují délky slov, proto se šifrogramy tradičně psaly ve skupinách po pěti písmenech.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" style="color:inherit">CC BY 4.0</a> · Aktualizace: 22. 10. 2026</footer>
 </div>
 
 <script>
+/* ---------- záložky Simulace / Historie (adresa #historie, odkazy #h-…) ---------- */
+(() => {
+  const tabs = { sim: document.getElementById('tab-sim'), historie: document.getElementById('tab-historie') };
+  const order = Object.keys(tabs);
+  const paneOf = h => (h === '#historie' || h.startsWith('#h-')) ? 'historie' : 'sim';
+  function show(name, focus) {
+    for (const k of order) {
+      const on = k === name;
+      tabs[k].setAttribute('aria-selected', String(on)); tabs[k].tabIndex = on ? 0 : -1;
+      document.getElementById('pane-' + k).hidden = !on;
+    }
+    if (focus) tabs[name].focus();
+    const want = name === 'historie' ? '#historie' : '';
+    if (paneOf(location.hash) !== name || (name === 'historie' && !location.hash.startsWith('#h-') && location.hash !== want))
+      history.replaceState(null, '', want || location.pathname + location.search);
+  }
+  for (const k of order) tabs[k].addEventListener('click', () => show(k));
+  document.querySelector('.tabs').addEventListener('keydown', e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const cur = order.findIndex(k => tabs[k].getAttribute('aria-selected') === 'true');
+    show(order[(cur + 1) % order.length], true); e.preventDefault();
+  });
+  document.addEventListener('click', e => { const go = e.target.closest('[data-go]'); if (!go) return; e.preventDefault(); show(go.dataset.go); scrollTo({ top: 0 }); });
+  addEventListener('hashchange', () => { const p = paneOf(location.hash); if (tabs[p].getAttribute('aria-selected') !== 'true') { show(p); if (location.hash.startsWith('#h-')) document.querySelector(location.hash)?.scrollIntoView(); } });
+  show(paneOf(location.hash));
+  if (location.hash.startsWith('#h-')) addEventListener('load', () => document.querySelector(location.hash)?.scrollIntoView());
+})();
+
 const A='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 // Orientační četnost písmen v češtině (%), diakritika sloučena se základním písmenem
 const CZ=[8.6,1.7,2.6,3.6,10.4,.3,.3,1.3,7.2,2.1,3.7,3.8,3.2,6.6,8.7,3.4,.01,4.9,5.7,5.6,4.0,4.3,.1,.1,2.8,3.2];
