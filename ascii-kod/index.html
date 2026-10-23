@@ -286,6 +286,8 @@ const CPNAME = {cp437:'IBM PC (CP437, americká výchozí)', kam:'Kamenických (
 const CPSHORT = {cp437:'CP437', kam:'Kamenických', cp852:'CP852', iso:'ISO 8859-2', cp1250:'Windows-1250'};
 const CTRL = ['NUL','SOH','STX','ETX','EOT','ENQ','ACK','BEL','BS','HT','LF','VT','FF','CR','SO','SI','DLE','DC1','DC2','DC3','DC4','NAK','SYN','ETB','CAN','EM','SUB','ESC','FS','GS','RS','US'];
 const CTRLCZ = {0:'prázdný znak',5:'dotaz (WRU)',7:'zvonek',8:'krok zpět',9:'tabulátor',10:'nový řádek',13:'návrat vozíku',27:'escape',127:'smazat'};
+// vysvětlení řídicích znaků 0–32 a 127 v textu po najetí myší na buňku tabulky
+const CTRLINFO = {0:'NUL – Null: prázdný znak. Na děrné pásce sloupec bez děr, sloužil jako výplň a zaváděcí úsek pásky.',1:'SOH – Start of Heading: začátek záhlaví zprávy (adresa, priorita).',2:'STX – Start of Text: konec záhlaví, začíná vlastní text zprávy.',3:'ETX – End of Text: konec textu zprávy. Dnes Ctrl+C přerušuje program.',4:'EOT – End of Transmission: konec přenosu, linku lze uvolnit. V Unixu Ctrl+D ukončí vstup.',5:'ENQ – Enquiry: dotaz „kdo jsi?“. Protistanice odpoví svou volačkou (u dálnopisů Teletype WRU).',6:'ACK – Acknowledge: potvrzení, že data dorazila v pořádku.',7:'BEL – Bell: zazvoní zvonek přijímacího dálnopisu (v této aplikaci také).',8:'BS – Backspace: posun o jeden znak zpět, na tiskárně třeba k přetištění znaku.',9:'HT – Horizontal Tab: vodorovný tabulátor, skok na další zarážku v řádku.',10:'LF – Line Feed: posun papíru o řádek. V Unixu a na webu znamená nový řádek.',11:'VT – Vertical Tab: svislý tabulátor, posun o několik řádků dolů.',12:'FF – Form Feed: posun na začátek nové stránky.',13:'CR – Carriage Return: návrat vozíku na začátek řádku. Windows ukončují řádek dvojicí CR LF.',14:'SO – Shift Out: přepnutí na jinou sadu znaků, například na azbuku.',15:'SI – Shift In: návrat k základní sadě znaků.',16:'DLE – Data Link Escape: následující znaky jsou řídicí údaje spoje, ne text.',17:'DC1 – Device Control 1: zapne zařízení, např. čtečku pásky. Dnes XON: pokračuj ve vysílání.',18:'DC2 – Device Control 2: zapne děrovačku pásky.',19:'DC3 – Device Control 3: vypne čtečku pásky. Dnes XOFF: zastav vysílání.',20:'DC4 – Device Control 4: vypne děrovačku pásky.',21:'NAK – Negative Acknowledge: data dorazila s chybou, pošli je znovu.',22:'SYN – Synchronous Idle: výplň, která drží synchronizaci, když se nic neposílá.',23:'ETB – End of Transmission Block: konec bloku dat.',24:'CAN – Cancel: zrušení, předchozí data jsou chybná a mají se zahodit.',25:'EM – End of Medium: konec média (pásky, karty).',26:'SUB – Substitute: náhrada za poškozený nebo neplatný znak. V DOSu Ctrl+Z ukončoval textový soubor.',27:'ESC – Escape: následující znaky mají zvláštní význam (řídicí sekvence tiskáren a terminálů). Dnes klávesa Esc.',28:'FS – File Separator: oddělovač souborů.',29:'GS – Group Separator: oddělovač skupin.',30:'RS – Record Separator: oddělovač záznamů.',31:'US – Unit Separator: oddělovač jednotlivých položek, nejnižší úroveň.',32:'SP – Space: mezera. Je to tisknutelný znak, ale nic nevytiskne, jen posune vozík.',127:'DEL – Delete: smazat. Na pásce všech 7 děr: chybný znak šlo předěrovat a čtečka ho přeskočila.'};
 const CZ = new Set([...'áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ']);
 const BEL=7, ENQ=5, CR=13, LF=10;
 
@@ -618,13 +620,13 @@ function renderTables(){
     for (let col=0;col<8;col++){
       const c=base+col*16+row, x=cellChar(c,page);
       const cls=[x.cz?'cz':'',x.undef?'undef':'',c===cur?'cur':''].filter(Boolean).join(' ');
-      h+=`<td class="${cls}" title="${tipCode(c)}${CTRLCZ[c]?' · '+CTRLCZ[c]:''}"><span class="c${x.ctl?' ctl':''}">${esc(x.t)}</span><span class="n">${c}</span></td>`;
+      h+=`<td class="${cls}" title="${tipCode(c)}${!page&&CTRLINFO[c]!==undefined?'\n'+CTRLINFO[c]:(CTRLCZ[c]?' · '+CTRLCZ[c]:'')}"><span class="c${x.ctl?' ctl':''}">${esc(x.t)}</span><span class="n">${c}</span></td>`;
     }
     h+='</tr>';
   }
   $('tables').innerHTML=h+'</tbody></table>';
   $('tblHint').textContent = mode==='basic'
-    ? 'Kód znaku = číslo nad sloupcem + číslo řádku, pod znakem je výsledný dekadický kód. Binární stupnice ukáže, že sloupec určují bity 7–5 a řádek bity 4–1. Po najetí myší na buňku se ukáže kód i v zapnutých soustavách.'
+    ? 'Kód znaku = číslo nad sloupcem + číslo řádku, pod znakem je výsledný dekadický kód. Binární stupnice ukáže, že sloupec určují bity 7–5 a řádek bity 4–1. Po najetí myší na buňku se ukáže kód i v zapnutých soustavách, u řídicích znaků 0–32 a 127 také jejich význam.'
     : `Horní polovina 128–255 v kódování ${CPSHORT[tblCp]}. Česká písmena jsou podbarvená zelenkavě, takže po přepnutí kódování je hned vidět, jak se přesunou. Žlutě je naposledy přijatý bajt.`;
 }
 
