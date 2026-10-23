@@ -142,8 +142,6 @@ table.code td{border:1px solid var(--line);padding:3px 4px;text-align:center;min
 table.code td .c{display:block;font-family:var(--f-print);font-size:19px;font-weight:700;line-height:1.1}
 table.code td .c.ctl{font-family:var(--f-mono);font-size:10.5px;font-weight:600;color:var(--muted)}
 table.code td .n{display:block;font-family:var(--f-mono);font-size:12.5px;font-weight:700;color:var(--ink);opacity:.82;margin-top:2px;letter-spacing:.02em}
-table.code td .b,table.code td .h{display:block;font-family:var(--f-mono);font-size:10.5px;line-height:1.3;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
-table.code td .h{color:var(--accent,var(--muted));font-weight:600}
 .tbl-opts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
 table.code td.cz{background:var(--cz)}
 table.code td.undef .c{color:var(--muted);font-weight:400}
@@ -248,8 +246,8 @@ footer{font-size:13px;color:var(--muted);max-width:78ch}
   <section class="panel" aria-labelledby="h-tbl">
     <div class="panel-head"><h2 id="h-tbl">Tabulka kódu</h2>
       <div class="tbl-opts">
-        <label class="chk"><input type="checkbox" id="showBin" autocomplete="off"> Kód binárně</label>
-        <label class="chk"><input type="checkbox" id="showHex" autocomplete="off"> Kód hexadecimálně</label>
+        <label class="chk"><input type="checkbox" id="showBin" autocomplete="off"> Binární stupnice</label>
+        <label class="chk"><input type="checkbox" id="showHex" autocomplete="off"> Hexadecimální stupnice</label>
         <label class="sel" for="tblCp" id="tblCpBox" hidden>Zobrazit kódování
           <select id="tblCp"></select>
         </label>
@@ -596,10 +594,12 @@ function cellChar(c, page){
   if (ch==='­') return {t:'SHY', ctl:true};
   return {t:ch, cz:CZ.has(ch)};
 }
-// Přepínače pod tabulkou: binární a hexadecimální kód v buňkách (výchozí vypnuto)
+// Přepínače nad tabulkou: binární a hexadecimální stupnice v záhlaví a kód v textu po najetí myší (výchozí vypnuto)
 let showBin=false, showHex=false;
 // základní sada 7 bitů (100 0001), rozšířená 8 bitů (1100 1000), čtveřice oddělené mezerou
-const binGroups=c=>{ const b=c.toString(2).padStart(mode==='basic'?7:8,'0'); return b.slice(0,b.length-4)+'\u2009'+b.slice(-4); };
+const binGroups=c=>{ const b=c.toString(2).padStart(mode==='basic'?7:8,'0'); return b.slice(0,b.length-4)+' '+b.slice(-4); };
+// text po najetí myší na buňku: dekadicky vždy, binárně a hexadecimálně podle přepínačů
+const tipCode=c=>[String(c), showHex?c.toString(16).toUpperCase().padStart(2,'0')+'h':'', showBin?binGroups(c):''].filter(Boolean).join(' · ');
 $('showBin').onchange=()=>{ showBin=$('showBin').checked; renderTables(); };
 $('showHex').onchange=()=>{ showHex=$('showHex').checked; renderTables(); };
 function renderTables(){
@@ -607,20 +607,24 @@ function renderTables(){
   const cur = curV<0 ? -1 : (mode==='basic' ? curV&127 : curV);
   const base = mode==='basic' ? 0 : 128, page = mode==='basic' ? null : tblCp;
   let h='<table class="code"><thead><tr><th></th>';
-  for (let col=0;col<8;col++){ const hi=(base>>4)+col; h+=`<th>${hi.toString(2).padStart(mode==='basic'?3:4,'0')}<br>${(hi*16).toString(16).toUpperCase()}h</th>`; }
+  for (let col=0;col<8;col++){ const hi=(base>>4)+col, lines=[];
+    if (showBin) lines.push(hi.toString(2).padStart(mode==='basic'?3:4,'0'));
+    if (showHex) lines.push((hi*16).toString(16).toUpperCase()+'h');
+    lines.push(String(hi*16));
+    h+=`<th>${lines.join('<br>')}</th>`; }
   h+='</tr></thead><tbody>';
   for (let row=0;row<16;row++){
-    h+=`<tr><th class="rowh">${row.toString(2).padStart(4,'0')} · ${row.toString(16).toUpperCase()}</th>`;
+    h+=`<tr><th class="rowh">${[showBin?row.toString(2).padStart(4,'0'):'', showHex?row.toString(16).toUpperCase()+'h':'', '+'+row].filter(Boolean).join(' · ')}</th>`;
     for (let col=0;col<8;col++){
       const c=base+col*16+row, x=cellChar(c,page);
       const cls=[x.cz?'cz':'',x.undef?'undef':'',c===cur?'cur':''].filter(Boolean).join(' ');
-      h+=`<td class="${cls}" title="${c} · ${c.toString(16).toUpperCase().padStart(2,'0')}h · ${c.toString(2).padStart(8,'0')}${CTRLCZ[c]?' · '+CTRLCZ[c]:''}"><span class="c${x.ctl?' ctl':''}">${esc(x.t)}</span><span class="n">${c}</span>${showBin?`<span class="b">${binGroups(c)}</span>`:''}${showHex?`<span class="h">${c.toString(16).toUpperCase().padStart(2,'0')}h</span>`:''}</td>`;
+      h+=`<td class="${cls}" title="${tipCode(c)}${CTRLCZ[c]?' · '+CTRLCZ[c]:''}"><span class="c${x.ctl?' ctl':''}">${esc(x.t)}</span><span class="n">${c}</span></td>`;
     }
     h+='</tr>';
   }
   $('tables').innerHTML=h+'</tbody></table>';
   $('tblHint').textContent = mode==='basic'
-    ? 'Sloupec určují bity 7–5, řádek bity 4–1. Pod znakem je dekadický kód, přepínači nad tabulkou přidáte binární a hexadecimální.'
+    ? 'Kód znaku = číslo nad sloupcem + číslo řádku, pod znakem je výsledný dekadický kód. Binární stupnice ukáže, že sloupec určují bity 7–5 a řádek bity 4–1. Po najetí myší na buňku se ukáže kód i v zapnutých soustavách.'
     : `Horní polovina 128–255 v kódování ${CPSHORT[tblCp]}. Česká písmena jsou podbarvená zelenkavě, takže po přepnutí kódování je hned vidět, jak se přesunou. Žlutě je naposledy přijatý bajt.`;
 }
 
