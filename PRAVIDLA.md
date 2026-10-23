@@ -108,7 +108,7 @@ Používej **jen** tyto štítky. Nové nevytvářej.
 
 | Hodnota `zarizeni` | Význam | Štítek na kartě |
 |---|---|---|
-| `mobil` | aplikace je navržená i pro telefon | ikonka telefonu, „i na mobil“ |
+| `mobil` | aplikace je optimalizována pro zobrazení na mobilu | ikonka telefonu, „mobil“ |
 | `pocitac` | aplikace potřebuje větší obrazovku nebo myš | ikonka monitoru, „na počítač“ |
 
 - Hodnotu `mobil` smí mít jen aplikace, která na šířce displeje 390 px:
