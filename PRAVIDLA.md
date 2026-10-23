@@ -30,6 +30,7 @@ Platí pro každého, kdo do repozitáře `gympb/aplikace` (web https://aplikace
 | `autor` | ano | jméno a příjmení |
 | `zverejneno` | ano | datum prvního zveřejnění `RRRR-MM-DD`; vyplní se jednou při zveřejnění a **nikdy se nemění** |
 | `aktualizace` | ano | datum poslední úpravy `RRRR-MM-DD` |
+| `zarizeni` | ano | `mobil` nebo `pocitac`, viz bod 6b |
 | `stav` | ano | `nasazeno`, `priprava` nebo `archiv`, viz bod 6 |
 | `obrazek` | ano | `karta.svg`, viz bod 7 |
 | `odkaz` | ne | adresa aplikace, pokud není v tomto repozitáři |
@@ -48,6 +49,7 @@ Ukázka:
   "autor": "Jméno Příjmení",
   "zverejneno": "2026-11-02",
   "aktualizace": "2026-11-02",
+  "zarizeni": "pocitac",
   "stav": "nasazeno",
   "obrazek": "karta.svg"
 }
@@ -102,6 +104,20 @@ Používej **jen** tyto štítky. Nové nevytvářej.
 - Připnuté smějí být nejvýš 3 aplikace. Při připnutí čtvrté se pole `pripnuto` odstraní u té, která je připnutá nejdéle.
 - Připínat a odepínat smí jen správce katalogu. Aplikace ve stavu `priprava` se nepřipínají.
 
+## 6b. Vhodnost pro mobil
+
+| Hodnota `zarizeni` | Význam | Štítek na kartě |
+|---|---|---|
+| `mobil` | aplikace je navržená i pro telefon | ikonka telefonu, „i na mobil“ |
+| `pocitac` | aplikace potřebuje větší obrazovku nebo myš | ikonka monitoru, „na počítač“ |
+
+- Hodnotu `mobil` smí mít jen aplikace, která na šířce displeje 390 px:
+  - se vejde bez posouvání stránky do strany,
+  - jde celá ovládat prstem, bez najetí myší a bez klávesnice,
+  - má tlačítka a ovládací prvky nejméně 40 px velké.
+- Ostatní aplikace mají `pocitac`. Když si autor není jistý, zvolí `pocitac`.
+- Lišta na úvodní stránce má přepínač „Jen pro mobil“. Na telefonu se nad kartami zobrazí upozornění na aplikace vhodné pro mobil.
+
 ## 7. Složka aplikace
 
 Každá aplikace má vlastní složku `slug/` s těmito soubory:
@@ -144,5 +160,5 @@ Humorná knižní perokresba tenkou, lehce roztřesenou sépiovou linkou s voln�
 
 1. Složka `slug/` s `index.html`, `karta.svg`, `nahled.png`, `qr.png`.
 2. V aplikaci odkaz zpět, patička s autorem a licencí, žádné cizí zdroje ani počítadla.
-3. Záznam v `katalog.json` se všemi povinnými poli, ročníky jen ze seznamu v bodě 4, `stav: "nasazeno"`, `zverejneno` a `aktualizace` s dnešním datem.
+3. Záznam v `katalog.json` se všemi povinnými poli, ročníky jen ze seznamu v bodě 4, `zarizeni` podle bodu 6b, `stav: "nasazeno"`, `zverejneno` a `aktualizace` s dnešním datem.
 4. Soubor `katalog.json` je platný JSON a ostatní záznamy zůstaly beze změny.

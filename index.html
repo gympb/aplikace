@@ -98,6 +98,14 @@ a{color:inherit}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .cat-head{display:flex;justify-content:flex-end;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .cat-head h2{font-size:28px;letter-spacing:-.02em}
+/* vhodnost pro mobil: štítek na kartě, přepínač v liště, upozornění na telefonu */
+.ico{width:14px;height:14px;flex:none;display:inline-block;vertical-align:-2px}
+.tag.z{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1.5px solid var(--ink);color:var(--ink)}
+.tag.z.pc{border-color:var(--muted);color:var(--muted)}
+.mobchip{display:inline-flex;align-items:center;gap:7px;flex:none}
+.mobchip .ico{width:16px;height:16px}
+.mobnote{margin:0 auto 0 0;display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;font-size:14px;color:var(--ink);background:var(--accent-soft);padding:8px 12px;flex:1 1 100%}
+.mobnote button{font:600 14px var(--f-display);border:2px solid var(--ink);background:transparent;color:var(--ink);padding:4px 10px;cursor:pointer}
 .count{font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:30px 28px}
 .card{display:flex;flex-direction:column;border:1px solid var(--card-line);background:var(--bg);min-width:0;box-shadow:0 1px 2px rgba(17,17,17,.06),0 4px 14px rgba(17,17,17,.07);transition:transform .15s,box-shadow .15s,border-color .15s}
@@ -197,6 +205,7 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
       <label for="q">Hledat aplikaci</label>
       <input id="q" type="search" placeholder="Hledat podle názvu nebo tématu, např. šifra" autocomplete="off">
     </div>
+    <button class="chip mobchip" id="f-mob" aria-pressed="false" title="Zobrazit jen aplikace, které se dobře ovládají na telefonu"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="1.5" width="8" height="13" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 12.3h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> Jen pro mobil</button>
   </div>
   <div class="filters">
     <div class="chips" role="group" aria-label="Předmět"><span id="f-subj" class="chips"></span></div>
@@ -205,7 +214,7 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
 </div></div></div>
 
 <main class="cat"><div class="in">
-  <div class="cat-head"><h2 class="sr">Katalog aplikací</h2><span class="count" id="count"></span></div>
+  <div class="cat-head"><h2 class="sr">Katalog aplikací</h2><p class="mobnote" id="mobnote" hidden><span><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="1.5" width="8" height="13" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 12.3h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> Prohlížíte na telefonu. Aplikace se štítkem <b>i na mobil</b> se na něm ovládají nejlépe.</span> <button type="button" id="mobnote-go">Ukázat jen ty</button></p><span class="count" id="count"></span></div>
   <div class="grid" id="grid"></div>
 </div></main>
 
@@ -264,6 +273,10 @@ const BOMBA=`<button type="button" class="bomba" aria-label="BOMBA! Doporučená
   <path d="M9 15a7 7 0 0 1 5-4" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2" stroke-linecap="round"/>
   <g class="jiskra"><path d="M27 1v3M27 8v3M22 6h3M29 6h3M23.5 2.5l2 2M30.5 9.5l-2-2M30.5 2.5l-2 2M23.5 9.5l2-2" stroke="#f39a1f" stroke-width="1.6" stroke-linecap="round"/><circle cx="27" cy="6" r="1.8" fill="#ffd34d"/></g>
 </svg></button>`;
+// štítek vhodnosti pro mobil (pole „zarizeni“ v katalogu): mobil = navržena i pro telefon, pocitac = potřebuje velkou obrazovku nebo myš
+const ZAR={
+  mobil:'<span class="tag z" title="Aplikace se dobře ovládá i na telefonu"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="1.5" width="8" height="13" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 12.3h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>i na mobil</span>',
+  pocitac:'<span class="tag z pc" title="Aplikace potřebuje větší obrazovku nebo myš, na telefonu se ovládá hůř"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="8.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 14h4M8 11v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>na počítač</span>'};
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const datum=d=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');return m?`${+m[3]}. ${+m[2]}. ${m[1]}`:'';};
@@ -275,7 +288,7 @@ const TAGS=[...ROCNIKY,'NG','VG','All'];
 // ročníky, pro které aplikace platí (skupiny se rozbalí): aplikace se štítkem NG se ukáže i ve filtru TER
 const expand=r=>new Set(r.flatMap(g=>SKUPINY[g]||[g]));
 const gOrder=g=>{const k=TAGS.indexOf(g);return k<0?99:k;};
-const f={s:'Vše',g:'Vše',q:''};
+const f={s:'Vše',g:'Vše',q:'',m:false};
 
 function chips(el,list,key){
   $(el).innerHTML=list.map(v=>`<button class="chip" data-v="${esc(v)}" aria-pressed="${String(f[key])===String(v)}">${esc(v)}</button>`).join('');
@@ -291,7 +304,7 @@ function toResults(){
 }
 function render(){
   const q=norm(f.q.trim());
-  const list=APPS.filter(a=>(f.s==='Vše'||a.predmet.includes(f.s))&&(f.g==='Vše'||expand(a.rocnik).has(f.g))
+  const list=APPS.filter(a=>(!f.m||a.zarizeni==='mobil')&&(f.s==='Vše'||a.predmet.includes(f.s))&&(f.g==='Vše'||expand(a.rocnik).has(f.g))
     &&(!q||norm([a.nazev,a.popis,...(a.temata||[])].join(' ')).includes(q)));
   $('count').textContent=`Zobrazeno ${list.length} z ${APPS.length}`;
   $('grid').innerHTML=list.length?list.map(a=>{
@@ -301,7 +314,7 @@ function render(){
       <div class="card-body">
         <h3>${esc(a.nazev)}</h3>
         <p>${esc(a.popis)}</p>
-        <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag g" title="Ročník">${esc(t)}</span>`).join('')}${a.autor?`<span class="tag a" title="Autor">${esc(a.autor)}</span>`:''}${(a.zverejneno||a.aktualizace)?`<span class="tag d" title="Zveřejněno">${datum(a.zverejneno||a.aktualizace)}</span>`:''}${PINNED.has(a.slug)?BOMBA:''}</div>
+        <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag g" title="Ročník">${esc(t)}</span>`).join('')}${a.autor?`<span class="tag a" title="Autor">${esc(a.autor)}</span>`:''}${(a.zverejneno||a.aktualizace)?`<span class="tag d" title="Zveřejněno">${datum(a.zverejneno||a.aktualizace)}</span>`:''}${ZAR[a.zarizeni]||''}${PINNED.has(a.slug)?BOMBA:''}</div>
       </div>
       <div class="card-foot">
         ${prep?'<span class="status prep">V přípravě</span>':jeNova(a)?'<span class="status new">Nové</span>':'<span></span>'}
@@ -329,6 +342,12 @@ fetch('katalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.sta
   $('grid').innerHTML='<div class="empty">Katalog se nepodařilo načíst. Soubor katalog.json se načítá jen přes webový server, ne z disku. Otevřete stránku na adrese aplikace.gympb.cz, nebo ji spusťte lokálně příkazem <code>python3 -m http.server</code>.</div>';
 });
 $('q').oninput=e=>{f.q=e.target.value;render();};
+// přepínač „Jen pro mobil“ a upozornění, které se ukáže jen na telefonu (úzký displej a dotykové ovládání)
+function setMob(on){f.m=on;$('f-mob').setAttribute('aria-pressed',String(on));$('mobnote').hidden=on||!JE_TELEFON;render();toResults();}
+$('f-mob').onclick=()=>setMob(!f.m);
+$('mobnote-go').onclick=()=>setMob(true);
+const JE_TELEFON=matchMedia('(max-width:640px) and (pointer:coarse)').matches;
+$('mobnote').hidden=!JE_TELEFON;
 // na dotykových zařízeních není najetí myší: vlaječku rozvine klepnutí na bombu, klepnutí jinam ji svine
 document.addEventListener('click',e=>{const b=e.target.closest('.bomba');
   document.querySelectorAll('.bomba.open').forEach(x=>{if(x!==b)x.classList.remove('open');});
