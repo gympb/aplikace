@@ -142,6 +142,9 @@ table.code td{border:1px solid var(--line);padding:3px 4px;text-align:center;min
 table.code td .c{display:block;font-family:var(--f-print);font-size:19px;font-weight:700;line-height:1.1}
 table.code td .c.ctl{font-family:var(--f-mono);font-size:10.5px;font-weight:600;color:var(--muted)}
 table.code td .n{display:block;font-family:var(--f-mono);font-size:12.5px;font-weight:700;color:var(--ink);opacity:.82;margin-top:2px;letter-spacing:.02em}
+table.code td .b,table.code td .h{display:block;font-family:var(--f-mono);font-size:10.5px;line-height:1.3;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+table.code td .h{color:var(--accent,var(--muted));font-weight:600}
+.tbl-opts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
 table.code td.cz{background:var(--cz)}
 table.code td.undef .c{color:var(--muted);font-weight:400}
 table.code td.cur{background:color-mix(in srgb,var(--hl) 55%,transparent)}
@@ -244,9 +247,13 @@ footer{font-size:13px;color:var(--muted);max-width:78ch}
 
   <section class="panel" aria-labelledby="h-tbl">
     <div class="panel-head"><h2 id="h-tbl">Tabulka kódu</h2>
-      <label class="sel" for="tblCp" id="tblCpBox" hidden>Zobrazit kódování
-        <select id="tblCp"></select>
-      </label>
+      <div class="tbl-opts">
+        <label class="chk"><input type="checkbox" id="showBin" autocomplete="off"> Kód binárně</label>
+        <label class="chk"><input type="checkbox" id="showHex" autocomplete="off"> Kód hexadecimálně</label>
+        <label class="sel" for="tblCp" id="tblCpBox" hidden>Zobrazit kódování
+          <select id="tblCp"></select>
+        </label>
+      </div>
     </div>
     <p class="hint" id="tblHint"></p>
     <div class="tbl-wrap" id="tables"></div>
@@ -271,7 +278,7 @@ footer{font-size:13px;color:var(--muted);max-width:78ch}
     <p class="hint">Tato páska je nezávislá na vysílači. Kliknutím na vyděrovaný otvor překlopíte bit. Tlačítko Založit na linku ji předá do vysílání místo pásky z textu. Tlačítka s kódem vyděrují znak rovnou a rozpracovaný sloupec nechají být.</p>
   </section>
 
-  <footer>ASCII (American Standard Code for Information Interchange) vznikl v roce 1963, malá písmena dostal v roce 1967. Má 7 bitů, tedy 128 kódů, z toho 33 řídicích. Osmý bit se na dálnopisech a páskách používal jako paritní. Když osmibitové počítače začaly osmý bit využívat pro další znaky, vzniklo pro češtinu několik navzájem neslučitelných sad. Výchozí americká sada počítačů IBM PC (CP437) česká písmena vůbec neměla, horní polovinu zabíraly rámečky, řecká písmena a západoevropská písmena s přehláskami. Pro češtinu vznikly: kód bratří Kamenických (KEYBCS2) a PC Latin 2 (CP852) pro MS-DOS, ISO 8859-2 (Latin 2) pro Unix a internet a Windows-1250 pro Windows. Text zapsaný v jedné sadě a přečtený v jiné se zobrazil jako „rozsypaný čaj“. Problém vyřešil až Unicode a kódování UTF-8.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 22. 10. 2026</footer>
+  <footer>ASCII (American Standard Code for Information Interchange) vznikl v roce 1963, malá písmena dostal v roce 1967. Má 7 bitů, tedy 128 kódů, z toho 33 řídicích. Osmý bit se na dálnopisech a páskách používal jako paritní. Když osmibitové počítače začaly osmý bit využívat pro další znaky, vzniklo pro češtinu několik navzájem neslučitelných sad. Výchozí americká sada počítačů IBM PC (CP437) česká písmena vůbec neměla, horní polovinu zabíraly rámečky, řecká písmena a západoevropská písmena s přehláskami. Pro češtinu vznikly: kód bratří Kamenických (KEYBCS2) a PC Latin 2 (CP852) pro MS-DOS, ISO 8859-2 (Latin 2) pro Unix a internet a Windows-1250 pro Windows. Text zapsaný v jedné sadě a přečtený v jiné se zobrazil jako „rozsypaný čaj“. Problém vyřešil až Unicode a kódování UTF-8.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 23. 10. 2026</footer>
 </div>
 
 <script>
@@ -589,6 +596,12 @@ function cellChar(c, page){
   if (ch==='­') return {t:'SHY', ctl:true};
   return {t:ch, cz:CZ.has(ch)};
 }
+// Přepínače pod tabulkou: binární a hexadecimální kód v buňkách (výchozí vypnuto)
+let showBin=false, showHex=false;
+// základní sada 7 bitů (100 0001), rozšířená 8 bitů (1100 1000), čtveřice oddělené mezerou
+const binGroups=c=>{ const b=c.toString(2).padStart(mode==='basic'?7:8,'0'); return b.slice(0,b.length-4)+'\u2009'+b.slice(-4); };
+$('showBin').onchange=()=>{ showBin=$('showBin').checked; renderTables(); };
+$('showHex').onchange=()=>{ showHex=$('showHex').checked; renderTables(); };
 function renderTables(){
   const curV = pos>0 && pos<=tape.length ? tape[pos-1] : -1;
   const cur = curV<0 ? -1 : (mode==='basic' ? curV&127 : curV);
@@ -601,13 +614,13 @@ function renderTables(){
     for (let col=0;col<8;col++){
       const c=base+col*16+row, x=cellChar(c,page);
       const cls=[x.cz?'cz':'',x.undef?'undef':'',c===cur?'cur':''].filter(Boolean).join(' ');
-      h+=`<td class="${cls}" title="${c} · ${c.toString(16).toUpperCase().padStart(2,'0')}h · ${c.toString(2).padStart(8,'0')}${CTRLCZ[c]?' · '+CTRLCZ[c]:''}"><span class="c${x.ctl?' ctl':''}">${esc(x.t)}</span><span class="n">${c}</span></td>`;
+      h+=`<td class="${cls}" title="${c} · ${c.toString(16).toUpperCase().padStart(2,'0')}h · ${c.toString(2).padStart(8,'0')}${CTRLCZ[c]?' · '+CTRLCZ[c]:''}"><span class="c${x.ctl?' ctl':''}">${esc(x.t)}</span><span class="n">${c}</span>${showBin?`<span class="b">${binGroups(c)}</span>`:''}${showHex?`<span class="h">${c.toString(16).toUpperCase().padStart(2,'0')}h</span>`:''}</td>`;
     }
     h+='</tr>';
   }
   $('tables').innerHTML=h+'</tbody></table>';
   $('tblHint').textContent = mode==='basic'
-    ? 'Sloupec určují bity 7–5, řádek bity 4–1. Pod znakem je dekadický kód.'
+    ? 'Sloupec určují bity 7–5, řádek bity 4–1. Pod znakem je dekadický kód, přepínači nad tabulkou přidáte binární a hexadecimální.'
     : `Horní polovina 128–255 v kódování ${CPSHORT[tblCp]}. Česká písmena jsou podbarvená zelenkavě, takže po přepnutí kódování je hned vidět, jak se přesunou. Žlutě je naposledy přijatý bajt.`;
 }
 
