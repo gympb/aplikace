@@ -609,7 +609,7 @@ function renderTables(){
   const base = mode==='basic' ? 0 : 128, page = mode==='basic' ? null : tblCp;
   let h='<table class="code"><thead><tr><th></th>';
   for (let col=0;col<8;col++){ const hi=(base>>4)+col, lines=[];
-    if (showBin) lines.push(hi.toString(2).padStart(mode==='basic'?3:4,'0'));
+    if (showBin) lines.push(hi.toString(2).padStart(4,'0')); // horní 4 bity, spolu s řádkem dávají 8bitový kód
     if (showHex) lines.push((hi*16).toString(16).toUpperCase()+'h');
     lines.push(String(hi*16));
     h+=`<th>${lines.join('<br>')}</th>`; }
@@ -625,7 +625,7 @@ function renderTables(){
   }
   $('tables').innerHTML=h+'</tbody></table>';
   $('tblHint').textContent = mode==='basic'
-    ? 'Kód znaku = číslo nad sloupcem + číslo řádku, pod znakem je výsledný dekadický kód. Binární stupnice ukáže, že sloupec určují bity 7–5 a řádek bity 4–1. Po najetí myší na buňku se ukáže kód i v zapnutých soustavách, u řídicích znaků 0–32 a 127 také jejich význam.'
+    ? 'Kód znaku = číslo nad sloupcem + číslo řádku, pod znakem je výsledný dekadický kód. Binární stupnice ukáže, že sloupec určují horní 4 bity (8–5, v základní sadě je 8. bit vždy 0) a řádek dolní 4 bity (4–1). Po najetí myší na buňku se ukáže kód i v zapnutých soustavách, u řídicích znaků 0–32 a 127 také jejich význam.'
     : `Horní polovina 128–255 v kódování ${CPSHORT[tblCp]}. Česká písmena jsou podbarvená zelenkavě, takže po přepnutí kódování je hned vidět, jak se přesunou. Žlutě je naposledy přijatý bajt.`;
 }
 
