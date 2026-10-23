@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Logaritmické pravítko</title>
+<meta name="description" content="Interaktivní trenažér logaritmického pravítka: žák podle pokynů sám nastavuje šoupátko a běžec, každý správný krok se potvrdí. Násobení, dělení, úměra, mocniny, odmocniny, převrácená hodnota a logaritmus.">
+<meta name="author" content="Ivo Bešťák">
+<meta property="og:title" content="Logaritmické pravítko">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+/* Layout: rýsovací deska — pravítko nahoře, hned pod ním pokyn trenéra, pod tím průběh úlohy a výběr úloh */
+:root{
+  --bg:#e6eae6;
+  --surface:#f4f6f3;
+  --fg:#1a2421;
+  --muted:#56635e;
+  --line:#c9d0cb;
+  --accent:#b3261e;
+  --accent-ink:#ffffff;
+  --ok:#1d7346;
+  --ok-bg:#e1f0e6;
+  /* fyzické pravítko: stejné v obou motivech */
+  --rule-face:#f8f7f0;
+  --rule-slide:#fdfcf6;
+  --rule-ink:#141414;
+  --rule-red:#c0281f;
+  --rule-hint:#1d64b0;
+  --rule-groove:#7c857f;
+  --rule-edge:#bfc4bb;
+  --font-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121816;--surface:#1b2320;--fg:#e2e8e4;--muted:#98a59f;--line:#2e3a36;
+    --accent:#e0574d;--accent-ink:#1a0c0b;--ok:#62c98f;--ok-bg:#16301f;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121816;--surface:#1b2320;--fg:#e2e8e4;--muted:#98a59f;--line:#2e3a36;
+  --accent:#e0574d;--accent-ink:#1a0c0b;--ok:#62c98f;--ok-bg:#16301f;color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.55}
+.page{max-width:1120px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px}
+header{display:flex;flex-direction:column;gap:10px;max-width:70ch}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--font-display);font-stretch:125%;font-weight:800;font-size:clamp(30px,6vw,54px);line-height:1;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h2{font-family:var(--font-display);font-stretch:112%;font-weight:700;font-size:22px;line-height:1.2;margin:0;text-wrap:balance}
+h3{font-family:var(--font-display);font-stretch:105%;font-weight:700;font-size:18px;line-height:1.25;margin:0}
+p{margin:0}
+.lead{color:var(--muted);font-size:17px}
+b{font-weight:600}
+
+/* záložky */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tab{border:0;background:transparent;color:var(--muted);padding:10px 16px;font-family:var(--font-display);font-stretch:110%;font-weight:700;font-size:16px;border-bottom:3px solid transparent;margin-bottom:-1px;cursor:pointer}
+.tab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+.tab:hover{color:var(--fg)}
+.panel{display:flex;flex-direction:column;gap:18px}
+
+/* pravítko */
+.rule-wrap{position:relative;width:100%;border-radius:6px;background:linear-gradient(180deg,#d9ddd5,#b9bfb4);padding:6px 0;box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 10px 24px -14px rgba(0,0,0,.55);scroll-margin-top:12px}
+canvas{display:block;width:100%;touch-action:pan-y;cursor:grab;user-select:none}
+canvas.dragging{cursor:grabbing}
+
+/* trenér */
+.coach{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:4px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;transition:border-color .25s,background-color .25s}
+.coach.flash{border-left-color:var(--ok);background:var(--ok-bg)}
+.coach.done{border-left-color:var(--ok)}
+.coach-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.coach-step{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.coach-ok{color:var(--ok);font-size:15px;display:flex;gap:8px}
+.coach-ok::before{content:"✓";font-weight:700}
+.coach-text{font-size:19px;line-height:1.4;max-width:62ch}
+.coach-text b{color:var(--accent)}
+.coach-hint{font-size:15px;color:var(--fg);border-top:1px dashed var(--line);padding-top:8px;max-width:65ch}
+.coach-hint::before{content:"Nápověda: ";font-weight:600;color:var(--rule-hint)}
+.coach-err{color:var(--accent);font-size:15px}
+.coach-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.answer{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.answer input{font-family:var(--font-mono);font-size:18px;width:9em;padding:7px 10px;border:1px solid var(--fg);border-radius:4px;background:var(--bg);color:var(--fg)}
+.result{font-family:var(--font-display);font-stretch:110%;font-weight:800;font-size:clamp(24px,4vw,32px);line-height:1.1}
+
+.readout{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:6px 8px;display:flex;flex-direction:column;min-width:0}
+.chip .n{font-family:var(--font-display);font-stretch:110%;font-weight:700;font-size:13px;color:var(--muted)}
+.chip .n.red{color:var(--accent)}
+.chip .v{font-family:var(--font-mono);font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.d{border-color:var(--fg)}
+.readout.masked .v{color:var(--muted)}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;align-items:end}
+.ctl{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ctl label{font-size:13px;color:var(--muted)}
+.ctl .row{display:flex;gap:6px;align-items:center}
+input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
+button{font:inherit;cursor:pointer}
+.nudge{width:36px;height:36px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;font-family:var(--font-mono);font-size:14px;line-height:1;flex:none}
+.btn{border:1px solid var(--fg);background:transparent;color:var(--fg);padding:8px 14px;border-radius:4px;font-size:14px;font-weight:500;white-space:nowrap}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.quiet{border-color:var(--line);color:var(--muted)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn:hover,.nudge:hover{border-color:var(--accent)}
+.btn.quiet:hover{color:var(--fg)}
+
+/* průběh a výběr úloh */
+.work{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:start}
+.task{display:flex;flex-direction:column;gap:12px;min-width:0}
+.task-q{font-size:17px}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;counter-reset:st}
+.steps li{counter-increment:st;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;font-size:15px;color:var(--muted)}
+.steps li::before{content:counter(st);font-family:var(--font-mono);font-size:13px;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)}
+.steps li.ok::before{content:"✓";border-color:var(--ok);color:var(--ok);font-weight:700}
+.steps li.now{color:var(--fg);font-weight:500}
+.steps li.now::before{border-color:var(--accent);color:var(--accent)}
+.steps li.more{color:var(--muted);font-style:italic}
+.steps li.more::before{content:"…";border-style:dashed}
+.task-actions{display:flex;gap:8px;flex-wrap:wrap}
+.exlist{display:flex;flex-direction:column;gap:8px;min-width:0}
+.exgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:6px}
+.ex{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;padding:8px 10px;font-size:14px}
+.ex[aria-current="true"]{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.ex .st{font-family:var(--font-mono);font-size:12px;color:var(--ok);flex:none}
+.ex:hover{border-color:var(--fg)}
+.label{font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* princip */
+.guide{display:flex;flex-direction:column;gap:28px}
+.intro{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:start}
+.intro .txt{display:flex;flex-direction:column;gap:12px;max-width:65ch}
+.formula{font-family:var(--font-mono);background:var(--surface);border:1px solid var(--line);padding:10px 12px;border-radius:4px;font-size:15px}
+.scales{width:100%;border-collapse:collapse;font-size:14px}
+.scales th,.scales td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.scales th{font-family:var(--font-mono);font-weight:500;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.scales td:first-child{font-family:var(--font-display);font-stretch:110%;font-weight:700;width:3.2em}
+.scales td.red{color:var(--accent)}
+.table-scroll{overflow-x:auto}
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
+.tips div{display:flex;flex-direction:column;gap:6px;max-width:60ch}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+
+@media (max-width:760px){
+  .readout{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .controls{grid-template-columns:1fr}
+  .intro,.work{grid-template-columns:1fr}
+  .coach-text{font-size:17px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+.back{font-weight:600;font-size:14px;color:var(--muted);text-decoration:none;align-self:flex-start}
+.back:hover{color:var(--accent)}
+.page>footer a{color:inherit}
+</style>
+</head>
+<body>
+<div class="page">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <header>
+    <span class="eyebrow">Interaktivní trenažér · stupnice K, A, B, CI, C, D, L</span>
+    <h1>Logaritmické pravítko</h1>
+    <p class="lead">Vyber úlohu a postupuj podle pokynů. Šoupátko a průhledného běžce s červenou vlasovou čarou nastav sám. Každý správný krok se potvrdí a pak se ukáže další.</p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Části stránky">
+    <button class="tab" role="tab" id="tab-procvicovani" aria-controls="procvicovani" aria-selected="true">Procvičování</button>
+    <button class="tab" role="tab" id="tab-princip" aria-controls="princip" aria-selected="false">Jak to funguje</button>
+  </div>
+
+  <section class="panel" id="procvicovani" role="tabpanel" aria-labelledby="tab-procvicovani">
+    <div class="rule-wrap" id="ruleWrap"><canvas id="rule" aria-label="Logaritmické pravítko se stupnicemi K, A, B, CI, C, D a L"></canvas></div>
+
+    <div class="coach" id="coach" aria-live="polite"></div>
+
+    <div class="readout" id="readout" aria-label="Hodnoty pod vlasovou čarou"></div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="slideRange">Šoupátko (jemný posun)</label>
+        <div class="row">
+          <button class="nudge" data-n="s" data-d="-1" aria-label="Šoupátko doleva">◀</button>
+          <input type="range" id="slideRange" min="-1" max="1" step="0.0005" value="0">
+          <button class="nudge" data-n="s" data-d="1" aria-label="Šoupátko doprava">▶</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label for="cursorRange">Běžec (jemný posun)</label>
+        <div class="row">
+          <button class="nudge" data-n="c" data-d="-1" aria-label="Běžec doleva">◀</button>
+          <input type="range" id="cursorRange" min="-0.03" max="1.03" step="0.0005" value="0">
+          <button class="nudge" data-n="c" data-d="1" aria-label="Běžec doprava">▶</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="work">
+      <div class="task" id="task"></div>
+      <div class="exlist">
+        <span class="label">Úlohy</span>
+        <div class="exgrid" id="exgrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel guide" id="princip" role="tabpanel" aria-labelledby="tab-princip" hidden>
+    <div class="intro">
+      <div class="txt">
+        <h2>Jak to funguje</h2>
+        <p>Na stupnicích nejsou čísla rozmístěná rovnoměrně, ale podle svého logaritmu. Vzdálenost čísla 2 od začátku stupnice odpovídá lg 2 ≈ 0,301 délky, číslo 3 leží na 0,477 a tak dále.</p>
+        <p class="formula">lg(a · b) = lg a + lg b<br>lg(a : b) = lg a − lg b</p>
+        <p>Násobení se tak mění na sčítání délek: přiložíš jednu délku za druhou a výsledek přečteš. Dělení je odčítání délek. Proto pravítko nemá žádnou mechaniku, jen dvě stupnice, které po sobě kloužou.</p>
+        <p>Pravítko ukazuje pouze <b>platné číslice</b> výsledku, ne jeho řád. Kde je desetinná čárka, určíš odhadem. Přesnost je zhruba tři platné číslice.</p>
+      </div>
+      <div class="table-scroll">
+        <table class="scales">
+          <thead><tr><th>Stupnice</th><th>Kde</th><th>K čemu slouží</th></tr></thead>
+          <tbody>
+            <tr><td>K</td><td>těleso</td><td>třetí mocniny a odmocniny (3 dekády, 1–1000)</td></tr>
+            <tr><td>A</td><td>těleso</td><td>druhé mocniny a odmocniny (2 dekády, 1–100)</td></tr>
+            <tr><td>B</td><td>šoupátko</td><td>jako A, posouvá se se šoupátkem</td></tr>
+            <tr><td class="red">CI</td><td>šoupátko</td><td>převrácená stupnice C, čte se zprava, dává 1/x</td></tr>
+            <tr><td>C</td><td>šoupátko</td><td>základní stupnice, druhý činitel nebo dělitel</td></tr>
+            <tr><td>D</td><td>těleso</td><td>základní stupnice, první číslo a výsledek</td></tr>
+            <tr><td>L</td><td>těleso</td><td>lineární stupnice dekadických logaritmů 0–1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h2>Jak určit řád výsledku</h2>
+    <div class="tips">
+      <div>
+        <h3>Odhad zaokrouhlením</h3>
+        <p>Spočítej 23 × 410. Na pravítku vyjde posloupnost číslic 9,43. Odhad 20 × 400 = 8 000 říká, že výsledek má čtyři cifry před čárkou, tedy 9 430.</p>
+      </div>
+      <div>
+        <h3>Přes vědecký zápis</h3>
+        <p>0,0035 × 620 = 3,5·10⁻³ × 6,2·10². Na pravítku vynásobíš 3,5 × 6,2 = 21,7. Exponenty sečteš: 10⁻¹. Výsledek je 2,17.</p>
+      </div>
+      <div>
+        <h3>Čtení mezi dílky</h3>
+        <p>Mezi 1 a 2 je dílek po 0,01, mezi 2 a 4 po 0,02 a za 4 po 0,05 (na široké obrazovce). Hodnotu mezi dílky odhaduj okem, stejně jako na skutečném pravítku.</p>
+      </div>
+    </div>
+
+    <p class="lead" style="font-size:14px">Logaritmické pravítko vymyslel William Oughtred kolem roku 1622. Inženýři ho používali až do nástupu kapesních kalkulaček v 70. letech 20. století. Simulace zobrazuje 7 stupnic; skutečná pravítka jich měla často přes 20.</p>
+  </section>
+
+  <footer>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 23. 10. 2026</footer>
+</div>
+
+<script>
+(function(){
+  const lg = Math.log10;
+  const canvas = document.getElementById('rule');
+  const ctx = canvas.getContext('2d');
+  const coachEl = document.getElementById('coach');
+  const taskEl = document.getElementById('task');
+  const exgridEl = document.getElementById('exgrid');
+  const slideRange = document.getElementById('slideRange');
+  const cursorRange = document.getElementById('cursorRange');
+  const readoutEl = document.getElementById('readout');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const st = { s: 0, c: 0 };
+  let geo = {};
+  const H = 236;
+  const ROWS = {
+    K:  {top:4,   bot:38,  base:38,  dir:-1},
+    A:  {top:38,  bot:72,  base:72,  dir:-1},
+    B:  {top:76,  bot:104, base:76,  dir:1},
+    CI: {top:104, bot:132, base:104, dir:1},
+    C:  {top:132, bot:160, base:160, dir:-1},
+    D:  {top:164, bot:198, base:164, dir:1},
+    L:  {top:198, bot:232, base:198, dir:1}
+  };
+  const SLIDE_TOP = 74, SLIDE_BOT = 162;
+
+  function css(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  let C = {};
+  function readColors(){
+    C = { face:css('--rule-face'), slide:css('--rule-slide'), ink:css('--rule-ink'), red:css('--rule-red'),
+          hint:css('--rule-hint'), groove:css('--rule-groove'), edge:css('--rule-edge') };
+  }
+
+  /* ---------- kreslení ---------- */
+  function resize(){
+    const w = canvas.parentElement.clientWidth;
+    if (!w) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(w*dpr); canvas.height = Math.round(H*dpr);
+    canvas.style.height = H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const narrow = w < 560;
+    const ML = narrow ? 30 : 46, MR = narrow ? 14 : 46;
+    geo = { W:w, ML, MR, x0:ML, len:w-ML-MR, narrow, fs: narrow ? 9 : 11 };
+    draw();
+  }
+  function tickH(v){
+    const r = Math.round(v*100);
+    if (r % 100 === 0) return 1;
+    if (r % 50 === 0) return 0.72;
+    if (r % 10 === 0) return 0.55;
+    if (r % 5 === 0) return 0.42;
+    return 0.32;
+  }
+  function drawLog(row, cycles, xs, len, color, inverted){
+    const R = ROWS[row], th = 12, dl = len/cycles, fs = geo.fs;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1;
+    ctx.font = `500 ${fs}px "IBM Plex Mono", monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const X = (k, v) => { const f = (k + lg(v))/cycles; return inverted ? xs + len*(1-f) : xs + len*f; };
+    const steps = [0.01,0.02,0.05,0.1,0.2,0.5,1];
+    const segs = [[1,2],[2,4],[4,10]];
+    const labelY = R.base + R.dir*(th + fs*0.7 + 2);
+    ctx.beginPath();
+    for (let k=0;k<cycles;k++){
+      for (const [a,b] of segs){
+        let step = 1;
+        for (const s of steps){ if (dl*(lg(b)-lg(b-s)) >= 3.4){ step = s; break; } }
+        const n0 = Math.round(a/step), n1 = Math.round(b/step);
+        for (let n=n0;n<n1;n++){
+          const v = n*step, x = Math.round(X(k,v))+0.5, h = th*tickH(v);
+          ctx.moveTo(x, R.base); ctx.lineTo(x, R.base + R.dir*h);
+        }
+      }
+    }
+    const xe = Math.round(X(cycles-1,10))+0.5;
+    ctx.moveTo(xe, R.base); ctx.lineTo(xe, R.base + R.dir*th);
+    ctx.stroke();
+    for (let k=0;k<cycles;k++){
+      for (let m=1;m<=9;m++){
+        if (m>1 && dl*lg((m+1)/m) < fs*0.95) continue;
+        ctx.fillText(String(m), X(k,m), labelY);
+      }
+      if (dl*lg(2/1.9) >= 15){
+        ctx.font = `400 ${fs-2}px "IBM Plex Mono", monospace`;
+        for (let t=1;t<=9;t++) ctx.fillText(String(t), X(k,1+t/10), R.base + R.dir*(th*0.55 + fs*0.6 + 2));
+        ctx.font = `500 ${fs}px "IBM Plex Mono", monospace`;
+      }
+    }
+    ctx.fillText('1', X(cycles-1,10), labelY);
+    if (row !== 'K' && row !== 'CI'){
+      ctx.save(); ctx.strokeStyle = C.red; ctx.fillStyle = C.red;
+      for (let k=0;k<cycles;k++){
+        const x = Math.round(X(k,Math.PI))+0.5;
+        ctx.beginPath(); ctx.moveTo(x,R.base); ctx.lineTo(x,R.base+R.dir*th*0.9); ctx.stroke();
+        if (dl > 120) ctx.fillText('π', x+(fs*0.55), R.base + R.dir*(th*0.9 - 2));
+      }
+      ctx.restore();
+    }
+  }
+  function drawLin(row, xs, len, color){
+    const R = ROWS[row], th = 12, fs = geo.fs;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1;
+    let step = 0.01; if (len*0.01 < 3.4) step = 0.02; if (len*0.02 < 3.4) step = 0.05;
+    ctx.beginPath();
+    const n1 = Math.round(1/step);
+    for (let n=0;n<=n1;n++){
+      const v = n*step, r = Math.round(v*100);
+      const h = r%10===0 ? 1 : (r%5===0 ? 0.65 : 0.4);
+      const x = Math.round(xs+len*v)+0.5;
+      ctx.moveTo(x,R.base); ctx.lineTo(x,R.base+R.dir*th*h);
+    }
+    ctx.stroke();
+    ctx.font = `500 ${fs}px "IBM Plex Mono", monospace`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    const labelY = R.base + R.dir*(th + fs*0.7 + 2);
+    for (let t=0;t<=10;t++){
+      const lab = t===0 ? '0' : (t===10 ? '1' : (geo.narrow ? String(t) : ','+t));
+      ctx.fillText(lab, xs+len*t/10, labelY);
+    }
+  }
+  function rowName(row, x, color, align){
+    const R = ROWS[row];
+    ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline='middle';
+    ctx.font = `700 ${geo.narrow?11:13}px "Archivo", sans-serif`;
+    ctx.fillText(row, x, (R.top+R.bot)/2);
+  }
+  function rowFormula(row, txt, x, color){
+    if (geo.narrow) return;
+    const R = ROWS[row];
+    ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline='middle';
+    ctx.font = `400 12px "IBM Plex Mono", monospace`;
+    ctx.fillText(txt, x, (R.top+R.bot)/2);
+  }
+  function rrect(x,y,w,h,r){ ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x,y,w,h,r); else ctx.rect(x,y,w,h); }
+
+  function drawHint(){
+    const step = currentStep();
+    if (!cur.hint || auto || !step || !step.move) return;
+    const tgt = snap(step, {s:st.s, c:st.c});
+    const {x0, len} = geo;
+    ctx.save();
+    ctx.strokeStyle = C.hint; ctx.fillStyle = C.hint; ctx.lineWidth = 2; ctx.setLineDash([5,4]);
+    ctx.font = `600 ${geo.narrow?10:12}px "IBM Plex Sans", sans-serif`; ctx.textBaseline = 'middle';
+    if (step.move === 'c'){
+      const x = x0 + tgt.c*len;
+      ctx.beginPath(); ctx.moveTo(x, 6); ctx.lineTo(x, H-6); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.textAlign = x > geo.W - 70 ? 'right' : 'left';
+      ctx.fillText('běžec sem', x + (ctx.textAlign==='left' ? 5 : -5), 12);
+    } else {
+      // čárka na šoupátku, která má dojet pod vlasovou čáru
+      const off = tgt.c - tgt.s;
+      const xm = x0 + (st.s + off)*len, xc = x0 + st.c*len;
+      ctx.beginPath(); ctx.moveTo(xm, SLIDE_TOP+2); ctx.lineTo(xm, SLIDE_BOT-2); ctx.stroke();
+      ctx.setLineDash([]);
+      const y = (SLIDE_TOP+SLIDE_BOT)/2;
+      if (Math.abs(xc-xm) > 14){
+        const dir = Math.sign(xc-xm);
+        ctx.beginPath(); ctx.moveTo(xm, y); ctx.lineTo(xc - dir*6, y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(xc - dir*6, y-5); ctx.lineTo(xc, y); ctx.lineTo(xc - dir*6, y+5); ctx.closePath(); ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  function draw(){
+    if (!geo.W) return;
+    const {W, x0, len, ML, MR} = geo;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = C.groove; ctx.fillRect(0, SLIDE_TOP-2, W, SLIDE_BOT-SLIDE_TOP+4);
+    ctx.fillStyle = C.face;
+    rrect(2, 2, W-4, SLIDE_TOP-4, 3); ctx.fill();
+    rrect(2, SLIDE_BOT+2, W-4, H-SLIDE_BOT-4, 3); ctx.fill();
+    const sx = x0 + st.s*len;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, SLIDE_TOP, W, SLIDE_BOT-SLIDE_TOP); ctx.clip();
+    ctx.fillStyle = C.slide; ctx.fillRect(sx-ML+4, SLIDE_TOP, len+ML+MR-8, SLIDE_BOT-SLIDE_TOP);
+    ctx.strokeStyle = C.edge; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(sx-ML+4, SLIDE_TOP+0.5); ctx.lineTo(sx+len+MR-4, SLIDE_TOP+0.5);
+    ctx.moveTo(sx-ML+4, SLIDE_BOT-0.5); ctx.lineTo(sx+len+MR-4, SLIDE_BOT-0.5); ctx.stroke();
+    drawLog('B', 2, sx, len, C.ink, false);
+    drawLog('CI', 1, sx, len, C.red, true);
+    drawLog('C', 1, sx, len, C.ink, false);
+    rowName('B', sx-10, C.ink, 'right'); rowName('CI', sx-10, C.red, 'right'); rowName('C', sx-10, C.ink, 'right');
+    rowFormula('B','x²', sx+len+MR/2, C.ink); rowFormula('CI','1/x', sx+len+MR/2, C.red); rowFormula('C','x', sx+len+MR/2, C.ink);
+    ctx.restore();
+    drawLog('K', 3, x0, len, C.ink, false);
+    drawLog('A', 2, x0, len, C.ink, false);
+    drawLog('D', 1, x0, len, C.ink, false);
+    drawLin('L', x0, len, C.ink);
+    rowName('K', 8, C.ink, 'left'); rowName('A', 8, C.ink, 'left'); rowName('D', 8, C.ink, 'left'); rowName('L', 8, C.ink, 'left');
+    rowFormula('K','x³', W-MR/2, C.ink); rowFormula('A','x²', W-MR/2, C.ink); rowFormula('D','x', W-MR/2, C.ink); rowFormula('L','lg x', W-MR/2, C.ink);
+    drawHint();
+    const cx = x0 + st.c*len, gw = geo.narrow ? 26 : 38;
+    ctx.fillStyle = 'rgba(170,200,220,0.20)'; ctx.fillRect(cx-gw/2, 0, gw, H);
+    ctx.strokeStyle = 'rgba(60,80,95,0.55)'; ctx.lineWidth = 1;
+    ctx.strokeRect(Math.round(cx-gw/2)+0.5, 0.5, gw, H-1);
+    ctx.fillStyle = 'rgba(80,95,105,0.85)';
+    ctx.fillRect(cx-gw/2-3, 0, gw+6, 4); ctx.fillRect(cx-gw/2-3, H-4, gw+6, 4);
+    ctx.strokeStyle = C.red; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(cx, 4); ctx.lineTo(cx, H-4); ctx.stroke();
+    updateReadout();
+  }
+
+  /* ---------- odečty ---------- */
+  const SCALES = [['K',false],['A',false],['B',false],['CI',true],['C',false],['D',false],['L',false]];
+  readoutEl.innerHTML = SCALES.map(([n,red]) =>
+    `<div class="chip${n==='D'?' d':''}"><span class="n${red?' red':''}">${n}</span><span class="v" id="ro-${n}">–</span></div>`).join('');
+  function fmt3(v){ return isFinite(v) ? v.toPrecision(3).replace('.', ',') : 'mimo'; }
+  function updateReadout(){
+    const step = currentStep();
+    const masked = !!(step && step.read && !auto && !cur.done);
+    readoutEl.classList.toggle('masked', masked);
+    const c = st.c, u = st.c - st.s;
+    const inT = c >= -1e-9 && c <= 1+1e-9, inS = u >= -1e-9 && u <= 1+1e-9;
+    const set = (n,v) => { document.getElementById('ro-'+n).textContent = masked ? '?' : v; };
+    set('D', inT ? fmt3(10**c) : 'mimo');
+    set('A', inT ? fmt3(10**(2*c)) : 'mimo');
+    set('K', inT ? fmt3(10**(3*c)) : 'mimo');
+    set('L', inT ? c.toFixed(3).replace('.', ',') : 'mimo');
+    set('C', inS ? fmt3(10**u) : 'mimo');
+    set('B', inS ? fmt3(10**(2*u)) : 'mimo');
+    set('CI', inS ? fmt3(10**(1-u)) : 'mimo');
+    slideRange.value = st.s; cursorRange.value = st.c;
+  }
+
+  /* ---------- úlohy ---------- */
+  const n = v => String(v).replace('.', ',');
+  const nice = v => Number(v.toPrecision(3)).toLocaleString('cs-CZ', {useGrouping:false, maximumFractionDigits:4});
+  const rnd1 = (lo,hi) => Math.round((lo + Math.random()*(hi-lo))*10)/10;
+  const rint = (lo,hi) => lo + Math.floor(Math.random()*(hi-lo+1));
+  function gen(f, ok){ for (let i=0;i<200;i++){ const p = f(); if (ok(...p)) return p; } return null; }
+  const third = v => v < 10 ? 'první' : v < 100 ? 'druhé' : 'třetí';
+
+  const EX = [
+    { id:'nasobeni', title:'Násobení', def:[2,3],
+      gen:() => gen(() => [rnd1(1.5,4.5), rnd1(1.5,6)], (a,b) => a*b>2 && a*b<9.6),
+      make:(a,b) => { const p=a*b; return {
+        task:`Vypočítej ${n(a)} × ${n(b)}.`, result:`${n(a)} × ${n(b)} = ${nice(p)}`,
+        steps:[
+          {move:'c', conds:[['D',a]], short:`Běžec na ${n(a)} na D`, text:`Nastav běžec na <b>${n(a)}</b> na stupnici D.`, ok:`Běžec stojí na ${n(a)} na stupnici D.`},
+          {move:'s', conds:[['D',a],['C',1]], short:'Levá jednička C pod čáru', text:`Posuň šoupátko tak, aby <b>levá jednička</b> stupnice C byla přesně pod vlasovou čarou.`, ok:`Začátek C je přiložený k ${n(a)}. Délka lg ${n(a)} je odměřená.`},
+          {move:'c', conds:[['C',b],['D',p]], short:`Běžec na ${n(b)} na C`, text:`Přesuň běžec na <b>${n(b)}</b> na stupnici C. Šoupátkem už nehýbej.`, ok:`K délce lg ${n(a)} se přičetla délka lg ${n(b)}.`},
+          {read:'D', ans:p, short:'Přečíst výsledek na D', text:`Přečti výsledek na stupnici <b>D</b> pod vlasovou čarou a zapiš ho.`, hint:`Výsledek je na spodní stupnici D. Odhad: ${Math.round(a)} × ${Math.round(b)} = ${Math.round(a)*Math.round(b)}.`}
+        ]};}},
+    { id:'okraj', title:'Násobení přes okraj', def:[4,5],
+      gen:() => gen(() => [rnd1(2,9), rnd1(2,9)], (a,b) => a*b>11 && a*b<85),
+      make:(a,b) => { const p=a*b; return {
+        task:`Vypočítej ${n(a)} × ${n(b)}.`, result:`${n(a)} × ${n(b)} = ${nice(p)}`,
+        steps:[
+          {move:'c', conds:[['D',a]], short:`Běžec na ${n(a)} na D`, text:`Nastav běžec na <b>${n(a)}</b> na stupnici D.`, ok:`Běžec stojí na ${n(a)}.`},
+          {move:'s', conds:[['D',a],['C',1]], short:'Levá jednička C pod čáru', text:`Posuň šoupátko tak, aby <b>levá jednička</b> stupnice C byla pod vlasovou čarou.`, ok:'Šoupátko je přiložené začátkem.'},
+          {info:true, short:'Druhý činitel je mimo pravítko', text:`Podívej se, kde je <b>${n(b)}</b> na stupnici C. Leží za pravým okrajem tělesa a běžec na něj nedosáhne. Proto šoupátko přiložíme opačným koncem, <b>pravou jedničkou</b> (číslem 10).`, btn:'Rozumím'},
+          {move:'s', conds:[['D',a],['C',10]], short:'Pravá jednička C pod čáru', text:`Posuň šoupátko doleva, až bude <b>pravá jednička</b> stupnice C pod vlasovou čarou.`, ok:'Šoupátko je přiložené koncem. Od výsledku se tím odečetla jedna dekáda.'},
+          {move:'c', conds:[['C',b],['D',p/10]], short:`Běžec na ${n(b)} na C`, text:`Přesuň běžec na <b>${n(b)}</b> na stupnici C.`, ok:`Na D teď leží číslice výsledku.`},
+          {read:'D', ans:p, short:'Výsledek včetně řádu', text:`Na stupnici D čteš jen číslice. Zapiš výsledek <b>včetně řádu</b>.`, hint:`Odhad: ${Math.round(a)} × ${Math.round(b)} = ${Math.round(a)*Math.round(b)}. Podle něj umísti desetinnou čárku.`}
+        ]};}},
+    { id:'deleni', title:'Dělení', def:[8,2],
+      gen:() => gen(() => { const a=rnd1(2.5,9.5); return [a, rnd1(1.5,a-0.6)]; }, (a,b) => a/b>1.15 && b>1),
+      make:(a,b) => { const q=a/b; return {
+        task:`Vypočítej ${n(a)} : ${n(b)}.`, result:`${n(a)} : ${n(b)} = ${nice(q)}`,
+        steps:[
+          {move:'c', conds:[['D',a]], short:`Běžec na ${n(a)} na D`, text:`Nastav běžec na dělence <b>${n(a)}</b> na stupnici D.`, ok:`Běžec stojí na ${n(a)}.`},
+          {move:'s', conds:[['D',a],['C',b]], short:`${n(b)} na C pod čáru`, text:`Posuň šoupátko tak, aby dělitel <b>${n(b)}</b> na stupnici C byl pod vlasovou čarou.`, ok:`Od délky lg ${n(a)} se odečetla délka lg ${n(b)}.`},
+          {move:'c', conds:[['C',1],['D',q]], short:'Běžec na levou jedničku C', text:`Přesuň běžec na <b>levou jedničku</b> stupnice C.`, ok:'Běžec ukazuje na výsledek.'},
+          {read:'D', ans:q, short:'Přečíst výsledek na D', text:`Přečti podíl na stupnici <b>D</b> a zapiš ho.`, hint:`Výsledek je na D pod začátkem šoupátka. Odhad: ${n(a)} : ${n(b)} je víc než 1 a míň než ${Math.ceil(a/b)}.`}
+        ]};}},
+    { id:'umera', title:'Úměra (trojčlenka)', def:[3,4,4.5],
+      gen:() => gen(() => [rnd1(1.5,6), rnd1(1.5,6), rnd1(1.5,9)], (a,b,c) => { const x=b*c/a; return a!==b && x>1.2 && x<9.6; }),
+      make:(a,b,c) => { const x=b*c/a; return {
+        task:`Vyřeš úměru ${n(a)} : ${n(b)} = ${n(c)} : x.`, result:`x = ${nice(x)}`,
+        steps:[
+          {move:'c', conds:[['D',b]], short:`Běžec na ${n(b)} na D`, text:`Nastav běžec na <b>${n(b)}</b> na stupnici D.`, ok:`Běžec stojí na ${n(b)}.`},
+          {move:'s', conds:[['D',b],['C',a]], short:`${n(a)} na C pod čáru`, text:`Posuň šoupátko, aby <b>${n(a)}</b> na stupnici C bylo pod vlasovou čarou.`, ok:`Poměr ${n(a)} : ${n(b)} je nastavený. Platí teď mezi C a D pro všechna čísla.`},
+          {move:'c', conds:[['C',c],['D',x]], short:`Běžec na ${n(c)} na C`, text:`Přesuň běžec na <b>${n(c)}</b> na stupnici C.`, ok:'Pod běžcem na D leží x.'},
+          {read:'D', ans:x, short:'Přečíst x na D', text:`Přečti <b>x</b> na stupnici D a zapiš ho.`}
+        ]};}},
+    { id:'mocnina', title:'Druhá mocnina a odmocnina', def:[3,20],
+      gen:() => [rnd1(1.3,9.5), rint(11,95)],
+      make:(a,m) => ({
+        task:`Vypočítej ${n(a)}² a √${m}.`, result:`${n(a)}² = ${nice(a*a)}, √${m} = ${nice(Math.sqrt(m))}`,
+        steps:[
+          {move:'c', conds:[['D',a]], short:`Běžec na ${n(a)} na D`, text:`Nastav běžec na <b>${n(a)}</b> na stupnici D.`, ok:`Běžec stojí na ${n(a)}.`},
+          {read:'A', ans:a*a, short:'Přečíst mocninu na A', text:`Na stupnici <b>A</b> (horní část tělesa) přečti ${n(a)}² a zapiš ho.`, hint:'Stupnice A má dvě poloviny: vlevo čísla 1–10, vpravo 10–100.'},
+          {move:'c', conds:[['A',m]], short:`Běžec na ${m} na A`, text:`Teď odmocnina. Nastav běžec na <b>${m}</b> na stupnici A. Hledej v <b>pravé polovině</b> (10–100).`, ok:`Běžec stojí na ${m} na stupnici A.`},
+          {read:'D', ans:Math.sqrt(m), short:'Přečíst odmocninu na D', text:`Na stupnici <b>D</b> přečti √${m} a zapiš ji.`, hint:`√${m} je mezi ${Math.floor(Math.sqrt(m))} a ${Math.floor(Math.sqrt(m))+1}.`}
+        ]})},
+    { id:'kub', title:'Třetí mocnina a odmocnina', def:[2,27],
+      gen:() => [rnd1(1.3,9.5), Math.random()<0.5 ? rint(11,99) : rint(110,950)],
+      make:(a,m) => ({
+        task:`Vypočítej ${n(a)}³ a ∛${m}.`, result:`${n(a)}³ = ${nice(a**3)}, ∛${m} = ${nice(Math.cbrt(m))}`,
+        steps:[
+          {move:'c', conds:[['D',a]], short:`Běžec na ${n(a)} na D`, text:`Nastav běžec na <b>${n(a)}</b> na stupnici D.`, ok:`Běžec stojí na ${n(a)}.`},
+          {read:'K', ans:a**3, short:'Přečíst mocninu na K', text:`Na nejvyšší stupnici <b>K</b> přečti ${n(a)}³ a zapiš ho včetně řádu.`, hint:'K má tři třetiny: 1–10, 10–100 a 100–1000. Podle třetiny poznáš řád.'},
+          {move:'c', conds:[['K',m]], short:`Běžec na ${m} na K`, text:`Teď odmocnina. Nastav běžec na <b>${m}</b> na stupnici K, v ${third(m)} třetině.`, ok:`Běžec stojí na ${m} na stupnici K.`},
+          {read:'D', ans:Math.cbrt(m), short:'Přečíst odmocninu na D', text:`Na stupnici <b>D</b> přečti ∛${m} a zapiš ji.`}
+        ]})},
+    { id:'prevracena', title:'Převrácená hodnota', def:[4],
+      gen:() => [rnd1(1.3,9.5)],
+      make:(a) => ({
+        task:`Urči převrácenou hodnotu 1/${n(a)}.`, result:`1/${n(a)} = ${nice(1/a)}`,
+        steps:[
+          {move:'c', conds:[['C',a]], short:`Běžec na ${n(a)} na C`, text:`Nastav běžec na <b>${n(a)}</b> na stupnici C (na šoupátku). Na poloze šoupátka nezáleží.`, ok:`Běžec stojí na ${n(a)} na stupnici C.`},
+          {read:'CI', ans:1/a, short:'Přečíst 1/x na CI', text:`Na červené stupnici <b>CI</b> přečti číslo pod vlasovou čarou a zapiš 1/${n(a)}.`, hint:'CI se čte zprava doleva. Výsledek je menší než 1, takže začíná 0,…'}
+        ]})},
+    { id:'ci', title:'Násobení se stupnicí CI', def:[2.5,3],
+      gen:() => gen(() => [rnd1(1.5,4.5), rnd1(1.5,6)], (a,b) => a*b>2 && a*b<9.6),
+      make:(a,b) => { const p=a*b; return {
+        task:`Vypočítej ${n(a)} × ${n(b)} pomocí stupnice CI.`, result:`${n(a)} × ${n(b)} = ${nice(p)}`,
+        steps:[
+          {move:'c', conds:[['D',a]], short:`Běžec na ${n(a)} na D`, text:`Nastav běžec na <b>${n(a)}</b> na stupnici D.`, ok:`Běžec stojí na ${n(a)}.`},
+          {move:'s', conds:[['D',a],['CI',b]], short:`${n(b)} na CI pod čáru`, text:`Posuň šoupátko tak, aby <b>${n(b)}</b> na červené stupnici CI bylo pod vlasovou čarou.`, ok:'Násobení b je teď dělení číslem 1/b.'},
+          {move:'c', conds:[['C',10],['D',p]], short:'Běžec na pravou jedničku C', text:`Přesuň běžec na <b>pravou jedničku</b> stupnice C.`, ok:'Běžec ukazuje na výsledek.'},
+          {read:'D', ans:p, short:'Přečíst výsledek na D', text:`Přečti výsledek na stupnici <b>D</b> a zapiš ho.`}
+        ]};}},
+    { id:'log', title:'Dekadický logaritmus', def:[2,0.5],
+      gen:() => [rnd1(1.3,9.5), rint(5,95)/100],
+      make:(a,m) => ({
+        task:`Urči lg ${n(a)} a číslo x, pro které lg x = ${n(m)}.`, result:`lg ${n(a)} = ${lg(a).toFixed(3).replace('.',',')}, x = ${nice(10**m)}`,
+        steps:[
+          {move:'c', conds:[['D',a]], short:`Běžec na ${n(a)} na D`, text:`Nastav běžec na <b>${n(a)}</b> na stupnici D.`, ok:`Běžec stojí na ${n(a)}.`},
+          {read:'L', ans:lg(a), abs:true, short:'Přečíst logaritmus na L', text:`Na spodní stupnici <b>L</b> přečti lg ${n(a)} a zapiš ho (tři desetinná místa).`, hint:'Stupnice L je rovnoměrná. Dlouhé čárky jsou desetiny, krátké setiny.'},
+          {move:'c', conds:[['L',m]], short:`Běžec na ${n(m)} na L`, text:`Nastav běžec na <b>${n(m)}</b> na stupnici L.`, ok:`Běžec stojí na ${n(m)} na stupnici L.`},
+          {read:'D', ans:10**m, short:'Přečíst x na D', text:`Na stupnici <b>D</b> přečti x a zapiš ho.`}
+        ]})}
+  ];
+
+  /* ---------- logika kroků ---------- */
+  const ABS = {D:v=>lg(v), A:v=>lg(v)/2, K:v=>lg(v)/3, L:v=>v};
+  const REL = {C:v=>lg(v), CI:v=>1-lg(v)};
+  function tol(){ return Math.max(0.004, 4/(geo.len||800)); }
+  function condErr([k,v]){ return ABS[k] ? st.c - ABS[k](v) : (st.c - st.s) - REL[k](v); }
+  function condsOk(step){ return step.conds.every(cd => Math.abs(condErr(cd)) <= tol()); }
+  function snap(step, state){
+    let {s,c} = state;
+    const abs = step.conds.filter(([k]) => ABS[k]), rel = step.conds.filter(([k]) => REL[k]);
+    if (step.move === 'c'){
+      rel.forEach(([k,v]) => { c = s + REL[k](v); });
+      abs.forEach(([k,v]) => { c = ABS[k](v); });
+    } else {
+      abs.forEach(([k,v]) => { c = ABS[k](v); });
+      rel.forEach(([k,v]) => { s = c - REL[k](v); });
+    }
+    return { s: Math.max(-1, Math.min(1, s)), c };
+  }
+
+  let completed = new Set();
+  try { completed = new Set(JSON.parse(localStorage.getItem('pravitko-splneno') || '[]')); } catch(e){}
+  function saveCompleted(){ try { localStorage.setItem('pravitko-splneno', JSON.stringify([...completed])); } catch(e){} }
+
+  const cur = { ex:0, params:null, data:null, i:0, done:false, lastOk:'', hint:false, err:'', autoDone:false };
+  let auto = null;
+  function currentStep(){ return cur.data && !cur.done ? cur.data.steps[cur.i] : null; }
+
+  function loadEx(idx, params, keepPos){
+    stopAuto();
+    cur.ex = idx; cur.params = params || EX[idx].def;
+    cur.data = EX[idx].make(...cur.params);
+    cur.i = 0; cur.done = false; cur.lastOk = ''; cur.hint = false; cur.err = ''; cur.autoDone = false;
+    if (!keepPos) tween({s:0, c:0}, 500);
+    render(); draw();
+  }
+
+  function advance(msg){
+    cur.lastOk = msg || ''; cur.hint = false; cur.err = '';
+    cur.i++;
+    if (cur.i >= cur.data.steps.length){
+      cur.done = true;
+      completed.add(EX[cur.ex].id); saveCompleted();
+    }
+    flash();
+    render(); draw();
+    if (!cur.done){
+      const step = currentStep();
+      if (step.read) setTimeout(() => { const inp = document.getElementById('answer'); if (inp) inp.focus({preventScroll:true}); }, 50);
+    }
+  }
+  function flash(){
+    if (reduceMotion) return;
+    coachEl.classList.add('flash');
+    setTimeout(() => coachEl.classList.remove('flash'), 700);
+  }
+
+  function checkMove(){
+    if (auto || cur.done) return;
+    const step = currentStep();
+    if (!step || !step.move) return;
+    if (condsOk(step)){
+      const t = snap(step, {s:st.s, c:st.c});
+      st.s = t.s; st.c = t.c;
+      advance(step.ok);
+    }
+  }
+
+  function parseNum(str){
+    const v = parseFloat(String(str).replace(/\s/g,'').replace(',', '.'));
+    return isFinite(v) ? v : NaN;
+  }
+  function checkRead(val){
+    const step = currentStep();
+    const x = parseNum(val);
+    if (isNaN(x)){ cur.err = 'Zapiš číslo, například 4,5.'; render(); return; }
+    const ans = step.ans;
+    if (step.abs){
+      if (Math.abs(x - ans) <= 0.008){ advance(`Správně, ${step.read === 'L' ? 'lg' : ''} ${ans.toFixed(3).replace('.',',')}.`); return; }
+      cur.err = 'To nesedí. Čti přesně pod vlasovou čarou na stupnici L.'; render(); return;
+    }
+    if (x > 0 && Math.abs(x/ans - 1) <= 0.025){ advance(`Správně, ${nice(ans)}. Odchylka v poslední číslici je u pravítka normální.`); return; }
+    if (x > 0){
+      const e = lg(x/ans), r = Math.round(e);
+      if (r !== 0 && Math.abs(e - r) <= 0.011){ cur.err = 'Číslice sedí, ale řád ne. Zkontroluj, kde má být desetinná čárka.'; render(); return; }
+    }
+    cur.err = `To nesedí. Podívej se znovu na stupnici ${step.read} pod vlasovou čarou.`; render();
+  }
+
+  /* ---------- automatické přehrání ---------- */
+  function stopAuto(){
+    if (raf) cancelAnimationFrame(raf); raf = null;
+    if (auto){ auto.timers.forEach(clearTimeout); auto = null; }
+  }
+  function playAuto(){
+    loadEx(cur.ex, cur.params);
+    auto = { timers: [] };
+    document.getElementById('ruleWrap').scrollIntoView({behavior: reduceMotion?'auto':'smooth', block:'start'});
+    const later = (fn, ms) => auto.timers.push(setTimeout(fn, ms));
+    const run = k => {
+      if (!auto) return;
+      const steps = cur.data.steps;
+      if (k >= steps.length){
+        auto.timers.forEach(clearTimeout); auto = null;
+        cur.i = 0; cur.autoDone = true; cur.lastOk = '';
+        render(); draw(); return;
+      }
+      cur.i = k; cur.err = ''; render(); draw();
+      const step = steps[k];
+      if (step.info){ later(() => { cur.lastOk = ''; run(k+1); }, 3600); return; }
+      if (step.read){
+        later(() => { cur.lastOk = `Výsledek: ${step.abs ? step.ans.toFixed(3).replace('.',',') : nice(step.ans)}`; render(); }, 1400);
+        later(() => run(k+1), 3400); return;
+      }
+      later(() => tween(snap(step, {s:st.s, c:st.c}), 900), 900);
+      later(() => { cur.lastOk = step.ok; run(k+1); }, 2900);
+    };
+    later(() => run(0), 600);
+    render();
+  }
+
+  /* ---------- vykreslení UI ---------- */
+  function esc(s){ return s; }
+  function render(){
+    const d = cur.data, steps = d.steps, ex = EX[cur.ex];
+    let h = '';
+    if (auto){
+      const step = steps[cur.i];
+      h += `<div class="coach-top"><span class="coach-step">Ukázka postupu · krok ${cur.i+1} z ${steps.length}</span><button class="btn quiet" id="stopAuto">Zastavit ukázku</button></div>`;
+      if (cur.lastOk) h += `<div class="coach-ok">${cur.lastOk}</div>`;
+      h += `<div class="coach-text">${step.text}</div>`;
+    } else if (cur.autoDone){
+      h += `<div class="coach-top"><span class="coach-step">Ukázka skončila</span></div>`;
+      h += `<div class="coach-text">Takhle se to dělá: ${d.result}. Teď to zkus sám. Pravítko se vrátí do výchozí polohy.</div>`;
+      h += `<div class="coach-actions"><button class="btn primary" id="trySelf">Zkusit sám</button><button class="btn" id="trySelfNew">Zkusit s jinými čísly</button></div>`;
+    } else if (cur.done){
+      h += `<div class="coach-top"><span class="coach-step">${ex.title} · hotovo</span></div>`;
+      if (cur.lastOk) h += `<div class="coach-ok">${cur.lastOk}</div>`;
+      h += `<div class="result">${d.result}</div>`;
+      h += `<div class="coach-actions"><button class="btn primary" id="newNums">Jiná čísla</button>${cur.ex < EX.length-1 ? `<button class="btn" id="nextEx">Další úloha: ${EX[cur.ex+1].title}</button>` : ''}</div>`;
+    } else {
+      const step = steps[cur.i];
+      h += `<div class="coach-top"><span class="coach-step">${ex.title} · krok ${cur.i+1} z ${steps.length}</span>${step.info ? '' : `<button class="btn quiet" id="hintBtn" aria-pressed="${cur.hint}">${cur.hint ? 'Skrýt nápovědu' : 'Nápověda'}</button>`}</div>`;
+      if (cur.lastOk) h += `<div class="coach-ok">${cur.lastOk}</div>`;
+      h += `<div class="coach-text">${step.text}</div>`;
+      if (step.read){
+        h += `<form class="answer" id="answerForm" autocomplete="off"><label for="answer" class="label">Výsledek</label><input id="answer" inputmode="decimal" placeholder="např. 4,5"><button class="btn primary" type="submit">Zkontrolovat</button></form>`;
+      }
+      if (step.info) h += `<div class="coach-actions"><button class="btn primary" id="infoBtn">${step.btn || 'Pokračovat'}</button></div>`;
+      if (cur.err) h += `<div class="coach-err">${cur.err}</div>`;
+      if (cur.hint){
+        const ht = step.hint || (step.move === 'c' ? 'Cíl je na pravítku vyznačený modrou přerušovanou čarou. Dojeď na ni běžcem.'
+          : step.move === 's' ? 'Modře vyznačená čárka na šoupátku musí dojet pod červenou vlasovou čáru. Táhni šoupátko ve směru šipky.'
+          : `Čti na stupnici ${step.read} pod vlasovou čarou.`);
+        h += `<div class="coach-hint">${ht}${step.move && step.hint ? ' Cíl je na pravítku vyznačený modře.' : ''}</div>`;
+        if (step.move && step.hint === undefined) {}
+      }
+    }
+    coachEl.innerHTML = h;
+    coachEl.classList.toggle('done', cur.done && !auto);
+
+    // průběh úlohy
+    let t = `<span class="label">Úloha</span><h3>${ex.title}</h3><p class="task-q">${d.task}</p><ol class="steps">`;
+    const shown = cur.done ? steps.length : cur.i + 1;
+    steps.forEach((s, j) => {
+      if (j >= shown) return;
+      const cls = (cur.done || j < cur.i) && !cur.autoDone ? 'ok' : (j === cur.i ? 'now' : '');
+      t += `<li class="${cls}">${s.short}</li>`;
+    });
+    if (!cur.done && steps.length > shown) t += `<li class="more">Další ${steps.length - shown === 1 ? 'krok se ukáže' : 'kroky se ukážou'} po splnění tohoto.</li>`;
+    t += `</ol><div class="task-actions">
+      <button class="btn" id="playBtn" ${auto ? 'disabled' : ''}>Přehrát postup</button>
+      <button class="btn quiet" id="restartBtn">Začít znovu</button>
+      <button class="btn quiet" id="newBtn">Jiná čísla</button></div>`;
+    taskEl.innerHTML = t;
+
+    exgridEl.innerHTML = EX.map((e,i) =>
+      `<button class="ex" data-i="${i}" aria-current="${i===cur.ex}"><span>${e.title}</span>${completed.has(e.id) ? '<span class="st">✓ splněno</span>' : ''}</button>`).join('');
+
+    bind();
+    updateReadout();
+  }
+  function on(id, fn){ const el = document.getElementById(id); if (el) el.addEventListener('click', fn); }
+  function newParams(){ return EX[cur.ex].gen() || EX[cur.ex].def; }
+  function bind(){
+    on('stopAuto', () => { stopAuto(); loadEx(cur.ex, cur.params); });
+    on('trySelf', () => loadEx(cur.ex, cur.params));
+    on('trySelfNew', () => loadEx(cur.ex, newParams()));
+    on('newNums', () => loadEx(cur.ex, newParams()));
+    on('nextEx', () => loadEx(cur.ex+1));
+    on('hintBtn', () => { cur.hint = !cur.hint; render(); draw(); });
+    on('infoBtn', () => advance(''));
+    on('playBtn', playAuto);
+    on('restartBtn', () => loadEx(cur.ex, cur.params));
+    on('newBtn', () => loadEx(cur.ex, newParams()));
+    const f = document.getElementById('answerForm');
+    if (f) f.addEventListener('submit', e => { e.preventDefault(); checkRead(document.getElementById('answer').value); });
+    exgridEl.querySelectorAll('.ex').forEach(b => b.addEventListener('click', () => loadEx(+b.dataset.i)));
+  }
+
+  /* ---------- ovládání pravítka ---------- */
+  const clampS = v => Math.max(-1, Math.min(1, v));
+  const clampC = v => Math.max(-0.03, Math.min(1.03, v));
+  function interrupt(){ if (auto){ stopAuto(); loadEx(cur.ex, cur.params, true); } else if (raf){ cancelAnimationFrame(raf); raf = null; } }
+  let drag = null;
+  canvas.addEventListener('pointerdown', e => {
+    interrupt();
+    const r = canvas.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    const cx = geo.x0 + st.c*geo.len, gw = geo.narrow ? 26 : 38;
+    if (Math.abs(x-cx) <= gw/2) drag = {what:'c', x, v:st.c};
+    else if (y >= SLIDE_TOP && y <= SLIDE_BOT) drag = {what:'s', x, v:st.s};
+    else { st.c = clampC((x-geo.x0)/geo.len); drag = {what:'c', x, v:st.c}; draw(); }
+    canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging');
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const r = canvas.getBoundingClientRect();
+    const dx = (e.clientX - r.left - drag.x)/geo.len;
+    if (drag.what==='c') st.c = clampC(drag.v+dx); else st.s = clampS(drag.v+dx);
+    draw();
+  });
+  const end = () => { if (!drag) return; drag = null; canvas.classList.remove('dragging'); checkMove(); };
+  canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
+  slideRange.addEventListener('input', () => { interrupt(); st.s = +slideRange.value; draw(); });
+  cursorRange.addEventListener('input', () => { interrupt(); st.c = +cursorRange.value; draw(); });
+  slideRange.addEventListener('change', checkMove);
+  cursorRange.addEventListener('change', checkMove);
+  document.querySelectorAll('.nudge').forEach(b => b.addEventListener('click', () => {
+    interrupt();
+    const d = +b.dataset.d * 0.001;
+    if (b.dataset.n==='s') st.s = clampS(st.s+d); else st.c = clampC(st.c+d);
+    draw(); checkMove();
+  }));
+
+  let raf = null;
+  function tween(target, ms=750){
+    if (raf) cancelAnimationFrame(raf);
+    const from = {s:st.s, c:st.c};
+    const to = {s: target.s ?? st.s, c: target.c ?? st.c};
+    if (reduceMotion){ st.s = to.s; st.c = to.c; draw(); return; }
+    const t0 = performance.now();
+    const ease = t => t<.5 ? 2*t*t : 1-(-2*t+2)**2/2;
+    const step = now => {
+      const t = Math.min(1,(now-t0)/ms), k = ease(t);
+      st.s = from.s + (to.s-from.s)*k; st.c = from.c + (to.c-from.c)*k; draw();
+      raf = t<1 ? requestAnimationFrame(step) : null;
+    };
+    raf = requestAnimationFrame(step);
+  }
+
+  /* ---------- záložky ---------- */
+  const tabs = [...document.querySelectorAll('.tab')];
+  function showTab(id, push){
+    tabs.forEach(t => {
+      const sel = t.getAttribute('aria-controls') === id;
+      t.setAttribute('aria-selected', sel);
+      t.tabIndex = sel ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !sel;
+    });
+    if (push) { try { history.replaceState(null, '', '#'+id); } catch(e){} }
+    if (id === 'procvicovani') requestAnimationFrame(resize);
+  }
+  tabs.forEach((t,i) => {
+    t.addEventListener('click', () => showTab(t.getAttribute('aria-controls'), true));
+    t.addEventListener('keydown', e => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const nt = tabs[(i + (e.key==='ArrowRight'?1:-1) + tabs.length) % tabs.length];
+      nt.focus(); showTab(nt.getAttribute('aria-controls'), true);
+    });
+  });
+
+  readColors();
+  new ResizeObserver(resize).observe(canvas.parentElement);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+  loadEx(0);
+  showTab(location.hash === '#princip' ? 'princip' : 'procvicovani', false);
+  resize();
+})();
+</script>
+
+</body>
+</html>
