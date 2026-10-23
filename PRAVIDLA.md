@@ -116,7 +116,7 @@ Používej **jen** tyto štítky. Nové nevytvářej.
   - jde celá ovládat prstem, bez najetí myší a bez klávesnice,
   - má tlačítka a ovládací prvky nejméně 40 px velké.
 - Ostatní aplikace mají `pocitac`. Když si autor není jistý, zvolí `pocitac`.
-- Lišta na úvodní stránce má přepínač „Jen pro mobil“. Na telefonu se nad kartami zobrazí upozornění na aplikace vhodné pro mobil.
+- Lišta na úvodní stránce má přepínač „Jen pro mobil“.
 
 ## 7. Složka aplikace
 
