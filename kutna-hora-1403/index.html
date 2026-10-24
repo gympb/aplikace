@@ -625,9 +625,18 @@ footer a{color:#e8d6ad}
   <div class="sheet quiz">
     <div class="sheet-head q-meta">
       <div><div class="kicker">Ověř si znalosti</div><h2>Kutnohorská zkouška</h2></div>
-      <span class="q-step" id="q-step">1 / 10</span>
+      <span class="q-step" id="q-step" hidden></span>
     </div>
-    <div id="q-play">
+    <div id="q-setup">
+      <p style="margin:0 0 14px">Otázky pokrývají všechna místa na mapě, všechny kroky cesty stříbra, body horního zákoníku, pojmy ze slovníku i události boje o trůn. Vyber téma a délku zkoušky.</p>
+      <div class="lbl2" style="font-weight:700;margin-bottom:6px">Téma</div>
+      <div class="filters" id="q-topics" role="group" aria-label="Téma kvízu" style="margin-bottom:16px"></div>
+      <div class="lbl2" style="font-weight:700;margin-bottom:6px">Délka</div>
+      <div class="filters" id="q-lengths" role="group" aria-label="Délka kvízu" style="margin-bottom:18px"></div>
+      <button class="btn" id="q-start" type="button">Začít zkoušku</button>
+      <p class="note" style="margin-top:16px">Groše dostaneš za každou otázku, kterou zodpovíš správně poprvé. Získáno zatím <b id="q-paid">0</b> z <span id="q-all"></span> otázek.</p>
+    </div>
+    <div id="q-play" hidden>
       <div class="kicker" id="q-cat"></div>
       <h3 class="q-title" id="q-title"></h3>
       <div class="opts" id="q-opts"></div>
@@ -641,8 +650,11 @@ footer a{color:#e8d6ad}
       <div class="seal" aria-hidden="true">✦</div>
       <h3 style="font-size:24px">Zkouška dokončena</h3>
       <div class="title" id="q-rank"></div>
-      <p id="q-sum" style="max-width:520px;margin:0 auto 16px"></p>
-      <button class="btn" id="q-again" type="button">Zkusit znovu</button>
+      <p id="q-sum" style="max-width:560px;margin:0 auto 16px"></p>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn" id="q-again" type="button">Nové otázky</button>
+        <button class="btn ghost" id="q-back" type="button">Změnit téma</button>
+      </div>
     </div>
   </div>
 </section>
@@ -1053,54 +1065,239 @@ function buildSim() {
 }
 
 /* ==================== KVÍZ ==================== */
+const Q_TOPICS = {
+  misto: 'Místa ve městě',
+  cesta: 'Cesta stříbra',
+  zakon: 'Horní zákoník',
+  slovnik: 'Slovník',
+  boj: 'Boj o trůn'
+};
+// t = téma, z = o čem otázka je (místo / krok / bod / pojem / událost), a = správně, w = 3 špatné odpovědi, e = vysvětlení
 const QUIZ = [
-  { cat: 'Stavby', q: 'Jak vypadal chrám sv. Barbory roku 1403?', a: 'Byl rozestavěný: stála jen část chóru s lešením.',
-    w: ['Byl dokončený i se známou stanovou střechou.', 'Stavba ještě nezačala.', 'Byl dostavěný, ale vyhořel při Zikmundově tažení.'],
-    e: 'Stavba začala roku 1388. Husitské války ji přerušily a dokončena byla až roku 1905.' },
-  { cat: 'Horní právo', q: 'Co byla urbura?', a: 'Podíl z vytěžené rudy pro krále, jedna osmina.',
-    w: ['Trest pro havíře, kteří nepřišli na směnu.', 'Poplatek za vodu z městské kašny.', 'Clo na dovoz obilí do města.'],
-    e: 'Urbura byla příjmem z horního regálu. Spolu se ziskem z ražby mincí patřila k hlavním zdrojům bohatství českých králů.' },
-  { cat: 'Politika', q: 'Proč chtěl Zikmund ovládnout Kutnou Horu?', a: 'Kvůli stříbru, které potřeboval na vojsko a vládu.',
-    w: ['Chtěl sem přenést hlavní město Uher.', 'Hledal tu alchymisty.', 'Město bylo centrem husitů.'],
-    e: 'Kutnohorské stříbro bylo největším zdrojem příjmů českého krále. Kdo ovládal Kutnou Horu, měl peníze.' },
-  { cat: 'Politika', q: 'Odkud Václav IV. v listopadu 1403 uprchl?', a: 'Z vězení ve Vídni.',
-    w: ['Z hradu Křivoklát.', 'Z Vlašského dvora v Kutné Hoře.', 'Z uherského Budína.'],
-    e: 'Václav byl vězněn v Praze, pak na hradě Schaunberg a od podzimu 1402 ve Vídni. Odtud utekl a přes Mikulov se vrátil do Čech.' },
-  { cat: 'Technika', q: 'Jak havíři roku 1403 rozrušovali tvrdou horninu?', a: 'Želízkem a mlátkem, případně sázením ohněm.',
-    w: ['Střelným prachem.', 'Parními vrtačkami.', 'Kyselinou.'],
-    e: 'Střelný prach se v hornictví začal používat až v 17. století (roku 1627 v Banské Štiavnici).' },
-  { cat: 'Horní právo', q: 'Kdo sepsal horní zákoník Ius regale montanorum?', a: 'Italský právník Gozzius z Orvieta.',
-    w: ['Stavitel Petr Parléř.', 'Mistr Jan Hus.', 'Stavitel Matěj Rejsek.'],
-    e: 'Zákoník vznikl kolem roku 1300 na objednávku krále Václava II.' },
-  { cat: 'Mincovna', q: 'Kdo byl pregéř?', a: 'Řemeslník, který v mincovně ručně razil mince.',
-    w: ['Strážný u městské brány.', 'Ranhojič havířů.', 'Kněz u sv. Barbory.'],
-    e: 'Pregéř vložil střížek mezi dvě razidla a úderem kladiva vyrazil minci.' },
-  { cat: 'Hra a skutečnost', q: 'Kdo je historickou předlohou pana Radziga Kobyly ze hry?', a: 'Racek Kobyla z Dvorce.',
-    w: ['Markvart z Úlic.', 'Hanuš z Lipé.', 'Jan Žižka z Trocnova.'],
-    e: 'Racek Kobyla byl hejtmanem Václava IV. a roku 1403 purkrabím Stříbrné Skalice. Zemřel roku 1416 v Kutné Hoře rukou rozzuřených havířů.' },
-  { cat: 'Vlašský dvůr', q: 'Který dokument vydal Václav IV. roku 1409 v Kutné Hoře?', a: 'Dekret kutnohorský.',
+  /* --- místa ve městě --- */
+  { id: 'm-vlassky', t: 'misto', z: 'Vlašský dvůr', q: 'Co sídlilo ve Vlašském dvoře?', a: 'Královská mincovna.',
+    w: ['Cisterciácký klášter.', 'Hornický špitál.', 'Městská radnice s vězením.'],
+    e: 'Po mincovní reformě Václava II. roku 1300 se tu razil pražský groš. Václav IV. dvůr kolem roku 1400 přestavěl i na královský palác.' },
+  { id: 'm-dekret', t: 'misto', z: 'Vlašský dvůr', q: 'Který dokument vydal Václav IV. roku 1409 v Kutné Hoře?', a: 'Dekret kutnohorský.',
     w: ['Zlatou bulu sicilskou.', 'Majestas Carolina.', 'Ius regale montanorum.'],
     e: 'Dekret kutnohorský změnil poměr hlasů na pražské univerzitě ve prospěch českého „národa“.' },
-  { cat: 'Peníze', q: 'Kolik parvů (haléřů) měl jeden pražský groš?', a: '12.',
-    w: ['100.', '60.', '24.'],
-    e: 'Jeden pražský groš se dělil na 12 parvů.' }
+  { id: 'm-jakub', t: 'misto', z: 'Kostel sv. Jakuba', q: 'Který kostel stojí hned vedle Vlašského dvora?', a: 'Kostel sv. Jakuba.',
+    w: ['Chrám sv. Barbory.', 'Kaple Božího těla.', 'Katedrála v Sedlci.'],
+    e: 'Farní kostel sv. Jakuba se stavěl od 30. let 14. století. Jeho hlavní věž je vysoká přes 80 metrů.' },
+  { id: 'm-hradek', t: 'misto', z: 'Hrádek', q: 'Co je dnes v kutnohorském Hrádku?', a: 'České muzeum stříbra se středověkou štolou.',
+    w: ['Sídlo městské rady.', 'Klášter cisterciáků.', 'Hornická nemocnice.'],
+    e: 'Hrádek se připomíná roku 1312. Do dnešní podoby ho koncem 15. století přestavěl Jan Smíšek z Vrchovišť.' },
+  { id: 'm-ruthardka', t: 'misto', z: 'Ruthardská ulice', q: 'Po kom se jmenuje Ruthardská ulice?', a: 'Po bohatém patricijském rodu Ruthardů.',
+    w: ['Po patronovi horníků.', 'Po prvním mincmistrovi.', 'Po hornickém cechu.'],
+    e: 'Ruthardové patřili ve 14. století k nejvlivnějším měšťanům. K ulici se váže pověst o zazděné Rozině.' },
+  { id: 'm-rynk', t: 'misto', z: 'Hlavní náměstí', q: 'Jak se dnes jmenuje hlavní kutnohorské tržiště (rynk)?', a: 'Palackého náměstí.',
+    w: ['Rejskovo náměstí.', 'Havlíčkovo náměstí.', 'Karlovo náměstí.'],
+    e: 'Na rynku se obchodovalo, vyhlašovaly se vyhlášky a u pranýře se trestali provinilci.' },
+  { id: 'm-kasna', t: 'misto', z: 'Kašna a vodovod', q: 'Proč měla Kutná Hora potíže s pitnou vodou?', a: 'Těžba narušila prameny pod městem.',
+    w: ['Řeka Vrchlice v létě vysychala.', 'Horní zákoník zakazoval kopat studny.', 'Vodu otrávili Zikmundovi vojáci.'],
+    e: 'Voda se proto přiváděla dřevěným potrubím z okolí. Kamenná kašna na dnešním Rejskově náměstí vznikla až kolem roku 1495.' },
+  { id: 'm-barbora', t: 'misto', z: 'Chrám sv. Barbory', q: 'Jak vypadal chrám sv. Barbory roku 1403?', a: 'Byl rozestavěný: stála jen část chóru s lešením.',
+    w: ['Byl dokončený i se známou stanovou střechou.', 'Stavba ještě nezačala.', 'Byl dostavěný, ale vyhořel při Zikmundově tažení.'],
+    e: 'Stavba začala roku 1388 a vedla ji Parléřova huť. Husitské války ji přerušily a dokončena byla až roku 1905.' },
+  { id: 'm-barbora2', t: 'misto', z: 'Chrám sv. Barbory', q: 'Čí patronkou je svatá Barbora?', a: 'Horníků.',
+    w: ['Kupců.', 'Mincířů.', 'Rybářů.'],
+    e: 'Proto ji havíři vybrali za patronku svého chrámu, který stál mimo městské hradby.' },
+  { id: 'm-kaple', t: 'misto', z: 'Kaple Božího těla', q: 'Vedle které stavby stojí kaple Božího těla?', a: 'Vedle chrámu sv. Barbory.',
+    w: ['Vedle Vlašského dvora.', 'Vedle Kolínské brány.', 'Vedle Sedleckého kláštera.'],
+    e: 'Gotická kaple z konce 14. století stojí na hraně svahu nad údolím Vrchlice.' },
+  { id: 'm-kourimska', t: 'misto', z: 'Kouřimská brána', q: 'Kam vedla cesta z Kouřimské brány?', a: 'Na západ, na Kouřim a k Praze.',
+    w: ['Na sever k Sedlci a Kolínu.', 'Na východ k Čáslavi.', 'Na jih k hutím na Vrchlici.'],
+    e: 'Od západu přicházela na přelomu let 1402 a 1403 Zikmundova vojska s Pražany.' },
+  { id: 'm-kolinska', t: 'misto', z: 'Kolínská brána', q: 'Proč byla Kolínská brána důležitá pro zásobování města?', a: 'Přijížděly tudy vozy s obilím z Polabí.',
+    w: ['Vedla přímo do mincovny.', 'Byla to jediná brána, kudy smělo stříbro ven.', 'Stála u ní městská tržnice s rybami.'],
+    e: 'Velké hornické město nebylo soběstačné. Jídlo, dřevo i dobytek se musely dovážet.' },
+  { id: 'm-caslavska', t: 'misto', z: 'Čáslavská brána', q: 'Kam vedla cesta z Čáslavské brány?', a: 'Na východ, na Čáslav a dál na Moravu.',
+    w: ['Na západ k Praze.', 'Na sever k Labi.', 'Na Kaňk k dolům.'],
+    e: 'Na Moravě tehdy vládl markrabě Jošt.' },
+  { id: 'm-osel', t: 'misto', z: 'Důl Osel', q: 'Proč byl důl Osel v 16. století opuštěn?', a: 'Těžbu zdražovala voda a stříbro z Ameriky zlevnilo.',
+    w: ['Vyhořel při husitských válkách.', 'Zakázal ho král Zikmund.', 'Ruda se v něm vůbec nenašla.'],
+    e: 'Osel byl nejbohatším a nejhlubším kutnohorským dolem. Roku 1403 však doly Oselského pásma ještě nebyly příliš hluboké.' },
+  { id: 'm-kank', t: 'misto', z: 'Vrch Kaňk', q: 'Co je dodnes vidět na vrchu Kaňk severně od města?', a: 'Haldy hlušiny po středověké těžbě.',
+    w: ['Zbytky královského hradu.', 'Římský tábor.', 'Hutě s vodními koly.'],
+    e: 'Kaňk patří k nejstarším těžebním územím. V letech 1419–1420 sem byli do opuštěných šachet vhazováni zajatí husité.' },
+  { id: 'm-hute', t: 'misto', z: 'Hutě a stoupy', q: 'Co poháněla voda Vrchlice v údolí pod městem?', a: 'Stoupy na drcení rudy a dmychadla hutí.',
+    w: ['Mincovní lisy ve Vlašském dvoře.', 'Čerpadla městského vodovodu.', 'Zvony kostela sv. Jakuba.'],
+    e: 'Údolí bylo plné kouře a rachotu. Výpary z tavby poškozovaly zdraví hutníků.' },
+  { id: 'm-sedlec', t: 'misto', z: 'Sedlecký klášter', q: 'Kdy byl založen Sedlecký klášter?', a: 'Roku 1142.',
+    w: ['Roku 1300.', 'Roku 1388.', 'Roku 1421.'],
+    e: 'Je to nejstarší cisterciácký klášter v Čechách. Roku 1421 ho vypálili husité.' },
+
+  /* --- cesta stříbra --- */
+  { id: 'c-1', t: 'cesta', z: '1. krok: Hledání žíly', q: 'Co udělal nákladník, když se na povrchu našla ruda?', a: 'Požádal královské úředníky o propůjčení dolového pole.',
+    w: ['Začal ihned razit mince.', 'Koupil pozemek od šlechtice.', 'Oznámil nález v kostele a čekal na losování.'],
+    e: 'Těžit směl jen ten, komu král důl propůjčil. Úředníci pole vyměřili.' },
+  { id: 'c-2', t: 'cesta', z: '2. krok: Ražba', q: 'Jak havíři roku 1403 rozrušovali tvrdou horninu?', a: 'Želízkem a mlátkem, případně sázením ohněm.',
+    w: ['Střelným prachem.', 'Parními vrtačkami.', 'Kyselinou.'],
+    e: 'Střelný prach se v hornictví začal používat až v 17. století (roku 1627 v Banské Štiavnici).' },
+  { id: 'c-2b', t: 'cesta', z: '2. krok: Ražba', q: 'O kolik postoupil havíř v tvrdé hornině za jednu směnu?', a: 'Jen o několik centimetrů.',
+    w: ['O několik metrů.', 'O desítky metrů.', 'O celou délku chodby.'],
+    e: 'Ruční práce v úzké chodbě byla velmi pomalá. Svítil si jen slabým lojovým kahanem.' },
+  { id: 'c-3', t: 'cesta', z: '3. krok: Doprava', q: 'Čím se ruda vytahovala z hlubokých šachet?', a: 'Trejvem, žentourem poháněným koňmi.',
+    w: ['Parním strojem.', 'Lanovkou na Kaňk.', 'Vodním kolem přímo v šachtě.'],
+    e: 'Koně chodili dokola a lano se navíjelo na velký buben.' },
+  { id: 'c-4', t: 'cesta', z: '4. krok: Voda a vzduch', q: 'Co bylo největším nepřítelem dolu?', a: 'Voda.',
+    w: ['Vlci.', 'Mráz.', 'Konkurenční doly.'],
+    e: 'Voda se vytahovala v kožených vacích a odváděla odvodňovacími štolami.' },
+  { id: 'c-4b', t: 'cesta', z: '4. krok: Voda a vzduch', q: 'Co pro havíře znamenalo, když kahan začal hasnout?', a: 'Chybí vzduch a musí rychle pryč.',
+    w: ['Došel lůj a je konec směny.', 'Blíží se bohatá žíla.', 'Venku začala bouřka.'],
+    e: 'Ve větších hloubkách chyběl vzduch. Pomáhaly větrací jámy a měchy.' },
+  { id: 'c-5', t: 'cesta', z: '5. krok: Úprava rudy', q: 'K čemu sloužila stoupa?', a: 'K drcení rudy těžkými tlouky.',
+    w: ['K ražbě mincí.', 'K čerpání vody z dolu.', 'K vážení stříbra.'],
+    e: 'Tlouky okované železem zvedalo vodní kolo. Rozdrcená ruda se pak prala ve žlabech.' },
+  { id: 'c-6', t: 'cesta', z: '6. krok: Huť', q: 'Co se dělo s olovem při kupelaci?', a: 'Zoxidovalo, vsáklo se do misky z kostního popela a zůstalo čisté stříbro.',
+    w: ['Proměnilo se ve stříbro.', 'Přidávalo se do grošů místo mědi.', 'Odpařilo se a zbyla měď.'],
+    e: 'Ruda se nejdřív tavila s olovem, které na sebe stříbro navázalo. Kupelace pak obě kovy oddělila.' },
+  { id: 'c-7', t: 'cesta', z: '7. krok: Mincovna', q: 'Co bylo vyraženo na pražském groši?', a: 'Koruna na jedné straně a český lev na druhé.',
+    w: ['Portrét krále a datum ražby.', 'Kutnohorský znak a hornická kladívka.', 'Svatá Barbora a kalich.'],
+    e: 'Pregéř položil střížek mezi dvě razidla a vyrazil minci úderem kladiva.' },
+  { id: 'c-7b', t: 'cesta', z: '7. krok: Mincovna', q: 'Co se v mincovně přidávalo ke stříbru před ražbou?', a: 'Měď, aby slitina měla předepsanou ryzost.',
+    w: ['Olovo, aby byl groš těžší.', 'Zlato, aby se groš leskl.', 'Cín, aby se groš neohnul.'],
+    e: 'Slitina se pak vyklepala do plechu, ze kterého se stříhaly střížky.' },
+
+  /* --- horní zákoník --- */
+  { id: 'z-autor', t: 'zakon', z: 'Ius regale montanorum', q: 'Kdo sepsal horní zákoník Ius regale montanorum?', a: 'Italský právník Gozzius z Orvieta.',
+    w: ['Stavitel Petr Parléř.', 'Mistr Jan Hus.', 'Stavitel Matěj Rejsek.'],
+    e: 'Zákoník vznikl kolem roku 1300 na objednávku krále Václava II.' },
+  { id: 'z-1', t: 'zakon', z: 'I. Nerosty patří králi', q: 'Mohl majitel pozemku zakázat těžbu stříbra na své půdě?', a: 'Ne, nerosty patřily králi (horní regál).',
+    w: ['Ano, vždy.', 'Ano, pokud byl šlechtic.', 'Jen v neděli a o svátcích.'],
+    e: 'Těžit směl jen ten, komu král důl propůjčil.' },
+  { id: 'z-2', t: 'zakon', z: 'II. Urbura', q: 'Co byla urbura?', a: 'Podíl z vytěžené rudy pro krále, jedna osmina.',
+    w: ['Trest pro havíře, kteří nepřišli na směnu.', 'Poplatek za vodu z městské kašny.', 'Clo na dovoz obilí do města.'],
+    e: 'Urbura a zisk z ražby mincí dělaly z českých králů jedny z nejbohatších panovníků Evropy.' },
+  { id: 'z-3', t: 'zakon', z: 'III. Propůjčení a vyměření', q: 'Proč se dolová pole vyměřovala?', a: 'Aby se sousední doly navzájem nepřekrývaly.',
+    w: ['Aby se dalo spočítat clo na obilí.', 'Aby každý důl měl stejnou hloubku.', 'Aby havíři věděli, kde je kostel.'],
+    e: 'Vyměřování prováděli královští úředníci, když nákladník o důl požádal.' },
+  { id: 'z-4', t: 'zakon', z: 'IV. Kdo nepracuje, o důl přijde', q: 'Co hrozilo nákladníkovi, který propůjčený důl zanedbal?', a: 'Mohl o důl přijít a ten se propůjčil někomu jinému.',
+    w: ['Nic, důl mu patřil navždy.', 'Musel zaplatit dvojitou urburu.', 'Byl vyhoštěn ze země.'],
+    e: 'Zákoník chtěl, aby se doly udržovaly v provozu a přinášely králi příjmy.' },
+  { id: 'z-5', t: 'zakon', z: 'V. Mzdy a směny', q: 'Co zákoník upravoval ve vztahu nákladníků a dělníků?', a: 'Například výplatu mezd a pracovní dobu.',
+    w: ['Svatby havířů.', 'Ceny piva v krčmách.', 'Oblečení pro mši.'],
+    e: 'Havíři se tak mohli dovolávat psaných pravidel.' },
+  { id: 'z-6', t: 'zakon', z: 'VI. Vlastní horní soudy', q: 'Kdo rozhodoval spory o doly a hranice polí?', a: 'Horní úředníci podle horního práva.',
+    w: ['Biskup v Praze.', 'Městská rada podle zvyku.', 'Opat Sedleckého kláštera.'],
+    e: 'Horní právo tvořilo samostatný svět s vlastními pravidly a soudy.' },
+
+  /* --- slovník --- */
+  { id: 's-urbura', t: 'slovnik', z: 'Urbura', q: 'Jaký díl vytěžené rudy tvořila urbura?', a: 'Jednu osminu.',
+    w: ['Jednu desetinu.', 'Polovinu.', 'Jednu čtvrtinu.'], e: 'Urbura byla podílem panovníka z vytěžené rudy.' },
+  { id: 's-regal', t: 'slovnik', z: 'Horní regál', q: 'Jak se nazývá výsadní právo panovníka na nerosty?', a: 'Horní regál.',
+    w: ['Urbura.', 'Dekret.', 'Lén.'], e: 'Kvůli regálu směl těžit jen ten, komu král důl propůjčil.' },
+  { id: 's-ius', t: 'slovnik', z: 'Ius regale montanorum', q: 'Kdy přibližně vznikl zákoník Ius regale montanorum?', a: 'Kolem roku 1300.',
+    w: ['Kolem roku 1142.', 'Kolem roku 1403.', 'Kolem roku 1500.'], e: 'Vydal ho Václav II., ve stejné době jako zavedl pražský groš.' },
+  { id: 's-urburer', t: 'slovnik', z: 'Urburéř', q: 'Kdo vybíral urburu?', a: 'Urburéř.',
+    w: ['Pregéř.', 'Perkmistr.', 'Farář.'], e: 'Urburéř byl královský úředník, který dohlížel na doly a vybíral královský podíl.' },
+  { id: 's-perkmistr', t: 'slovnik', z: 'Perkmistr', q: 'Který horní úředník dohlížel na provoz dolů a vyměřování polí?', a: 'Perkmistr.',
+    w: ['Mincmistr.', 'Pregéř.', 'Rychtář.'], e: 'Perkmistr dbal na dodržování horního práva.' },
+  { id: 's-mincmistr', t: 'slovnik', z: 'Mincmistr', q: 'Kdo stál v čele mincovny?', a: 'Mincmistr.',
+    w: ['Urburéř.', 'Perkmistr.', 'Nákladník.'], e: 'Mincmistr odpovídal za ražbu a kvalitu mincí.' },
+  { id: 's-naklad', t: 'slovnik', z: 'Nákladník', q: 'Kdo financoval důl a za to dostával podíl na rudě?', a: 'Nákladník.',
+    w: ['Havíř.', 'Urburéř.', 'Pregéř.'], e: 'Nákladník platil mzdy, dřevo, nářadí i koně.' },
+  { id: 's-havir', t: 'slovnik', z: 'Havíř', q: 'Co dělali lamači?', a: 'Rozrušovali horninu na čelbě.',
+    w: ['Vozili rudu do hutě.', 'Razili mince.', 'Hlídali brány.'], e: 'Tahouni pak rudu dopravovali k šachtě.' },
+  { id: 's-pokladna', t: 'slovnik', z: 'Bratrská pokladna', q: 'K čemu sloužila bratrská pokladna?', a: 'K pomoci raněným, nemocným a rodinám zemřelých havířů.',
+    w: ['K placení urbury.', 'K nákupu koní pro trejv.', 'Ke stavbě hradeb.'], e: 'Byl to společný fond, do kterého havíři přispívali.' },
+  { id: 's-celba', t: 'slovnik', z: 'Čelba', q: 'Co je čelba?', a: 'Konec důlní chodby, kde se právě láme hornina.',
+    w: ['Vstup do šachty.', 'Hromada hlušiny.', 'Místnost v mincovně.'], e: 'Na čelbě pracovali lamači.' },
+  { id: 's-zelizko', t: 'slovnik', z: 'Želízko a mlátek', q: 'Co je hornické želízko?', a: 'Ocelové dláto na násadě.',
+    w: ['Malý kahan.', 'Kovová přilba.', 'Řetěz k trejvu.'], e: 'Havíř do želízka tloukl těžkým mlátkem.' },
+  { id: 's-ohen', t: 'slovnik', z: 'Sázení ohněm', q: 'Jaká byla hlavní nevýhoda sázení ohněm?', a: 'Dusivý kouř ohrožoval havíře.',
+    w: ['Bylo pomalejší než ruční práce.', 'Ničilo stříbro v rudě.', 'Bylo zakázané zákoníkem.'], e: 'Hornina se rozpálila ohněm a popraskala. Bylo to rychlejší, ale nebezpečné.' },
+  { id: 's-trejv', t: 'slovnik', z: 'Trejv', q: 'Kdo poháněl trejv?', a: 'Koně.',
+    w: ['Voda z Vrchlice.', 'Vítr.', 'Vězni.'], e: 'Trejv vytahoval rudu i vodu z hlubokých šachet.' },
+  { id: 's-stola', t: 'slovnik', z: 'Štola', q: 'K čemu sloužily odvodňovací štoly?', a: 'Odváděly vodu z dolů.',
+    w: ['Přiváděly pitnou vodu do města.', 'Sloužily jako úkryt při obléhání.', 'Vedly k mincovně.'], e: 'Štola je vodorovná chodba ústící na povrch.' },
+  { id: 's-halda', t: 'slovnik', z: 'Halda', q: 'Co je halda?', a: 'Hromada vytěžené hlušiny u dolu.',
+    w: ['Hromada stříbrných prutů.', 'Sklad dřeva u hutě.', 'Pohřebiště havířů.'], e: 'Haldy jsou v okolí Kutné Hory vidět dodnes.' },
+  { id: 's-stoupa', t: 'slovnik', z: 'Stoupa', q: 'Jak se jmenovalo zařízení, které drtilo rudu tlouky?', a: 'Stoupa.',
+    w: ['Trejv.', 'Huť.', 'Štola.'], e: 'Tlouky stoupy zvedalo vodní kolo.' },
+  { id: 's-hut', t: 'slovnik', z: 'Huť', q: 'Kde se z rudy tavil kov?', a: 'V huti.',
+    w: ['Ve stoupě.', 'Ve štole.', 'Na haldě.'], e: 'Hutě stály v údolí Vrchlice, kde voda poháněla dmychadla.' },
+  { id: 's-kupelace', t: 'slovnik', z: 'Kupelace', q: 'Jak se nazývá oddělení stříbra od olova tavbou na misce z kostního popela?', a: 'Kupelace.',
+    w: ['Urbura.', 'Ražba.', 'Plavení.'], e: 'Olovo zoxidovalo a vsáklo se do popela.' },
+  { id: 's-gros', t: 'slovnik', z: 'Pražský groš', q: 'Kdy byl zaveden pražský groš?', a: 'Roku 1300.',
+    w: ['Roku 1142.', 'Roku 1388.', 'Roku 1409.'], e: 'Groš se používal v celé střední Evropě. Za Václava IV. už byl lehčí a méně ryzí.' },
+  { id: 's-parvus', t: 'slovnik', z: 'Parvus', q: 'Kolik parvů (haléřů) měl jeden pražský groš?', a: '12.',
+    w: ['100.', '60.', '24.'], e: 'Parvus byla drobná mince pro běžné nákupy.' },
+  { id: 's-strizek', t: 'slovnik', z: 'Střížek', q: 'Jak se jmenoval kulatý plíšek, ze kterého se razila mince?', a: 'Střížek.',
+    w: ['Parvus.', 'Čelba.', 'Halda.'], e: 'Střížky se stříhaly ze stříbrného plechu.' },
+  { id: 's-preger', t: 'slovnik', z: 'Pregéř', q: 'Kdo byl pregéř?', a: 'Řemeslník, který v mincovně ručně razil mince.',
+    w: ['Strážný u městské brány.', 'Ranhojič havířů.', 'Kněz u sv. Barbory.'], e: 'Pregéř vyrazil minci úderem kladiva na razidlo.' },
+  { id: 's-vlassky', t: 'slovnik', z: 'Vlašský dvůr', q: 'Co znamená slovo „vlašský“ v názvu Vlašského dvora?', a: 'Italský.',
+    w: ['Královský.', 'Stříbrný.', 'Německý.'], e: 'Název připomíná italské odborníky, kteří pomáhali s mincovní reformou.' },
+  { id: 's-kumani', t: 'slovnik', z: 'Kumáni', q: 'Kdo byli Kumáni?', a: 'Kočovný národ usazený v Uhrách, jehož jezdci sloužili uherským králům.',
+    w: ['Kutnohorský hornický cech.', 'Italští bankéři z Florencie.', 'Řád mnichů ze Sedlce.'], e: 'V sérii KCD vystupují jako obávaní nájezdníci.' },
+
+  /* --- boj o trůn --- */
+  { id: 'b-pribuzny', t: 'boj', z: 'Zikmund Lucemburský', q: 'Jaký příbuzný byl Zikmund Václavu IV.?', a: 'Mladší nevlastní bratr.',
+    w: ['Syn.', 'Strýc.', 'Bratranec.'], e: 'Oba byli syny Karla IV. Zikmund byl od roku 1387 uherským králem.' },
+  { id: 'b-proc', t: 'boj', z: 'Zikmund Lucemburský', q: 'Proč chtěl Zikmund ovládnout Kutnou Horu?', a: 'Kvůli stříbru, které potřeboval na vojsko a vládu.',
+    w: ['Chtěl sem přenést hlavní město Uher.', 'Hledal tu alchymisty.', 'Město bylo centrem husitů.'],
+    e: 'Kutnohorské stříbro bylo největším zdrojem příjmů českého krále.' },
+  { id: 'b-odchod', t: 'boj', z: 'Zikmund Lucemburský', q: 'Proč Zikmund roku 1403 odešel z Čech?', a: 'Proti němu povstala část uherské šlechty.',
+    w: ['Zemřel v bitvě.', 'Uzavřel mír s Václavem.', 'Vypukl mor.'], e: 'Musel se vrátit hájit svou vládu v Uhrách.' },
+  { id: 'b-zajeti', t: 'boj', z: 'Březen 1402', q: 'Kdy a kde dal Zikmund zajmout Václava IV.?', a: 'V březnu 1402 v Praze.',
+    w: ['V prosinci 1402 v Kutné Hoře.', 'V listopadu 1403 ve Vídni.', 'Roku 1409 v Kutné Hoře.'], e: 'Václav byl nejdřív držen na Pražském hradě.' },
+  { id: 'b-vezeni', t: 'boj', z: 'Václav IV.', q: 'Odkud Václav IV. v listopadu 1403 uprchl?', a: 'Z vězení ve Vídni.',
+    w: ['Z hradu Křivoklát.', 'Z Vlašského dvora v Kutné Hoře.', 'Z uherského Budína.'],
+    e: 'Václav byl vězněn v Praze, pak na hradě Schaunberg a od podzimu 1402 ve Vídni.' },
+  { id: 'b-liechtenstein', t: 'boj', z: 'Listopad 1403', q: 'Kdo vyzvedl Václava IV. po útěku z Vídně?', a: 'Jan z Liechtensteinu se svými jezdci.',
+    w: ['Racek Kobyla.', 'Jan Žižka.', 'Markvart z Úlic.'], e: 'Dopravil ho do Mikulova na Moravě.' },
+  { id: 'b-kh', t: 'boj', z: 'Kutná Hora', q: 'Na čí stranu se postavila Kutná Hora po zajetí Václava?', a: 'Na stranu uvězněného krále Václava.',
+    w: ['Na stranu Zikmunda.', 'Zůstala neutrální.', 'Na stranu Prahy.'], e: 'Město dokonce vyhlásilo nepřátelství Praze, která se Zikmundem spolupracovala.' },
+  { id: 'b-rada', t: 'boj', z: 'Kutná Hora', q: 'Kdo ovládal městskou radu Kutné Hory?', a: 'Bohatí měšťané a těžaři, z velké části německého původu.',
+    w: ['Havíři zvolení cechem.', 'Opat Sedleckého kláštera.', 'Uherští hejtmani.'], e: 'K českému převzetí městské správy došlo až za husitských válek.' },
+  { id: 'b-praha', t: 'boj', z: 'Prosinec 1402', q: 'Kdo pomáhal Zikmundovým vojskům při obléhání Kutné Hory?', a: 'Pražané.',
+    w: ['Kumáni ze Skalice.', 'Moravský markrabě Jošt.', 'Kutnohorští havíři.'], e: 'Obléhání proběhlo na přelomu let 1402 a 1403.' },
+  { id: 'b-markvart', t: 'boj', z: 'Prosinec 1402', q: 'Který Zikmundův velitel padl 27. prosince 1402 u Suchdolu?', a: 'Markvart z Úlic.',
+    w: ['Racek Kobyla.', 'Hanuš z Lipé.', 'Jan z Liechtensteinu.'], e: 'Suchdol leží nedaleko Kutné Hory.' },
+  { id: 'b-vzdani', t: 'boj', z: 'Počátek 1403', q: 'Jak skončilo obléhání Kutné Hory?', a: 'Město se počátkem roku 1403 vzdalo.',
+    w: ['Zikmund ho vypálil.', 'Obléhání bylo odraženo.', 'Václav přišel městu na pomoc.'], e: 'Odpor proti Zikmundovi v zemi ale pokračoval.' },
+  { id: 'b-skalice', t: 'boj', z: '1403', q: 'Které město bylo roku 1403 vypáleno? Jeho vypálením začíná první díl hry.', a: 'Stříbrná Skalice.',
+    w: ['Kutná Hora.', 'Kolín.', 'Rataje nad Sázavou.'], e: 'Purkrabím Skalice byl tehdy Racek Kobyla.' },
+  { id: 'b-racek', t: 'boj', z: 'Racek Kobyla z Dvorce', q: 'Kdo je historickou předlohou pana Radziga Kobyly ze hry?', a: 'Racek Kobyla z Dvorce.',
+    w: ['Markvart z Úlic.', 'Hanuš z Lipé.', 'Jan Žižka z Trocnova.'], e: 'Racek Kobyla byl hejtmanem Václava IV. a roku 1403 purkrabím Stříbrné Skalice.' },
+  { id: 'b-racek2', t: 'boj', z: 'Racek Kobyla z Dvorce', q: 'Jak zemřel Racek Kobyla?', a: 'Roku 1416 ho v Kutné Hoře zabil dav havířů.',
+    w: ['Padl při obléhání Kutné Hory.', 'Zemřel ve vězení ve Vídni.', 'Zemřel přirozeně na hradě Rataje.'], e: 'Vybíral tu daně a jako stoupence Jana Husa ho místní nenáviděli.' },
+  { id: 'b-hra', t: 'boj', z: 'Hra a skutečnost', q: 'Co je na obraně Suchdolu ve hře smyšlené?', a: 'Účast Jana Žižky při obraně.',
+    w: ['Že Suchdol vůbec existoval.', 'Že šlo o boje roku 1402.', 'Že Suchdol leží u Kutné Hory.'], e: 'Hra se historickými událostmi inspiruje, ale volně s nimi zachází.' }
 ];
-const RES_RANKS = [[9, 'Mincmistr'], [7, 'Urburéř'], [5, 'Pregéř'], [3, 'Havíř lamač'], [0, 'Havířský učeň']];
-let qi = 0, qScore = 0, qAnswered = false, qOrder = [];
-const quizPaid = new Set(save.get('quizPaid', []));
+const RES_RANKS = [[.9, 'Mincmistr'], [.7, 'Urburéř'], [.5, 'Pregéř'], [.3, 'Havíř lamač'], [0, 'Havířský učeň']];
+const quizPaid = new Set(save.get('quizPaid2', []));
+let qTopic = 'all', qLen = 10, qSet = [], qi = 0, qScore = 0, qAnswered = false, qOrder = [];
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const poolOf = t => QUIZ.filter(q => t === 'all' || q.t === t);
+function renderSetup() {
+  const chip = (k, label, on, attr) => `<button class="chip" type="button" data-${attr}="${k}" aria-pressed="${on}">${esc(label)}</button>`;
+  $('q-topics').innerHTML = chip('all', `Vše (${QUIZ.length})`, qTopic === 'all', 'topic') +
+    Object.entries(Q_TOPICS).map(([k, l]) => chip(k, `${l} (${poolOf(k).length})`, qTopic === k, 'topic')).join('');
+  const n = poolOf(qTopic).length;
+  $('q-lengths').innerHTML = chip(10, '10 otázek', qLen === 10, 'len') + chip(0, `Všechny otázky tématu (${n})`, qLen === 0, 'len');
+  $('q-paid').textContent = quizPaid.size; $('q-all').textContent = QUIZ.length;
+}
+function startQuiz() {
+  const pool = shuffle(poolOf(qTopic));
+  qSet = qLen ? pool.slice(0, qLen) : pool;
+  qi = 0; qScore = 0;
+  $('q-setup').hidden = true; $('q-results').hidden = true; $('q-play').hidden = false; $('q-step').hidden = false;
+  renderQ(); play('hammer');
+}
 function renderQ() {
   qAnswered = false;
-  const q = QUIZ[qi];
-  $('q-step').textContent = `${qi + 1} / ${QUIZ.length}`;
-  $('q-cat').textContent = q.cat; $('q-title').textContent = q.q;
+  const q = qSet[qi];
+  $('q-step').textContent = `${qi + 1} / ${qSet.length}`;
+  $('q-cat').textContent = `${Q_TOPICS[q.t]} · ${q.z}`; $('q-title').textContent = q.q;
   qOrder = shuffle([q.a, ...q.w]);
   $('q-opts').innerHTML = qOrder.map((t, i) => `<button class="opt" type="button" data-i="${i}"><span class="k">${'ABCD'[i]}</span><span>${esc(t)}</span></button>`).join('');
   $('q-fb').hidden = true;
 }
 function answer(i) {
   if (qAnswered) return; qAnswered = true;
-  const q = QUIZ[qi], ok = qOrder[i] === q.a;
+  const q = qSet[qi], ok = qOrder[i] === q.a;
   document.querySelectorAll('.opt').forEach((b, j) => {
     b.disabled = true;
     if (qOrder[j] === q.a) b.classList.add('ok'); else if (j === i) b.classList.add('ko'); else b.classList.add('off');
@@ -1108,27 +1305,34 @@ function answer(i) {
   const fb = $('q-fb'); fb.hidden = false; fb.className = 'feedback ' + (ok ? 'ok' : 'ko');
   if (ok) {
     qScore++;
-    const first = !quizPaid.has(qi);
-    if (first) { quizPaid.add(qi); save.set('quizPaid', [...quizPaid]); addGroschen(10); }
+    const first = !quizPaid.has(q.id);
+    if (first) { quizPaid.add(q.id); save.set('quizPaid2', [...quizPaid]); addGroschen(10); }
     $('q-fb-title').textContent = first ? 'Správně! +10 grošů' : 'Správně!';
     play('coin');
-  } else { $('q-fb-title').textContent = 'Tohle není správně.'; play('bad'); }
+  } else { $('q-fb-title').textContent = 'Tohle není správně. Správně: ' + q.a; play('bad'); }
   $('q-fb-text').textContent = q.e;
-  $('q-next').textContent = qi < QUIZ.length - 1 ? 'Další otázka →' : 'Zobrazit výsledek';
+  $('q-next').textContent = qi < qSet.length - 1 ? 'Další otázka →' : 'Zobrazit výsledek';
   $('q-next').focus({ preventScroll: true });
 }
 function nextQ() {
-  if (qi < QUIZ.length - 1) { qi++; renderQ(); play('hammer'); return; }
+  if (qi < qSet.length - 1) { qi++; renderQ(); play('hammer'); return; }
   play('fanfare');
-  $('q-play').hidden = true; $('q-results').hidden = false;
-  $('q-rank').textContent = RES_RANKS.find(([min]) => qScore >= min)[1];
-  $('q-sum').textContent = `Správně ${qScore} z ${QUIZ.length}. Groše dostáváš jen za otázku, kterou zodpovíš správně poprvé, takže opakováním si měšec nenaplníš, ale znalosti ano.`;
+  $('q-play').hidden = true; $('q-results').hidden = false; $('q-step').hidden = true;
+  const ratio = qScore / qSet.length;
+  $('q-rank').textContent = RES_RANKS.find(([min]) => ratio >= min)[1];
+  const left = QUIZ.length - quizPaid.size;
+  $('q-sum').textContent = `Správně ${qScore} z ${qSet.length}. ` +
+    (left ? `Ze všech ${QUIZ.length} otázek máš správně zodpovězeno ${quizPaid.size}, zbývá ${left}.` : `Zodpověděl(a) jsi správně všech ${QUIZ.length} otázek.`);
 }
 function buildQuiz() {
+  $('q-topics').addEventListener('click', e => { const b = e.target.closest('[data-topic]'); if (!b) return; qTopic = b.dataset.topic; renderSetup(); play('hammer'); });
+  $('q-lengths').addEventListener('click', e => { const b = e.target.closest('[data-len]'); if (!b) return; qLen = +b.dataset.len; renderSetup(); play('hammer'); });
+  $('q-start').addEventListener('click', startQuiz);
   $('q-opts').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) answer(+b.dataset.i); });
   $('q-next').addEventListener('click', nextQ);
-  $('q-again').addEventListener('click', () => { qi = 0; qScore = 0; $('q-results').hidden = true; $('q-play').hidden = false; renderQ(); play('hammer'); });
-  renderQ();
+  $('q-again').addEventListener('click', startQuiz);
+  $('q-back').addEventListener('click', () => { $('q-results').hidden = true; $('q-setup').hidden = false; renderSetup(); });
+  renderSetup();
 }
 
 /* ==================== SLOVNÍK ==================== */
