@@ -733,15 +733,16 @@
                     .replace(/×/g, '*')
                     .replace(/÷/g, '/');
 
-                // Custom Trigonometric Angle handling if DEG or GRAD
-                let scope = {};
-                
-                // Configure trigonometric units in MathJS
-                if (angleUnit === 'DEG') {
-                    parsedExp = transformTrigForDeg(parsedExp);
-                } else if (angleUnit === 'GRAD') {
-                    parsedExp = transformTrigForGrad(parsedExp);
-                }
+                // Like the real fx-991EX: missing closing brackets at the end are added automatically, e.g. 9999log10(10
+                const open = (parsedExp.match(/\(/g) || []).length - (parsedExp.match(/\)/g) || []).length;
+                if (open > 0) parsedExp += ')'.repeat(open);
+
+                // Angle unit: the trigonometric functions themselves convert DEG/GRAD, so nested brackets work too
+                const k = angleUnit === 'DEG' ? Math.PI / 180 : angleUnit === 'GRAD' ? Math.PI / 200 : 1;
+                const scope = k === 1 ? {} : {
+                    sin: x => Math.sin(x * k), cos: x => Math.cos(x * k), tan: x => Math.tan(x * k),
+                    asin: x => Math.asin(x) / k, acos: x => Math.acos(x) / k, atan: x => Math.atan(x) / k,
+                };
 
                 let res = math.evaluate(parsedExp, scope);
 
@@ -764,23 +765,6 @@
             }
         }
 
-        // Transform trig functions to degree mode
-        function transformTrigForDeg(expr) {
-            return expr
-                .replace(/sin\(([^)]+)\)/g, 'sin(($1) * deg)')
-                .replace(/cos\(([^)]+)\)/g, 'cos(($1) * deg)')
-                .replace(/tan\(([^)]+)\)/g, 'tan(($1) * deg)')
-                .replace(/asin\(([^)]+)\)/g, '(asin($1) / deg)')
-                .replace(/acos\(([^)]+)\)/g, '(acos($1) / deg)')
-                .replace(/atan\(([^)]+)\)/g, '(atan($1) / deg)');
-        }
-
-        function transformTrigForGrad(expr) {
-            return expr
-                .replace(/sin\(([^)]+)\)/g, 'sin(($1) * 0.015707963267948966)')
-                .replace(/cos\(([^)]+)\)/g, 'cos(($1) * 0.015707963267948966)')
-                .replace(/tan\(([^)]+)\)/g, 'tan(($1) * 0.015707963267948966)');
-        }
 
         function toggleFractionDisplay() {
             if (!lastResult || isNaN(lastResult)) return;
