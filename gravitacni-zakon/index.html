@@ -164,6 +164,44 @@ button.primary:hover { filter: brightness(1.08); }
 .lockrow { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
 .lockrow svg { width: 12px; height: 12px; fill: currentColor; }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.tabs button.tab { flex: none; min-height: 44px; border: 0; border-radius: 0; background: transparent; color: var(--muted); padding: 10px 16px; font-family: var(--display); font-size: 16px; font-weight: 600; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.tabs button.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.tabs button.tab:hover { color: var(--fg); }
+.tabpanel { display: grid; gap: 20px; min-width: 0; }
+
+.nw-hero { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.nw-hero .txt { display: grid; gap: 12px; max-width: 66ch; }
+.nw-hero h2 { font-size: clamp(22px, 3vw, 30px); font-weight: 800; letter-spacing: -0.01em; }
+.nw-hero p, .nw p { margin: 0; }
+.facts { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 14px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+.facts dt { color: var(--muted); font-size: 13px; padding-top: 1px; }
+.facts dd { margin: 0; font-weight: 500; }
+.nw-cannon { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.nw-cannon .stage { max-width: 560px; width: 100%; justify-self: center; }
+.cannon-box { position: relative; width: 100%; aspect-ratio: 1 / 1.08; }
+.cannon-box canvas { touch-action: auto; }
+.nw-ctrl { display: grid; gap: 14px; align-content: start; }
+.nw-ctrl .txt { display: grid; gap: 10px; max-width: 62ch; }
+.nw-ctrl .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.nw-ctrl .presets button { min-height: 40px; }
+.verdict { font-family: var(--mono); font-size: 14px; padding: 10px 12px; border-radius: 7px; background: var(--accent-soft); color: var(--fg); min-height: 2.6em; }
+.nw-legend { display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+.nw-legend span b { font-family: var(--mono); color: var(--fg); font-weight: 500; }
+.laws { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; }
+.law-n { font-family: var(--display); font-weight: 800; font-size: 32px; line-height: 1; color: var(--accent); }
+.try { font-size: 13.5px; color: var(--fg); border-top: 1px dashed var(--line); padding-top: 8px; }
+.try::before { content: "Vyzkoušej: "; font-weight: 600; color: var(--accent); }
+.life { list-style: none; margin: 0; padding: 0; display: grid; border-left: 2px solid var(--line); margin-left: 6px; }
+.life li { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 14px; padding: 9px 0 9px 18px; position: relative; }
+.life li::before { content: ""; position: absolute; left: -7px; top: 15px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); }
+.life .yr { font-family: var(--display); font-weight: 800; font-size: 18px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.life p { margin: 0; max-width: 68ch; }
+.sources { font-size: 13px; color: var(--muted); line-height: 1.7; margin: 0; }
+.sources a { color: inherit; }
+@media (max-width: 760px) { .nw-hero, .nw-cannon { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) { .life li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+.trybtn { margin-top: 2px; justify-self: start; padding: 6px 10px; font-size: 13px; font-weight: 500; background: var(--accent-soft); border-color: transparent; }
 </style>
 </head>
 <body>
@@ -174,6 +212,12 @@ button.primary:hover { filter: brightness(1.08); }
     <p>Interaktivní model gravitačního působení dvou a více těles. Tělesa posouvejte po ploše a měňte jejich hmotnost; výchozí hodnoty odpovídají skutečnému Slunci a Zemi.</p>
   </header>
 
+  <div class="tabs" role="tablist" aria-label="Části aplikace">
+    <button class="tab" role="tab" id="tab-simulace" aria-controls="simulace" aria-selected="true">Simulace</button>
+    <button class="tab" role="tab" id="tab-newton" aria-controls="newton" aria-selected="false" tabindex="-1">Isaac Newton</button>
+  </div>
+
+  <div class="tabpanel" id="simulace" role="tabpanel" aria-labelledby="tab-simulace">
   <div class="main">
     <div class="left">
     <section class="stage" aria-label="Pracovní plocha">
@@ -306,7 +350,114 @@ button.primary:hover { filter: brightness(1.08); }
       </div>
     </aside>
   </div>
-  <footer class="foot">Autor: Isaac Newton · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 20. 10. 2026</footer>
+  </div>
+
+  <div class="tabpanel nw" id="newton" role="tabpanel" aria-labelledby="tab-newton" hidden>
+    <section class="nw-hero">
+      <div class="txt">
+        <span class="label">Muž, který spojil padající jablko s oběhem Měsíce</span>
+        <h2>Isaac Newton</h2>
+        <p>Proč padá jablko k zemi a proč Měsíc nespadne? Anglický fyzik a matematik Isaac Newton ukázal, že jde o tutéž sílu. Zemi, Měsíc, planety i jablko řídí jediný zákon: každá dvě tělesa se navzájem přitahují.</p>
+        <p>V knize <i>Philosophiæ Naturalis Principia Mathematica</i> (1687) zformuloval tři pohybové zákony a zákon všeobecné gravitace. Vysvětlil jimi, proč planety obíhají po elipsách, jak to dříve z pozorování popsal Johannes Kepler. Simulace na záložce Simulace počítá přesně podle těchto zákonů.</p>
+        <p>Hodnotu gravitační konstanty G Newton neznal. Poprvé ji z pokusu s torzními vahami odvodil až Henry Cavendish v roce 1798.</p>
+      </div>
+      <dl class="facts">
+        <dt>Narozen</dt><dd>4. 1. 1643, Woolsthorpe, Anglie</dd>
+        <dt>Zemřel</dt><dd>31. 3. 1727, Londýn</dd>
+        <dt>Pohřben</dt><dd>Westminsterské opatství</dd>
+        <dt>Studoval</dt><dd>Trinity College, Cambridge</dd>
+        <dt>Hlavní dílo</dt><dd>Principia (1687)</dd>
+        <dt>Jednotka</dt><dd>newton (N) = kg·m/s²</dd>
+      </dl>
+    </section>
+
+    <section class="nw-cannon">
+      <div class="stage">
+        <div class="cannon-box"><canvas id="nc" role="img" aria-label="Newtonovo dělo: dráhy koule vystřelené vodorovně z vysoké hory kolem Země"></canvas></div>
+      </div>
+      <div class="nw-ctrl">
+        <div class="txt">
+          <h2>Newtonovo dělo</h2>
+          <p>Newton si představil dělo na vrcholu tak vysoké hory, že nad ní už není vzduch. Koule vystřelená vodorovně dopadne o kus dál. Čím rychleji ji vystřelíme, tím dál doletí, protože Země je kulatá a povrch se pod koulí stáčí. Při určité rychlosti koule padá pořád, ale na zem nedopadne nikdy: obíhá. Myšlenkový pokus vyšel v roce 1728 v knize <i>A Treatise of the System of the World</i>.</p>
+          <p>Přesně takhle obíhá Mezinárodní vesmírná stanice: neustále padá k Zemi, ale díky své rychlosti ji stále míjí. Vyzkoušejte předvolbu <b>Země a ISS</b> na záložce Simulace.</p>
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><label for="nv">Rychlost výstřelu</label><output id="nvo"></output></div>
+          <input type="range" id="nv" min="1" max="12" step="0.01" value="6">
+        </div>
+        <div class="presets">
+          <button data-nv="4">4 km/s</button>
+          <button data-nv="6.5">6,5 km/s</button>
+          <button data-nv="7.62">7,62 km/s</button>
+          <button data-nv="9">9 km/s</button>
+          <button data-nv="11">11 km/s</button>
+        </div>
+        <div class="row">
+          <button class="primary" id="nfire" style="grid-column:auto">▶ Vystřelit</button>
+          <button id="nclear">Smazat dráhy</button>
+        </div>
+        <div class="verdict" id="nverdict" aria-live="polite">Nastav rychlost a vystřel.</div>
+        <div class="nw-legend">
+          <span>Hora je vysoká <b>500 km</b>, vzduch neuvažujeme.</span>
+          <span>Pod <b>7,62 km/s</b> koule dopadne na Zemi.</span>
+          <span>Při <b>7,62 km/s</b> obíhá po kružnici (u povrchu by to bylo 7,9 km/s).</span>
+          <span>Mezi <b>7,62</b> a <b>10,77 km/s</b> obíhá po elipse.</span>
+          <span>Od <b>10,77 km/s</b> unikne (úniková rychlost z této výšky).</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="laws">
+      <div class="card">
+        <span class="law-n">1</span>
+        <h2>Zákon setrvačnosti</h2>
+        <p>Těleso zůstává v klidu nebo v rovnoměrném přímočarém pohybu, dokud na něj nepůsobí síla. Kdyby gravitace Slunce náhle zmizela, letěla by Země dál po přímce rychlostí, kterou právě má. Gravitace její dráhu neustále zakřivuje.</p>
+        <div class="eq">F = 0 &nbsp;→&nbsp; v = konst.</div>
+        <div class="try">zmenši hmotnost Slunce a sleduj, jak se dráha Země narovnává.</div>
+        <button class="trybtn" data-try="sunEarth">Otevřít Slunce a Zemi</button>
+      </div>
+      <div class="card">
+        <span class="law-n">2</span>
+        <h2>Zákon síly</h2>
+        <p>Zrychlení tělesa je úměrné síle a nepřímo úměrné hmotnosti. Gravitační síla je sama úměrná hmotnosti tělesa, a proto zrychlení na hmotnosti nezávisí. Na Zemi padá kámen i člověk se stejným zrychlením g, na Měsíci asi šestkrát menším.</p>
+        <div class="eq">a = F / m = G · M / r²</div>
+        <div class="try">porovnej sílu působící na člověka na Zemi a na Měsíci.</div>
+        <button class="trybtn" data-try="personMoon">Otevřít Člověk na Měsíci</button>
+      </div>
+      <div class="card">
+        <span class="law-n">3</span>
+        <h2>Zákon akce a reakce</h2>
+        <p>Země přitahuje Měsíc stejně velkou silou, jakou Měsíc přitahuje Zemi. Obě tělesa proto obíhají kolem společného těžiště. U Země a Měsíce leží uvnitř Země, u dvojhvězdy je pohyb obou těles dobře vidět.</p>
+        <div class="eq">F<sub>1→2</sub> = −F<sub>2→1</sub></div>
+        <button class="trybtn" data-try="binary">Otevřít Dvojhvězdu</button>
+      </div>
+      <div class="card">
+        <span class="law-n">+</span>
+        <h2>Zákon všeobecné gravitace</h2>
+        <p>Síla je úměrná součinu hmotností obou těles a klesá se čtvercem jejich vzdálenosti. Ve dvojnásobné vzdálenosti je čtyřikrát menší, v trojnásobné devětkrát. Z tohoto zákona Newton odvodil Keplerovy zákony pohybu planet.</p>
+        <div class="eq">F = G · m₁ · m₂ / r²</div>
+        <div class="try">posuň Zemi dvakrát dál od Slunce a sleduj velikost síly.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Život v datech</h2>
+      <ol class="life">
+        <li><span class="yr">1643</span><p>Narodil se ve Woolsthorpe v hrabství Lincolnshire, tři měsíce po smrti svého otce. Podle tehdy v Anglii platného juliánského kalendáře to bylo 25. prosince 1642.</p></li>
+        <li><span class="yr">1661</span><p>Začal studovat na Trinity College v Cambridgi.</p></li>
+        <li><span class="yr">1665–1666</span><p>Univerzitu zavřel mor a Newton odjel domů. V těchto „zázračných letech“ položil základy diferenciálního počtu, zkoumal rozklad světla hranolem a začal přemýšlet o gravitaci. Z té doby pochází i historka o padajícím jablku. Newton ji ve stáří vyprávěl svému životopisci Williamu Stukeleymu.</p></li>
+        <li><span class="yr">1668</span><p>Sestrojil první použitelný zrcadlový dalekohled.</p></li>
+        <li><span class="yr">1669</span><p>Stal se Lucasovským profesorem matematiky v Cambridgi.</p></li>
+        <li><span class="yr">1687</span><p>Vyšla Principia. Vydání prosadil a zaplatil astronom Edmond Halley.</p></li>
+        <li><span class="yr">1696</span><p>Přestěhoval se do Londýna a nastoupil do královské mincovny, od roku 1699 byl jejím ředitelem. Stíhal padělatele mincí.</p></li>
+        <li><span class="yr">1703</span><p>Byl zvolen předsedou Královské společnosti (Royal Society). V roce 1705 ho královna Anna povýšila do šlechtického stavu.</p></li>
+        <li><span class="yr">1727</span><p>Zemřel v Londýně. Pohřbili ho ve Westminsterském opatství.</p></li>
+      </ol>
+    </section>
+
+    <p class="sources">Zdroje: <a href="https://en.wikipedia.org/wiki/Isaac_Newton" target="_blank" rel="noopener">Wikipedie: Isaac Newton</a> · <a href="https://en.wikipedia.org/wiki/Newton%27s_cannonball" target="_blank" rel="noopener">Wikipedie: Newton’s cannonball</a> · <a href="https://exhibitions.lib.cam.ac.uk/linesofthought/?p=138" target="_blank" rel="noopener">Cambridge University Library: Lines of Thought</a> · <a href="https://www.17centurymaths.com/contents/newton/book2s1.pdf" target="_blank" rel="noopener">Principia, kniha II (anglický překlad)</a></p>
+  </div>
+  <footer class="foot">Autor: Isaac Newton · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 24. 10. 2026</footer>
 </div>
 
 <script>
@@ -474,7 +625,9 @@ function setOrbits(){
 /* ---------- zobrazení ---------- */
 let W = 0, H = 0, dpr = 1;
 function resize(){
-  const r = stage.getBoundingClientRect(); W = r.width; H = r.height; dpr = window.devicePixelRatio || 1;
+  const r = stage.getBoundingClientRect();
+  if (!r.width || !r.height) return; // skrytá záložka Simulace
+  W = r.width; H = r.height; dpr = window.devicePixelRatio || 1;
   cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
 }
 new ResizeObserver(resize).observe(stage); resize();
@@ -985,6 +1138,159 @@ function frame(t){
 }
 loadPreset('sunEarth');
 requestAnimationFrame(frame);
+})();
+</script>
+<script>
+// Záložky a Newtonovo dělo
+(() => {
+  const $ = id => document.getElementById(id);
+  const tabs = [...document.querySelectorAll('.tab')];
+  function showTab(id, push) {
+    tabs.forEach(t => {
+      const sel = t.getAttribute('aria-controls') === id;
+      t.setAttribute('aria-selected', sel); t.tabIndex = sel ? 0 : -1;
+      $(t.getAttribute('aria-controls')).hidden = !sel;
+    });
+    if (push) { try { history.replaceState(null, '', id === 'simulace' ? location.pathname : '#' + id); } catch (e) {} }
+    if (id === 'newton') requestAnimationFrame(resize);
+    if (id === 'simulace') window.dispatchEvent(new Event('resize'));
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => showTab(t.getAttribute('aria-controls'), true));
+    t.addEventListener('keydown', e => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
+      n.focus(); showTab(n.getAttribute('aria-controls'), true);
+    });
+  });
+
+  // tlačítka „Otevřít …“ u Newtonových zákonů přepnou do simulace s danou předvolbou
+  document.querySelectorAll('[data-try]').forEach(b => b.addEventListener('click', () => {
+    showTab('simulace', true);
+    const p = document.querySelector(`[data-preset="${b.dataset.try}"]`);
+    if (p) p.click();
+    window.scrollTo({ top: 0 });
+  }));
+
+  const cv = $('nc'), ctx = cv.getContext('2d');
+  const GM = 3.986e14, R = 6.371e6, H = 5.0e5, r0 = R + H;
+  const VC = Math.sqrt(GM / r0), VE = Math.sqrt(2 * GM / r0);
+  const COLORS = ['#e0661b', '#7b61ff', '#0e9a7b', '#c2335e', '#2b8fd6', '#d4892a'];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  let W = 0, Hc = 0, dpr = 1, paths = [], cur = null, raf = null, ci = 0;
+  const fmt = (n, d) => n.toLocaleString('cs-CZ', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+  function resize() {
+    const r = cv.getBoundingClientRect();
+    if (!r.width) return;
+    dpr = window.devicePixelRatio || 1; W = r.width; Hc = r.height;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(Hc * dpr);
+    draw();
+  }
+  new ResizeObserver(resize).observe(cv.parentElement);
+
+  // výpočet celé dráhy (RK4, krok 4 s)
+  function simulate(v) {
+    let x = 0, y = r0, vx = v, vy = 0, t = 0, ang = 0, prevA = Math.PI / 2;
+    const pts = [[x, y]], dt = 4;
+    const acc = (x, y) => { const r3 = Math.pow(x * x + y * y, 1.5); return [-GM * x / r3, -GM * y / r3]; };
+    let end = 'orbit';
+    for (let i = 0; i < 20000; i++) {
+      const [a1x, a1y] = acc(x, y);
+      const [a2x, a2y] = acc(x + vx * dt / 2, y + vy * dt / 2);
+      const [a3x, a3y] = acc(x + (vx + a2x * dt / 2) * dt / 2, y + (vy + a2y * dt / 2) * dt / 2);
+      const [a4x, a4y] = acc(x + (vx + a3x * dt / 2) * dt, y + (vy + a3y * dt / 2) * dt);
+      const nx = x + dt * (vx + dt * (a1x + a2x + a3x) / 6);
+      const ny = y + dt * (vy + dt * (a1y + a2y + a3y) / 6);
+      vx += dt * (a1x + 2 * a2x + 2 * a3x + a4x) / 6;
+      vy += dt * (a1y + 2 * a2y + 2 * a3y + a4y) / 6;
+      x = nx; y = ny; t += dt;
+      const r = Math.hypot(x, y);
+      const a = Math.atan2(y, x);
+      let d = prevA - a; if (d < -Math.PI) d += 2 * Math.PI; if (d > Math.PI) d -= 2 * Math.PI;
+      ang += d; prevA = a;
+      if (r <= R) { const k = (Math.hypot(pts[pts.length-1][0], pts[pts.length-1][1]) - R) / (Math.hypot(pts[pts.length-1][0], pts[pts.length-1][1]) - r); pts.push([pts[pts.length-1][0] + (x - pts[pts.length-1][0]) * k, pts[pts.length-1][1] + (y - pts[pts.length-1][1]) * k]); end = 'hit'; break; }
+      pts.push([x, y]);
+      if (ang >= 2 * Math.PI) { end = 'orbit'; break; }
+      if (r > 7 * R) { end = 'escape'; break; }
+    }
+    return { v, pts, end, t, ang };
+  }
+
+  function verdict(p) {
+    const km = fmt(p.v / 1000, 2);
+    if (p.end === 'hit') {
+      const s = p.ang * R / 1000;
+      return `${km} km/s: koule dopadla po ${fmt(p.t / 60, 0)} min letu, ${fmt(s, 0)} km od hory.`;
+    }
+    if (p.end === 'escape') return `${km} km/s: koule unikla z gravitačního pole Země.`;
+    const circ = Math.abs(p.v - VC) < 40;
+    return `${km} km/s: koule obíhá po ${circ ? 'kružnici' : 'elipse'}, oběh trvá ${fmt(p.t / 60, 0)} min a vrátí se k hoře.`;
+  }
+
+  function draw(upto) {
+    if (!W) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, Hc);
+    const s = Math.min(W / (3.8 * R), Hc / (4.15 * R));
+    const cx = W / 2, cy = 1.45 * R * s + 8;
+    const P = ([x, y]) => [cx + x * s, cy - y * s];
+    // Země
+    ctx.beginPath(); ctx.arc(cx, cy, R * s, 0, 2 * Math.PI);
+    ctx.fillStyle = '#2f6fb3'; ctx.fill();
+    ctx.save(); ctx.clip();
+    ctx.fillStyle = '#4f8f4a';
+    [[-0.3, 0.55, 0.45, 0.3], [0.35, 0.1, 0.35, 0.5], [-0.45, -0.4, 0.3, 0.35], [0.2, -0.6, 0.4, 0.22]].forEach(([x, y, rx, ry]) => {
+      ctx.beginPath(); ctx.ellipse(cx + x * R * s, cy - y * R * s, rx * R * s, ry * R * s, 0.4, 0, 2 * Math.PI); ctx.fill();
+    });
+    ctx.restore();
+    ctx.lineWidth = 1; ctx.strokeStyle = css('--grid-strong'); ctx.beginPath(); ctx.arc(cx, cy, R * s, 0, 2 * Math.PI); ctx.stroke();
+    // hora
+    const [tx, ty] = P([0, r0]);
+    ctx.beginPath(); ctx.moveTo(cx - 0.16 * R * s, cy - R * s * 0.988); ctx.lineTo(tx, ty); ctx.lineTo(cx + 0.16 * R * s, cy - R * s * 0.988); ctx.closePath();
+    ctx.fillStyle = css('--ground') || '#8b7d5c'; ctx.fill();
+    // dělo
+    ctx.fillStyle = css('--fg'); ctx.fillRect(tx - 3, ty - 5, 12, 4);
+    // dráhy
+    const drawPath = (p, n, col, w) => {
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) { const [a, b] = P(p.pts[i]); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }
+      ctx.strokeStyle = col; ctx.lineWidth = w; ctx.stroke();
+      return P(p.pts[Math.max(0, n - 1)]);
+    };
+    paths.forEach(p => { ctx.globalAlpha = 0.55; drawPath(p, p.pts.length, p.col, 1.8); ctx.globalAlpha = 1; });
+    if (cur) {
+      const n = Math.max(2, Math.min(cur.pts.length, upto ?? cur.pts.length));
+      const [bx, by] = drawPath(cur, n, cur.col, 2.6);
+      ctx.beginPath(); ctx.arc(bx, by, 4.5, 0, 2 * Math.PI); ctx.fillStyle = css('--fg'); ctx.fill();
+    }
+    ctx.fillStyle = css('--muted'); ctx.font = '12px "IBM Plex Sans", system-ui, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('výška hory 500 km (měřítko zachováno)', 10, Hc - 10);
+  }
+
+  function fire() {
+    if (raf) cancelAnimationFrame(raf);
+    if (cur) { paths.push(cur); if (paths.length > 6) paths.shift(); }
+    const v = +$('nv').value * 1000;
+    cur = simulate(v); cur.col = COLORS[ci++ % COLORS.length];
+    $('nverdict').textContent = 'Koule letí…';
+    const N = cur.pts.length, dur = reduce ? 0 : Math.min(4200, 1400 + N * 1.2), t0 = performance.now();
+    const step = now => {
+      const k = dur ? Math.min(1, (now - t0) / dur) : 1;
+      draw(Math.ceil(k * N));
+      if (k < 1) raf = requestAnimationFrame(step); else { raf = null; $('nverdict').textContent = verdict(cur); }
+    };
+    raf = requestAnimationFrame(step);
+  }
+  const showV = () => { $('nvo').textContent = fmt(+$('nv').value, 2) + ' km/s'; };
+  $('nv').addEventListener('input', showV);
+  $('nfire').addEventListener('click', fire);
+  $('nclear').addEventListener('click', () => { if (raf) cancelAnimationFrame(raf); raf = null; paths = []; cur = null; $('nverdict').textContent = 'Nastav rychlost a vystřel.'; draw(); });
+  document.querySelectorAll('[data-nv]').forEach(b => b.addEventListener('click', () => { $('nv').value = b.dataset.nv; showV(); fire(); }));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => draw());
+  showV();
+  showTab(location.hash === '#newton' ? 'newton' : 'simulace', false);
 })();
 </script>
 <!-- gympb-visit-tracker -->
