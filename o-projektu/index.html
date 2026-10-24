@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>O projektu gymplikace</title>
+<meta name="description" content="Co je gymplikace: katalog drobných výukových aplikací Gymnázia Příbram. Nápad, koncept, licence, ochrana dat, design a postup pro učitele i žáky.">
+<meta name="author" content="Ivo Bešťák">
+<link rel="stylesheet" href="../assets/fonty/fonty.css">
+<style>
+/* O projektu gymplikace. Stejný vizuální jazyk jako katalog: bílé záhlaví, oranžový pruh, 2px černé linky, Montserrat + Atkinson Hyperlegible. */
+:root{
+  --bg:#FFFFFF; --panel:#F4F1EA; --ink:#111111; --muted:#555555; --line:#DDDDDD;
+  --brand:#FF972E; --on-brand:#111111; --accent-text:#8A450B; --accent-soft:#FFE8D1;
+  --foot-bg:#111111; --foot-fg:#FFFFFF; --foot-muted:#C8C8C8;
+  --f-display:"Montserrat","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible Next","Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111111; --panel:#1C1C1C; --ink:#F2F2F2; --muted:#ABABAB; --line:#333333;
+  --accent-text:#FFB670; --accent-soft:#3A2410; --foot-bg:#000000; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111111; --panel:#1C1C1C; --ink:#F2F2F2; --muted:#ABABAB; --line:#333333;
+  --accent-text:#FFB670; --accent-soft:#3A2410; --foot-bg:#000000; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--f-body)}
+.in{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;margin:0;text-wrap:balance}
+p{margin:0}
+a{color:inherit;text-decoration-color:var(--brand);text-decoration-thickness:2px;text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.label{font:600 13px/1.3 var(--f-display);letter-spacing:.14em;text-transform:uppercase}
+.label .sq{display:inline-block;width:6px;height:6px;background:var(--brand);margin:0 12px;vertical-align:middle;position:relative;top:-1px}
+@media (max-width:560px){.label .sq{display:none}.label .sq+span{display:block}}
+.back{display:inline-block;font:600 14px var(--f-display);text-decoration:none;color:var(--muted);margin-bottom:28px}
+.back:hover{color:var(--ink)}
+
+/* záhlaví */
+.hero{padding-block:28px 36px}
+.hero h1{font-size:clamp(38px,5.4vw,68px);line-height:1;letter-spacing:-.04em;margin-top:10px}
+.hero h1 i{font-style:normal;color:var(--brand)}
+.hero .lead{font-size:clamp(18px,2vw,21px);line-height:1.5;max-width:60ch;margin-top:18px}
+.facts{display:flex;flex-wrap:wrap;gap:0;margin-top:26px}
+.facts div{padding:0 22px;display:grid;gap:2px}
+.facts div:first-child{padding-left:0}
+.facts div+div{border-left:1px solid var(--line)}
+.facts b{font:800 30px/1 var(--f-display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.facts span{font:600 12px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* oranžový pruh: myšlenka v jedné větě */
+.band{background:var(--brand);color:var(--on-brand);padding-block:26px}
+.band p{font:700 clamp(19px,2.4vw,27px)/1.35 var(--f-display);letter-spacing:-.015em;max-width:44ch}
+
+/* obsah */
+.toc{padding-block:22px;border-bottom:2px solid var(--ink)}
+.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 22px}
+.toc a{font:600 14px var(--f-display);text-decoration:none}
+.toc a:hover{text-decoration:underline;text-decoration-color:var(--brand)}
+.toc li b{color:var(--accent-text);margin-right:6px}
+
+section{padding-block:52px;border-bottom:1px solid var(--line);scroll-margin-top:8px}
+section:last-of-type{border-bottom:0}
+.sec-head{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 18px;margin-bottom:26px}
+.sec-head .n{grid-row:span 2;width:56px;height:56px;background:var(--brand);color:var(--on-brand);font:800 24px var(--f-display);display:flex;align-items:center;justify-content:center}
+.sec-head h2{font-size:clamp(26px,3.2vw,36px);letter-spacing:-.025em;line-height:1.1}
+.sec-head p{color:var(--muted);max-width:62ch}
+@media (max-width:560px){.sec-head{grid-template-columns:minmax(0,1fr)}.sec-head .n{grid-row:auto;width:44px;height:44px;font-size:19px;margin-bottom:6px}}
+.prose{display:grid;gap:14px;max-width:72ch}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:8px 28px}
+.grid > div{padding:16px 0 18px;border-top:2px solid var(--ink);display:grid;gap:6px;align-content:start}
+.grid b{font:700 17px var(--f-display)}
+.grid span{font-size:16px;line-height:1.55}
+.ico{width:34px;height:34px;color:var(--ink)}
+
+.callout{border-left:8px solid var(--brand);background:var(--panel);padding:16px 20px;max-width:72ch;margin-top:24px}
+.callout b{font-family:var(--f-display)}
+
+/* postup: přepínač Učitel / Žák */
+.who{display:flex;border:2px solid var(--ink);width:max-content;max-width:100%;margin-bottom:26px}
+.who button{font:700 15px var(--f-display);padding:10px 22px;border:0;background:var(--bg);color:var(--ink);cursor:pointer;min-height:44px}
+.who button+button{border-left:2px solid var(--ink)}
+.who button[aria-selected="true"]{background:var(--brand);color:var(--on-brand)}
+.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:28px}
+.path h3{font-size:19px;margin-bottom:4px}
+.path > p{color:var(--muted);margin-bottom:14px;font-size:16px}
+.flow{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:k}
+.flow li{position:relative;padding:0 0 18px 46px;counter-increment:k}
+.flow li::before{content:counter(k);position:absolute;left:0;top:0;width:30px;height:30px;background:var(--ink);color:var(--bg);font:700 14px var(--f-display);display:flex;align-items:center;justify-content:center}
+.flow li::after{content:"";position:absolute;left:14px;top:32px;bottom:2px;width:2px;background:var(--line)}
+.flow li:last-child::after{display:none}
+.flow li:last-child::before{background:var(--brand);color:var(--on-brand)}
+.flow b{font-family:var(--f-display);display:block;line-height:1.3;padding-top:3px}
+.flow span{font-size:16px;line-height:1.5;color:var(--ink)}
+.flow .who-tag{display:inline-block;font:600 11px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--accent-text);margin-left:6px}
+
+/* technika: řetězec krabiček */
+.chain{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;margin-top:6px}
+.chain div{border:2px solid var(--ink);padding:10px 14px;display:grid;gap:2px;min-width:0;flex:1 1 150px}
+.chain div b{font:700 15px var(--f-display)}
+.chain div span{font-size:14px;color:var(--muted);line-height:1.4}
+.chain i{font-style:normal;align-self:center;font:700 20px var(--f-display);color:var(--brand)}
+@media (max-width:640px){.chain{flex-direction:column}.chain i{transform:rotate(90deg);align-self:flex-start;margin-left:16px}}
+
+.lic{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px}
+.lic div{background:var(--panel);padding:18px 20px;display:grid;gap:8px;align-content:start}
+.lic h3{font-size:17px}
+.lic ul{margin:0;padding-left:20px;display:grid;gap:4px;font-size:16px}
+
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.btn{font:700 15px var(--f-display);text-decoration:none;border:2px solid var(--ink);padding:10px 18px;min-height:44px;display:inline-flex;align-items:center}
+.btn.main{background:var(--ink);color:var(--bg)}
+.btn:hover{background:var(--ink);color:var(--bg)}
+
+footer{background:var(--foot-bg);color:var(--foot-fg);padding-block:32px}
+footer .in{display:flex;justify-content:space-between;gap:16px 40px;flex-wrap:wrap}
+footer .school{font:700 20px/1.1 var(--f-display)}
+footer .school span{display:block;font-weight:500;font-size:14px;color:var(--foot-muted);margin-top:4px}
+footer p{font-size:14px;line-height:1.55;color:var(--foot-muted);max-width:60ch}
+footer a{text-decoration-color:var(--brand)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+</head>
+<body>
+
+<header class="hero"><div class="in">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <div class="label">O projektu<span class="sq" aria-hidden="true"></span><span>Gymnázium Příbram</span></div>
+  <h1>gympl<i>i</i>kace</h1>
+  <p class="lead">Katalog drobných interaktivních aplikací do výuky. Tvoří je učitelé a žáci Gymnázia Příbram, fungují v prohlížeči bez instalace a přihlášení a nikomu neposílají žádná data.</p>
+  <div class="facts" aria-live="polite">
+    <div><b id="f-apps">–</b><span>aplikací</span></div>
+    <div><b id="f-subj">–</b><span>předmětů</span></div>
+    <div><b id="f-aut">–</b><span>autorů</span></div>
+  </div>
+</div></header>
+
+<div class="band"><div class="in"><p>Jedna simulace, jeden kvíz, jedna pomůcka. Malé, rychlé, pro konkrétní hodinu, a přesto na jednom místě, kde je najdou kolegové i žáci.</p></div></div>
+
+<nav class="toc" aria-label="Obsah"><div class="in"><ol>
+  <li><a href="#napad"><b>1</b>Nápad</a></li>
+  <li><a href="#koncept"><b>2</b>Koncept</a></li>
+  <li><a href="#postup"><b>3</b>Jak aplikace vzniká</a></li>
+  <li><a href="#data"><b>4</b>Žádná data nikomu</a></li>
+  <li><a href="#licence"><b>5</b>Licence</a></li>
+  <li><a href="#design"><b>6</b>Proč jednoduchý design</a></li>
+  <li><a href="#mobil"><b>7</b>Na počítači i na mobilu</a></li>
+  <li><a href="#technika"><b>8</b>Co je pod kapotou</a></li>
+</ol></div></nav>
+
+<main>
+<section id="napad"><div class="in">
+  <div class="sec-head"><div class="n">1</div><h2>Nápad: místo pro drobné aplikace</h2><p>Malé věci, které ve výuce pomůžou nejvíc, se nejsnáz ztratí.</p></div>
+  <div class="prose">
+    <p>Učitelé si často připraví vlastní pomůcku: simulaci šikmého vrhu, procvičování značek prvků, šifrovací kotouč nebo interaktivní kostru. Dnes takovou pomůcku s pomocí umělé inteligence zvládne vytvořit i ten, kdo nikdy neprogramoval. Hotové soubory ale končí na disku jednoho počítače, v příloze e-mailu nebo v kurzu, kam kolegové z jiného předmětu nevidí.</p>
+    <p><b>gymplikace</b> jim dávají společný domov. Každá aplikace dostane stálou adresu, kartu v katalogu, QR kód pro žáky ve třídě a jednotná pravidla. Kolega ji najde podle předmětu, ročníku nebo tématu a žák si ji otevře na svém telefonu i doma.</p>
+  </div>
+  <div class="grid" style="margin-top:30px">
+    <div><b>Malé</b><span>Jedna aplikace řeší jedno téma, třeba jeden typ úlohy nebo jeden jev. Žádné velké systémy.</span></div>
+    <div><b>Rychlé</b><span>Otevře se za vteřinu z odkazu nebo QR kódu na tabuli. Žádná instalace, žádný účet.</span></div>
+    <div><b>Sdílené</b><span>Co vytvoří jeden učitel, mohou používat všichni, i jiné školy.</span></div>
+  </div>
+</div></section>
+
+<section id="koncept"><div class="in">
+  <div class="sec-head"><div class="n">2</div><h2>Koncept: tvoří učitelé a žáci</h2><p>Katalog nestaví jeden programátor. Aplikace přidávají sami ti, kdo učí, a pomoc mají po ruce.</p></div>
+  <div class="grid">
+    <div><svg class="ico" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="16" cy="10" r="5"/><path d="M6 28c1-6 5-9 10-9s9 3 10 9"/></svg><b>Učitelé sami</b><span>Učitel popíše umělé inteligenci, co má aplikace umět, a vznikne jeden soubor HTML. Zkušení autoři ho zveřejní sami v jednoduché administraci.</span></div>
+    <div><svg class="ico" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="4"/><circle cx="22" cy="11" r="4"/><path d="M3 27c1-5 4-7 8-7s7 2 8 7M15 27c1-5 4-7 8-7s7 2 8 7"/></svg><b>S lehkou dopomocí</b><span>Kdo začíná, pošle hotový soubor ICT metodikovi. Ten ho zkontroluje a zveřejní. Po pár aplikacích dostane autor oprávnění zveřejňovat sám.</span></div>
+    <div><svg class="ico" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l13-6 13 6-13 6z"/><path d="M9 15v7c2 2 4.5 3 7 3s5-1 7-3v-7M29 12v8"/></svg><b>I žáci</b><span>Žák může vytvořit aplikaci jako projekt, seminární nebo ročníkovou práci. Vede ho učitel, který ručí za obsah.</span></div>
+  </div>
+  <div class="callout"><p><b>Proč jeden soubor HTML?</b> Takovou aplikaci umí vytvořit každý běžný nástroj umělé inteligence (Claude, ChatGPT, Gemini), dá se otevřít v libovolném prohlížeči, funguje i bez internetu a nikdy „nezastará“, protože nepotřebuje server ani aktualizace.</p></div>
+</div></section>
+
+<section id="postup"><div class="in">
+  <div class="sec-head"><div class="n">3</div><h2>Jak aplikace vzniká</h2><p>Postup se liší podle toho, kdo aplikaci tvoří. Vyberte svou roli.</p></div>
+  <div class="who" role="tablist" aria-label="Kdo aplikaci tvoří">
+    <button role="tab" id="t-ucitel" aria-selected="true" aria-controls="p-ucitel">Učitel</button>
+    <button role="tab" id="t-zak" aria-selected="false" aria-controls="p-zak" tabindex="-1">Žák</button>
+  </div>
+
+  <div id="p-ucitel" role="tabpanel" aria-labelledby="t-ucitel" class="paths">
+    <div class="path">
+      <h3>A) Zkušený autor</h3>
+      <p>Učitel s oprávněním ke zveřejňování. Ideálním prostředím je Claude.</p>
+      <ol class="flow">
+        <li><b>Nápad</b><span>Co má aplikace ukázat, pro který předmět a ročník.</span></li>
+        <li><b>Tvorba s umělou inteligencí</b><span>V Claude popíše zadání, zkouší a ladí, dokud aplikace nedělá, co má. Výsledek je jeden soubor HTML.</span></li>
+        <li><b>Vyzkoušení</b><span>Otevře ho v prohlížeči na počítači, případně i na telefonu.</span></li>
+        <li><b>Zveřejnění v administraci</b><span>Přihlásí se školním Google účtem, nahraje soubor, vyplní předmět, ročník a témata. Administrace sama zkontroluje, že aplikace nic nenačítá z cizích serverů, doplní patičku s licencí, kartu, náhled a QR kód.</span></li>
+        <li><b>Aplikace je v katalogu</b><span>Do minuty je na adrese aplikace.gympb.cz s označením „Nové“. Úpravy dělá autor sám.</span></li>
+      </ol>
+    </div>
+    <div class="path">
+      <h3>B) Začínající autor</h3>
+      <p>Učitel, který zatím zveřejňovací oprávnění nemá, nebo používá jiný nástroj (ChatGPT, Gemini).</p>
+      <ol class="flow">
+        <li><b>Nápad</b><span>Stejný jako u zkušeného autora.</span></li>
+        <li><b>Tvorba s umělou inteligencí</b><span>Nechá si aplikaci vygenerovat jako jeden soubor HTML. Poradit si lze i s ICT metodikem.</span></li>
+        <li><b>Odeslání</b><span>Soubor pošle ICT metodikovi spolu s předmětem a ročníkem.</span></li>
+        <li><b>Kontrola</b><span>ICT metodik ověří, že aplikace splňuje pravidla katalogu: nic neposílá, nic nenačítá z cizích serverů, funguje. Drobnosti opraví nebo s autorem doladí.</span></li>
+        <li><b>Zveřejnění</b><span>ICT metodik aplikaci zveřejní pod jménem autora. Kdo takto zveřejní několik aplikací, získá oprávnění zveřejňovat sám.</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div id="p-zak" role="tabpanel" aria-labelledby="t-zak" class="paths" hidden>
+    <div class="path">
+      <h3>Žákovská aplikace</h3>
+      <p>Žák do administrace nevstupuje. Za aplikaci odpovídá učitel, který je garantem.</p>
+      <ol class="flow">
+        <li><b>Nápad a garant</b><span>Žák si najde učitele předmětu, kterého téma zajímá. Spolu domluví, co má aplikace umět a pro koho je. <em class="who-tag">žák + učitel</em></span></li>
+        <li><b>Tvorba</b><span>Žák aplikaci vytvoří, třeba v rámci projektu, semináře nebo ročníkové práce. Umělou inteligenci využít smí, ale musí rozumět tomu, co aplikace dělá. <em class="who-tag">žák</em></span></li>
+        <li><b>Odborná kontrola</b><span>Garant ověří, že je obsah věcně správný a vhodný do výuky. <em class="who-tag">učitel</em></span></li>
+        <li><b>Technická kontrola</b><span>ICT metodik zkontroluje pravidla katalogu: žádná data, žádné cizí zdroje, licence. <em class="who-tag">ICT metodik</em></span></li>
+        <li><b>Zveřejnění</b><span>Aplikaci zveřejní garant nebo ICT metodik. Jako autor je uveden žák, jen se souhlasem jeho i zákonného zástupce u nezletilých. Jinak lze uvést třeba „žáci 3. ročníku“. <em class="who-tag">učitel</em></span></li>
+      </ol>
+    </div>
+    <div class="path">
+      <h3>Proč to dává smysl</h3>
+      <p>Tvorba aplikace je pro žáka výborná učební úloha.</p>
+      <div class="grid">
+        <div><b>Učí se tématu</b><span>Kdo chce simulaci naprogramovat, musí jev pochopit do hloubky.</span></div>
+        <div><b>Učí se s AI pracovat</b><span>Zadat, ověřit, opravit. Kritické myšlení místo slepého kopírování.</span></div>
+        <div><b>Tvoří něco skutečného</b><span>Výsledek používají spolužáci i učitelé. To motivuje víc než známka.</span></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section id="data"><div class="in">
+  <div class="sec-head"><div class="n">4</div><h2>Žádná data nikomu</h2><p>Aplikace běží jen v prohlížeči. Co žák udělá, zůstane u něj.</p></div>
+  <div class="grid">
+    <div><b>Bez přihlášení</b><span>Žádné účty, hesla ani e-maily. Aplikaci otevře kdokoli.</span></div>
+    <div><b>Bez sběru dat</b><span>Odpovědi, výsledky ani zadané texty se nikam neodesílají. Pokud si aplikace něco pamatuje, třeba skóre, je to jen v prohlížeči žáka.</span></div>
+    <div><b>Bez sledování</b><span>Žádná počítadla návštěv, analytika ani cookies. Nikdo neví, kdo a kdy aplikaci použil.</span></div>
+    <div><b>Bez cizích serverů</b><span>Písma i obrázky jsou přímo na webu. Aplikace nestahuje nic od Googlu ani z jiných služeb, takže o návštěvě nikdo třetí neví.</span></div>
+  </div>
+  <div class="callout"><p><b>Proč na tom tolik záleží?</b> Ve třídě sedí nezletilí žáci. Aplikace, která nic neposílá, nevyžaduje souhlas rodičů, posouzení podle GDPR ani smlouvy s dodavatelem. Učitel ji může bez obav pustit hned. A protože nepotřebuje server, funguje i ve chvíli, kdy vypadne internet. Pravidla hlídá administrace automaticky: aplikaci, která by něco načítala z cizího serveru, nedovolí zveřejnit.</p></div>
+</div></section>
+
+<section id="licence"><div class="in">
+  <div class="sec-head"><div class="n">5</div><h2>Licence: sdílet, ale s uvedením autora</h2><p>Aplikace jsou pod licencí <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">Creative Commons Uveďte původ 4.0 (CC BY 4.0)</a>, pokud autor neurčí jinak.</p></div>
+  <div class="lic">
+    <div><h3>Každý smí</h3><ul><li>aplikaci používat ve výuce i mimo ni,</li><li>sdílet ji a kopírovat,</li><li>upravit ji pro svou třídu nebo školu,</li><li>a to i jiné školy.</li></ul></div>
+    <div><h3>Podmínkou je</h3><ul><li>uvést jméno autora a odkaz na licenci,</li><li>vyznačit, co bylo změněno.</li></ul><p style="font-size:16px">Autor a licence jsou v patičce každé aplikace.</p></div>
+    <div><h3>Autor musí dbát</h3><ul><li>aby v aplikaci nebyl cizí obsah bez svolení,</li><li>u obrázků a textů na licenci nebo zdroj,</li><li>písma používat jen s volnou licencí (např. SIL OFL), uložená přímo u aplikace.</li></ul></div>
+  </div>
+  <div class="callout"><p><b>Otevřenost je i pojistka.</b> Zdrojový kód všech aplikací je veřejný v repozitáři na GitHubu. Kdyby autor odešel ze školy, aplikace nezmizí a kdokoli ji může dál upravovat.</p></div>
+</div></section>
+
+<section id="design"><div class="in">
+  <div class="sec-head"><div class="n">6</div><h2>Proč tak jednoduchý design</h2><p>Katalog má pomůcky rychle najít a otevřít. Zbytek je jen na obtíž.</p></div>
+  <div class="grid">
+    <div><b>Rychlost</b><span>Statické stránky bez frameworků a reklam se načtou okamžitě i na slabém školním Wi-Fi.</span></div>
+    <div><b>Čitelnost</b><span>Písmo Atkinson Hyperlegible je navržené pro čtenáře se zrakovými obtížemi. Vysoký kontrast, velké ovládací prvky, ovládání klávesnicí. Tmavý režim podle nastavení zařízení.</span></div>
+    <div><b>Jednotnost</b><span>Barvy a písma odpovídají logomanuálu školy. Každá karta má stejnou stavbu: ilustrace, název, popis, štítky ročníku a autora.</span></div>
+    <div><b>Obsah na prvním místě</b><span>Výraznými barvami se vyznačuje jen to, co má význam: ročník, nová nebo doporučená aplikace. Na ničem dalším oko neulpívá.</span></div>
+    <div><b>Snadná údržba</b><span>Žádný redakční systém, který by se musel aktualizovat a zabezpečovat. Web je zdarma na GitHub Pages.</span></div>
+  </div>
+</div></section>
+
+<section id="mobil"><div class="in">
+  <div class="sec-head"><div class="n">7</div><h2>Na počítači, tabuli i mobilu</h2><p>Web se přizpůsobí každé obrazovce. Aplikace ale mobil zvládat nemusí, a katalog to přiznává.</p></div>
+  <div class="grid">
+    <div><b>Responzivní katalog</b><span>Na telefonu se filtry řadí do posuvných řádků, karty pod sebe a stránka se nikdy neposouvá do strany.</span></div>
+    <div><b>Štítek mobil</b><span>Aplikace optimalizované pro použití na mobilu mají štítek „mobil“ a v liště je přepínač, který ukáže jen je. Ostatní jsou označené „na počítač“: potřebují větší obrazovku nebo myš.</span></div>
+    <div><b>Interaktivní tabule</b><span>Velká tlačítka a tahání prstem fungují i na dotykových panelech ve třídách.</span></div>
+    <div><b>QR kód</b><span>Každá aplikace má QR kód. Učitel ho promítne a žáci si aplikaci během pár vteřin otevřou na svých telefonech.</span></div>
+  </div>
+</div></section>
+
+<section id="technika"><div class="in">
+  <div class="sec-head"><div class="n">8</div><h2>Co je pod kapotou</h2><p>Pro zvědavé a pro ty, kdo by chtěli něco podobného na své škole.</p></div>
+  <div class="chain" aria-label="Cesta aplikace od autora na web">
+    <div><b>Autor + AI</b><span>Claude, ChatGPT, Gemini → jeden soubor HTML</span></div><i aria-hidden="true">→</i>
+    <div><b>Administrace</b><span>kontrola pravidel, karta, náhled, QR kód</span></div><i aria-hidden="true">→</i>
+    <div><b>GitHub</b><span>repozitář gympb/aplikace, každá změna je zaznamenaná</span></div><i aria-hidden="true">→</i>
+    <div><b>aplikace.gympb.cz</b><span>katalog i aplikace, GitHub Pages</span></div>
+  </div>
+  <div class="prose" style="margin-top:26px">
+    <p>Údaje o všech aplikacích jsou v jediném souboru <code>katalog.json</code>. Úvodní stránka z něj sama sestaví karty, filtry a počitadla. Pravidla pro autory i nástroje jsou sepsaná v souboru <a href="https://github.com/gympb/aplikace/blob/main/PRAVIDLA.md">PRAVIDLA.md</a>. Každá úprava je jeden záznam v historii repozitáře, takže je vždy vidět, kdo co změnil, a vše jde vrátit.</p>
+  </div>
+  <div class="cta">
+    <a class="btn main" href="../">Prohlédnout katalog</a>
+    <a class="btn" href="https://github.com/gympb/aplikace">Zdrojový kód na GitHubu</a>
+    <a class="btn" href="https://github.com/gympb/aplikace/blob/main/PRAVIDLA.md">Pravidla pro autory</a>
+  </div>
+  <div class="callout"><p><b>Chcete přidat aplikaci?</b> Napište námět přes školní helpdesk nebo se ozvěte ICT metodikovi. Rádi poradíme se zadáním i s prvními kroky v umělé inteligenci.</p></div>
+</div></section>
+</main>
+
+<footer><div class="in">
+  <div class="school">Gymnázium Příbram<span>Legionářů 402, Příbram</span></div>
+  <p>Autor: Ivo Bešťák · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 24. 10. 2026<br>Stránka nepoužívá cookies ani měření návštěvnosti.</p>
+</div></footer>
+
+<script>
+// počty z katalogu (stejný web, žádný cizí server)
+fetch('../katalog.json',{cache:'no-cache'}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{
+  const a=(d.aplikace||[]).filter(x=>x.stav!=='archiv');
+  const set=(id,n)=>{document.getElementById(id).textContent=n;};
+  set('f-apps',a.length); set('f-subj',new Set(a.flatMap(x=>x.predmet||[])).size); set('f-aut',new Set(a.map(x=>x.autor).filter(Boolean)).size);
+}).catch(()=>{document.querySelector('.facts').hidden=true;});
+// přepínač Učitel / Žák
+const tabs=[document.getElementById('t-ucitel'),document.getElementById('t-zak')];
+function show(t,focus){tabs.forEach(b=>{const on=b===t;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;document.getElementById(b.getAttribute('aria-controls')).hidden=!on;});if(focus)t.focus();}
+tabs.forEach(b=>b.addEventListener('click',()=>show(b)));
+document.querySelector('.who').addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();show(tabs[tabs[0].getAttribute('aria-selected')==='true'?1:0],true);}});
+</script>
+</body>
+</html>
