@@ -54,7 +54,7 @@ caesarova-sifra/    jedna složka = jedna aplikace
 | `zverejneno` | datum prvního zveřejnění; vyplní se jednou a nemění se. Štítek „Nové“ se z něj počítá 14 dní. |
 | `aktualizace` | datum poslední úpravy |
 | `zarizeni` | `mobil` (optimalizována pro použití na mobilu, štítek „mobil“) nebo `pocitac` (potřebuje větší obrazovku nebo myš, štítek „na počítač“). Podrobnosti v PRAVIDLA.md, bod 6b. |
-| `stav` | `nasazeno`, `priprava` (karta bez odkazu), `archiv` (skryto z katalogu, adresa dál funguje) |
+| `stav` | `nasazeno`, `skryta` (živá aplikace mimo katalog, jen přes odkaz; skrytí nic nechrání), `priprava` (karta bez odkazu), `archiv` (vyřazená, skryto z katalogu, adresa dál funguje) |
 | `pripnuto` | nepovinné; datum připnutí `RRRR-MM-DD`. Aplikace je 30 dní na začátku výpisu a má na kartě bombu „BOMBA!“. Připíná jen správce, nejvýš 3 aplikace. |
 | `odkaz` | volitelné: adresa aplikace mimo tento repozitář |
 

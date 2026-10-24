@@ -28,10 +28,10 @@ Platí pro každého, kdo do repozitáře `gympb/aplikace` (web https://aplikace
 | `temata` | ano | slova, podle kterých aplikaci najde hledání |
 | `motiv` | ne | krátký text na kartu, pokud aplikace nemá ilustraci |
 | `autor` | ano | jméno autora, jak se zobrazí na kartě a v patičce (např. jméno žáka se souhlasem nebo „žáci 3. ročníku“); nemusí to být ten, kdo aplikaci zveřejnil |
-| `zverejneno` | ano | datum prvního zveřejnění `RRRR-MM-DD`; vyplní se jednou při zveřejnění a **nikdy se nemění** |
+| `zverejneno` | ano* | datum prvního zveřejnění v katalogu `RRRR-MM-DD`; vyplní se jednou a **nikdy se nemění**. *Skrytá aplikace ho do prvního zveřejnění v katalogu nemá, viz bod 6c |
 | `aktualizace` | ano | datum poslední úpravy `RRRR-MM-DD` |
 | `zarizeni` | ano | `mobil` nebo `pocitac`, viz bod 6b |
-| `stav` | ano | `nasazeno`, `priprava` nebo `archiv`, viz bod 6 |
+| `stav` | ano | `nasazeno`, `skryta`, `priprava` nebo `archiv`, viz bod 6 |
 | `obrazek` | ano | `karta.svg`, viz bod 7 |
 | `odkaz` | ne | adresa aplikace, pokud není v tomto repozitáři |
 | `pripnuto` | ne | datum připnutí na začátek výpisu `RRRR-MM-DD`, viz bod 6a |
@@ -86,6 +86,7 @@ Používej **jen** tyto štítky. Nové nevytvářej.
 | Stav | Význam |
 |---|---|
 | `nasazeno` | aplikace je zveřejněná (běžný stav) |
+| `skryta` | živá aplikace mimo katalog: funguje na své adrese a s QR kódem, v katalogu ani v počtech na úvodní stránce není, viz bod 6c |
 | `priprava` | rozpracovaná aplikace: karta bez odkazu, se štítkem „V přípravě“ |
 | `archiv` | vyřazená aplikace: skrytá z katalogu, adresa a QR kód dál fungují |
 
@@ -117,6 +118,16 @@ Používej **jen** tyto štítky. Nové nevytvářej.
   - má tlačítka a ovládací prvky nejméně 40 px velké.
 - Ostatní aplikace mají `pocitac`. Když si autor není jistý, zvolí `pocitac`.
 - Lišta na úvodní stránce má přepínač „Jen pro mobil“.
+
+## 6c. Skrytá aplikace
+
+- Stav `skryta` použije učitel, když chce aplikaci používat nebo vyzkoušet jen přes odkaz či QR kód, bez karty v katalogu (zkouška naostro, aplikace pro jednu třídu, rozpracovaná verze pro kolegu nebo garanta).
+- Skrytá aplikace má normální složku `slug/` se všemi soubory podle bodu 7 a adresu `https://aplikace.gympb.cz/slug/`.
+- **Skrytí nic nechrání.** Aplikace je ve veřejném repozitáři i v souboru `katalog.json` a otevře ji každý, kdo zná odkaz. Nesmí proto obsahovat nic, co by nemělo být veřejné.
+- Pro skrytou aplikaci platí všechna pravidla jako pro ostatní (soukromí, cizí zdroje, licence, patička s autorem).
+- Do hlavičky skryté aplikace se vloží `<meta name="robots" content="noindex">`, aby ji nezobrazovaly vyhledávače. Při přepnutí do stavu `nasazeno` se značka odstraní.
+- Skrytá aplikace nemá `zverejneno`, dokud se poprvé neobjeví v katalogu. Při prvním přepnutí do stavu `nasazeno` dostane dnešní datum, a tedy i štítek „Nové“. Aplikace, která už v katalogu byla a znovu se skryje, si původní `zverejneno` ponechá.
+- Skrytou aplikaci nelze připnout.
 
 ## 7. Složka aplikace
 

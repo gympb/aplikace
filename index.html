@@ -339,7 +339,8 @@ function render(){
     </article>`;}).join(''):`<div class="empty">Žádná aplikace neodpovídá hledání. Zkuste jiné slovo nebo zrušte filtr.</div>`;
 }
 fetch('katalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(d=>{
-  APPS=seradit((d.aplikace||[]).filter(a=>a.stav!=='archiv'));
+  // archivované a skryté aplikace se v katalogu nezobrazují (skrytá funguje jen na své adrese)
+  APPS=seradit((d.aplikace||[]).filter(a=>a.stav!=='archiv'&&a.stav!=='skryta'));
   SUBJ=['Vše',...[...new Set(APPS.flatMap(a=>a.predmet))].sort((a,b)=>a.localeCompare(b,'cs'))];
   GRADES=[...ROCNIKY];
   const pl=(n,a,b,c)=>n===1?a:(n>=2&&n<=4?b:c);
