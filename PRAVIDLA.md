@@ -27,7 +27,7 @@ Platí pro každého, kdo do repozitáře `gympb/aplikace` (web https://aplikace
 | `rocnik` | ano | jeden nebo více štítků ročníků, viz bod 4; seznam nesmí být prázdný |
 | `temata` | ano | slova, podle kterých aplikaci najde hledání |
 | `motiv` | ne | krátký text na kartu, pokud aplikace nemá ilustraci |
-| `autor` | ano | jméno a příjmení |
+| `autor` | ano | jméno autora, jak se zobrazí na kartě a v patičce (např. jméno žáka se souhlasem nebo „žáci 3. ročníku“); nemusí to být ten, kdo aplikaci zveřejnil |
 | `zverejneno` | ano | datum prvního zveřejnění `RRRR-MM-DD`; vyplní se jednou při zveřejnění a **nikdy se nemění** |
 | `aktualizace` | ano | datum poslední úpravy `RRRR-MM-DD` |
 | `zarizeni` | ano | `mobil` nebo `pocitac`, viz bod 6b |
