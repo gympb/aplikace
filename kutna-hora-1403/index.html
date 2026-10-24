@@ -1,0 +1,1183 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kutná Hora 1403</title>
+<meta name="description" content="Interaktivní výuková aplikace o Kutné Hoře na přelomu let 1402–1403: schematická mapa města, boj Václava IV. se Zikmundem, cesta stříbra od rudy ke groši, důlní simulátor, kvíz a slovník. Reálie ke hře Kingdom Come: Deliverance II.">
+<meta name="author" content="Ivo Bešťák, Gymnázium Příbram">
+<meta property="og:title" content="Kutná Hora 1403">
+<meta property="og:description" content="Stříbrné město ve hře Kingdom Come: Deliverance II a ve skutečnosti.">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+/* Layout: tmavý dřevěný rám, uvnitř pergamenové listy; nahoře lišta s měšcem a záložky, pod nimi obsah záložky */
+:root{
+  --wood:#1b1009; --wood-2:#2b190d; --wood-line:#6e4b26;
+  --parch:#f3e6c6; --parch-2:#e8d4a6; --parch-3:#d8bd85; --parch-line:#b3925e;
+  --ink:#24170b; --ink-2:#5a4128; --muted:#7a6040;
+  --red:#7d1d1d; --red-soft:#f0d6cc; --gold:#c9a24b; --gold-hi:#f2d27a;
+  --good:#2f6b3a; --good-soft:#d9e8cf; --bad:#8a2323; --bad-soft:#f1d2c9; --water:#2f5f72; --water-soft:#cfe0e2;
+  --f-display:"Cinzel",Georgia,serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-hand:"Almendra",Georgia,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.55 var(--f-body);
+  background:var(--wood) radial-gradient(ellipse at 50% 0%,#3a2312 0%,var(--wood) 70%) fixed}
+a{color:var(--red)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold-hi);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* --- horní lišta --- */
+.top{background:linear-gradient(180deg,var(--wood-2),var(--wood));border-bottom:2px solid var(--wood-line);position:sticky;top:0;z-index:30;box-shadow:0 6px 18px rgba(0,0,0,.55)}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:8px}
+.back{font:600 14px var(--f-body);color:#cdb88f;text-decoration:none}
+.back:hover{color:var(--gold-hi)}
+.hud{display:flex;align-items:center;gap:10px}
+.purse{display:flex;align-items:center;gap:8px;background:#0e0804;border:1px solid var(--gold);border-radius:999px;padding:4px 12px 4px 6px;color:var(--parch)}
+.coin{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:700 12px var(--f-display);color:#2a1a08;
+  background:radial-gradient(circle at 35% 30%,#fff3c4,#e2b84f 55%,#9c7424);border:1px solid #f6e0a0}
+.purse b{font:700 16px var(--f-display);color:var(--gold-hi)}
+.purse small{display:block;font:600 10px/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:#bfa26a}
+.rank{color:#e8d6ad;font:600 13px/1.2 var(--f-body);text-align:right}
+.rank small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#a88a57}
+.iconbtn{min-height:40px;min-width:40px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;
+  background:#120a05;border:1px solid var(--wood-line);color:#e8d6ad;cursor:pointer;padding:0 10px;font-size:14px}
+.iconbtn:hover{border-color:var(--gold)}
+.iconbtn svg{width:18px;height:18px}
+@media (max-width:620px){.rank{display:none}.iconbtn .lbl{display:none}}
+
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-top:2px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;min-height:44px;padding:0 14px;border:0;border-bottom:3px solid transparent;background:none;color:#b9a27a;cursor:pointer;
+  font:700 13px var(--f-display);letter-spacing:.04em;white-space:nowrap;border-radius:6px 6px 0 0}
+.tab:hover{color:var(--parch);background:rgba(255,255,255,.04)}
+.tab[aria-selected="true"]{color:var(--gold-hi);border-bottom-color:var(--gold);background:rgba(201,162,75,.12)}
+
+/* --- záhlaví stránky --- */
+.hero{padding-block:26px 18px;color:var(--parch)}
+.eyebrow{font:600 12px/1.3 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+h1,h2,h3{font-family:var(--f-display);letter-spacing:.03em;margin:0;text-wrap:balance}
+h1{font-size:clamp(30px,6vw,52px);line-height:1.05;color:#f8ecd0;margin-top:6px}
+.lede{max-width:70ch;margin:10px 0 0;color:#d9c49b;font-family:var(--f-hand);font-style:italic;font-size:18px}
+
+/* --- pergamen --- */
+main{padding-bottom:40px}
+.sheet{position:relative;background:linear-gradient(135deg,var(--parch) 0%,var(--parch-2) 60%,var(--parch-3) 100%);border:3px double #5a381b;border-radius:10px;
+  box-shadow:inset 0 0 50px rgba(110,70,25,.28),0 14px 30px rgba(0,0,0,.6);padding:clamp(16px,3vw,30px);margin-bottom:22px}
+.sheet::before{content:"";position:absolute;inset:6px;border:1px dashed rgba(110,75,41,.3);border-radius:6px;pointer-events:none}
+.sheet-head{border-bottom:1px solid rgba(90,56,27,.3);padding-bottom:12px;margin-bottom:18px}
+.sheet-head h2{font-size:clamp(20px,3vw,27px);margin-top:4px}
+.sheet-head p{margin:6px 0 0;color:var(--ink-2);max-width:78ch}
+.kicker{font:700 11px/1.2 var(--f-body);letter-spacing:.13em;text-transform:uppercase;color:var(--red)}
+.note{font-size:14px;color:var(--ink-2);background:rgba(90,56,27,.08);border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 6px 6px 0}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr))}
+.card{background:rgba(255,250,235,.45);border:1px solid rgba(90,56,27,.28);border-radius:8px;padding:14px 16px}
+.card h3{font-size:17px;margin-bottom:6px}
+.card p{margin:0 0 8px}
+.card p:last-child{margin-bottom:0}
+.tag{display:inline-block;font:700 10px/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;padding:4px 7px;border-radius:4px;background:rgba(125,29,29,.12);color:var(--red);border:1px solid rgba(125,29,29,.25)}
+.btn{min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #3d240f;background:#3a210d;color:#f6e6c2;cursor:pointer;font:700 14px var(--f-display);letter-spacing:.03em;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{background:#52300f}
+.btn.ghost{background:transparent;color:var(--ink);border-color:rgba(90,56,27,.45)}
+.btn.ghost:hover{background:rgba(90,56,27,.1)}
+
+/* --- mapa --- */
+.map-tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{min-height:40px;padding:0 12px;border-radius:999px;border:1px solid rgba(90,56,27,.4);background:rgba(255,250,235,.5);cursor:pointer;font:600 14px var(--f-body);color:var(--ink)}
+.chip[aria-pressed="true"]{background:#3a210d;color:#f6e6c2;border-color:#3a210d}
+.found{font:600 14px var(--f-body);color:var(--ink-2)}
+.map{position:relative;width:100%;aspect-ratio:1000/680;border:2px solid #5a381b;border-radius:8px;overflow:hidden;background:#efe1bd;box-shadow:inset 0 0 30px rgba(110,70,25,.25)}
+.map svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pin{position:absolute;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;padding:0;cursor:pointer;display:grid;place-items:center;
+  border:2px solid #f6e6c2;background:var(--c,#3a210d);color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.45);transition:transform .15s}
+.pin svg{width:18px;height:18px;position:static}
+.pin:hover,.pin:focus-visible{transform:translate(-50%,-50%) scale(1.15);z-index:5}
+.pin.seen{border-color:var(--gold-hi)}
+.pin[aria-current="true"]{box-shadow:0 0 0 4px var(--gold-hi),0 2px 8px rgba(0,0,0,.5);z-index:4}
+.pin .lab{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#1b1009;color:#f6e6c2;
+  font:600 12px var(--f-body);padding:3px 7px;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .15s}
+.pin:hover .lab,.pin:focus-visible .lab{opacity:1}
+.pin.dim{opacity:.25}
+@media (max-width:700px){.pin{width:26px;height:26px;border-width:1.5px}.pin svg{width:14px;height:14px}}
+@media (hover:none){.pin .lab{display:none}}
+.map-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:13px;color:var(--ink-2)}
+.map-legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--c);border:1.5px solid #f6e6c2;box-shadow:0 0 0 1px rgba(0,0,0,.3)}
+.loc-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.loc-list button{min-height:40px;padding:0 12px;border-radius:8px;border:1px solid rgba(90,56,27,.35);background:rgba(255,250,235,.45);cursor:pointer;font:600 14px var(--f-body);display:inline-flex;align-items:center;gap:8px}
+.loc-list button[aria-current="true"]{background:#3a210d;color:#f6e6c2}
+.loc-list button .dot{flex:0 0 auto}
+.loc-list button.seen::after{content:"✓";color:var(--good);font-weight:700}
+.loc-list button[aria-current="true"].seen::after{color:var(--gold-hi)}
+
+.detail-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(90,56,27,.3);padding-bottom:12px;margin-bottom:16px}
+.detail-head h2{font-size:clamp(20px,3vw,26px)}
+.badge{font:700 13px var(--f-body);padding:6px 12px;border-radius:999px;background:#5d4a33;color:#f3e6c6}
+.badge.new{background:var(--good);color:#fff}
+.c-hist{border-top:3px solid #5a381b}
+.c-1403{border-top:3px solid var(--red)}
+.c-zaj{border-top:3px solid var(--gold)}
+.hint{margin-top:14px}
+
+/* --- politika --- */
+.timeline{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.timeline li{display:grid;grid-template-columns:150px 1fr;gap:12px;background:rgba(255,250,235,.4);border-left:4px solid var(--red);padding:10px 14px;border-radius:0 6px 6px 0}
+.timeline b{font-family:var(--f-display)}
+@media (max-width:560px){.timeline li{grid-template-columns:1fr;gap:2px}}
+
+/* --- cesta stříbra --- */
+.phases{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:18px}
+@media (max-width:900px){.phases{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:480px){.phases{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.phase{min-height:56px;text-align:left;padding:8px 10px;border-radius:8px;border:1px solid rgba(90,56,27,.35);background:rgba(255,250,235,.4);cursor:pointer}
+.phase small{display:block;font:700 10px/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.phase span{font:700 13px/1.2 var(--f-display)}
+.phase[aria-selected="true"]{background:#3a210d;color:#f6e6c2;border-color:#3a210d}
+.phase[aria-selected="true"] small{color:var(--gold)}
+.phase-body{display:grid;grid-template-columns:220px 1fr;gap:22px;align-items:center}
+@media (max-width:640px){.phase-body{grid-template-columns:1fr}}
+.phase-art{width:100%;max-width:220px;aspect-ratio:1;justify-self:center;background:#170f08;border:2px solid #3a2414;border-radius:10px;overflow:hidden}
+.phase-art svg{width:100%;height:100%;display:block}
+.phase-body h3{font-size:clamp(19px,2.6vw,24px);margin:6px 0 8px}
+
+/* --- simulátor --- */
+.sim{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
+@media (max-width:980px){.sim{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.sim .log{grid-column:1/-1}}
+@media (max-width:640px){.sim{grid-template-columns:minmax(0,1fr)}}
+.field{display:grid;gap:4px;margin-bottom:12px}
+.field label,.field .lbl2{font-weight:600;font-size:14px}
+.field select,.field input[type=number]{min-height:40px;width:100%;padding:6px 8px;border:1px solid rgba(90,56,27,.45);border-radius:6px;background:#fbf5e4;color:var(--ink);font:15px var(--f-body)}
+.field input[type=range]{width:100%;accent-color:#7a4b1d;min-height:32px}
+.range-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.range-row b{color:var(--ink);font-size:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cal{display:flex;gap:16px;background:#1b1009;color:#f3e6c6;border-radius:8px;padding:8px 14px;font-size:14px}
+.cal small{display:block;font:700 10px/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:#bfa26a}
+.cal b{font-family:var(--f-display)}
+.meter{margin-bottom:12px}
+.meter .row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+.bar{height:10px;border-radius:999px;background:rgba(90,56,27,.18);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px;transition:width .3s}
+.ledger{margin-top:12px;border-top:1px solid rgba(90,56,27,.3);padding-top:10px;font-size:14px;display:grid;gap:4px}
+.ledger div{display:flex;justify-content:space-between;gap:10px}
+.ledger .sum{border-top:1px solid rgba(90,56,27,.3);padding-top:6px;margin-top:4px;font-weight:700}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+.log .entry{border-radius:8px;padding:12px 14px;border:1px solid rgba(90,56,27,.3);background:rgba(255,250,235,.45)}
+.log .entry.good{background:var(--good-soft);border-color:#9fc08e}
+.log .entry.bad{background:var(--bad-soft);border-color:#d79c8e}
+.log .entry.water{background:var(--water-soft);border-color:#8fb4bb}
+.log .entry h3{font-size:16px;margin:4px 0 6px}
+.log .entry p{margin:0 0 6px;font-size:15px}
+.history{list-style:none;margin:10px 0 0;padding:0;font-size:13px;color:var(--ink-2);display:grid;gap:3px;max-height:150px;overflow:auto}
+.sim-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.sim-actions .btn:first-child{flex:1 1 220px}
+
+/* --- tabulky --- */
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{background:#3a210d;color:#f3e6c6;text-align:left;font:700 13px var(--f-display);padding:8px 10px}
+.tbl td{padding:8px 10px;border-bottom:1px solid rgba(90,56,27,.2);vertical-align:top}
+.tbl-wrap{overflow-x:auto}
+
+/* --- kvíz --- */
+.quiz{max-width:860px;margin:0 auto}
+.q-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.q-step{font:700 14px var(--f-display);background:#1b1009;color:var(--gold-hi);padding:6px 12px;border-radius:6px}
+.q-title{font-size:clamp(18px,2.6vw,23px);margin:8px 0 16px;line-height:1.3}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px}
+.opt{min-height:52px;text-align:left;display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;border:2px solid #4a2e15;background:#2a180b;color:#f6e6c2;cursor:pointer;font:15px/1.4 var(--f-body)}
+.opt:hover:not(:disabled){border-color:var(--gold)}
+.opt .k{flex:0 0 auto;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#120a05;border:1px solid #7a5a32;font:700 12px var(--f-display);color:var(--gold-hi)}
+.opt.ok{background:#1f4a26;border-color:#7fc28a}
+.opt.ko{background:#5c1717;border-color:#e08a7c}
+.opt.off{opacity:.45}
+.opt:disabled{cursor:default}
+.feedback{margin-top:16px;border-radius:8px;padding:14px 16px;border:1px solid}
+.feedback.ok{background:var(--good-soft);border-color:#9fc08e}
+.feedback.ko{background:var(--bad-soft);border-color:#d79c8e}
+.feedback h3{font-size:17px;margin-bottom:6px}
+.feedback .act{display:flex;justify-content:flex-end;margin-top:10px}
+.results{text-align:center;padding:16px 0}
+.seal{width:80px;height:80px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;color:var(--gold-hi);font:700 30px var(--f-display);
+  background:radial-gradient(circle,#a82424 0%,#751414 70%,#460909 100%);border:2px solid #4a0d0d;box-shadow:0 4px 10px rgba(0,0,0,.5)}
+.results .title{display:inline-block;margin:6px 0 12px;padding:8px 22px;border-radius:999px;background:rgba(125,29,29,.12);border:1px solid rgba(125,29,29,.3);font:700 20px var(--f-display)}
+
+/* --- slovník --- */
+.search{position:relative;max-width:360px;width:100%}
+.search input{width:100%;min-height:44px;padding:8px 12px 8px 36px;border:1px solid rgba(90,56,27,.45);border-radius:8px;background:#fbf5e4;font:15px var(--f-body);color:var(--ink)}
+.search svg{position:absolute;left:10px;top:12px;width:18px;height:18px;color:var(--muted)}
+.lex .card h3{font-size:16px;margin:6px 0 4px}
+.lex .card p{font-size:15px}
+
+/* --- patička --- */
+footer{color:#bba57c;font-size:14px;padding:22px 0 36px;border-top:1px solid #3a2414;margin-top:10px}
+footer p{margin:0 0 6px}
+footer a{color:#e8d6ad}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);opacity:0;background:#1b1009;color:var(--gold-hi);border:1px solid var(--gold);
+  padding:8px 16px;border-radius:999px;font:700 14px var(--f-display);pointer-events:none;transition:opacity .25s,transform .25s;z-index:50}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <a class="back" href="../">← Všechny školní aplikace</a>
+      <div class="hud">
+        <div class="rank"><small>Hodnost</small><span id="rank">Havířský učeň</span></div>
+        <div class="purse" title="Groše získané v aplikaci">
+          <span class="coin" aria-hidden="true">G</span>
+          <span><small>Měšec</small><b id="purse">0</b> gr.</span>
+        </div>
+        <button class="iconbtn" id="sound" aria-pressed="true" title="Zvuky">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M9.4 3.1A1 1 0 0 1 10 4v12a1 1 0 0 1-1.7.7L4.6 13H2a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h2.6l3.7-3.7a1 1 0 0 1 1.1-.2z"/><path id="snd-waves" d="M13.8 6.2a1 1 0 0 1 1.4 0 5.5 5.5 0 0 1 0 7.6 1 1 0 1 1-1.4-1.4 3.5 3.5 0 0 0 0-4.8 1 1 0 0 1 0-1.4z"/><path id="snd-off" hidden d="M12.3 7.3a1 1 0 0 1 1.4 0L15 8.6l1.3-1.3a1 1 0 1 1 1.4 1.4L16.4 10l1.3 1.3a1 1 0 0 1-1.4 1.4L15 11.4l-1.3 1.3a1 1 0 0 1-1.4-1.4l1.3-1.3-1.3-1.3a1 1 0 0 1 0-1.4z"/></svg>
+          <span class="lbl" id="sound-lbl">Zvuky</span>
+        </button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Části aplikace">
+      <button class="tab" role="tab" id="t-mapa" aria-controls="p-mapa">Mapa města</button>
+      <button class="tab" role="tab" id="t-politika" aria-controls="p-politika">Boj o trůn 1402–1403</button>
+      <button class="tab" role="tab" id="t-tezba" aria-controls="p-tezba">Cesta stříbra</button>
+      <button class="tab" role="tab" id="t-simulator" aria-controls="p-simulator">Důlní simulátor</button>
+      <button class="tab" role="tab" id="t-zakonik" aria-controls="p-zakonik">Horní zákoník</button>
+      <button class="tab" role="tab" id="t-penize" aria-controls="p-penize">Groš a ceny</button>
+      <button class="tab" role="tab" id="t-kviz" aria-controls="p-kviz">Kvíz</button>
+      <button class="tab" role="tab" id="t-slovnik" aria-controls="p-slovnik">Slovník</button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Dějepis · reálie ke hře Kingdom Come: Deliverance II</div>
+    <h1>Kutná Hora 1403</h1>
+    <p class="lede">Stříbrné město krále Václava IV. v době, kdy Čechy ovládal jeho bratr Zikmund. Prozkoumej mapu, projdi cestu stříbra od rudy ke groši a porovnej hru se skutečností.</p>
+  </div>
+
+<main>
+<!-- ==================== MAPA ==================== -->
+<section id="p-mapa" role="tabpanel" aria-labelledby="t-mapa">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="kicker">Schematická mapa · není v měřítku</div>
+      <h2>Kutná Hora a okolí kolem roku 1403</h2>
+      <p>Klikni na značku nebo na název místa pod mapou. Za každé nově prozkoumané místo dostaneš 5 grošů.</p>
+    </div>
+    <div class="map-tools">
+      <div class="filters" role="group" aria-label="Filtr míst" id="filters"></div>
+      <span class="found">Prozkoumáno <b id="found">0</b> z <span id="total">0</span></span>
+    </div>
+
+    <div class="map" id="map">
+      <svg viewBox="0 0 1000 680" role="img" aria-labelledby="map-title map-desc" id="map-svg">
+        <title id="map-title">Schematická mapa Kutné Hory kolem roku 1403</title>
+        <desc id="map-desc">Opevněné město leží na svahu nad údolím říčky Vrchlice, která teče od jihozápadu podél jižního okraje města a pak na sever k Sedlci. Chrám svaté Barbory stojí za hradbami na jihozápadě, vrch Kaňk na severu, Sedlecký klášter na severovýchodě.</desc>
+        <defs>
+          <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><line x1="0" y1="0" x2="0" y2="9" stroke="#c9ad74" stroke-width="1"/></pattern>
+          <pattern id="slope" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)"><line x1="0" y1="0" x2="0" y2="7" stroke="#8a6c3e" stroke-width="1.1" opacity=".55"/></pattern>
+        </defs>
+        <rect width="1000" height="680" fill="#efe1bd"/>
+        <rect width="1000" height="680" fill="url(#hatch)" opacity=".35"/>
+
+        <!-- cesty -->
+        <g fill="none" stroke="#a5875a" stroke-width="5" stroke-linecap="round" opacity=".9">
+          <path d="M335 318 C 250 310 150 300 20 296"/>
+          <path d="M500 196 C 520 150 560 110 600 70 C 630 40 650 20 660 0"/>
+          <path d="M530 180 C 640 170 760 160 845 152"/>
+          <path d="M650 362 C 720 420 780 470 840 520 C 890 560 940 600 1000 630"/>
+          <path d="M395 418 C 360 440 320 455 292 468" stroke-dasharray="2 9" stroke-width="4"/>
+        </g>
+        <g font-family="Almendra, Georgia, serif" font-style="italic" font-size="17" fill="#7a5a32">
+          <text x="34" y="286">do Kouřimi a Prahy</text>
+          <text x="600" y="152" transform="rotate(-52 600 152)">do Kolína</text>
+          <text x="862" y="590" transform="rotate(36 862 590)">do Čáslavi</text>
+        </g>
+
+        <!-- Kaňk -->
+        <path d="M300 150 C 340 90 420 55 500 62 C 560 68 590 100 585 132 C 520 150 420 165 300 150 Z" fill="#dcc596" stroke="#a88a58" stroke-width="2"/>
+        <path d="M300 150 C 340 90 420 55 500 62 C 560 68 590 100 585 132" fill="none" stroke="url(#slope)" stroke-width="14" opacity=".8"/>
+        <g fill="#8d7450" stroke="#5e4728" stroke-width="1.2">
+          <path d="M370 128 l12-16 12 16z"/><path d="M410 136 l10-13 10 13z"/><path d="M452 122 l12-16 12 16z"/><path d="M497 132 l10-13 10 13z"/><path d="M530 118 l9-12 9 12z"/>
+        </g>
+        <text x="440" y="96" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="20" font-weight="700" fill="#6b4f2c" letter-spacing="2">KAŇK</text>
+
+        <!-- Oselské pásmo: haldy západně od hradeb -->
+        <g fill="#8d7450" stroke="#5e4728" stroke-width="1.2">
+          <path d="M215 372 l11-15 11 15z"/><path d="M248 392 l9-12 9 12z"/><path d="M226 412 l10-13 10 13z"/><path d="M270 360 l9-12 9 12z"/>
+        </g>
+
+        <!-- údolí Vrchlice (svah) -->
+        <path d="M60 680 C 140 610 220 560 300 540 C 380 522 470 512 560 514 C 660 518 720 486 748 420 C 772 360 790 290 830 220 C 870 150 930 90 1000 50"
+              fill="none" stroke="#d8c28f" stroke-width="70" stroke-linecap="round" opacity=".7"/>
+        <!-- řeka Vrchlice -->
+        <path d="M60 680 C 140 610 220 560 300 540 C 380 522 470 512 560 514 C 660 518 720 486 748 420 C 772 360 790 290 830 220 C 870 150 930 90 1000 50"
+              fill="none" stroke="#4d7f8f" stroke-width="13" stroke-linecap="round"/>
+        <path d="M60 680 C 140 610 220 560 300 540 C 380 522 470 512 560 514 C 660 518 720 486 748 420 C 772 360 790 290 830 220 C 870 150 930 90 1000 50"
+              fill="none" stroke="#a9cdd6" stroke-width="2" stroke-dasharray="10 12" stroke-linecap="round"/>
+        <text font-family="Almendra, Georgia, serif" font-style="italic" font-size="20" fill="#2f5f72">
+          <textPath href="#vrchlice-label" startOffset="8%">říčka Vrchlice</textPath>
+        </text>
+        <path id="vrchlice-label" d="M90 680 C 170 615 240 572 320 556" fill="none"/>
+
+        <!-- hutě a stoupy v údolí -->
+        <g stroke="#5e4728" stroke-width="1.5">
+          <g transform="translate(180 600)"><rect x="-13" y="-11" width="26" height="18" fill="#c9a77a"/><path d="M-15-11 L0-22 15-11z" fill="#8d6a43"/><rect x="5" y="-30" width="5" height="14" fill="#6b5340"/><path d="M8-34 q6-8 0-14 q-6-6 2-12" fill="none" stroke="#7d6a5a" stroke-width="2"/></g>
+          <g transform="translate(232 572)"><rect x="-11" y="-9" width="22" height="15" fill="#c9a77a"/><path d="M-13-9 L0-19 13-9z" fill="#8d6a43"/><circle cx="-16" cy="2" r="7" fill="none" stroke="#5e4728" stroke-width="2"/></g>
+          <g transform="translate(640 538)"><rect x="-11" y="-9" width="22" height="15" fill="#c9a77a"/><path d="M-13-9 L0-19 13-9z" fill="#8d6a43"/><circle cx="16" cy="2" r="7" fill="none" stroke="#5e4728" stroke-width="2"/></g>
+        </g>
+
+        <!-- hradby a město -->
+        <path d="M352 250 C 400 202 520 186 600 214 C 655 238 668 318 642 378 C 612 430 522 452 440 442 C 380 434 336 398 330 332 C 327 296 336 268 352 250 Z"
+              fill="#e6d2a3" stroke="#5c3d1d" stroke-width="7" stroke-linejoin="round"/>
+        <path d="M352 250 C 400 202 520 186 600 214 C 655 238 668 318 642 378 C 612 430 522 452 440 442 C 380 434 336 398 330 332 C 327 296 336 268 352 250 Z"
+              fill="none" stroke="#f4e8cb" stroke-width="2" stroke-dasharray="3 11"/>
+        <!-- uličky -->
+        <g fill="none" stroke="#bf9f6c" stroke-width="3" stroke-linecap="round">
+          <path d="M340 318 C 400 320 450 318 500 314"/>
+          <path d="M500 200 C 498 250 498 280 500 314"/>
+          <path d="M500 314 C 560 316 610 335 648 362"/>
+          <path d="M500 314 C 480 350 440 390 400 420"/>
+          <path d="M500 314 C 515 350 520 380 515 405"/>
+          <path d="M440 250 C 470 270 485 290 500 314"/>
+          <path d="M580 240 C 560 270 540 295 500 314"/>
+        </g>
+        <!-- náměstí -->
+        <rect x="470" y="295" width="62" height="40" rx="4" fill="#d9c08b" stroke="#a88a58" stroke-width="1.5"/>
+        <rect x="562" y="282" width="40" height="30" rx="4" fill="#d9c08b" stroke="#a88a58" stroke-width="1.5"/>
+        <!-- bloky domů -->
+        <g fill="#cdb07c" stroke="#a88a58" stroke-width="1">
+          <rect x="395" y="262" width="34" height="22" rx="3"/><rect x="436" y="282" width="26" height="22" rx="3"/><rect x="540" y="232" width="30" height="22" rx="3"/>
+          <rect x="398" y="338" width="30" height="24" rx="3"/><rect x="440" y="340" width="32" height="20" rx="3"/><rect x="545" y="345" width="34" height="22" rx="3"/>
+          <rect x="600" y="330" width="26" height="22" rx="3"/><rect x="455" y="225" width="30" height="20" rx="3"/><rect x="368" y="300" width="22" height="30" rx="3"/>
+        </g>
+        <!-- brány -->
+        <g fill="#5c3d1d"><rect x="321" y="306" width="22" height="24" rx="3"/><rect x="489" y="186" width="24" height="22" rx="3"/><rect x="636" y="350" width="24" height="22" rx="3"/></g>
+
+        <!-- Sedlec -->
+        <path d="M800 120 C 830 100 900 104 920 130 C 935 156 900 186 860 186 C 820 186 790 150 800 120 Z" fill="#e6d2a3" stroke="#8a6c3e" stroke-width="2.5" stroke-dasharray="6 4"/>
+        <text x="862" y="92" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="18" font-weight="700" fill="#6b4f2c" letter-spacing="1.5">SEDLEC</text>
+
+        <!-- popisky -->
+        <text x="492" y="270" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="15" font-weight="700" fill="#6b4f2c" letter-spacing="3" opacity=".75">KUTNÁ HORA</text>
+        <text x="232" y="440" text-anchor="middle" font-family="Almendra, Georgia, serif" font-style="italic" font-size="15" fill="#6b4f2c">Oselské pásmo</text>
+        <text x="200" y="642" font-family="Almendra, Georgia, serif" font-style="italic" font-size="15" fill="#6b4f2c">hutě a stoupy</text>
+
+        <!-- růžice -->
+        <g transform="translate(925 420)">
+          <circle r="34" fill="none" stroke="#7e5d37" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <polygon points="0,-40 7,-8 0,0 -7,-8" fill="#7d1d1d"/><polygon points="0,40 7,8 0,0 -7,8" fill="#5c3d1d"/>
+          <polygon points="-40,0 -8,-7 0,0 -8,7" fill="#5c3d1d"/><polygon points="40,0 8,-7 0,0 8,7" fill="#5c3d1d"/>
+          <text y="-46" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="15" font-weight="700" fill="#7d1d1d">S</text>
+        </g>
+        <!-- měřítko „cca“ -->
+        <g transform="translate(36 40)" font-family="Source Sans 3, sans-serif" font-size="14" fill="#6b4f2c">
+          <rect width="272" height="30" rx="6" fill="#f6ecd2" stroke="#a88a58"/>
+          <text x="12" y="20">Schéma · Sedlec leží asi 3 km od centra</text>
+        </g>
+      </svg>
+      <div id="pins"></div>
+    </div>
+    <div class="map-legend" id="legend"></div>
+    <div class="loc-list" id="loc-list" aria-label="Seznam míst"></div>
+  </div>
+
+  <div class="sheet" id="detail" aria-live="polite">
+    <div class="detail-head">
+      <div>
+        <div class="kicker" id="d-cat"></div>
+        <h2 id="d-name"></h2>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn ghost" id="d-sound" type="button">🔊 Dobový zvuk</button>
+        <span class="badge" id="d-badge"></span>
+      </div>
+    </div>
+    <div class="grid g3">
+      <div class="card c-hist"><h3>Historie</h3><p id="d-hist"></p></div>
+      <div class="card c-1403"><h3>V roce 1403</h3><p id="d-1403"></p></div>
+      <div class="card c-zaj"><h3>Zajímavost</h3><p id="d-zaj"></p></div>
+    </div>
+    <p class="note hint"><b>Při hraní KCD II:</b> <span id="d-hra"></span></p>
+  </div>
+</section>
+
+<!-- ==================== POLITIKA ==================== -->
+<section id="p-politika" role="tabpanel" aria-labelledby="t-politika" hidden>
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="kicker">Přelom let 1402 a 1403</div>
+      <h2>Zikmund, Václav IV. a stříbrné město</h2>
+      <p>Hra Kingdom Come: Deliverance II začíná roku 1403 v zemi, kde vládne nejistota: král Václav IV. je ve vězení a jeho nevlastní bratr Zikmund se snaží ovládnout Čechy i jejich nejbohatší město.</p>
+    </div>
+    <div class="grid g2" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))">
+      <div class="card">
+        <span class="tag">Uherský král</span>
+        <h3 style="margin-top:8px">Zikmund Lucemburský</h3>
+        <p>Mladší nevlastní bratr Václava IV. a od roku 1387 uherský král. V březnu 1402 dal Václava zajmout a sám se pokusil vládnout Čechám. Potřeboval peníze na vojsko a kutnohorské stříbro bylo největším zdrojem příjmů českého krále.</p>
+        <p>Roku 1403 musel Čechy opustit, protože proti němu povstala část uherské šlechty.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Český král</span>
+        <h3 style="margin-top:8px">Václav IV.</h3>
+        <p>Syn Karla IV. Po zajetí byl držen na Pražském hradě, pak na hradě Schaunberg v Rakousích a od podzimu 1402 ve Vídni u Habsburků.</p>
+        <p>V listopadu 1403 z Vídně uprchl. Za Dunajem ho vyzvedl Jan z Liechtensteinu se svými jezdci a dopravil ho do Mikulova na Moravě.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Stříbrné město</span>
+        <h3 style="margin-top:8px">Kutná Hora</h3>
+        <p>Městu vládla rada bohatých měšťanů a těžařů, z velké části německého původu. Kutná Hora se postavila za uvězněného Václava a vyhlásila nepřátelství Praze, která se Zikmundem spolupracovala.</p>
+        <p>Na přelomu let 1402 a 1403 město oblehla Zikmundova vojska s pomocí Pražanů a donutila ho ke vzdání.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Předloha herní postavy</span>
+        <h3 style="margin-top:8px">Racek Kobyla z Dvorce</h3>
+        <p>Hejtman krále Václava. Roku 1403 se stal purkrabím Stříbrné Skalice, kterou Zikmundova vojska téhož roku vypálila. Podle něj je vytvořen pan Radzig Kobyla z prvního dílu hry.</p>
+        <p>Roku 1416 ho v Kutné Hoře zabil dav havířů v hostinci, když tu jako stoupenec Jana Husa vybíral daně.</p>
+      </div>
+    </div>
+
+    <h3 style="margin:24px 0 12px;font-size:20px">Co se skutečně stalo</h3>
+    <ol class="timeline">
+      <li><b>Březen 1402</b><span>Zikmund dává v Praze zajmout svého bratra Václava IV. a drží ho na Pražském hradě.</span></li>
+      <li><b>Léto–podzim 1402</b><span>Václav je převezen do Rakous na hrad Schaunberg a odtud do Vídně, kde ho střeží habsburští vévodové.</span></li>
+      <li><b>Prosinec 1402</b><span>Zikmundova vojska obléhají Kutnou Horu. Velitel Markvart z Úlic padá 27. prosince u nedalekého Suchdolu.</span></li>
+      <li><b>Počátek 1403</b><span>Kutná Hora se vzdává. Odpor proti Zikmundovi ale v zemi pokračuje.</span></li>
+      <li><b>1403</b><span>Zikmund kvůli povstání v Uhrách odchází z Čech. Stříbrná Skalice je vypálena (tím začíná příběh prvního dílu hry).</span></li>
+      <li><b>Listopad 1403</b><span>Václav IV. utíká z vídeňského vězení a vrací se přes Mikulov do Čech.</span></li>
+    </ol>
+    <p class="note" style="margin-top:16px">Hra se historickými událostmi inspiruje, ale volně s nimi zachází. Například obrana Suchdolu, při které ve hře vystupuje Jan Žižka, je smyšlená. Při hraní si všímej, co hra přebírá z dějin a co si domýšlí.</p>
+  </div>
+</section>
+
+<!-- ==================== CESTA STŘÍBRA ==================== -->
+<section id="p-tezba" role="tabpanel" aria-labelledby="t-tezba" hidden>
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="kicker">Od rudy ke groši</div>
+      <h2>Sedm kroků středověké výroby stříbra</h2>
+      <p>Kutná Hora byla kolem roku 1400 jedním z největších těžebních center Evropy. Projdi, co všechno se muselo stát, než z kusu horniny vznikl pražský groš.</p>
+    </div>
+    <div class="phases" role="tablist" aria-label="Fáze výroby" id="phases"></div>
+    <div class="phase-body">
+      <div class="phase-art" id="ph-art"></div>
+      <div>
+        <span class="tag" id="ph-badge"></span>
+        <h3 id="ph-title"></h3>
+        <p id="ph-text" style="margin:0 0 12px"></p>
+        <p class="note" style="margin:0"><b>Při hraní KCD II:</b> <span id="ph-hra"></span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SIMULÁTOR ==================== -->
+<section id="p-simulator" role="tabpanel" aria-labelledby="t-simulator" hidden>
+  <div class="sheet">
+    <div class="sheet-head" style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:flex-end">
+      <div>
+        <div class="kicker">Hra na nákladníka</div>
+        <h2>Důlní simulátor</h2>
+        <p>Financuješ důl. Každý týden rozhodni o hloubce, lidech, čerpání vody, větrání a jídle. Zisk i ztráta se promítnou do měšce. Čísla jsou herní model, ne historická data.</p>
+      </div>
+      <div class="cal" aria-live="polite">
+        <div><small>Období</small><b id="s-cal">Jaro · týden 1</b></div>
+        <div><small>Pověst dolu</small><b id="s-rep">60 / 100</b></div>
+      </div>
+    </div>
+
+    <div class="sim">
+      <div class="card">
+        <h3>1. Důl a lidé</h3>
+        <div class="field">
+          <label for="s-depth">Hloubka šachty</label>
+          <input type="range" id="s-depth" min="40" max="300" step="20" value="120">
+          <div class="range-row"><span>40 m</span><b id="s-depth-v">120 m</b><span>300 m</span></div>
+        </div>
+        <div class="two">
+          <div class="field"><label for="s-miners">Lamači</label><input type="number" id="s-miners" min="4" max="60" value="20" inputmode="numeric"></div>
+          <div class="field"><label for="s-haulers">Tahouni</label><input type="number" id="s-haulers" min="2" max="40" value="12" inputmode="numeric"></div>
+        </div>
+        <h3 style="margin-top:6px">2. Voda a vzduch</h3>
+        <div class="field"><label for="s-drain">Čerpání vody</label>
+          <select id="s-drain">
+            <option value="manual">Kožené vaky a rumpál (levné, slabé)</option>
+            <option value="horse" selected>Koňský trejv</option>
+            <option value="adit">Trejv + odvodňovací štola (drahé, spolehlivé)</option>
+          </select></div>
+        <div class="field"><label for="s-vent">Větrání</label>
+          <select id="s-vent">
+            <option value="none">Jen přirozený průvan</option>
+            <option value="bellows" selected>Měchy a dřevěné potrubí</option>
+            <option value="shaft">Vlastní větrací jáma</option>
+          </select></div>
+        <h3 style="margin-top:6px">3. Práce a jídlo</h3>
+        <div class="field"><label for="s-ration">Strava pro havíře</label>
+          <select id="s-ration">
+            <option value="poor">Skromná (chléb, kaše)</option>
+            <option value="standard" selected>Běžná (chléb, polévka, pivo)</option>
+            <option value="rich">Bohatá (i maso a víc piva)</option>
+          </select></div>
+        <div class="field"><label for="s-method">Rozrušování horniny</label>
+          <select id="s-method">
+            <option value="tools" selected>Želízko a mlátek</option>
+            <option value="fire">Sázení ohněm (rychlejší, kouř)</option>
+          </select></div>
+      </div>
+
+      <div class="card">
+        <h3>Odhad na tento týden</h3>
+        <div class="meter"><div class="row"><span>Riziko zatopení</span><b id="m-flood">0 %</b></div><div class="bar"><i id="b-flood" style="background:var(--water)"></i></div></div>
+        <div class="meter"><div class="row"><span>Riziko kouře a závalu</span><b id="m-smoke">0 %</b></div><div class="bar"><i id="b-smoke" style="background:var(--bad)"></i></div></div>
+        <div class="meter"><div class="row"><span>Nálada havířů</span><b id="m-morale">0 %</b></div><div class="bar"><i id="b-morale" style="background:var(--good)"></i></div></div>
+        <div class="ledger">
+          <div><span>Mzdy a provoz</span><span id="l-wages"></span></div>
+          <div><span>Jídlo a lůj na svíce</span><span id="l-food"></span></div>
+          <div><span>Hrubý výtěžek stříbra</span><span id="l-yield"></span></div>
+          <div><span>Urbura (osmina králi)</span><span id="l-urbura"></span></div>
+          <div class="sum"><span>Čistý zisk při klidném týdnu</span><span id="l-profit"></span></div>
+        </div>
+        <div class="sim-actions">
+          <button class="btn" id="s-run" type="button">⚒ Odpracovat týden</button>
+          <button class="btn ghost" id="s-reset" type="button">Začít znovu</button>
+        </div>
+      </div>
+
+      <div class="card log">
+        <h3>Důlní kniha</h3>
+        <div class="entry" id="s-entry">
+          <span class="tag" id="s-tag">Připraveno</span>
+          <h3 id="s-title">Důl čeká na první šichtu</h3>
+          <p id="s-desc">Nastav důl a odstartuj týden. Hlubší šachta dává víc rudy, ale víc vody a horší vzduch. Spokojení havíři pracují lépe, hladoví mohou odmítnout fárat.</p>
+          <p id="s-money" style="font-weight:700"></p>
+        </div>
+        <ul class="history" id="s-history" aria-label="Záznamy předchozích týdnů"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== HORNÍ ZÁKONÍK ==================== -->
+<section id="p-zakonik" role="tabpanel" aria-labelledby="t-zakonik" hidden>
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="kicker">Ius regale montanorum · kolem roku 1300</div>
+      <h2>Královské horní právo</h2>
+      <p>Latinský horní zákoník vydal Václav II. a sepsal ho italský právník Gozzius z Orvieta. Upravoval, komu patří nerosty, jak se propůjčují doly a jaká práva a povinnosti mají podnikatelé, úředníci i dělníci.</p>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>I. Nerosty patří králi</h3><p>Stříbro pod zemí bylo součástí <b>horního regálu</b>, tedy výsadního práva panovníka. Majitel pozemku nemohl těžbu zakázat a těžit směl jen ten, komu král důl propůjčil.</p></div>
+      <div class="card"><h3>II. Urbura: osmina králi</h3><p>Z vytěžené rudy odváděl nákladník panovníkovi <b>osminu</b>. Urbura spolu se ziskem z ražby mincí dělala z českých králů jedny z nejbohatších panovníků Evropy.</p></div>
+      <div class="card"><h3>III. Propůjčení a vyměření dolu</h3><p>Kdo našel rudnou žílu, mohl požádat o propůjčení dolového pole. Královští úředníci ho vyměřili, aby se sousední doly navzájem nepřekrývaly.</p></div>
+      <div class="card"><h3>IV. Kdo nepracuje, o důl přijde</h3><p>Propůjčený důl se musel udržovat v provozu. Pokud ho nákladník zanedbal, mohl o něj přijít a důl mohl být propůjčen někomu jinému.</p></div>
+      <div class="card"><h3>V. Mzdy a směny</h3><p>Zákoník upravoval i vztahy mezi nákladníky a dělníky, například výplatu mezd a pracovní dobu. Havíři se tak mohli dovolávat psaných pravidel.</p></div>
+      <div class="card"><h3>VI. Vlastní horní soudy</h3><p>Spory o doly, hranice polí a mzdy nerozhodoval běžný soud, ale horní úředníci. Horní právo tak tvořilo samostatný svět s vlastními pravidly.</p></div>
+    </div>
+    <p class="note" style="margin-top:16px">Zákoník je rozsáhlý latinský text. Body výše jsou zjednodušené shrnutí hlavních myšlenek, nikoli doslovné články.</p>
+  </div>
+</section>
+
+<!-- ==================== GROŠ A CENY ==================== -->
+<section id="p-penize" role="tabpanel" aria-labelledby="t-penize" hidden>
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="kicker">Peníze kolem roku 1400</div>
+      <h2>Pražský groš a co se za něj dalo pořídit</h2>
+      <p>1 pražský groš = 12 parvů (drobných haléřů). Ceny se lišily podle místa, roku i úrody, proto tabulka uvádí jen řádové velikosti pro představu.</p>
+    </div>
+    <div class="grid g2">
+      <div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>Zboží</th><th>Řádově</th></tr></thead>
+            <tbody>
+              <tr><td>Chléb, pivo, vejce</td><td>parvy (haléře)</td></tr>
+              <tr><td>Slepice, sýr, pár svíček</td><td>zlomek groše až groš</td></tr>
+              <tr><td>Boty, nůž, jednoduchý oděv</td><td>jednotky grošů</td></tr>
+              <tr><td>Meč, kvalitní oděv</td><td>desítky grošů</td></tr>
+              <tr><td>Kroužková zbroj, jezdecký kůň</td><td>stovky grošů a více</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note" style="margin-top:12px">Ve hře KCD II se platí groši také. Herní ceny jsou upravené kvůli hratelnosti, a proto se od dobových liší.</p>
+      </div>
+      <div class="grid">
+        <div class="card"><h3>Pražský groš</h3><p>Stříbrná mince zavedená mincovní reformou Václava II. roku 1300. Původně vážila kolem 3,7 g a obsahovala vysoký podíl stříbra. Za Václava IV. už byl groš lehčí a méně ryzí, protože král potřeboval z ražby víc peněz.</p></div>
+        <div class="card"><h3>Kdo kolik měl</h3><p>Havíři patřili k lépe placeným dělníkům, ale za cenu těžké a nebezpečné práce. Pomocní dělníci a nádeníci žili skromně. Skutečné bohatství patřilo nákladníkům, kteří doly financovali, a bohatým měšťanům.</p></div>
+        <div class="card"><h3>Mincovní úředníci</h3><p>Mincmistr řídil mincovnu ve Vlašském dvoře a odpovídal za kvalitu mincí. Pregéři ručně razili groše a za jejich poctivostí se přísně dohlíželo.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== KVÍZ ==================== -->
+<section id="p-kviz" role="tabpanel" aria-labelledby="t-kviz" hidden>
+  <div class="sheet quiz">
+    <div class="sheet-head q-meta">
+      <div><div class="kicker">Ověř si znalosti</div><h2>Kutnohorská zkouška</h2></div>
+      <span class="q-step" id="q-step">1 / 10</span>
+    </div>
+    <div id="q-play">
+      <div class="kicker" id="q-cat"></div>
+      <h3 class="q-title" id="q-title"></h3>
+      <div class="opts" id="q-opts"></div>
+      <div class="feedback" id="q-fb" hidden aria-live="polite">
+        <h3 id="q-fb-title"></h3>
+        <p id="q-fb-text" style="margin:0"></p>
+        <div class="act"><button class="btn" id="q-next" type="button">Další otázka →</button></div>
+      </div>
+    </div>
+    <div class="results" id="q-results" hidden>
+      <div class="seal" aria-hidden="true">✦</div>
+      <h3 style="font-size:24px">Zkouška dokončena</h3>
+      <div class="title" id="q-rank"></div>
+      <p id="q-sum" style="max-width:520px;margin:0 auto 16px"></p>
+      <button class="btn" id="q-again" type="button">Zkusit znovu</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLOVNÍK ==================== -->
+<section id="p-slovnik" role="tabpanel" aria-labelledby="t-slovnik" hidden>
+  <div class="sheet">
+    <div class="sheet-head" style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:flex-end">
+      <div><div class="kicker">Slovník pojmů (<span id="lex-count"></span>)</div><h2>Hornictví, mince a město</h2></div>
+      <label class="search"><span class="visually-hidden" style="position:absolute;left:-9999px">Hledat pojem</span>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg>
+        <input type="search" id="lex-q" placeholder="Hledat (např. urbura, trejv, groš)">
+      </label>
+    </div>
+    <div class="grid g3 lex" id="lex"></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <p>Kingdom Come: Deliverance je hra studia Warhorse Studios. Tato výuková aplikace s autory hry nijak nesouvisí. Mapa je schematická a nezachycuje přesnou polohu ani měřítko.</p>
+  <p>Pro další studium: expozice Českého muzea stříbra v Kutné Hoře (Hrádek a Tylův dům), učebnice dějepisu pro období lucemburských králů.</p>
+  <p>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" target="_blank" rel="noopener">CC BY 4.0</a> · Aktualizace: 24. 10. 2026 · <button class="iconbtn" id="reset-all" type="button" style="min-height:32px;font-size:13px">Vymazat postup</button></p>
+</footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ==================== uložený postup (jen v tomto prohlížeči) ==================== */
+const KEY = 'kutna-hora-1403';
+const save = (() => {
+  let d = {};
+  try { d = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { d = {}; }
+  return {
+    get: (k, def) => (k in d ? d[k] : def),
+    set: (k, v) => { d[k] = v; try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} },
+    clear: () => { d = {}; try { localStorage.removeItem(KEY); } catch (e) {} }
+  };
+})();
+
+/* ==================== zvuk (Web Audio, spouští se až po interakci) ==================== */
+let actx = null;
+let soundOn = save.get('sound', true);
+function ctx() {
+  if (!soundOn) return null;
+  if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function tone(type, f0, f1, dur, vol, delay = 0) {
+  const c = ctx(); if (!c) return;
+  const t = c.currentTime + delay, o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t);
+  if (f1) o.frequency.exponentialRampToValueAtTime(f1, t + dur * .6);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .02);
+}
+const SND = {
+  coin: () => { tone('sine', 2400, 3600, .3, .14); },
+  hammer: () => { tone('triangle', 520, 110, .14, .22); },
+  bell: () => { [440, 880, 1320].forEach((f, i) => tone('sine', f, 0, 1.2, .1 / (i + 1))); },
+  sword: () => { tone('sawtooth', 800, 2600, .28, .1); },
+  water: () => { for (let i = 0; i < 4; i++) tone('sine', 300 + Math.random() * 500, 120, .25, .06, i * .07); },
+  fanfare: () => { [261.6, 329.6, 392, 523.2].forEach((f, i) => tone('triangle', f, 0, .35, .16, i * .12)); },
+  bad: () => { tone('square', 180, 90, .4, .08); }
+};
+function play(name) { if (soundOn && SND[name]) SND[name](); }
+function renderSound() {
+  $('sound').setAttribute('aria-pressed', String(soundOn));
+  $('snd-waves').hidden = !soundOn; $('snd-off').hidden = soundOn;
+  $('sound-lbl').textContent = soundOn ? 'Zvuky' : 'Ticho';
+  $('sound').title = soundOn ? 'Vypnout zvuky' : 'Zapnout zvuky';
+}
+$('sound').addEventListener('click', () => { soundOn = !soundOn; save.set('sound', soundOn); renderSound(); play('coin'); });
+
+/* ==================== měšec a hodnost ==================== */
+const RANKS = [
+  [0, 'Havířský učeň'], [25, 'Havíř lamač'], [60, 'Šmitní tovaryš'], [110, 'Pregéř Vlašského dvora'],
+  [170, 'Nákladník'], [250, 'Urburéř'], [350, 'Mincmistr']
+];
+let purse = save.get('purse', 0);
+const rankOf = g => RANKS.reduce((r, [min, t]) => (g >= min ? t : r), RANKS[0][1]);
+function renderPurse() { $('purse').textContent = purse; $('rank').textContent = rankOf(purse); }
+function addGroschen(n) {
+  const before = rankOf(purse);
+  purse = Math.max(0, Math.round(purse + n));
+  save.set('purse', purse); renderPurse();
+  const after = rankOf(purse);
+  if (after !== before && n > 0) toast('Nová hodnost: ' + after);
+}
+let toastT;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+
+/* ==================== záložky ==================== */
+const TABS = ['mapa', 'politika', 'tezba', 'simulator', 'zakonik', 'penize', 'kviz', 'slovnik'];
+function showTab(name, focus) {
+  if (!TABS.includes(name)) name = 'mapa';
+  for (const t of TABS) {
+    const on = t === name, b = $('t-' + t);
+    b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
+    $('p-' + t).hidden = !on;
+  }
+  if (focus) $('t-' + name).focus();
+  $('t-' + name).scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  const h = name === 'mapa' ? '' : '#' + name;
+  if (location.hash !== h) history.replaceState(null, '', h || location.pathname + location.search);
+}
+TABS.forEach(t => $('t-' + t).addEventListener('click', () => { showTab(t); play('hammer'); }));
+document.querySelector('.tabs').addEventListener('keydown', e => {
+  const d = { ArrowRight: 1, ArrowLeft: -1 }[e.key]; if (!d) return;
+  const cur = TABS.findIndex(t => $('t-' + t).getAttribute('aria-selected') === 'true');
+  showTab(TABS[(cur + d + TABS.length) % TABS.length], true); e.preventDefault();
+});
+addEventListener('hashchange', () => showTab(location.hash.slice(1)));
+
+/* ==================== MAPA ==================== */
+const CATS = {
+  moc:    { label: 'Moc a mincovna', color: '#7d1d1d' },
+  chram:  { label: 'Kostely', color: '#6a4a8a' },
+  tezba:  { label: 'Doly a hutě', color: '#3b3b3b' },
+  mesto:  { label: 'Ulice a náměstí', color: '#8a5a1e' },
+  hradby: { label: 'Brány', color: '#2f5f72' }
+};
+const ICONS = {
+  crown: '<path d="M3 15h14l1-9-4.5 3.5L10 4 6.5 9.5 2 6z" fill="currentColor"/>',
+  church: '<path d="M10 2v3M8.5 3.5h3M5 18V10l5-4 5 4v8z M8.5 18v-4h3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+  tower: '<path d="M5 18V6h2V4h2v2h2V4h2v2h2v12zM9 18v-4h2v4" fill="currentColor"/>',
+  pick: '<path d="M3 7c4-4 10-4 14 0-3-1.5-5-1.5-7 0L5 17 3 15l7-7c-2.5-.8-4.5-.8-7-1z" fill="currentColor"/>',
+  fire: '<path d="M10 2c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 1.5.8 2.5 2 3-1-3 0-6 1-8.5z" fill="currentColor"/>',
+  square: '<path d="M3 5h14v10H3z M6 8h3v4H6z M11 8h3v4h-3z" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+  water: '<path d="M10 3c3 4 5 6.5 5 9a5 5 0 0 1-10 0c0-2.5 2-5 5-9z" fill="currentColor"/>',
+  hill: '<path d="M1 17l6-9 3 4 3-5 6 10z" fill="currentColor"/>',
+  lane: '<path d="M6 2v16M14 2v16M10 4v3M10 10v3M10 16v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  abbey: '<path d="M10 2v4M8 4h4M3 18V11l7-4 7 4v7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>'
+};
+const LOCS = [
+  { id: 'vlassky-dvur', name: 'Vlašský dvůr', cat: 'moc', icon: 'crown', snd: 'coin', x: 590, y: 418,
+    hist: 'Sídlo královské mincovny. Po mincovní reformě Václava II. roku 1300 se tu razil pražský groš. Název připomíná italské (vlašské) odborníky, kteří reformu pomáhali připravit.',
+    y1403: 'Mincovna je v plném provozu. Václav IV. dal dvůr kolem roku 1400 přestavět na královský palác s kaplí, takže je čerstvě opravený.',
+    zaj: 'Roku 1409 tu Václav IV. vydal Dekret kutnohorský, který na pražské univerzitě změnil poměr hlasů ve prospěch českého „národa“.',
+    hra: 'Kutná Hora se ve hře jmenuje německy Kuttenberg. Najdi mincovnu a všimni si, jak hra zobrazuje ražbu a stráže.' },
+  { id: 'sv-jakub', name: 'Kostel sv. Jakuba', cat: 'chram', icon: 'church', snd: 'bell', x: 512, y: 410,
+    hist: 'Nejstarší velký farní kostel ve městě. Stavěl se od 30. let 14. století. Hlavní věž je vysoká přes 80 metrů, druhá věž zůstala nedostavěná.',
+    y1403: 'Hlavní farní kostel bohatého města. Spolu s Vlašským dvorem tvoří panorama nad údolím Vrchlice.',
+    zaj: 'Stojí hned vedle Vlašského dvora. Moc světská (mincovna) a církevní (farní kostel) tu sousedily zeď na zeď.',
+    hra: 'Porovnej, jestli věž kostela ve hře odpovídá dnešní podobě, nebo jestli ji hra ukazuje jinak.' },
+  { id: 'hradek', name: 'Hrádek', cat: 'moc', icon: 'tower', snd: 'hammer', x: 396, y: 416,
+    hist: 'První zmínka pochází z roku 1312. Opevněné sídlo, které později sloužilo i jako mincovna. Koncem 15. století ho Jan Smíšek z Vrchovišť přestavěl do dnešní pozdně gotické podoby.',
+    y1403: 'Hrádek ještě nevypadá jako dnes. Velká přestavba proběhla až o necelých sto let později.',
+    zaj: 'Podle tradice Smíšek pod domem tajně těžil a tavil stříbro. Dnes je tu České muzeum stříbra s prohlídkou středověké štoly.',
+    hra: 'Všímej si, které budovy ve hře vypadají jako dnes. Některé získaly dnešní podobu až po roce 1403.' },
+  { id: 'ruthardka', name: 'Ruthardská ulice', cat: 'mesto', icon: 'lane', snd: 'sword', x: 452, y: 372,
+    hist: 'Pojmenovaná po rodu Ruthardů, jednom z nejbohatších a nejvlivnějších patricijských rodů Kutné Hory 14. století.',
+    y1403: 'Městu vládla rada bohatých měšťanů a těžařů, z velké části německého původu. Ruthardové k nim patřili.',
+    zaj: 'K ulici se váže pověst o Rozině Ruthardové, kterou prý otec za neposlušnost nechal zazdít. Jde o pověst, ne doložený příběh.',
+    hra: 'Všimni si jazyka měšťanů a nápisů. Hra pracuje s tím, že v Kutné Hoře žilo hodně německy mluvících obyvatel.' },
+  { id: 'rynk', name: 'Hlavní náměstí (rynk)', cat: 'mesto', icon: 'square', snd: 'sword', x: 500, y: 314,
+    hist: 'Hlavní tržiště a srdce města, dnes Palackého náměstí. Obchodovalo se tu, vyhlašovaly se tu vyhlášky a u pranýře se trestali provinilci.',
+    y1403: 'Kutná Hora patřila po Praze k největším městům Čech. Na trh se sjížděli kupci s obilím, masem i nástroji pro havíře.',
+    zaj: 'Město s desítkami tisíc lidí a tisíci havířů potřebovalo obrovské zásoby jídla a dřeva. Okolní krajina pro něj pracovala.',
+    hra: 'Projdi trh ve hře a zkus odhadnout, kolik obchodníků prodává zboží potřebné pro doly.' },
+  { id: 'kasna', name: 'Kašna a vodovod', cat: 'mesto', icon: 'water', snd: 'water', x: 582, y: 297,
+    hist: 'Kutná Hora měla trvalé potíže s pitnou vodou, protože těžba narušila prameny pod městem. Voda se přiváděla dřevěným potrubím z okolí.',
+    y1403: 'Dnešní kamenná dvanáctiboká kašna ještě nestojí. Vznikla až kolem roku 1495 a připisuje se Matěji Rejskovi.',
+    zaj: 'Kašna nesloužila k ozdobě, ale jako veřejná nádrž, ze které si lidé nabírali vodu.',
+    hra: 'Najdi ve hře studny a nádrže. Jak se ve městě řeší voda?' },
+  { id: 'sv-barbora', name: 'Chrám sv. Barbory', cat: 'chram', icon: 'church', snd: 'bell', x: 270, y: 470,
+    hist: 'Stavba začala roku 1388 a vedla ji Parléřova huť. Chrám stál mimo městské hradby. Svatá Barbora je patronkou horníků.',
+    y1403: 'Chrám je rozestavěný: stojí jen část chóru, všude je lešení a jeřáby. Husitské války stavbu na dlouho přerušily a dokončena byla až roku 1905.',
+    zaj: 'Spolu s historickým centrem a sedleckou katedrálou je od roku 1995 zapsán na Seznam světového dědictví UNESCO.',
+    hra: 'Hra ukazuje chrám jako staveniště. Porovnej ho s dnešní fotografií.' },
+  { id: 'kaple', name: 'Kaple Božího těla', cat: 'chram', icon: 'church', snd: 'bell', x: 330, y: 500,
+    hist: 'Gotická kaple z konce 14. století v sousedství chrámu sv. Barbory, na hraně svahu nad údolím Vrchlice.',
+    y1403: 'Kaple je jednou z nejnovějších staveb ve městě. Barbora vedle ní se teprve začíná zvedat ze základů.',
+    zaj: 'Z vyhlídky u kaple je vidět hluboké údolí Vrchlice, kde stály hutě a stoupy.',
+    hra: 'Všimni si, jak hra zachycuje terén: město stojí na svahu nad údolím.' },
+  { id: 'kourimska', name: 'Kouřimská brána', cat: 'hradby', icon: 'tower', snd: 'sword', x: 332, y: 318,
+    hist: 'Západní brána městského opevnění. Vedla odtud cesta na Kouřim a dál k Praze.',
+    y1403: 'Na přelomu let 1402 a 1403 se město bránilo Zikmundovým vojskům a Pražanům, kteří přicházeli právě od západu.',
+    zaj: 'Brány se nedochovaly. Připomínají je hlavně názvy ulic a zbytky hradeb.',
+    hra: 'U bran ve hře stojí stráže. Sleduj, kdo smí do města a za jakých podmínek.' },
+  { id: 'kolinska', name: 'Kolínská brána', cat: 'hradby', icon: 'tower', snd: 'sword', x: 500, y: 197,
+    hist: 'Severní brána. Cesta odtud vedla k Sedlci, Kolínu a obchodním stezkám podél Labe.',
+    y1403: 'Tudy přijížděly vozy s obilím z úrodného Polabí, bez kterého by velké hornické město nepřežilo.',
+    zaj: 'Kutná Hora nebyla soběstačná: jídlo, dřevo i dobytek se do ní musely dovážet.',
+    hra: 'Sleduj na cestách ve hře povozy a obchodníky. Co vezou?' },
+  { id: 'caslavska', name: 'Čáslavská brána', cat: 'hradby', icon: 'tower', snd: 'sword', x: 648, y: 361,
+    hist: 'Východní brána. Cesta odtud vedla na Čáslav a dál na Moravu.',
+    y1403: 'Na Moravě vládl markrabě Jošt, který se později připojil k odpůrcům Zikmunda.',
+    zaj: 'Hradby chránily nejen lidi, ale hlavně královské stříbro a mincovnu.',
+    hra: 'Všimni si, jak hra zobrazuje opevnění a jestli odpovídá skutečné velikosti města.' },
+  { id: 'osel', name: 'Důl Osel', cat: 'tezba', icon: 'pick', snd: 'hammer', x: 232, y: 388,
+    hist: 'Nejbohatší a nejhlubší kutnohorský důl v Oselském rudním pásmu. Opuštěn byl v 16. století, kdy těžbu zdražovala voda a stříbro z Ameriky zlevnilo.',
+    y1403: 'Doly Oselského pásma ještě nebyly příliš hluboké. Největší hloubky (uvádí se kolem půl kilometru) dosáhly až později.',
+    zaj: 'Pod Hrádkem se dá projít středověkou štolou, která odváděla vodu z dolů. Ukazuje, jak úzké byly chodby.',
+    hra: 'V podzemí ve hře si všimni výšky chodeb a osvětlení. Jak by se tu pracovalo celý den?' },
+  { id: 'kank', name: 'Vrch Kaňk', cat: 'tezba', icon: 'hill', snd: 'hammer', x: 440, y: 122,
+    hist: 'Vrch severně od města s jedním z nejstarších těžebních území. Haldy hlušiny jsou v krajině patrné dodnes.',
+    y1403: 'Na Kaňku stojí šachty, haldy a obydlí havířů. Je to pracovní krajina, ne příroda.',
+    zaj: 'Během husitských bouří v letech 1419–1420 vhazovali kutnohorští odpůrci kalicha zajaté husity do opuštěných šachet. Počty obětí uváděné v kronikách jsou nejisté.',
+    hra: 'Porovnej krajinu kolem dolů ve hře s okolím vesnic: haldy, vytěžené svahy, kouř.' },
+  { id: 'hute', name: 'Hutě a stoupy na Vrchlici', cat: 'tezba', icon: 'fire', snd: 'hammer', x: 205, y: 590,
+    hist: 'V údolí Vrchlice poháněla voda kola stoup, které drtily rudu, a dmychadla hutí, kde se ruda tavila.',
+    y1403: 'Údolí je plné kouře, rachotu a horka. Pro hutě se kácely lesy v širokém okolí.',
+    zaj: 'Při tavbě se uvolňovaly výpary olova a dalších kovů, které poškozovaly zdraví hutníků.',
+    hra: 'Najdi ve hře vodní kola a dílny u řeky. K čemu slouží?' },
+  { id: 'sedlec', name: 'Sedlecký klášter', cat: 'chram', icon: 'abbey', snd: 'bell', x: 860, y: 148,
+    hist: 'Cisterciácký klášter založený roku 1142, nejstarší cisterciácký klášter v Čechách. Na jeho pozemcích se těžilo stříbro ještě před vznikem města.',
+    y1403: 'Bohatý klášter s gotickou katedrálou Nanebevzetí Panny Marie. Roku 1421 ho vypálili husité.',
+    zaj: 'Podle tradice přivezl opat Jindřich ze Svaté země hlínu, a hřbitov se proto stal vyhledávaným místem posledního odpočinku. Slavná kostnice dostala dnešní podobu až mnohem později.',
+    hra: 'Klášter stojí mimo město. Všimni si, jak se život v klášteře liší od rušné Kutné Hory.' }
+];
+const seen = new Set(save.get('seen', []));
+let filter = 'all', currentLoc = null;
+
+function buildMap() {
+  $('total').textContent = LOCS.length;
+  // filtry
+  const f = $('filters');
+  const mk = (key, label) => `<button class="chip" type="button" data-f="${key}" aria-pressed="${key === filter}">${esc(label)}</button>`;
+  f.innerHTML = mk('all', 'Vše') + Object.entries(CATS).map(([k, c]) => mk(k, c.label)).join('');
+  f.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; filter = b.dataset.f; play('hammer'); renderMap(); });
+  $('legend').innerHTML = Object.values(CATS).map(c => `<span><i class="dot" style="--c:${c.color}"></i>${esc(c.label)}</span>`).join('');
+  // piny
+  $('pins').innerHTML = LOCS.map(l => `<button class="pin" type="button" data-id="${l.id}" style="left:${l.x / 10}%;top:${l.y / 6.8}%;--c:${CATS[l.cat].color}" aria-label="${esc(l.name)}">
+      <svg viewBox="0 0 20 20" aria-hidden="true">${ICONS[l.icon]}</svg><span class="lab">${esc(l.name)}</span></button>`).join('');
+  $('pins').addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) selectLoc(b.dataset.id); });
+  $('loc-list').innerHTML = LOCS.map(l => `<button type="button" data-id="${l.id}"><i class="dot" style="--c:${CATS[l.cat].color}"></i>${esc(l.name)}</button>`).join('');
+  $('loc-list').addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) selectLoc(b.dataset.id); });
+  $('d-sound').addEventListener('click', () => { const l = LOCS.find(x => x.id === currentLoc); if (l) { soundOn || toast('Zvuky jsou vypnuté'); play(l.snd); } });
+}
+function renderMap() {
+  document.querySelectorAll('#filters .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === filter)));
+  for (const l of LOCS) {
+    const show = filter === 'all' || l.cat === filter;
+    const pin = document.querySelector(`.pin[data-id="${l.id}"]`);
+    pin.classList.toggle('dim', !show); pin.tabIndex = show ? 0 : -1;
+    pin.classList.toggle('seen', seen.has(l.id));
+    pin.setAttribute('aria-current', String(l.id === currentLoc));
+    const li = document.querySelector(`#loc-list [data-id="${l.id}"]`);
+    li.hidden = !show; li.classList.toggle('seen', seen.has(l.id));
+    li.setAttribute('aria-current', String(l.id === currentLoc));
+  }
+  $('found').textContent = seen.size;
+}
+function selectLoc(id, silent) {
+  const l = LOCS.find(x => x.id === id); if (!l) return;
+  currentLoc = id;
+  const first = !silent && !seen.has(id);
+  if (first) { seen.add(id); save.set('seen', [...seen]); addGroschen(5); }
+  if (!silent) play(l.snd);
+  $('d-cat').textContent = CATS[l.cat].label;
+  $('d-name').textContent = l.name;
+  $('d-hist').textContent = l.hist; $('d-1403').textContent = l.y1403; $('d-zaj').textContent = l.zaj; $('d-hra').textContent = l.hra;
+  const b = $('d-badge');
+  if (first) { b.textContent = 'Nové místo · +5 gr.'; b.className = 'badge new'; }
+  else if (seen.has(id)) { b.textContent = 'Prozkoumáno'; b.className = 'badge'; }
+  else { b.textContent = 'Ukázka · klikni na další místa'; b.className = 'badge'; }
+  renderMap();
+  if (!silent && matchMedia('(max-width:700px)').matches) $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ==================== CESTA STŘÍBRA ==================== */
+const PHASES = [
+  { short: 'Hledání žíly', title: 'Hledání rudné žíly', text: 'Havíři hledali na povrchu stopy rudy: výchozy žil, úlomky v potocích, barvu půdy. Kopali průzkumné rýhy a mělké jámy. Používali i proutky, spolehlivější ale byla zkušenost. Když se ruda našla, nákladník požádal královské úředníky o propůjčení dolového pole.',
+    hra: 'Všímej si v krajině kolem Kutné Hory starých jam a hald. Naznačují, kde se dříve kopalo.',
+    svg: '<rect width="160" height="160" fill="#181008"/><path d="M0 130 Q80 60 160 130V160H0z" fill="#4a3726"/><path d="M58 96 L104 124" stroke="#bcc6cf" stroke-width="5" stroke-dasharray="7 4"/><circle cx="48" cy="58" r="9" fill="#f0dbb4"/><path d="M48 67v28M48 75l18 4m0 0 14-8m-14 8 14 8" stroke="#d5a65c" stroke-width="3" fill="none"/>' },
+  { short: 'Ražba', title: 'Práce na čelbě', text: 'Havíř sestoupil po žebřících do šachty a v úzké chodbě rozrušoval horninu ocelovým želízkem a mlátkem. V tvrdé hornině postupoval za směnu jen o několik centimetrů. Svítil si lojovým kahanem. Střelný prach se v hornictví začal používat až v 17. století.',
+    hra: 'Podzemí ve hře je osvětlené víc, než by bylo ve skutečnosti. Kahan dával jen slabé světlo.',
+    svg: '<rect width="160" height="160" fill="#140d07"/><path d="M20 20v120M140 20v120M14 26h132" stroke="#784a24" stroke-width="7"/><path d="M28 62 Q90 50 134 76" stroke="#bcc6cf" stroke-width="5" stroke-dasharray="5 2" fill="none"/><path d="M74 92 L104 64" stroke="#999" stroke-width="5"/><rect x="98" y="54" width="16" height="9" fill="#444" transform="rotate(-40 106 58)"/><circle cx="120" cy="110" r="14" fill="#ffd700" opacity=".25"/><path d="M120 102 l4 8h-8z" fill="#ff7a1a"/>' },
+  { short: 'Doprava', title: 'Doprava rudy na povrch', text: 'Rudu nosili tahouni v neckách a vacích k šachtě. Odtud se vytahovala rumpálem, v hlubších dolech velkým žentourem zvaným trejv. Ten roztáčeli koně chodící dokola a lano se navíjelo na buben.',
+    hra: 'Najdi ve hře dřevěné stavby nad šachtami. Ukrývají těžní zařízení.',
+    svg: '<rect width="160" height="160" fill="#181008"/><polygon points="80,24 30,136 130,136" fill="none" stroke="#8b5a2b" stroke-width="6"/><circle cx="80" cy="50" r="15" fill="#3a2211" stroke="#d5b882" stroke-width="3"/><path d="M80 65v58" stroke="#d5b882" stroke-width="3"/><path d="M70 120c0-10 20-10 20 0l2 22c0 8-24 8-24 0z" fill="#5c3818" stroke="#2b1706" stroke-width="2"/>' },
+  { short: 'Voda a vzduch', title: 'Boj s vodou a dusným vzduchem', text: 'Největším nepřítelem dolu byla voda. Vytahovala se v kožených vacích a odváděla odvodňovacími štolami. Ve větších hloubkách chyběl vzduch. Pomáhaly větrací jámy a měchy. Když kahan hasl, musel havíř rychle pryč.',
+    hra: 'Všimni si zvuku kapající vody v podzemí. Pro skutečné havíře to byl každodenní problém.',
+    svg: '<rect width="160" height="160" fill="#120b06"/><rect x="36" y="20" width="22" height="120" fill="#754c24" stroke="#4a2e12" stroke-width="2"/><path d="M47 20v120" stroke="#996a39" stroke-dasharray="4 4"/><path d="M72 40 Q112 60 82 90 T122 130" fill="none" stroke="#a0c4ff" stroke-width="4" stroke-dasharray="6 3"/>' },
+  { short: 'Úprava rudy', title: 'Třídění, drcení a praní', text: 'Na povrchu se ruda třídila. Bohaté kusy šly rovnou do hutě, chudší se drtily ve stoupách: těžké dřevěné tlouky okované železem zvedalo vodní kolo. Rozdrcená ruda se prala ve žlabech a těžší částice s kovem se usadily na dně.',
+    hra: 'U řek ve hře najdeš vodní kola. Pohánějí mlýny, ale i stoupy a dmychadla.',
+    svg: '<rect width="160" height="160" fill="#170f08"/><rect x="24" y="116" width="112" height="26" fill="#523920"/><rect x="68" y="28" width="24" height="78" fill="#73512e" stroke="#222"/><rect x="65" y="92" width="30" height="20" fill="#666"/><circle cx="56" cy="112" r="4" fill="#bcc6cf"/><circle cx="104" cy="110" r="4" fill="#bcc6cf"/>' },
+  { short: 'Huť', title: 'Tavba a oddělení stříbra', text: 'Ruda se tavila v pecích spolu s olovem, které na sebe stříbro navázalo. Potom se slitina tavila na misce z kostního popela za silného dmýchání (kupelace). Olovo zoxidovalo a vsáklo se do popela, zatímco na povrchu zůstalo čisté stříbro.',
+    hra: 'Kouř nad údolím Vrchlice nebyl jen z ohnišť. Hutě jely ve dne v noci.',
+    svg: '<rect width="160" height="160" fill="#150d06"/><path d="M40 140 L55 50h50l15 90z" fill="#4d3b32" stroke="#251b15" stroke-width="3"/><ellipse cx="80" cy="104" rx="25" ry="20" fill="#ff5a1a"/><ellipse cx="80" cy="104" rx="14" ry="11" fill="#ffd34d"/><rect x="62" y="134" width="36" height="12" rx="2" fill="#d6dde3"/>' },
+  { short: 'Mincovna', title: 'Ražba pražského groše', text: 'Ve Vlašském dvoře se stříbro slilo s mědí na předepsanou ryzost a vyklepalo do plechu. Z něj se stříhaly kulaté střížky. Pregéř položil střížek mezi dvě razidla a úderem kladiva vyrazil groš s korunou na jedné straně a českým lvem na druhé.',
+    hra: 'Groše ve hře jsou platidlem všude. Ve skutečnosti se kutnohorský groš používal v celé střední Evropě.',
+    svg: '<rect width="160" height="160" fill="#140d07"/><polygon points="45,146 115,146 105,96 55,96" fill="#4a2e15"/><rect x="72" y="76" width="16" height="24" fill="#444" stroke="#111"/><circle cx="80" cy="70" r="24" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/><path d="M68 74 L71 64 L80 69 L89 64 L92 74z" fill="#d6b04a"/>' }
+];
+let phase = 0;
+function buildPhases() {
+  $('phases').innerHTML = PHASES.map((p, i) => `<button class="phase" role="tab" type="button" data-i="${i}" id="ph-${i}"><small>${i + 1}. krok</small><span>${esc(p.short)}</span></button>`).join('');
+  $('phases').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) { setPhase(+b.dataset.i); play('hammer'); } });
+  $('phases').addEventListener('keydown', e => {
+    const d = { ArrowRight: 1, ArrowLeft: -1 }[e.key]; if (!d) return;
+    setPhase((phase + d + PHASES.length) % PHASES.length); $('ph-' + phase).focus(); e.preventDefault();
+  });
+}
+function setPhase(i) {
+  phase = i; const p = PHASES[i];
+  document.querySelectorAll('.phase').forEach((b, j) => { b.setAttribute('aria-selected', String(j === i)); b.tabIndex = j === i ? 0 : -1; });
+  $('ph-badge').textContent = `${i + 1}. krok ze ${PHASES.length}`;
+  $('ph-title').textContent = p.title; $('ph-text').textContent = p.text; $('ph-hra').textContent = p.hra;
+  $('ph-art').innerHTML = `<svg viewBox="0 0 160 160" role="img" aria-label="${esc(p.title)}">${p.svg}</svg>`;
+}
+
+/* ==================== SIMULÁTOR ==================== */
+const SEASONS = ['Jaro', 'Léto', 'Podzim', 'Zima'];
+const simDefault = () => ({ week: 1, season: 0, rep: 60, log: [] });
+let sim = Object.assign(simDefault(), save.get('sim', {}));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+function readInputs() {
+  const num = (id, min, max, def) => { const el = $(id); let v = parseInt(el.value, 10); if (!Number.isFinite(v)) v = def; v = clamp(v, min, max); return v; };
+  return {
+    depth: num('s-depth', 40, 300, 120), miners: num('s-miners', 4, 60, 20), haulers: num('s-haulers', 2, 40, 12),
+    drain: $('s-drain').value, vent: $('s-vent').value, ration: $('s-ration').value, method: $('s-method').value
+  };
+}
+function model(inp) {
+  const season = SEASONS[sim.season];
+  let morale = 60 + (sim.rep - 60) / 4;
+  morale += { poor: -25, standard: 0, rich: 18 }[inp.ration];
+  if (inp.method === 'fire') morale -= 8;
+  if (inp.vent === 'none') morale -= 6;
+  // málo tahounů: lamači musí rudu tahat sami
+  const haulRatio = inp.haulers / inp.miners;
+  if (haulRatio < .4) morale -= 8;
+  if (season === 'Zima') morale -= 5;
+  morale = Math.round(clamp(morale, 10, 98));
+
+  let flood = inp.depth / 300 * 45 + { manual: 30, horse: 8, adit: -12 }[inp.drain] + (season === 'Jaro' ? 15 : season === 'Podzim' ? 6 : 0);
+  flood = Math.round(clamp(flood, 3, 95));
+  let smoke = inp.depth / 300 * 25 + inp.miners / 60 * 12 + { none: 30, bellows: 6, shaft: -10 }[inp.vent] + (inp.method === 'fire' ? 30 : 0);
+  smoke = Math.round(clamp(smoke, 3, 95));
+
+  const wages = inp.miners * 2.6 + inp.haulers * 1.5 + { manual: 0, horse: 25, adit: 60 }[inp.drain] + { none: 0, bellows: 8, shaft: 22 }[inp.vent];
+  const food = (inp.miners + inp.haulers) * { poor: .3, standard: .6, rich: 1.1 }[inp.ration];
+  const haulEff = clamp(haulRatio / .6, .4, 1);
+  let gross = inp.miners * (0.8 + inp.depth / 100) * 7.5 * (morale / 100) * haulEff;
+  if (inp.method === 'fire') gross *= 1.4;
+  const urbura = gross / 8;
+  return { morale, flood, smoke, wages: Math.round(wages), food: Math.round(food), gross: Math.round(gross), urbura: Math.round(urbura),
+    profit: Math.round(gross - urbura - wages - food) };
+}
+const fmt = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n) + ' gr.';
+function renderSim() {
+  const inp = readInputs(), m = model(inp);
+  $('s-depth-v').textContent = inp.depth + ' m';
+  $('s-cal').textContent = `${SEASONS[sim.season]} · týden ${sim.week}`;
+  $('s-rep').textContent = `${sim.rep} / 100`;
+  for (const [k, v] of [['flood', m.flood], ['smoke', m.smoke], ['morale', m.morale]]) { $('m-' + k).textContent = v + ' %'; $('b-' + k).style.width = v + '%'; }
+  $('l-wages').textContent = '−' + m.wages + ' gr.'; $('l-food').textContent = '−' + m.food + ' gr.';
+  $('l-yield').textContent = m.gross + ' gr.'; $('l-urbura').textContent = '−' + m.urbura + ' gr.';
+  const p = $('l-profit'); p.textContent = fmt(m.profit); p.className = m.profit >= 0 ? 'pos' : 'neg';
+  $('s-history').innerHTML = sim.log.map(x => `<li>${esc(x)}</li>`).join('');
+  return { inp, m };
+}
+function setEntry(kind, tag, title, desc, delta) {
+  $('s-entry').className = 'entry ' + kind;
+  $('s-tag').textContent = tag; $('s-title').textContent = title; $('s-desc').textContent = desc;
+  const mon = $('s-money'); mon.textContent = 'Měšec: ' + fmt(delta); mon.className = delta >= 0 ? 'pos' : 'neg';
+}
+function runWeek() {
+  const { inp, m } = renderSim();
+  const label = `${SEASONS[sim.season]}, týden ${sim.week}`;
+  const costs = m.wages + m.food;
+  const r = Math.random() * 100, r2 = Math.random() * 100;
+  let delta, kind, short;
+
+  if (m.morale < 40 && r2 < 50) {
+    delta = -costs; sim.rep -= 8; kind = 'bad'; short = 'stávka';
+    setEntry('bad', 'Stávka', 'Havíři odmítli fárat', 'Stěžují si na jídlo a podmínky. Týden bez rudy, ale mzdy a koně se platit musí.', delta); play('bad');
+  } else if (r < m.flood * .35) {
+    const g = Math.round(m.gross * .25);
+    delta = g - Math.round(g / 8) - costs - 20; sim.rep -= 5; kind = 'water'; short = 'zatopení';
+    setEntry('water', 'Zatopeno', 'Do dolu vnikla voda', 'Havíři prorazili do zatopené staré chodby. Spodní patro je pod vodou, těžilo se jen čtvrt týdne a výdřeva potřebuje opravu (−20 gr.).', delta); play('water');
+  } else if (r < m.flood * .35 + m.smoke * .35) {
+    const g = Math.round(m.gross * .5);
+    delta = g - Math.round(g / 8) - costs - 15; sim.rep -= 10; kind = 'bad'; short = inp.method === 'fire' ? 'kouř' : 'zával';
+    setEntry('bad', 'Neštěstí', inp.method === 'fire' ? 'Kouř po sázení ohněm' : 'Zával v chodbě',
+      inp.method === 'fire' ? 'Kouř z ohně se nestihl vyvětrat. Několik havířů ztratilo vědomí a museli je vytáhnout. Do bratrské pokladny jde příspěvek na léčení (−15 gr.).'
+                            : 'Tlak horniny rozdrtil výdřevu. Chodba je zavalená a těžilo se jen polovinu týdne. Bratrská pokladna pomáhá raněným (−15 gr.).', delta); play('sword');
+  } else if (r2 > 90) {
+    delta = m.profit + 60; sim.rep += 5; kind = 'good'; short = 'bohatá žíla';
+    setEntry('good', 'Bohatá žíla', 'Lamači narazili na bohatou rudu', 'Kusy s vysokým obsahem stříbra jdou rovnou do hutě. K běžnému zisku přibývá mimořádných 60 grošů.', delta); play('coin');
+  } else {
+    delta = m.profit; sim.rep += m.morale >= 60 ? 2 : 0; kind = delta >= 0 ? '' : 'bad'; short = 'klidný týden';
+    setEntry(kind, 'Řádný chod', 'Klidný týden', delta >= 0 ? 'Těžba proběhla bez nehod. Urburéř převzal královskou osminu a zbytek je tvůj.' : 'Bez nehod, ale náklady převýšily výtěžek. Zkus jinou hloubku nebo počet lidí.', delta); play(delta >= 0 ? 'coin' : 'bad');
+  }
+  sim.rep = clamp(sim.rep, 0, 100);
+  addGroschen(delta);
+  sim.log.unshift(`${label}: ${short}, ${fmt(delta)}`); sim.log = sim.log.slice(0, 12);
+  sim.week++; if (sim.week > 4) { sim.week = 1; sim.season = (sim.season + 1) % 4; }
+  save.set('sim', sim);
+  renderSim();
+}
+function buildSim() {
+  ['s-depth', 's-miners', 's-haulers', 's-drain', 's-vent', 's-ration', 's-method'].forEach(id => $(id).addEventListener('input', renderSim));
+  ['s-miners', 's-haulers'].forEach(id => $(id).addEventListener('change', () => { const i = readInputs(); $('s-miners').value = i.miners; $('s-haulers').value = i.haulers; renderSim(); }));
+  $('s-run').addEventListener('click', runWeek);
+  $('s-reset').addEventListener('click', () => {
+    sim = simDefault(); save.set('sim', sim); play('hammer');
+    $('s-entry').className = 'entry'; $('s-tag').textContent = 'Připraveno'; $('s-title').textContent = 'Nový důl'; $('s-desc').textContent = 'Kalendář a pověst dolu jsou na začátku. Groše v měšci ti zůstávají.'; $('s-money').textContent = '';
+    renderSim();
+  });
+}
+
+/* ==================== KVÍZ ==================== */
+const QUIZ = [
+  { cat: 'Stavby', q: 'Jak vypadal chrám sv. Barbory roku 1403?', a: 'Byl rozestavěný: stála jen část chóru s lešením.',
+    w: ['Byl dokončený i se známou stanovou střechou.', 'Stavba ještě nezačala.', 'Byl dostavěný, ale vyhořel při Zikmundově tažení.'],
+    e: 'Stavba začala roku 1388. Husitské války ji přerušily a dokončena byla až roku 1905.' },
+  { cat: 'Horní právo', q: 'Co byla urbura?', a: 'Podíl z vytěžené rudy pro krále, jedna osmina.',
+    w: ['Trest pro havíře, kteří nepřišli na směnu.', 'Poplatek za vodu z městské kašny.', 'Clo na dovoz obilí do města.'],
+    e: 'Urbura byla příjmem z horního regálu. Spolu se ziskem z ražby mincí patřila k hlavním zdrojům bohatství českých králů.' },
+  { cat: 'Politika', q: 'Proč chtěl Zikmund ovládnout Kutnou Horu?', a: 'Kvůli stříbru, které potřeboval na vojsko a vládu.',
+    w: ['Chtěl sem přenést hlavní město Uher.', 'Hledal tu alchymisty.', 'Město bylo centrem husitů.'],
+    e: 'Kutnohorské stříbro bylo největším zdrojem příjmů českého krále. Kdo ovládal Kutnou Horu, měl peníze.' },
+  { cat: 'Politika', q: 'Odkud Václav IV. v listopadu 1403 uprchl?', a: 'Z vězení ve Vídni.',
+    w: ['Z hradu Křivoklát.', 'Z Vlašského dvora v Kutné Hoře.', 'Z uherského Budína.'],
+    e: 'Václav byl vězněn v Praze, pak na hradě Schaunberg a od podzimu 1402 ve Vídni. Odtud utekl a přes Mikulov se vrátil do Čech.' },
+  { cat: 'Technika', q: 'Jak havíři roku 1403 rozrušovali tvrdou horninu?', a: 'Želízkem a mlátkem, případně sázením ohněm.',
+    w: ['Střelným prachem.', 'Parními vrtačkami.', 'Kyselinou.'],
+    e: 'Střelný prach se v hornictví začal používat až v 17. století (roku 1627 v Banské Štiavnici).' },
+  { cat: 'Horní právo', q: 'Kdo sepsal horní zákoník Ius regale montanorum?', a: 'Italský právník Gozzius z Orvieta.',
+    w: ['Stavitel Petr Parléř.', 'Mistr Jan Hus.', 'Stavitel Matěj Rejsek.'],
+    e: 'Zákoník vznikl kolem roku 1300 na objednávku krále Václava II.' },
+  { cat: 'Mincovna', q: 'Kdo byl pregéř?', a: 'Řemeslník, který v mincovně ručně razil mince.',
+    w: ['Strážný u městské brány.', 'Ranhojič havířů.', 'Kněz u sv. Barbory.'],
+    e: 'Pregéř vložil střížek mezi dvě razidla a úderem kladiva vyrazil minci.' },
+  { cat: 'Hra a skutečnost', q: 'Kdo je historickou předlohou pana Radziga Kobyly ze hry?', a: 'Racek Kobyla z Dvorce.',
+    w: ['Markvart z Úlic.', 'Hanuš z Lipé.', 'Jan Žižka z Trocnova.'],
+    e: 'Racek Kobyla byl hejtmanem Václava IV. a roku 1403 purkrabím Stříbrné Skalice. Zemřel roku 1416 v Kutné Hoře rukou rozzuřených havířů.' },
+  { cat: 'Vlašský dvůr', q: 'Který dokument vydal Václav IV. roku 1409 v Kutné Hoře?', a: 'Dekret kutnohorský.',
+    w: ['Zlatou bulu sicilskou.', 'Majestas Carolina.', 'Ius regale montanorum.'],
+    e: 'Dekret kutnohorský změnil poměr hlasů na pražské univerzitě ve prospěch českého „národa“.' },
+  { cat: 'Peníze', q: 'Kolik parvů (haléřů) měl jeden pražský groš?', a: '12.',
+    w: ['100.', '60.', '24.'],
+    e: 'Jeden pražský groš se dělil na 12 parvů.' }
+];
+const RES_RANKS = [[9, 'Mincmistr'], [7, 'Urburéř'], [5, 'Pregéř'], [3, 'Havíř lamač'], [0, 'Havířský učeň']];
+let qi = 0, qScore = 0, qAnswered = false, qOrder = [];
+const quizPaid = new Set(save.get('quizPaid', []));
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function renderQ() {
+  qAnswered = false;
+  const q = QUIZ[qi];
+  $('q-step').textContent = `${qi + 1} / ${QUIZ.length}`;
+  $('q-cat').textContent = q.cat; $('q-title').textContent = q.q;
+  qOrder = shuffle([q.a, ...q.w]);
+  $('q-opts').innerHTML = qOrder.map((t, i) => `<button class="opt" type="button" data-i="${i}"><span class="k">${'ABCD'[i]}</span><span>${esc(t)}</span></button>`).join('');
+  $('q-fb').hidden = true;
+}
+function answer(i) {
+  if (qAnswered) return; qAnswered = true;
+  const q = QUIZ[qi], ok = qOrder[i] === q.a;
+  document.querySelectorAll('.opt').forEach((b, j) => {
+    b.disabled = true;
+    if (qOrder[j] === q.a) b.classList.add('ok'); else if (j === i) b.classList.add('ko'); else b.classList.add('off');
+  });
+  const fb = $('q-fb'); fb.hidden = false; fb.className = 'feedback ' + (ok ? 'ok' : 'ko');
+  if (ok) {
+    qScore++;
+    const first = !quizPaid.has(qi);
+    if (first) { quizPaid.add(qi); save.set('quizPaid', [...quizPaid]); addGroschen(10); }
+    $('q-fb-title').textContent = first ? 'Správně! +10 grošů' : 'Správně!';
+    play('coin');
+  } else { $('q-fb-title').textContent = 'Tohle není správně.'; play('bad'); }
+  $('q-fb-text').textContent = q.e;
+  $('q-next').textContent = qi < QUIZ.length - 1 ? 'Další otázka →' : 'Zobrazit výsledek';
+  $('q-next').focus({ preventScroll: true });
+}
+function nextQ() {
+  if (qi < QUIZ.length - 1) { qi++; renderQ(); play('hammer'); return; }
+  play('fanfare');
+  $('q-play').hidden = true; $('q-results').hidden = false;
+  $('q-rank').textContent = RES_RANKS.find(([min]) => qScore >= min)[1];
+  $('q-sum').textContent = `Správně ${qScore} z ${QUIZ.length}. Groše dostáváš jen za otázku, kterou zodpovíš správně poprvé, takže opakováním si měšec nenaplníš, ale znalosti ano.`;
+}
+function buildQuiz() {
+  $('q-opts').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) answer(+b.dataset.i); });
+  $('q-next').addEventListener('click', nextQ);
+  $('q-again').addEventListener('click', () => { qi = 0; qScore = 0; $('q-results').hidden = true; $('q-play').hidden = false; renderQ(); play('hammer'); });
+  renderQ();
+}
+
+/* ==================== SLOVNÍK ==================== */
+const LEX = [
+  ['Urbura', 'Horní právo', 'Podíl panovníka z vytěžené rudy, jedna osmina. Vybíral ho královský úředník urburéř.'],
+  ['Horní regál', 'Horní právo', 'Výsadní právo panovníka na nerosty. Těžit směl jen ten, komu král důl propůjčil.'],
+  ['Ius regale montanorum', 'Horní právo', 'Latinský horní zákoník Václava II. z doby kolem roku 1300, sepsaný Gozziem z Orvieta.'],
+  ['Urburéř', 'Úřady', 'Královský úředník, který dohlížel na doly a vybíral urburu.'],
+  ['Perkmistr', 'Úřady', 'Horní úředník, který dohlížel na provoz dolů, vyměřování polí a dodržování horního práva.'],
+  ['Mincmistr', 'Úřady', 'Nejvyšší úředník mincovny. Odpovídal za ražbu a kvalitu mincí.'],
+  ['Nákladník', 'Společnost', 'Podnikatel, který financoval důl (mzdy, dřevo, nářadí, koně) a za to získával podíl na vytěžené rudě.'],
+  ['Havíř', 'Společnost', 'Horník. Lamači rozrušovali horninu na čelbě, tahouni rudu dopravovali k šachtě.'],
+  ['Bratrská pokladna', 'Společnost', 'Společný fond havířů, ze kterého se pomáhalo raněným, nemocným a rodinám zemřelých.'],
+  ['Čelba', 'Technika', 'Konec důlní chodby, kde se právě rozrušuje hornina.'],
+  ['Želízko a mlátek', 'Technika', 'Základní hornické nářadí: ocelové dláto na násadě a těžké kladivo.'],
+  ['Sázení ohněm', 'Technika', 'Hornina se rozpálila ohněm a pak popraskala. Rychlejší než ruční práce, ale dusivý kouř ohrožoval havíře.'],
+  ['Trejv', 'Technika', 'Těžní žentour poháněný koňmi. Sloužil k vytahování rudy a vody z hlubokých šachet.'],
+  ['Štola', 'Technika', 'Vodorovná chodba ústící na povrch. Odvodňovací štoly odváděly vodu z dolů.'],
+  ['Halda', 'Technika', 'Hromada vytěžené hlušiny u dolu. V okolí Kutné Hory jsou haldy vidět dodnes.'],
+  ['Stoupa', 'Úprava rudy', 'Zařízení s těžkými tlouky poháněnými vodním kolem, které drtilo rudu.'],
+  ['Huť', 'Úprava rudy', 'Dílna s pecemi, kde se z rudy tavil kov.'],
+  ['Kupelace', 'Úprava rudy', 'Oddělení stříbra od olova tavbou na misce z kostního popela za přístupu vzduchu.'],
+  ['Pražský groš', 'Peníze', 'Stříbrná mince zavedená roku 1300. Používala se v celé střední Evropě. Za Václava IV. už byla lehčí a méně ryzí.'],
+  ['Parvus', 'Peníze', 'Drobná stříbrná mince (haléř). Dvanáct parvů tvořilo jeden groš.'],
+  ['Střížek', 'Peníze', 'Kulatý kousek stříbrného plechu, ze kterého se ražbou stala mince.'],
+  ['Pregéř', 'Peníze', 'Mincovní řemeslník, který razil mince úderem kladiva na razidlo.'],
+  ['Vlašský dvůr', 'Město', 'Královská mincovna a palác v Kutné Hoře. „Vlašský“ znamená italský.'],
+  ['Kumáni', 'Vojenství', 'Kočovný národ usazený v Uhrách, jehož jezdci sloužili uherským králům. V sérii KCD vystupují jako obávaní nájezdníci.']
+];
+function renderLex() {
+  const q = $('lex-q').value.trim().toLocaleLowerCase('cs');
+  const list = LEX.filter(([t, c, d]) => !q || (t + ' ' + c + ' ' + d).toLocaleLowerCase('cs').includes(q));
+  $('lex').innerHTML = list.length ? list.map(([t, c, d]) => `<div class="card"><span class="tag">${esc(c)}</span><h3>${esc(t)}</h3><p>${esc(d)}</p></div>`).join('')
+    : '<p style="grid-column:1/-1;text-align:center;color:var(--ink-2)">Žádný pojem neodpovídá hledání.</p>';
+}
+
+/* ==================== start ==================== */
+$('lex-count').textContent = LEX.length + ' pojmů';
+$('lex-q').addEventListener('input', renderLex);
+$('reset-all').addEventListener('click', () => {
+  if (!confirm('Vymazat groše, prozkoumaná místa a stav simulátoru v tomto prohlížeči?')) return;
+  save.clear(); location.reload();
+});
+renderSound(); renderPurse();
+buildMap(); selectLoc('vlassky-dvur', true);
+buildPhases(); setPhase(0);
+buildSim(); renderSim();
+buildQuiz(); renderLex();
+showTab(location.hash.slice(1));
+</script>
+</body>
+</html>
