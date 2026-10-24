@@ -183,6 +183,8 @@ body.test .stage{min-height:340px}
 .pact{display:flex;align-items:center;gap:12px}.pact span{flex:1;font-size:13.5px;color:var(--mut);line-height:1.3}
 .btn:disabled{opacity:.4;cursor:default;box-shadow:none}
 .mk{position:absolute;left:0;top:0;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #1F2329,inset 0 0 0 1.5px #1F2329;pointer-events:none;z-index:3}.mk::after{content:'';position:absolute;left:50%;top:50%;width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;background:#1F2329}
+/* Pojmenuj (celá kostra): kolečko kolem označené kosti pro snazší orientaci */
+.mk.rg{background:none;transition:opacity .25s;opacity:0}.mk.rg.on{opacity:1}.mk.rg::after{display:none}
 body.point .stage{cursor:crosshair}body.point .stage.grabbing{cursor:grabbing}
 
 @media (max-width:420px){.opt{font-size:14px;padding:8px}.opt kbd{display:none}body.test .stage{min-height:300px}}
@@ -223,6 +225,7 @@ footer{font-size:11px;color:var(--mut);text-align:center;padding-block:4px 10px;
     </div>
     <span class="pct" id="pct">100 %</span>
     <span class="mk" id="mk" hidden></span>
+    <span class="mk rg" id="mk2" hidden></span>
     <div class="tip" id="tip"><b id="tCz"></b><i id="tLa"></i><small id="tGr" hidden></small></div>
   </div>
   <section class="quiz" id="quiz" hidden aria-live="polite">
@@ -347,6 +350,7 @@ function apply(){
   stage.classList.toggle('grab',z>1.001);
   if(sel&&tipAt)placeTip();
   if(cand)placeMk();
+  placeRing();
 }
 function zoomAt(f,cx,cy){
   const ns=Math.min(fit*MAXZ,Math.max(fit,scale*f));
@@ -367,8 +371,8 @@ function lookup(sx,sy,rad){
   return best;
 }
 // Skupina (např. bederní obratle) zvýrazní i své jmenovitě popsané členy (1. a 5. bederní obratel).
-const GROUPS={lumb:['l1','l5'],cerv:['atlas','axis','c7'],thor:['th1','th12'],ribs:['rib1','rib12']};
-const SIDED={ribs:1};
+const GROUPS={lumb:['l1','l5'],cerv:['atlas','axis','c7'],thor:['th1','th12'],ribs:['rib1','rib12'],tarsus:['talus','calcaneus']};   // kost hlezenní a patní patří mezi kosti zánártní
+const SIDED={ribs:1,tarsus:1};
 function members(id){
   if(V.virt&&V.virt[id])return V.virt[id];
   const key=V.ent[id-1],out=[id],g=GROUPS[key];if(!g||V.kind!=='skel')return out;
@@ -615,13 +619,15 @@ function groupsOf(sc){if(GCACHE[sc])return GCACHE[sc];const by={};
 const keysOf=sc=>Object.keys(groupsOf(sc));
 const isPart=k=>(groupsOf('lebka')[k]||[]).some(q=>q.id>views[q.v].n1);
 let focus=null;   // opakování chyb: jen vybrané kosti
-function buildDeck(){const by=groupsOf(sec);return shuffle(Object.keys(by).filter(k=>!focus||focus.includes(k)).map(k=>by[k]))}
+const NOPOINT=['atlas','axis','c7','th1','th12','l1','l5','rib1','rib12'];   // v režimu Ukaž se jednotlivé obratle a žebra nezkouší (na obrázku nejsou dobře rozlišitelné)
+const okMode=k=>!(mode==='point'&&NOPOINT.includes(k));
+function buildDeck(){const by=groupsOf(sec);return shuffle(Object.keys(by).filter(k=>(!focus||focus.includes(k))&&okMode(k)).map(k=>by[k]))}
 function pickQ(){
   const by=groupsOf(sec),asked=new Set(res.map(r=>r.key)),rnd=g=>g[Math.floor(Math.random()*g.length)];
   // Opakování chyb: kost, ve které žák dřív chyboval, dostane přednost (asi ve 40 % úkolů), dokud ji 2× po sobě nezvládne.
-  if(!focus){const wk=Object.keys(by).filter(k=>weak(k)&&k!==lastKey&&!asked.has(k));
+  if(!focus){const wk=Object.keys(by).filter(k=>weak(k)&&k!==lastKey&&!asked.has(k)&&okMode(k));
     if(wk.length&&Math.random()<.4){const k=wk[Math.floor(Math.random()*wk.length)],di=deck.findIndex(g=>keyOf(g[0].v,g[0].id)===k);if(di>=0)deck.splice(di,1);return rnd(by[k])}}
-  if(!deck.length)deck=buildDeck();
+  deck=deck.filter(g=>okMode(keyOf(g[0].v,g[0].id)));if(!deck.length)deck=buildDeck();
   let i=deck.findIndex(g=>{const k=keyOf(g[0].v,g[0].id);return k!==lastKey&&!asked.has(k)});
   if(i<0)i=deck.findIndex(g=>keyOf(g[0].v,g[0].id)!==lastKey);if(i<0)i=0;
   return rnd(deck.splice(i,1)[0]);
@@ -661,9 +667,10 @@ function nearby(key){
       for(const o of own){const d=Math.hypot(W.cx[e]-W.cx[o],W.cy[e]-W.cy[o]);if(!(k in best)||d<best[k])best[k]=d}})}
   return Object.keys(best).sort((a,b)=>best[a]-best[b]);
 }
+// „Kosti zánártní“ se u kosti hlezenní a patní nenabízí jako špatná možnost (nebyla by to chyba).
 function options(key){
   const pool=[],seen=new Set([N[key][0]]),ok=poolKeys();
-  const add=k=>{if(pool.length>=7||!ok.has(k))return;const n=N[k][0];if(!seen.has(n)){seen.add(n);pool.push(k)}};
+  const add=k=>{if(pool.length>=7||!ok.has(k)||(k==='tarsus'&&(key==='talus'||key==='calcaneus')))return;const n=N[k][0];if(!seen.has(n)){seen.add(n);pool.push(k)}};
   shuffle(similar(key)).slice(0,5).forEach(add);           // nejdřív zaměnitelné kosti
   const nb=nearby(key),reg=new Set();for(const r in REG)if(REG[r].includes(key))REG[r].forEach(k=>reg.add(k));
   const sameReg=nb.filter(k=>reg.has(k)&&!seen.has(N[k][0]));
@@ -683,17 +690,23 @@ function focusQ(){
   const r=stage.getBoundingClientRect(),[x0,y0,x1,y1]=bbox(),bw=x1-x0+1,bh=y1-y0+1;
   const ns=Math.max(fit,Math.min(fit*3,(r.width*0.5)/bw,(r.height*0.42)/bh));
   if(!reduce)cam.classList.add('anim');
+  if(sec==='kostra'){ring={v:cur,cx:x0+bw/2,cy:y0+bh/2,r:Math.hypot(bw,bh)/2};$('mk2').classList.remove('on')}else ring=null;
   scale=ns;tx=r.width/2-(x0+bw/2)*ns;ty=TOP+(r.height-TOP-BOT)/2-(y0+bh/2)*ns;apply();
-  setTimeout(()=>cam.classList.remove('anim'),500);
+  setTimeout(()=>{cam.classList.remove('anim');if(ring)$('mk2').classList.add('on')},reduce?0:480);
 }
+let ring=null;
+function placeRing(){const m=$('mk2');if(!ring||ring.v!==cur||mode!=='test'){m.hidden=true;return}
+  const d=Math.max(30,2*ring.r*scale+14);m.hidden=false;
+  m.style.left=(tx+ring.cx*scale)+'px';m.style.top=(ty+ring.cy*scale)+'px';m.style.width=m.style.height=d+'px';m.style.margin=(-d/2)+'px 0 0 '+(-d/2)+'px'}
 function newQ(){
   clearTimeout(autoT);$('next').classList.remove('run');
   if(pop)return;
+  ring=null;$('mk2').hidden=true;
   Q=pickQ();answered=false;lastKey=keyOf(Q.v,Q.id);
   $('fbrow').hidden=true;hl.classList.add('pulse');drawProg();
   const key=lastKey;
   if(mode==='point'){
-    hl.classList.remove('pulse');cand=null;$('mk').hidden=true;$('pOk').disabled=true;$('pIdk').disabled=false;$('pact').hidden=false;
+    hl.classList.remove('pulse');cand=null;$('mk').hidden=true;hideTipOnly();$('pOk').disabled=true;$('pIdk').disabled=false;$('pact').hidden=false;
     $('tgCz').textContent=N[key][0];$('tgLa').textContent=N[key][1]||'';$('tgLa').hidden=!N[key][1];
     layer=Q.id>views[Q.v].n1?2:1;   // ptáme se na kost → klepnutí vybírá celé kosti, ne jejich části
     turn(Q.v,()=>{sel=-1;restPaint();fitView()});return}
@@ -804,7 +817,8 @@ function bboxIds(ids){let x0=1e9,y0=1e9,x1=-1,y1=-1;FLAG.fill(0);for(const g of 
 function showAnswer(ok){
   const t=tids();if(!t.length)return;sel=-1;paint(t);
   const [x0,y0,x1,y1]=bboxIds(t),bw=x1-x0+1,bh=y1-y0+1,r=stage.getBoundingClientRect();
-  const tipNow=()=>{let best=t[0];for(const i of t)if(V.count[i]>V.count[best])best=i;
+  const q0=Q;
+  const tipNow=()=>{if(Q!==q0||!answered)return;let best=t[0];for(const i of t)if(V.count[i]>V.count[best])best=i;
     showTip(best,tx+V.cx[best]*scale,ty+V.cy[best]*scale);sel=-1;paint(t)};
   // malou část přiblížit, aby ji žák viděl
   if(!ok&&(bw*scale<r.width*0.18&&bh*scale<(r.height-TOP-BOT)*0.18)){
