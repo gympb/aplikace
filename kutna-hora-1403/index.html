@@ -97,9 +97,9 @@ main{padding-bottom:40px}
 .found{font:600 14px var(--f-body);color:var(--ink-2)}
 .map{position:relative;width:100%;aspect-ratio:1000/680;border:2px solid #5a381b;border-radius:8px;overflow:hidden;background:#efe1bd;box-shadow:inset 0 0 30px rgba(110,70,25,.25)}
 .map svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.pin{position:absolute;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;padding:0;cursor:pointer;display:grid;place-items:center;
+.pin{position:absolute;transform:translate(-50%,-50%);width:var(--pin,34px);height:var(--pin,34px);border-radius:50%;padding:0;cursor:pointer;display:grid;place-items:center;
   border:2px solid #f6e6c2;background:var(--c,#3a210d);color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.45);transition:transform .15s}
-.pin svg{width:18px;height:18px;position:static}
+.pin svg{width:55%;height:55%;position:static}
 .pin:hover,.pin:focus-visible{transform:translate(-50%,-50%) scale(1.15);z-index:5}
 .pin.seen{border-color:var(--gold-hi)}
 .pin[aria-current="true"]{box-shadow:0 0 0 4px var(--gold-hi),0 2px 8px rgba(0,0,0,.5);z-index:4}
@@ -107,7 +107,7 @@ main{padding-bottom:40px}
   font:600 12px var(--f-body);padding:3px 7px;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .15s}
 .pin:hover .lab,.pin:focus-visible .lab{opacity:1}
 .pin.dim{opacity:.25}
-@media (max-width:700px){.pin{width:26px;height:26px;border-width:1.5px}.pin svg{width:14px;height:14px}}
+@media (max-width:700px){.pin{width:26px;height:26px;border-width:1.5px}}
 @media (hover:none){.pin .lab{display:none}}
 .map-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:13px;color:var(--ink-2)}
 .map-legend span{display:inline-flex;align-items:center;gap:6px}
@@ -127,6 +127,35 @@ main{padding-bottom:40px}
 .c-1403{border-top:3px solid var(--red)}
 .c-zaj{border-top:3px solid var(--gold)}
 .hint{margin-top:14px}
+
+/* mapa: záhlaví s filtry a mapa tvoří jeden pergamen */
+.map-top{margin-bottom:0;border-bottom:0;border-radius:10px 10px 0 0;padding-bottom:4px}
+.map-top::before{bottom:-6px;border-bottom:0;border-radius:6px 6px 0 0}
+.map-sheet{border-top:0;border-radius:0 0 10px 10px;padding-top:8px}
+.map-sheet::before{top:-6px;border-top:0;border-radius:0 0 6px 6px}
+
+/* PC: záhlaví přes celou šířku, pod ním mapa celá na obrazovce a vpravo detail místa se samostatným posouváním */
+@media (min-width:1024px){
+  .map-layout{display:grid;grid-template-columns:auto minmax(340px,1fr);grid-template-areas:"top top" "map detail";gap:0 20px;margin-bottom:22px}
+  .map-top{grid-area:top;padding:12px 20px 0;border:3px double #5a381b;border-bottom:0;margin-right:0}
+  .map-top .sheet-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-bottom:8px;margin-bottom:8px}
+  .map-top .sheet-head h2{font-size:20px;margin:0}
+  .map-top .sheet-head p{display:none}
+  .map-top .map-tools{margin-bottom:0}
+  .map-top .chip{min-height:34px;padding:0 12px;font-size:13px}
+  .map-sheet{grid-area:map;padding:10px 20px 14px;border-radius:0 0 0 10px;border-right:0}
+  .map-sheet::before{right:0;border-right:0}
+  .map-sheet .map-legend{margin-top:8px}
+  .map-sheet .loc-list{display:none}
+  .detail-wrap{grid-area:detail;position:relative;min-width:0;margin-top:14px}
+  .detail-wrap > .sheet{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;padding:18px 20px;margin:0}
+  .detail-wrap .grid.g3{grid-template-columns:1fr;gap:10px}
+  .detail-wrap .detail-head{position:sticky;top:-18px;z-index:2;margin:-18px -20px 14px;padding:14px 20px 12px;
+    background:linear-gradient(135deg,var(--parch),var(--parch-2));border-radius:8px 8px 0 0}
+  .detail-wrap .detail-head h2{font-size:22px}
+  .hero{padding-block:14px 12px}
+  h1{font-size:clamp(28px,3.4vw,40px)}
+}
 
 /* --- politika --- */
 .timeline{list-style:none;margin:0;padding:0;display:grid;gap:8px}
@@ -283,13 +312,13 @@ footer a{color:#e8d6ad}
   <div class="hero">
     <div class="eyebrow">Dějepis · reálie ke hře Kingdom Come: Deliverance II</div>
     <h1>Kutná Hora 1403</h1>
-    <p class="lede">Stříbrné město krále Václava IV. v době, kdy Čechy ovládal jeho bratr Zikmund. Prozkoumej mapu, projdi cestu stříbra od rudy ke groši a porovnej hru se skutečností.</p>
   </div>
 
 <main>
 <!-- ==================== MAPA ==================== -->
 <section id="p-mapa" role="tabpanel" aria-labelledby="t-mapa">
-  <div class="sheet">
+<div class="map-layout">
+  <div class="sheet map-top">
     <div class="sheet-head">
       <div class="kicker">Schematická mapa · není v měřítku</div>
       <h2>Kutná Hora a okolí kolem roku 1403</h2>
@@ -299,6 +328,8 @@ footer a{color:#e8d6ad}
       <div class="filters" role="group" aria-label="Filtr míst" id="filters"></div>
       <span class="found">Prozkoumáno <b id="found">0</b> z <span id="total">0</span></span>
     </div>
+  </div>
+  <div class="sheet map-sheet">
 
     <div class="map" id="map">
       <svg viewBox="0 0 1000 680" role="img" aria-labelledby="map-title map-desc" id="map-svg">
@@ -413,7 +444,8 @@ footer a{color:#e8d6ad}
     <div class="loc-list" id="loc-list" aria-label="Seznam míst"></div>
   </div>
 
-  <div class="sheet" id="detail" aria-live="polite">
+  <div class="detail-wrap">
+  <div class="sheet" id="detail" aria-live="polite" tabindex="-1">
     <div class="detail-head">
       <div>
         <div class="kicker" id="d-cat"></div>
@@ -431,6 +463,8 @@ footer a{color:#e8d6ad}
     </div>
     <p class="note hint"><b>Při hraní KCD II:</b> <span id="d-hra"></span></p>
   </div>
+  </div>
+</div>
 </section>
 
 <!-- ==================== POLITIKA ==================== -->
@@ -816,6 +850,7 @@ function showTab(name, focus) {
     b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
     $('p-' + t).hidden = !on;
   }
+  if (name === 'mapa') fitMap();
   if (focus) $('t-' + name).focus();
   $('t-' + name).scrollIntoView({ block: 'nearest', inline: 'nearest' });
   const h = name === 'mapa' ? '' : '#' + name;
@@ -959,6 +994,24 @@ function renderMap() {
   }
   $('found').textContent = seen.size;
 }
+const DESKTOP = matchMedia('(min-width:1024px)');
+function fitMap() {
+  const map = $('map'), layout = map.closest('.map-layout'), sheet = map.closest('.sheet');
+  if (!DESKTOP.matches || $('p-mapa').hidden) { map.style.cssText = ''; layout.style.gridTemplateColumns = ''; return; }
+  const cs = getComputedStyle(sheet);
+  const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+  const maxW = layout.clientWidth - 340 - 20 - padX;
+  map.style.width = maxW + 'px'; map.style.height = '1px';
+  const sr = sheet.getBoundingClientRect(), mr = map.getBoundingClientRect();
+  const availH = innerHeight - (sr.top + scrollY) - (mr.top - sr.top) - (sr.bottom - mr.bottom) - 14;
+  const w = Math.max(420, Math.min(maxW, availH * 1000 / 680));
+  layout.style.gridTemplateColumns = `${Math.round(w + padX)}px minmax(340px,1fr)`;
+  map.style.width = w + 'px'; map.style.height = (w * 680 / 1000) + 'px';
+  map.style.setProperty('--pin', Math.round(Math.max(24, Math.min(34, w / 24))) + 'px');
+}
+addEventListener('resize', fitMap);
+DESKTOP.addEventListener('change', fitMap);
+if (document.fonts) document.fonts.ready.then(fitMap);
 function selectLoc(id, silent) {
   const l = LOCS.find(x => x.id === id); if (!l) return;
   currentLoc = id;
@@ -973,7 +1026,8 @@ function selectLoc(id, silent) {
   else if (seen.has(id)) { b.textContent = 'Prozkoumáno'; b.className = 'badge'; }
   else { b.textContent = 'Ukázka · klikni na další místa'; b.className = 'badge'; }
   renderMap();
-  if (!silent && matchMedia('(max-width:700px)').matches) $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('detail').scrollTop = 0;
+  if (!silent && !DESKTOP.matches) $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* ==================== CESTA STŘÍBRA ==================== */
