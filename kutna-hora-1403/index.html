@@ -178,6 +178,27 @@ main{padding-bottom:40px}
 .log .entry h3{font-size:16px;margin:4px 0 6px}
 .log .entry p{margin:0 0 6px;font-size:15px}
 .history{list-style:none;margin:10px 0 0;padding:0;font-size:13px;color:var(--ink-2);display:grid;gap:3px;max-height:150px;overflow:auto}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+fieldset{border:1px solid rgba(90,56,27,.3);border-radius:8px;padding:6px 12px 2px;margin:0 0 12px;min-width:0}
+legend{font:700 14px var(--f-display);padding:0 6px}
+.hint2{display:block;font-size:12px;line-height:1.35;color:var(--muted)}
+.hint2.warn{color:var(--bad);font-weight:700}
+.check{display:flex;gap:8px;align-items:center;min-height:40px;font-weight:600;font-size:14px;margin-bottom:8px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:#7a4b1d;flex:0 0 auto}
+.statgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:12px}
+.stat{background:rgba(90,56,27,.09);border-radius:6px;padding:6px 8px}
+.stat small{display:block;font:700 10px/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat b{font-family:var(--f-display);font-size:15px}
+.flags{display:flex;flex-wrap:wrap;gap:4px}
+.risks .meter{margin-bottom:6px}
+.risks .bar{height:7px}
+.choices{display:grid;gap:8px;margin-top:10px}
+.choices:empty{display:none}
+.choice{min-height:48px;text-align:left;padding:8px 12px;border-radius:8px;border:2px solid #4a2e15;background:#2a180b;color:#f6e6c2;cursor:pointer;font:600 15px/1.3 var(--f-body)}
+.choice small{display:block;font-weight:400;font-size:13px;color:#d9c49b;margin-top:2px}
+.choice:hover{border-color:var(--gold)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.history{max-height:260px}
 .sim-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .sim-actions .btn:first-child{flex:1 1 220px}
 
@@ -486,80 +507,114 @@ footer a{color:#e8d6ad}
   <div class="sheet">
     <div class="sheet-head" style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:flex-end">
       <div>
-        <div class="kicker">Hra na nákladníka</div>
+        <div class="kicker">Hra na nákladníka · rok 1403</div>
         <h2>Důlní simulátor</h2>
-        <p>Financuješ důl. Každý týden rozhodni o hloubce, lidech, čerpání vody, větrání a jídle. Zisk i ztráta se promítnou do měšce. Čísla jsou herní model, ne historická data.</p>
+        <p>Financuješ stříbrný důl. Každý týden nastav provoz a odpracuj šichtu. Výdřeva hnije a může chytit, do dolu prosakuje voda, havíři chtějí vyšší mzdu a kolem táhne Zikmundovo vojsko. Vydrž celý rok (16 týdnů) a nezkrachuj. Čísla jsou herní model, ne historická data.</p>
       </div>
       <div class="cal" aria-live="polite">
-        <div><small>Období</small><b id="s-cal">Jaro · týden 1</b></div>
-        <div><small>Pověst dolu</small><b id="s-rep">60 / 100</b></div>
+        <div><small>Období</small><b id="s-cal">Jaro 1403</b></div>
+        <div><small>Týden</small><b id="s-week">1 / 16</b></div>
+        <div><small>Pokladna dolu</small><b id="s-kasa">300 gr.</b></div>
       </div>
     </div>
 
+    <details class="note" style="margin-bottom:16px">
+      <summary style="cursor:pointer;font-weight:700;min-height:32px;display:flex;align-items:center">Jak simulátor funguje</summary>
+      <ul style="margin:6px 0 4px;padding-left:20px">
+        <li><b>Výdřeva</b> (dřevěné stojky a stropy) každý týden slábne, v hloubce a ve vodě rychleji. Opravují ji tesaři. Slabá výdřeva vede k závalům, suchá smrková snadno chytí od louče nebo po sázení ohněm.</li>
+        <li><b>Voda</b> přibývá hlavně na jaře, kdy taje sníh, a s hloubkou šachty. Odčerpává ji rumpál, trejv nebo odvodňovací štola.</li>
+        <li><b>Vzduch</b> zhoršuje hloubka, počet lidí, louče a oheň. Pomáhá větrání.</li>
+        <li><b>Nálada havířů</b> se odvíjí od mzdy, jídla, délky šichty a péče o zraněné. Nespokojení havíři chtějí vyšší mzdu a mohou vstoupit do stávky.</li>
+        <li><b>Pověst</b> stoupá s poctivým a bezpečným provozem. Když klesne na nulu, nebo když dluh přesáhne 100 grošů, horní úřad ti důl odebere.</li>
+        <li>Na konci roku dostaneš čtvrtinu zisku do svého měšce.</li>
+      </ul>
+    </details>
+
     <div class="sim">
       <div class="card">
-        <h3>1. Důl a lidé</h3>
-        <div class="field">
-          <label for="s-depth">Hloubka šachty</label>
-          <input type="range" id="s-depth" min="40" max="300" step="20" value="120">
-          <div class="range-row"><span>40 m</span><b id="s-depth-v">120 m</b><span>300 m</span></div>
-        </div>
-        <div class="two">
-          <div class="field"><label for="s-miners">Lamači</label><input type="number" id="s-miners" min="4" max="60" value="20" inputmode="numeric"></div>
-          <div class="field"><label for="s-haulers">Tahouni</label><input type="number" id="s-haulers" min="2" max="40" value="12" inputmode="numeric"></div>
-        </div>
-        <h3 style="margin-top:6px">2. Voda a vzduch</h3>
-        <div class="field"><label for="s-drain">Čerpání vody</label>
-          <select id="s-drain">
-            <option value="manual">Kožené vaky a rumpál (levné, slabé)</option>
-            <option value="horse" selected>Koňský trejv</option>
-            <option value="adit">Trejv + odvodňovací štola (drahé, spolehlivé)</option>
-          </select></div>
-        <div class="field"><label for="s-vent">Větrání</label>
-          <select id="s-vent">
-            <option value="none">Jen přirozený průvan</option>
-            <option value="bellows" selected>Měchy a dřevěné potrubí</option>
-            <option value="shaft">Vlastní větrací jáma</option>
-          </select></div>
-        <h3 style="margin-top:6px">3. Práce a jídlo</h3>
-        <div class="field"><label for="s-ration">Strava pro havíře</label>
-          <select id="s-ration">
-            <option value="poor">Skromná (chléb, kaše)</option>
-            <option value="standard" selected>Běžná (chléb, polévka, pivo)</option>
-            <option value="rich">Bohatá (i maso a víc piva)</option>
-          </select></div>
-        <div class="field"><label for="s-method">Rozrušování horniny</label>
-          <select id="s-method">
-            <option value="tools" selected>Želízko a mlátek</option>
-            <option value="fire">Sázení ohněm (rychlejší, kouř)</option>
-          </select></div>
+        <h3>Provoz dolu</h3>
+        <fieldset><legend>Lidé a mzdy</legend>
+          <div class="three">
+            <div class="field"><label for="s-miners">Lamači</label><input type="number" id="s-miners" min="4" max="60" value="20" inputmode="numeric"></div>
+            <div class="field"><label for="s-haulers">Tahouni</label><input type="number" id="s-haulers" min="2" max="40" value="12" inputmode="numeric"></div>
+            <div class="field"><label for="s-carp">Tesaři</label><input type="number" id="s-carp" min="0" max="12" value="2" inputmode="numeric"></div>
+          </div>
+          <div class="field">
+            <label for="s-wage">Týdenní mzda lamače</label>
+            <input type="range" id="s-wage" min="2" max="8" step="0.5" value="3">
+            <div class="range-row"><span>2 gr.</span><b id="s-wage-v">3 gr.</b><span>8 gr.</span></div>
+            <span class="hint2">Dohodnutá mzda: <b id="s-floor">3</b> gr. Tahouni berou 60 % a tesaři 80 % mzdy lamače.</span>
+            <span class="hint2 warn" id="s-wage-warn" hidden>Platíš méně, než je dohodnuto. Havíři se bouří.</span>
+          </div>
+        </fieldset>
+        <fieldset><legend>Práce v podzemí</legend>
+          <div class="field"><label for="s-shift">Délka šichty</label>
+            <select id="s-shift"><option value="short">Krátká (méně rudy, spokojení lidé)</option><option value="normal" selected>Běžná</option><option value="long">Dlouhá (víc rudy, únava a úrazy)</option></select></div>
+          <div class="field"><label for="s-method">Rozrušování horniny</label>
+            <select id="s-method"><option value="tools" selected>Želízko a mlátek</option><option value="fire">Sázení ohněm (rychlejší, kouř a požár)</option></select></div>
+          <div class="field"><label for="s-light">Svícení</label>
+            <select id="s-light"><option value="lamp" selected>Lojové kahany</option><option value="torch">Louče (levné, kouř a oheň)</option></select></div>
+          <div class="field"><label for="s-deepen">Prohlubování šachty</label>
+            <select id="s-deepen"><option value="none" selected>Neprohlubovat</option><option value="slow">Pomalu: +5 m za týden, 2 lamači</option><option value="fast">Rychle: +10 m za týden, 4 lamači</option></select></div>
+        </fieldset>
+        <fieldset><legend>Voda, vzduch a dřevo</legend>
+          <div class="field"><label for="s-drain">Čerpání vody</label>
+            <select id="s-drain"><option value="manual">Kožené vaky a rumpál (levné, slabé)</option><option value="horse" selected>Koňský trejv</option><option value="adit">Trejv a odvodňovací štola (drahé, spolehlivé)</option></select></div>
+          <div class="field"><label for="s-vent">Větrání</label>
+            <select id="s-vent"><option value="none">Jen přirozený průvan</option><option value="bellows" selected>Měchy a dřevěné potrubí</option><option value="shaft">Vlastní větrací jáma</option></select></div>
+          <div class="field"><label for="s-wood">Dřevo na výdřevu</label>
+            <select id="s-wood"><option value="spruce" selected>Smrkové (levné, hoří a hnije)</option><option value="oak">Dubové (dražší, odolné)</option></select></div>
+        </fieldset>
+        <fieldset><legend>Péče o lidi</legend>
+          <div class="field"><label for="s-ration">Strava</label>
+            <select id="s-ration"><option value="poor">Skromná (chléb, kaše)</option><option value="standard" selected>Běžná (chléb, polévka, pivo)</option><option value="rich">Bohatá (i maso a víc piva)</option></select></div>
+          <div class="field"><label for="s-fund">Příspěvek do bratrské pokladny</label>
+            <select id="s-fund"><option value="none">Žádný</option><option value="small" selected>Malý</option><option value="big">Štědrý (zranění tě vyjdou levněji)</option></select></div>
+          <label class="check"><input type="checkbox" id="s-guard"> Šichtmistr dohlíží na práci a rudu (8 gr. týdně)</label>
+        </fieldset>
       </div>
 
       <div class="card">
-        <h3>Odhad na tento týden</h3>
-        <div class="meter"><div class="row"><span>Riziko zatopení</span><b id="m-flood">0 %</b></div><div class="bar"><i id="b-flood" style="background:var(--water)"></i></div></div>
-        <div class="meter"><div class="row"><span>Riziko kouře a závalu</span><b id="m-smoke">0 %</b></div><div class="bar"><i id="b-smoke" style="background:var(--bad)"></i></div></div>
-        <div class="meter"><div class="row"><span>Nálada havířů</span><b id="m-morale">0 %</b></div><div class="bar"><i id="b-morale" style="background:var(--good)"></i></div></div>
+        <h3>Stav dolu</h3>
+        <div class="statgrid">
+          <div class="stat"><small>Hloubka</small><b id="st-depth">60 m</b></div>
+          <div class="stat"><small>Žíla</small><b id="st-vein">průměrná</b></div>
+          <div class="stat"><small>Pověst</small><b id="st-rep">60</b></div>
+        </div>
+        <div class="meter"><div class="row"><span>Výdřeva</span><b id="m-timber"></b></div><div class="bar"><i id="b-timber"></i></div></div>
+        <div class="meter"><div class="row"><span>Voda v dole</span><b id="m-water"></b></div><div class="bar"><i id="b-water" style="background:var(--water)"></i></div></div>
+        <div class="meter"><div class="row"><span>Vzduch</span><b id="m-air"></b></div><div class="bar"><i id="b-air"></i></div></div>
+        <div class="meter"><div class="row"><span>Nálada havířů <span id="m-trend" class="hint2"></span></span><b id="m-morale"></b></div><div class="bar"><i id="b-morale"></i></div></div>
+        <div class="flags" id="s-flags"></div>
+
+        <h3 style="margin-top:14px">Rizika na příští týden</h3>
+        <div class="risks" id="s-risks"></div>
+
         <div class="ledger">
-          <div><span>Mzdy a provoz</span><span id="l-wages"></span></div>
-          <div><span>Jídlo a lůj na svíce</span><span id="l-food"></span></div>
+          <div><span>Mzdy</span><span id="l-wages"></span></div>
+          <div><span>Jídlo</span><span id="l-food"></span></div>
+          <div><span>Čerpání a větrání</span><span id="l-water"></span></div>
+          <div><span>Svícení a dřevo</span><span id="l-material"></span></div>
+          <div><span>Prohlubování</span><span id="l-deepen"></span></div>
+          <div><span>Bratrská pokladna a dozor</span><span id="l-care"></span></div>
           <div><span>Hrubý výtěžek stříbra</span><span id="l-yield"></span></div>
           <div><span>Urbura (osmina králi)</span><span id="l-urbura"></span></div>
           <div class="sum"><span>Čistý zisk při klidném týdnu</span><span id="l-profit"></span></div>
         </div>
         <div class="sim-actions">
           <button class="btn" id="s-run" type="button">⚒ Odpracovat týden</button>
-          <button class="btn ghost" id="s-reset" type="button">Začít znovu</button>
+          <button class="btn ghost" id="s-reset" type="button">Nový důl</button>
         </div>
       </div>
 
       <div class="card log">
         <h3>Důlní kniha</h3>
-        <div class="entry" id="s-entry">
-          <span class="tag" id="s-tag">Připraveno</span>
-          <h3 id="s-title">Důl čeká na první šichtu</h3>
-          <p id="s-desc">Nastav důl a odstartuj týden. Hlubší šachta dává víc rudy, ale víc vody a horší vzduch. Spokojení havíři pracují lépe, hladoví mohou odmítnout fárat.</p>
+        <div class="entry" id="s-entry" aria-live="polite">
+          <span class="tag" id="s-tag"></span>
+          <h3 id="s-title"></h3>
+          <p id="s-desc"></p>
           <p id="s-money" style="font-weight:700"></p>
+          <div class="choices" id="s-choices"></div>
         </div>
         <ul class="history" id="s-history" aria-label="Záznamy předchozích týdnů"></ul>
       </div>
@@ -964,103 +1019,359 @@ function setPhase(i) {
 
 /* ==================== SIMULÁTOR ==================== */
 const SEASONS = ['Jaro', 'Léto', 'Podzim', 'Zima'];
-const simDefault = () => ({ week: 1, season: 0, rep: 60, log: [] });
-let sim = Object.assign(simDefault(), save.get('sim', {}));
+const YEAR_WEEKS = 16, START_KASA = 300;
+const simDefault = () => ({ week: 1, year: 1403, kasa: START_KASA, yearStart: START_KASA, depth: 60, timber: 80, water: 15, morale: 65,
+  vein: 1, rep: 60, wageFloor: 3, sealed: 0, sick: 0, dearFood: 0, horseDead: false, hidden: false, strikeThreat: false,
+  pending: null, over: null, last: null, log: [], inp: null });
+let sim = Object.assign(simDefault(), save.get('sim2', {}));
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const fmt = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(Math.round(n)) + ' gr.';
+const seasonIdx = () => Math.min(3, Math.floor((sim.week - 1) / 4));
+const seasonName = () => SEASONS[seasonIdx()];
+const weekLabel = () => `${seasonName()} ${sim.year}, ${((sim.week - 1) % 4) + 1}. týden`;
 
+/* --- vstupy --- */
+const INP = { miners: 's-miners', haulers: 's-haulers', carp: 's-carp', wage: 's-wage', shift: 's-shift', method: 's-method', light: 's-light',
+  deepen: 's-deepen', drain: 's-drain', vent: 's-vent', wood: 's-wood', ration: 's-ration', fund: 's-fund', guard: 's-guard' };
+const NUM = { miners: [4, 60, 20], haulers: [2, 40, 12], carp: [0, 12, 2] };
 function readInputs() {
-  const num = (id, min, max, def) => { const el = $(id); let v = parseInt(el.value, 10); if (!Number.isFinite(v)) v = def; v = clamp(v, min, max); return v; };
-  return {
-    depth: num('s-depth', 40, 300, 120), miners: num('s-miners', 4, 60, 20), haulers: num('s-haulers', 2, 40, 12),
-    drain: $('s-drain').value, vent: $('s-vent').value, ration: $('s-ration').value, method: $('s-method').value
-  };
-}
-function model(inp) {
-  const season = SEASONS[sim.season];
-  let morale = 60 + (sim.rep - 60) / 4;
-  morale += { poor: -25, standard: 0, rich: 18 }[inp.ration];
-  if (inp.method === 'fire') morale -= 8;
-  if (inp.vent === 'none') morale -= 6;
-  // málo tahounů: lamači musí rudu tahat sami
-  const haulRatio = inp.haulers / inp.miners;
-  if (haulRatio < .4) morale -= 8;
-  if (season === 'Zima') morale -= 5;
-  morale = Math.round(clamp(morale, 10, 98));
-
-  let flood = inp.depth / 300 * 45 + { manual: 30, horse: 8, adit: -12 }[inp.drain] + (season === 'Jaro' ? 15 : season === 'Podzim' ? 6 : 0);
-  flood = Math.round(clamp(flood, 3, 95));
-  let smoke = inp.depth / 300 * 25 + inp.miners / 60 * 12 + { none: 30, bellows: 6, shaft: -10 }[inp.vent] + (inp.method === 'fire' ? 30 : 0);
-  smoke = Math.round(clamp(smoke, 3, 95));
-
-  const wages = inp.miners * 2.6 + inp.haulers * 1.5 + { manual: 0, horse: 25, adit: 60 }[inp.drain] + { none: 0, bellows: 8, shaft: 22 }[inp.vent];
-  const food = (inp.miners + inp.haulers) * { poor: .3, standard: .6, rich: 1.1 }[inp.ration];
-  const haulEff = clamp(haulRatio / .6, .4, 1);
-  let gross = inp.miners * (0.8 + inp.depth / 100) * 7.5 * (morale / 100) * haulEff;
-  if (inp.method === 'fire') gross *= 1.4;
-  const urbura = gross / 8;
-  return { morale, flood, smoke, wages: Math.round(wages), food: Math.round(food), gross: Math.round(gross), urbura: Math.round(urbura),
-    profit: Math.round(gross - urbura - wages - food) };
-}
-const fmt = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n) + ' gr.';
-function renderSim() {
-  const inp = readInputs(), m = model(inp);
-  $('s-depth-v').textContent = inp.depth + ' m';
-  $('s-cal').textContent = `${SEASONS[sim.season]} · týden ${sim.week}`;
-  $('s-rep').textContent = `${sim.rep} / 100`;
-  for (const [k, v] of [['flood', m.flood], ['smoke', m.smoke], ['morale', m.morale]]) { $('m-' + k).textContent = v + ' %'; $('b-' + k).style.width = v + '%'; }
-  $('l-wages').textContent = '−' + m.wages + ' gr.'; $('l-food').textContent = '−' + m.food + ' gr.';
-  $('l-yield').textContent = m.gross + ' gr.'; $('l-urbura').textContent = '−' + m.urbura + ' gr.';
-  const p = $('l-profit'); p.textContent = fmt(m.profit); p.className = m.profit >= 0 ? 'pos' : 'neg';
-  $('s-history').innerHTML = sim.log.map(x => `<li>${esc(x)}</li>`).join('');
-  return { inp, m };
-}
-function setEntry(kind, tag, title, desc, delta) {
-  $('s-entry').className = 'entry ' + kind;
-  $('s-tag').textContent = tag; $('s-title').textContent = title; $('s-desc').textContent = desc;
-  const mon = $('s-money'); mon.textContent = 'Měšec: ' + fmt(delta); mon.className = delta >= 0 ? 'pos' : 'neg';
-}
-function runWeek() {
-  const { inp, m } = renderSim();
-  const label = `${SEASONS[sim.season]}, týden ${sim.week}`;
-  const costs = m.wages + m.food;
-  const r = Math.random() * 100, r2 = Math.random() * 100;
-  let delta, kind, short;
-
-  if (m.morale < 40 && r2 < 50) {
-    delta = -costs; sim.rep -= 8; kind = 'bad'; short = 'stávka';
-    setEntry('bad', 'Stávka', 'Havíři odmítli fárat', 'Stěžují si na jídlo a podmínky. Týden bez rudy, ale mzdy a koně se platit musí.', delta); play('bad');
-  } else if (r < m.flood * .35) {
-    const g = Math.round(m.gross * .25);
-    delta = g - Math.round(g / 8) - costs - 20; sim.rep -= 5; kind = 'water'; short = 'zatopení';
-    setEntry('water', 'Zatopeno', 'Do dolu vnikla voda', 'Havíři prorazili do zatopené staré chodby. Spodní patro je pod vodou, těžilo se jen čtvrt týdne a výdřeva potřebuje opravu (−20 gr.).', delta); play('water');
-  } else if (r < m.flood * .35 + m.smoke * .35) {
-    const g = Math.round(m.gross * .5);
-    delta = g - Math.round(g / 8) - costs - 15; sim.rep -= 10; kind = 'bad'; short = inp.method === 'fire' ? 'kouř' : 'zával';
-    setEntry('bad', 'Neštěstí', inp.method === 'fire' ? 'Kouř po sázení ohněm' : 'Zával v chodbě',
-      inp.method === 'fire' ? 'Kouř z ohně se nestihl vyvětrat. Několik havířů ztratilo vědomí a museli je vytáhnout. Do bratrské pokladny jde příspěvek na léčení (−15 gr.).'
-                            : 'Tlak horniny rozdrtil výdřevu. Chodba je zavalená a těžilo se jen polovinu týdne. Bratrská pokladna pomáhá raněným (−15 gr.).', delta); play('sword');
-  } else if (r2 > 90) {
-    delta = m.profit + 60; sim.rep += 5; kind = 'good'; short = 'bohatá žíla';
-    setEntry('good', 'Bohatá žíla', 'Lamači narazili na bohatou rudu', 'Kusy s vysokým obsahem stříbra jdou rovnou do hutě. K běžnému zisku přibývá mimořádných 60 grošů.', delta); play('coin');
-  } else {
-    delta = m.profit; sim.rep += m.morale >= 60 ? 2 : 0; kind = delta >= 0 ? '' : 'bad'; short = 'klidný týden';
-    setEntry(kind, 'Řádný chod', 'Klidný týden', delta >= 0 ? 'Těžba proběhla bez nehod. Urburéř převzal královskou osminu a zbytek je tvůj.' : 'Bez nehod, ale náklady převýšily výtěžek. Zkus jinou hloubku nebo počet lidí.', delta); play(delta >= 0 ? 'coin' : 'bad');
+  const o = {};
+  for (const [k, id] of Object.entries(INP)) {
+    const el = $(id);
+    if (k in NUM) { const [a, b, d] = NUM[k]; const v = parseInt(el.value, 10); o[k] = clamp(Number.isFinite(v) ? v : d, a, b); }
+    else if (k === 'wage') o[k] = parseFloat(el.value);
+    else if (k === 'guard') o[k] = el.checked;
+    else o[k] = el.value;
   }
-  sim.rep = clamp(sim.rep, 0, 100);
-  addGroschen(delta);
-  sim.log.unshift(`${label}: ${short}, ${fmt(delta)}`); sim.log = sim.log.slice(0, 12);
-  sim.week++; if (sim.week > 4) { sim.week = 1; sim.season = (sim.season + 1) % 4; }
-  save.set('sim', sim);
-  renderSim();
+  return o;
+}
+function saveInputs() { sim.inp = readInputs(); save.set('sim2', sim); }
+function loadInputs() {
+  if (!sim.inp) return;
+  for (const [k, id] of Object.entries(INP)) {
+    if (!(k in sim.inp)) continue;
+    if (k === 'guard') $(id).checked = !!sim.inp[k]; else $(id).value = sim.inp[k];
+  }
+}
+function setWage(v) { if (parseFloat($('s-wage').value) < v) $('s-wage').value = Math.min(8, v); saveInputs(); }
+
+/* --- model jednoho týdne --- */
+function model(i) {
+  const season = seasonName();
+  const drain = sim.horseDead && i.drain === 'horse' ? 'manual' : i.drain;
+  const workers = i.miners + i.haulers + i.carp;
+  const haulRatio = i.haulers / i.miners;
+  const air = Math.round(clamp(100 - sim.depth / 4 - workers * .5 - (i.method === 'fire' ? 18 : 0) - (i.light === 'torch' ? 10 : 0)
+    + { none: 0, bellows: 22, shaft: 40 }[i.vent], 5, 100));
+  const mt = Math.round(clamp(55 + (i.wage - sim.wageFloor) * 12 + { poor: -20, standard: 0, rich: 14 }[i.ration]
+    + { short: 8, normal: 0, long: -16 }[i.shift] + { none: -5, small: 2, big: 6 }[i.fund] + (i.guard ? -4 : 0)
+    + (air < 50 ? -12 : 0) + (sim.rep - 60) / 8 + (season === 'Zima' ? -4 : 0) + (haulRatio < .4 ? -6 : 0)
+    + (i.method === 'fire' ? -5 : 0) + (sim.dearFood && i.ration !== 'rich' ? -4 : 0), 5, 98));
+  const crew = Math.max(0, i.miners - { none: 0, slow: 2, fast: 4 }[i.deepen]) * (sim.sick ? .7 : 1);
+  const perMiner = 10.5 * sim.vein * (.7 + sim.depth / 200) * { short: .8, normal: 1, long: 1.3 }[i.shift] * (i.method === 'fire' ? 1.4 : 1)
+    * (.5 + sim.morale / 100) * clamp(haulRatio / .5, .4, 1) * clamp(air / 70, .4, 1)
+    * (sim.water > 60 ? clamp(1 - (sim.water - 60) / 80, .3, 1) : 1) * (sim.sealed ? .7 : 1);
+  const gross = Math.round(crew * perMiner), urbura = Math.round(gross / 8);
+  const c = {
+    wages: Math.round(i.miners * i.wage + i.haulers * i.wage * .6 + i.carp * i.wage * .8),
+    food: Math.round(workers * { poor: .4, standard: .7, rich: 1.2 }[i.ration] * (sim.dearFood ? 1.6 : 1)),
+    water: { manual: 5, horse: 22, adit: 38 }[drain] + { none: 0, bellows: 8, shaft: 20 }[i.vent],
+    material: Math.round(workers * (i.light === 'torch' ? .1 : .3) + i.carp * (i.wood === 'oak' ? 3 : 2)),
+    deepen: { none: 0, slow: 10, fast: 22 }[i.deepen],
+    care: Math.round(workers * { none: 0, small: .2, big: .35 }[i.fund] + (i.guard ? 8 : 0))
+  };
+  const cost = Object.values(c).reduce((a, b) => a + b, 0);
+  const dTimber = -(3 + sim.depth / 60 + (i.method === 'fire' ? 4 : 0) + (sim.water > 50 ? 3 : 0)) + i.carp * (i.wood === 'oak' ? 4 : 2.5);
+  const dWater = [14, 4, 9, 6][seasonIdx()] + sim.depth / 30 - { manual: 6, horse: 14, adit: 24 }[drain];
+  const fireBase = (i.method === 'fire' ? 9 : 0) + (i.light === 'torch' ? 7 : 0) + (season === 'Léto' ? 3 : 0);
+  const risk = {
+    fire: Math.max(1, fireBase * (i.wood === 'oak' ? .8 : 1.2) * (i.vent === 'none' ? 1.3 : 1)),
+    collapse: (sim.timber < 55 ? (55 - sim.timber) * .9 : 1.5) + sim.depth / 150 + (i.shift === 'long' ? 2 : 0),
+    flood: (sim.water > 45 ? (sim.water - 45) * .9 : .5) + sim.depth / 200,
+    air: air < 50 ? (50 - air) * 1.1 : .5,
+    unrest: (sim.morale < 50 ? (50 - sim.morale) * 1.4 : 0) + (sim.strikeThreat ? 25 : 0) + (i.wage < sim.wageFloor ? 10 : 0)
+  };
+  for (const k in risk) risk[k] = Math.round(clamp(risk[k], 0, 90));
+  return { drain, workers, air, mt, gross, urbura, c, cost, net: gross - urbura - cost, dTimber, dWater, risk };
+}
+
+/* --- krizové situace --- */
+const careF = i => ({ none: 1, small: .7, big: .4 })[i.fund];
+const careNote = i => i.fund === 'none' ? ' Bez bratrské pokladny platíš ranhojiče a podporu rodinám celou sám.' : ' Část péče o zraněné hradí bratrská pokladna.';
+function injury(i, cost, mor) { const f = careF(i); sim.morale -= Math.round(mor * f); return Math.round(cost * f); }
+const EV = {
+  fire: { kind: 'bad', tag: 'Požár', title: 'Hoří výdřeva!', snd: 'bad',
+    text: i => `${i.method === 'fire' ? 'Oheň po sázení ohněm' : i.light === 'torch' ? 'Plamen louče' : 'Plamínek kahanu'} zapálil ${i.wood === 'oak' ? '' : 'suchou smrkovou '}výdřevu. Chodbou se valí hustý kouř a stojky praskají.`,
+    choices: [
+      { label: 'Vyvést lidi a chodbu zazdít', hint: 'bezpečné, ale 2 týdny slabší těžba (−15 gr.)',
+        go: () => { sim.sealed = 2; sim.timber -= 15; sim.rep += 2; return [-15, 'Zazděná chodba vyhořela bez přístupu vzduchu. Nikdo nebyl zraněn, ale dva týdny se v ní nedá těžit.']; } },
+      { label: 'Hasit vodou z kožených vaků', hint: 'rychlé, ale riskantní',
+        go: i => { if (Math.random() < .5) { sim.timber -= 10; sim.morale -= 4; return [-10, 'Oheň se podařilo uhasit. Ohořelé stojky je třeba vyměnit.']; }
+          sim.timber -= 35; sim.rep -= 8; const c = injury(i, 45, 15); return [-c, 'Oheň se vymkl z rukou. Velká část výdřevy shořela a několik havířů se nadýchalo kouře.' + careNote(i)]; } }
+    ] },
+  collapse: { kind: 'bad', tag: 'Zával', title: 'Zával v chodbě', snd: 'sword',
+    text: () => `Tlak horniny rozdrtil ${sim.timber < 40 ? 'shnilou ' : ''}výdřevu. Chodba je zavalená a dva havíři jsou zranění.`,
+    choices: [
+      { label: 'Chodbu vyklidit a znovu vyztužit', hint: '−35 gr. a ošetření zraněných',
+        go: i => { const c = injury(i, 30, 6); sim.timber += 12; sim.rep += 2; return [-35 - c, 'Tesaři chodbu vyztužili novými stojkami a těžba může pokračovat.' + careNote(i)]; } },
+      { label: 'Chodbu opustit a kopat jinde', hint: 'levnější, ale přijdeš o část žíly',
+        go: i => { const c = injury(i, 30, 10); sim.vein *= .85; return [-c, 'Zavalená chodba zůstala opuštěná i s kusem rudné žíly.' + careNote(i)]; } }
+    ] },
+  flood: { kind: 'water', tag: 'Průval vody', title: 'Voda zaplavuje dno dolu', snd: 'water', on: () => { sim.water += 20; },
+    text: () => 'Havíři prorazili do staré zatopené chodby. Voda stoupá rychleji, než ji stíhají čerpat.',
+    choices: [
+      { label: 'Najmout na týden vodaře navíc', hint: '−40 gr., hladina výrazně klesne', go: () => { sim.water -= 35; return [-40, 'Vodaři ve směnách tahali vodu dnem i nocí. Hladina klesla.']; } },
+      { label: 'Opustit spodní patro', hint: 'šachta bude o 20 m mělčí', go: () => { sim.depth = Math.max(40, sim.depth - 20); sim.water -= 30; sim.vein *= .9; return [0, 'Spodní patro zůstalo pod vodou. Těží se výš, kde je ruda chudší.']; } },
+      { label: 'Čerpat dál, co to dá', hint: 'nic nestojí, ale voda zůstane', go: () => { sim.morale -= 5; return [0, 'Havíři pracují po kolena ve vodě. Klesá výkon i nálada.']; } }
+    ] },
+  air: { kind: 'bad', tag: 'Zlé větry', title: 'V chodbách není čím dýchat', snd: 'bad',
+    text: () => 'Kahany hasnou a několika havířům je zle. Havíři tomu říkali „zlé větry“: vzduch, kterému chybí kyslík nebo je plný kouře.',
+    choices: [
+      { label: 'Přerušit práci a vyvětrat', hint: 'přijdeš asi o třetinu týdenní těžby', go: (i, w) => { sim.morale += 3; return [-Math.round(w.gross * .3), 'Práce stála, dokud se vzduch nevyměnil. Nikdo nebyl zraněn.']; } },
+      { label: 'Pracovat dál', hint: 'riskantní', go: i => { if (Math.random() < .6) { sim.morale -= 10; return [0, 'Havíři vydrželi do konce šichty, ale reptají.']; }
+          sim.rep -= 10; const c = injury(i, 30, 20); return [-c, 'Dva havíři v chodbě omdleli a museli je vynést. Do dolu se nikomu nechce.' + careNote(i)]; } }
+    ] },
+  wage: { kind: '', tag: 'Mzdy', title: 'Havíři chtějí vyšší mzdu', snd: 'hammer',
+    text: () => `Havíři poslali zástupce: za tak těžkou a nebezpečnou práci chtějí o groš týdně víc. Teď je dohodnutá mzda lamače ${sim.wageFloor} gr. týdně.`,
+    choices: [
+      { label: 'Vyhovět jim', hint: 'mzda natrvalo vzroste o 1 gr.', go: () => { sim.wageFloor += 1; setWage(sim.wageFloor); sim.morale += 12; sim.strikeThreat = false; return [0, 'Havíři se vracejí do práce spokojení. Náklady na mzdy ale porostou.']; } },
+      { label: 'Vyjednat kompromis přes perkmistra', hint: '−20 gr., mzda vzroste o ½ gr.', go: () => { sim.wageFloor += .5; setWage(sim.wageFloor); sim.morale += 5; sim.strikeThreat = false; return [-20, 'Perkmistr jako horní úředník vyjednal kompromis: o půl groše víc.']; } },
+      { label: 'Odmítnout', hint: 'ušetříš, ale hrozí stávka', go: () => { sim.morale -= 10; sim.rep -= 3; sim.strikeThreat = true; return [0, 'Mezi havíři to vře. V krčmách se mluví o tom, že složí nářadí.']; } }
+    ] },
+  strike: { kind: 'bad', tag: 'Stávka', title: 'Havíři složili nářadí', snd: 'bad', blocks: true,
+    text: () => 'Havíři se shromáždili před dolem a odmítají fárat, dokud nedostanou vyšší mzdu. Tento týden se netěží. Kutnohorští havíři za vyšší mzdy skutečně několikrát stávkovali, hlavně ve druhé polovině 15. století.',
+    choices: [
+      { label: 'Přistoupit na požadavky', hint: 'mzda +1 gr., v dole bude klid', go: () => { sim.wageFloor += 1; setWage(sim.wageFloor); sim.morale += 18; sim.strikeThreat = false; return [0, 'Havíři se příští týden vrátí do práce.']; } },
+      { label: 'Najmout cizí havíře z okolí', hint: '−50 gr., zlá krev mezi lidmi', go: () => { sim.morale = 40; sim.rep -= 10; sim.strikeThreat = false; return [-50, 'Noví havíři neznají důl a starousedlíci se na ně dívají nevraživě.']; } },
+      { label: 'Zavolat městskou stráž', hint: 'nic nestojí, ale…', go: () => { sim.rep -= 15; sim.morale -= 8; sim.strikeThreat = Math.random() < .5;
+          return [0, sim.strikeThreat ? 'Stráž havíře rozehnala, ale nepokoje pokračují.' : 'Stráž havíře rozehnala a zastrašení se vrátili do práce.']; } }
+    ] },
+  vein: { kind: 'good', tag: 'Bohatá ruda', title: 'Lamači narazili na bohaté rudné hnízdo', snd: 'coin', on: () => { sim.vein += .35; },
+    text: () => 'Kusy rudy se třpytí stříbrem. Žíla tu bude bohatší ještě několik týdnů.',
+    choices: [
+      { label: 'Ohlásit nález urburéřovi', hint: '+60 gr., z toho osmina králi', go: () => { sim.rep += 4; return [52, 'Urburéř zapsal nález a převzal královskou osminu. Tvoje poctivost se ví.']; } },
+      { label: 'Část rudy zatajit', hint: '+70 gr. hned, ale…', go: () => { sim.hidden = true; return [70, 'Zatajená ruda ušetřila urburu. Kdyby to ale urburéř zjistil, čeká tě tvrdý trest.']; } }
+    ] },
+  theft: { kind: 'bad', tag: 'Krádež', title: 'Někdo krade bohatou rudu', snd: 'bad',
+    text: () => 'V hromadě vytěžené rudy chybějí nejbohatší kusy. Někdo si je odnáší domů a prodává překupníkům.',
+    choices: [
+      { label: 'Najmout šichtmistra na dozor', hint: 'jednorázově −15 gr., pak 8 gr. týdně', go: () => { $('s-guard').checked = true; saveInputs(); sim.morale -= 3; return [-15, 'Šichtmistr bude dohlížet na lamače i na hromady rudy.']; } },
+      { label: 'Prohledávat havíře u šachty', hint: 'ruda se vrátí, ale…', go: () => { sim.morale -= 12; return [20, 'Část rudy se našla. Havíři ale ponižující prohlídky nesou zle.']; } },
+      { label: 'Dělat, že nic nevidíš', hint: '', go: () => [-30, 'Krádeže pokračují a ty přicházíš o peníze.'] }
+    ] },
+  inspection: { kind: '', tag: 'Kontrola', title: 'Do dolu sfáral urburéř s perkmistrem', snd: 'bell',
+    text: () => 'Královští úředníci prohlížejí výdřevu, čerpání vody a počítají vytěženou rudu.',
+    choices: [
+      { label: 'Provést je dolem a vyslechnout výsledek', hint: '', go: () => {
+        if (sim.hidden && Math.random() < .7) { sim.hidden = false; sim.rep -= 20; return [-120, 'Úředníci odhalili zatajenou rudu. Za ošizení krále platíš vysokou pokutu a tvé jméno je v Kutné Hoře zostuzené.']; }
+        if (sim.timber < 40) { sim.rep -= 8; return [-40, 'Perkmistr shledal výdřevu zanedbanou a nebezpečnou. Platíš pokutu a musíš důl opravit.']; }
+        if (sim.water > 70) { sim.rep -= 5; return [-15, 'Úředníci varují, že důl tone ve vodě. Zanedbaný důl ti král může odebrat.']; }
+        sim.rep += 6; return [0, 'Úředníci chválí pořádek v dole. Pověst roste.']; } }
+    ] },
+  neighbor: { kind: '', tag: 'Spor', title: 'Soused se prokopal do tvého pole', snd: 'sword',
+    text: () => 'Havíři sousedního dolu prorazili do tvého dolového pole a odvážejí rudu z tvé žíly.',
+    choices: [
+      { label: 'Žalovat u horního soudu', hint: '−25 gr., výsledek nejistý', go: () => { if (Math.random() < .6) { sim.rep += 3; return [45, 'Horní soud nechal pole přeměřit a dal ti za pravdu. Soused platí náhradu.']; } sim.vein *= .85; return [-25, 'Soud rozhodl, že sporná část žíly patří sousedovi.']; } },
+      { label: 'Dohodnout se a dělit výnos', hint: 'jistota, ale menší žíla', go: () => { sim.vein *= .92; return [20, 'Se sousedem jste se dohodli na dělení rudy ze sporného místa.']; } }
+    ] },
+  dear: { kind: '', tag: 'Drahota', title: 'Zdražilo obilí', snd: 'bad', on: () => { sim.dearFood = 4; },
+    text: () => 'Po neúrodě a válečném plenění stojí chléb a mouka skoro dvojnásob. Drahota potrvá 4 týdny.',
+    choices: [
+      { label: 'Kupovat dál, lidé musí jíst', hint: 'jídlo bude dražší', go: () => [0, 'Výdaje za jídlo porostou, ale havíři nehladovějí.'] },
+      { label: 'Snížit příděly', hint: 'ušetříš, ale nálada klesne', go: () => { $('s-ration').value = 'poor'; saveInputs(); sim.morale -= 6; return [0, 'Havíři dostávají jen chléb a kaši. Reptají.']; } }
+    ] },
+  army: { kind: 'bad', tag: 'Vojsko', title: 'U dolu táhne Zikmundovo vojsko', snd: 'sword',
+    text: () => 'Oddíl Zikmundových žoldnéřů se utábořil u cesty. Hejtman žádá „příspěvek na vojsko“. Jinak prý neručí za to, co si jeho muži vezmou.',
+    choices: [
+      { label: 'Zaplatit', hint: '−50 gr.', go: () => [-50, 'Žoldnéři si vzali peníze a táhli dál.'] },
+      { label: 'Odmítnout', hint: 'riskantní', go: () => { if (Math.random() < .5) { sim.horseDead = true; sim.morale -= 5; return [-30, 'Vojáci odvedli koně od trejvu a vyplenili sklad potravin.']; } sim.rep += 4; return [0, 'Vojsko spěchalo jinam a na důl zapomnělo. Měšťané tvou odvahu chválí.']; } }
+    ] },
+  sick: { kind: 'bad', tag: 'Nemoc', title: 'Horečka v havířských chalupách', snd: 'bad', on: () => { sim.sick = 2; },
+    text: () => 'V chudých a vlhkých chalupách se šíří horečka. Asi třetina lamačů nemůže fárat.',
+    choices: [
+      { label: 'Zaplatit ranhojiče a lepší jídlo', hint: '−25 gr., nemoc rychleji odezní', go: () => { sim.sick = 1; sim.morale += 5; return [-25, 'Ranhojič pomohl a nemocní se brzy vracejí.']; } },
+      { label: 'Nechat to být', hint: 'nemoc potrvá 2 týdny', go: () => { sim.morale -= 5; return [0, 'Nemocní se léčí sami. Těžba bude dva týdny slabší.']; } }
+    ] },
+  horse: { kind: 'bad', tag: 'Trejv', title: 'Kůň u trejvu padl', snd: 'bad', on: () => { sim.horseDead = true; },
+    text: () => 'Jeden z koní, kteří točí trejvem, padl vyčerpáním. Dokud nebude nový, čerpá se jen ručně.',
+    choices: [
+      { label: 'Koupit nového koně', hint: '−45 gr.', go: () => { sim.horseDead = false; return [-45, 'Na trhu se našel silný kůň. Trejv se točí dál.']; } },
+      { label: 'Přejít na ruční čerpání', hint: 'levné, ale voda bude stoupat', go: () => { $('s-drain').value = 'manual'; sim.horseDead = false; saveInputs(); return [0, 'Vodu zase tahají lidé v kožených vacích.']; } }
+    ] },
+  poor: { kind: '', tag: 'Chudá žíla', title: 'Žíla se vyčerpává', snd: 'hammer',
+    text: () => 'Ruda je stále hlušší a výnosy klesají. Je třeba hledat dál.',
+    choices: [
+      { label: 'Razit průzkumnou chodbu', hint: '−40 gr., šance na novou žílu', go: () => { if (Math.random() < .6) { sim.vein = 1.1 + Math.random() * .4; return [-40, 'Průzkumná chodba narazila na novou žílu!']; } sim.vein = Math.max(sim.vein, .8); return [-40, 'Průzkum našel jen chudou rudu.']; } },
+      { label: 'Prohloubit šachtu o 20 m', hint: '−35 gr., víc vody, ale nové patro', go: () => { sim.depth += 20; sim.vein = .8 + Math.random() * .6; return [-35, 'Šachta je hlubší. Na novém patře je ruda jiná.']; } },
+      { label: 'Těžit dál', hint: '', go: () => [0, 'Těží se dál a výnosy zůstávají nízké.'] }
+    ] },
+  barbora: { kind: 'good', tag: 'Svátek', title: 'Blíží se svátek sv. Barbory', snd: 'bell',
+    text: () => 'Začíná prosinec a 4. prosince slaví havíři svátek sv. Barbory, své patronky. Čekají mši a hostinu.',
+    choices: [
+      { label: 'Uspořádat mši a hostinu', hint: '−30 gr.', go: () => { sim.morale += 15; sim.rep += 5; return [-30, 'Havíři slavili v kostele i v krčmě. Na štědrého nákladníka se nezapomíná.']; } },
+      { label: 'Pracovat jako obvykle', hint: '', go: () => { sim.morale -= 8; return [0, 'Havíři museli fárat i o svátku. Reptají.']; } }
+    ] }
+};
+function pickEvent(i, m) {
+  const r = p => Math.random() * 100 < p;
+  if ((sim.morale < 25 && r(70)) || (sim.strikeThreat && r(45))) return 'strike';
+  if (r(m.risk.fire)) return 'fire';
+  if (r(m.risk.collapse)) return 'collapse';
+  if (r(m.risk.flood)) return 'flood';
+  if (r(m.risk.air)) return 'air';
+  if (sim.week === 13) return 'barbora';
+  if (r(m.risk.unrest)) return 'wage';
+  if (!r(40)) return null;
+  const pool = [['vein', 3], ['inspection', sim.hidden ? 5 : 2], ['neighbor', 1.5]];
+  if (!i.guard) pool.push(['theft', 3]);
+  if (!sim.dearFood) pool.push(['dear', 1.5]);
+  if (sim.year === 1403 && sim.week <= 8) pool.push(['army', 2.5]);
+  if (seasonIdx() >= 2 && !sim.sick) pool.push(['sick', 2]);
+  if (i.drain === 'horse' && !sim.horseDead) pool.push(['horse', 1.5]);
+  if (sim.vein < .65) pool.push(['poor', 5]);
+  let t = Math.random() * pool.reduce((a, [, w]) => a + w, 0);
+  for (const [id, w] of pool) if ((t -= w) < 0) return id;
+  return null;
+}
+
+/* --- průběh týdne --- */
+function clampSim() {
+  for (const k of ['timber', 'water', 'morale', 'rep']) sim[k] = Math.round(clamp(sim[k], 0, 100));
+  sim.vein = clamp(sim.vein, .3, 2); sim.depth = clamp(sim.depth, 40, 320); sim.kasa = Math.round(sim.kasa);
+}
+function pushLog(s) { sim.log.unshift(s); sim.log = sim.log.slice(0, 16); }
+function runWeek() {
+  if (sim.pending || sim.over) return;
+  const i = readInputs(), m = model(i), label = weekLabel();
+  const id = pickEvent(i, m), ev = id && EV[id];
+  let gross = m.gross, urbura = m.urbura, cost = m.cost;
+  if (ev && ev.blocks) { gross = 0; urbura = 0; cost -= m.c.wages; }
+  const net = gross - urbura - cost;
+  sim.kasa += net;
+  sim.timber += m.dTimber; sim.water += m.dWater;
+  sim.morale += Math.round((m.mt - sim.morale) * .4);
+  sim.depth += { none: 0, slow: 5, fast: 10 }[i.deepen];
+  sim.vein = sim.vein * (.95 + Math.random() * .08) + (i.deepen !== 'none' ? .03 : 0);
+  if (!ev && sim.morale >= 60) sim.rep += 1;
+  for (const k of ['sealed', 'sick', 'dearFood']) if (sim[k] > 0) sim[k]--;
+  const weekText = ev && ev.blocks ? `Netěžilo se, výdaje bez mezd ${cost} gr.` : `Výtěžek ${gross} gr., urbura ${urbura} gr., výdaje ${cost} gr.`;
+  if (ev) {
+    if (ev.on) ev.on();
+    clampSim();
+    sim.pending = { id, label, net, gross, weekText, desc: ev.text(i, m) };
+    play(ev.snd);
+  } else {
+    clampSim();
+    sim.last = { kind: net >= 0 ? '' : 'bad', tag: `Řádný chod · ${label}`, title: 'Klidný týden',
+      desc: net >= 0 ? 'Těžba proběhla bez nehod. Urburéř převzal královskou osminu a zbytek jde do pokladny dolu.' : 'Bez nehod, ale výdaje převýšily výtěžek. Zkus upravit provoz.',
+      money: `${weekText} Týden celkem ${fmt(net)}.`, net };
+    pushLog(`${label}: klidný týden, ${fmt(net)}`);
+    play(net >= 0 ? 'coin' : 'bad');
+    endWeek();
+  }
+  save.set('sim2', sim); renderSim(); focusEntry();
+}
+function resolve(k) {
+  const p = sim.pending; if (!p) return;
+  const ev = EV[p.id], ch = ev.choices[k]; if (!ch) return;
+  const [delta, text] = ch.go(readInputs(), { gross: p.gross });
+  sim.kasa += delta; clampSim();
+  const total = p.net + delta;
+  sim.last = { kind: ev.kind, tag: `${ev.tag} · ${p.label}`, title: ev.title, desc: `Rozhodnutí: ${ch.label}. ${text}`,
+    money: `${p.weekText} Rozhodnutí ${fmt(delta)}. Týden celkem ${fmt(total)}.`, net: total };
+  pushLog(`${p.label}: ${ev.tag.toLowerCase()} (${ch.label.toLowerCase()}), ${fmt(total)}`);
+  sim.pending = null; play(delta > 0 ? 'coin' : 'hammer');
+  endWeek(); save.set('sim2', sim); renderSim();
+}
+function endWeek() {
+  if (sim.kasa < -100 || sim.rep <= 0) { sim.over = { type: 'lost', why: sim.kasa < -100 ? 'debt' : 'rep' }; play('bad'); return; }
+  sim.week++;
+  if (sim.week > YEAR_WEEKS) {
+    const profit = sim.kasa - sim.yearStart, bonus = clamp(Math.round(profit / 4), 0, 150);
+    sim.over = { type: 'year', profit, bonus }; addGroschen(bonus); play('fanfare');
+  }
+}
+function newMine() { const inp = sim.inp; sim = simDefault(); sim.inp = inp; save.set('sim2', sim); renderSim(); play('hammer'); }
+function nextYear() { sim.year++; sim.week = 1; sim.yearStart = sim.kasa; sim.over = null; sim.last = null; save.set('sim2', sim); renderSim(); play('hammer'); }
+function focusEntry() { if (matchMedia('(max-width:980px)').matches) $('s-entry').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+
+/* --- vykreslení --- */
+function setMeter(id, v, good) {
+  $('m-' + id).textContent = v + ' %';
+  const b = $('b-' + id); b.style.width = v + '%';
+  if (good) b.style.background = v >= 60 ? 'var(--good)' : v >= 35 ? 'var(--gold)' : 'var(--bad)';
+}
+const RISK_LABELS = { fire: 'Požár výdřevy', collapse: 'Zával', flood: 'Průval vody', air: 'Zlé větry', unrest: 'Nepokoje havířů' };
+function renderSim() {
+  const i = readInputs(), m = model(i);
+  $('s-wage-v').textContent = i.wage.toLocaleString('cs') + ' gr.';
+  $('s-floor').textContent = sim.wageFloor.toLocaleString('cs');
+  $('s-wage-warn').hidden = i.wage >= sim.wageFloor;
+  $('s-cal').textContent = sim.week > YEAR_WEEKS ? `Konec roku ${sim.year}` : `${seasonName()} ${sim.year}`;
+  $('s-week').textContent = `${Math.min(sim.week, YEAR_WEEKS)} / ${YEAR_WEEKS}`;
+  $('s-kasa').textContent = sim.kasa + ' gr.'; $('s-kasa').style.color = sim.kasa < 0 ? '#ff9b8a' : '';
+  $('st-depth').textContent = sim.depth + ' m';
+  $('st-vein').textContent = sim.vein < .7 ? 'chudá' : sim.vein < 1.25 ? 'průměrná' : 'bohatá';
+  $('st-rep').textContent = sim.rep + ' / 100';
+  setMeter('timber', sim.timber, true); setMeter('water', sim.water); setMeter('air', m.air, true); setMeter('morale', sim.morale, true);
+  $('m-trend').textContent = m.mt > sim.morale + 2 ? '(stoupá)' : m.mt < sim.morale - 2 ? '(klesá)' : '';
+  const flags = [];
+  if (sim.sealed) flags.push(`Zazděná chodba: ${sim.sealed} týd.`);
+  if (sim.sick) flags.push(`Nemoc: ${sim.sick} týd.`);
+  if (sim.dearFood) flags.push(`Drahota: ${sim.dearFood} týd.`);
+  if (sim.horseDead) flags.push('Chybí kůň u trejvu');
+  if (sim.strikeThreat) flags.push('Hrozí stávka');
+  if (sim.hidden) flags.push('Zatajená ruda');
+  $('s-flags').innerHTML = flags.map(f => `<span class="tag">${esc(f)}</span>`).join('');
+  $('s-risks').innerHTML = Object.entries(RISK_LABELS).map(([k, l]) =>
+    `<div class="meter"><div class="row"><span>${l}</span><b>${m.risk[k]} %</b></div><div class="bar"><i style="width:${m.risk[k]}%;background:${m.risk[k] >= 25 ? 'var(--bad)' : m.risk[k] >= 10 ? 'var(--gold)' : 'var(--good)'}"></i></div></div>`).join('');
+  const minus = v => (v ? '−' : '') + v + ' gr.';
+  for (const k of ['wages', 'food', 'water', 'material', 'deepen', 'care']) $('l-' + k).textContent = minus(m.c[k]);
+  $('l-yield').textContent = m.gross + ' gr.'; $('l-urbura').textContent = minus(m.urbura);
+  const p = $('l-profit'); p.textContent = fmt(m.net); p.className = m.net >= 0 ? 'pos' : 'neg';
+
+  let e, choices = '';
+  if (sim.over && sim.over.type === 'year') {
+    e = { kind: 'good', tag: 'Konec roku', title: `Rok ${sim.year} skončil`,
+      desc: `V pokladně dolu je ${sim.kasa} gr. (na začátku roku ${sim.yearStart} gr.). Zisk za rok: ${fmt(sim.over.profit)}.`,
+      money: sim.over.bonus ? `Tvůj podíl do měšce: +${sim.over.bonus} gr.` : 'Rok skončil bez zisku, do měšce nic nepřibylo.' };
+    choices = `<button class="choice" type="button" data-act="year">Pokračovat rokem ${sim.year + 1}<small>důl i pokladna zůstávají</small></button>
+      <button class="choice" type="button" data-act="new">Založit nový důl<small>začneš znovu s 300 groši</small></button>`;
+  } else if (sim.over) {
+    e = { kind: 'bad', tag: 'Konec', title: 'Horní úřad ti důl odebral',
+      desc: (sim.over.why === 'debt' ? 'Pokladna dolu je hluboko v dluzích a nemáš z čeho platit havíře.' : 'Tvá pověst klesla na nulu a nikdo s tebou nechce mít nic společného.')
+        + ' Podle horního práva mohl král zanedbaný důl propůjčit někomu jinému.', money: '' };
+    choices = '<button class="choice" type="button" data-act="new">Založit nový důl<small>začneš znovu s 300 groši</small></button>';
+  } else if (sim.pending) {
+    const ev = EV[sim.pending.id];
+    e = { kind: ev.kind, tag: `${ev.tag} · ${sim.pending.label}`, title: ev.title, desc: sim.pending.desc, money: `${sim.pending.weekText} Jak rozhodneš?` };
+    choices = ev.choices.map((c, k) => `<button class="choice" type="button" data-k="${k}">${esc(c.label)}${c.hint ? `<small>${esc(c.hint)}</small>` : ''}</button>`).join('');
+  } else if (sim.last) e = sim.last;
+  else e = { kind: '', tag: 'Začátek', title: 'Jaro 1403: přebíráš důl',
+    desc: 'V pokladně je 300 grošů. Nastav provoz a odpracuj první týden. Sleduj výdřevu, vodu a náladu havířů a podívej se, jaká rizika hrozí příští týden.', money: '' };
+  $('s-entry').className = 'entry ' + (e.kind || '');
+  $('s-tag').textContent = e.tag; $('s-title').textContent = e.title; $('s-desc').textContent = e.desc;
+  $('s-money').textContent = e.money || ''; $('s-money').className = e.net === undefined ? '' : e.net >= 0 ? 'pos' : 'neg';
+  $('s-choices').innerHTML = choices;
+  const run = $('s-run');
+  run.disabled = !!(sim.pending || sim.over);
+  run.textContent = sim.pending ? 'Nejdřív rozhodni v důlní knize' : sim.over ? 'Rok skončil' : '⚒ Odpracovat týden';
+  $('s-history').innerHTML = sim.log.map(x => `<li>${esc(x)}</li>`).join('');
 }
 function buildSim() {
-  ['s-depth', 's-miners', 's-haulers', 's-drain', 's-vent', 's-ration', 's-method'].forEach(id => $(id).addEventListener('input', renderSim));
-  ['s-miners', 's-haulers'].forEach(id => $(id).addEventListener('change', () => { const i = readInputs(); $('s-miners').value = i.miners; $('s-haulers').value = i.haulers; renderSim(); }));
+  loadInputs();
+  for (const id of Object.values(INP)) {
+    $(id).addEventListener('input', () => { saveInputs(); renderSim(); });
+    $(id).addEventListener('change', () => {
+      if (id in { 's-miners': 1, 's-haulers': 1, 's-carp': 1 }) { const i = readInputs(); $('s-miners').value = i.miners; $('s-haulers').value = i.haulers; $('s-carp').value = i.carp; }
+      saveInputs(); renderSim();
+    });
+  }
   $('s-run').addEventListener('click', runWeek);
-  $('s-reset').addEventListener('click', () => {
-    sim = simDefault(); save.set('sim', sim); play('hammer');
-    $('s-entry').className = 'entry'; $('s-tag').textContent = 'Připraveno'; $('s-title').textContent = 'Nový důl'; $('s-desc').textContent = 'Kalendář a pověst dolu jsou na začátku. Groše v měšci ti zůstávají.'; $('s-money').textContent = '';
-    renderSim();
+  $('s-reset').addEventListener('click', () => { if (sim.week === 1 && !sim.log.length || confirm('Opustit tento důl a začít znovu?')) newMine(); });
+  $('s-choices').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.act === 'year') nextYear(); else if (b.dataset.act === 'new') newMine(); else resolve(+b.dataset.k);
   });
 }
 
