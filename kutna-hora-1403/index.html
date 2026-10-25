@@ -126,6 +126,7 @@ main{padding-bottom:40px}
 .c-hist{border-top:3px solid #5a381b}
 .c-1403{border-top:3px solid var(--red)}
 .c-zaj{border-top:3px solid var(--gold)}
+.c-dnes{border-top:3px solid #4f6b2f}
 .hint{margin-top:14px}
 
 /* mapa: záhlaví s filtry a mapa tvoří jeden pergamen */
@@ -491,6 +492,7 @@ footer a{color:#e8d6ad}
       <div class="card c-hist"><h3>Historie</h3><p id="d-hist"></p></div>
       <div class="card c-1403"><h3>V roce 1403</h3><p id="d-1403"></p></div>
       <div class="card c-zaj"><h3>Zajímavost</h3><p id="d-zaj"></p></div>
+      <div class="card c-dnes" id="d-dnes-card"><h3>Dnes</h3><p id="d-dnes"></p></div>
     </div>
     <p class="note hint"><b>Při hraní KCD II:</b> <span id="d-hra"></span></p>
   </div>
@@ -591,7 +593,7 @@ footer a{color:#e8d6ad}
         <li><b>Vzduch</b> zhoršuje hloubka, počet lidí, louče a oheň. Pomáhá větrání.</li>
         <li><b>Nálada havířů</b> se odvíjí od mzdy, jídla, délky šichty a péče o zraněné. Nespokojení havíři chtějí vyšší mzdu a mohou vstoupit do stávky.</li>
         <li><b>Pověst</b> stoupá s poctivým a bezpečným provozem. Když klesne na nulu, nebo když dluh přesáhne 150 grošů, horní úřad ti důl odebere.</li>
-        <li><b>Žíla</b> se těžbou postupně ztenčuje. Když slábne dlouho, může úplně zmizet. Pak je třeba razit novou chodbu nebo prohloubit šachtu, což trvá dva týdny a může skončit bohatou žílou i hlušinou. Každá ztracená žíla znamená, že okolí je vyrubanější. Po opakovaných nezdarech jsou žíly vyrubány a důl se musí zavřít.</li>
+        <li><b>Žíla</b> není rovnoměrná. Jak po ní lamači postupují, je místy širší a bohatší, jinde užší. Občas se začne zužovat a pak se buď zase rozšíří, nebo úplně vyzní. To je dáno přírodou, ne těžbou. Když žíla zmizí, je třeba razit novou chodbu nebo prohloubit šachtu. Trvá to dva týdny a může to skončit bohatou žílou i hlušinou. Čím víc žil v okolí šachty už bylo vytěženo, tím těžší je najít další. Po opakovaných nezdarech jsou žíly vyrubány a důl se musí zavřít.</li>
         <li>Na konci roku dostaneš čtvrtinu zisku do svého měšce.</li>
       </ul>
     </details>
@@ -917,95 +919,109 @@ const ICONS = {
   abbey: '<path d="M10 2v4M8 4h4M3 18V11l7-4 7 4v7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>'
 };
 const LOCS = [
-  { id: 'vlassky-dvur', name: 'Vlašský dvůr', cat: 'moc', icon: 'crown', snd: 'coin', x: 590, y: 418,
-    hist: 'Sídlo královské mincovny. Po mincovní reformě Václava II. roku 1300 se tu razil pražský groš. Název připomíná italské (vlašské) odborníky, kteří reformu pomáhali připravit.',
-    y1403: 'Mincovna je v plném provozu. Václav IV. dal dvůr kolem roku 1400 přestavět na královský palác s kaplí, takže je čerstvě opravený.',
-    zaj: 'Roku 1409 tu Václav IV. vydal Dekret kutnohorský, který na pražské univerzitě změnil poměr hlasů ve prospěch českého „národa“.',
-    hra: 'Kutná Hora se ve hře jmenuje německy Kuttenberg. Najdi mincovnu a všimni si, jak hra zobrazuje ražbu a stráže.' },
-  { id: 'sv-jakub', name: 'Kostel sv. Jakuba', cat: 'chram', icon: 'church', snd: 'bell', x: 512, y: 410,
-    hist: 'Nejstarší velký farní kostel ve městě. Stavěl se od 30. let 14. století. Hlavní věž je vysoká přes 80 metrů, druhá věž zůstala nedostavěná.',
-    y1403: 'Hlavní farní kostel bohatého města. Spolu s Vlašským dvorem tvoří panorama nad údolím Vrchlice.',
-    zaj: 'Stojí hned vedle Vlašského dvora. Moc světská (mincovna) a církevní (farní kostel) tu sousedily zeď na zeď.',
-    hra: 'Porovnej, jestli věž kostela ve hře odpovídá dnešní podobě, nebo jestli ji hra ukazuje jinak.' },
-  { id: 'hradek', name: 'Hrádek', cat: 'moc', icon: 'tower', snd: 'hammer', x: 396, y: 416,
-    hist: 'První zmínka pochází z roku 1312. Opevněné sídlo, které později sloužilo i jako mincovna. Koncem 15. století ho Jan Smíšek z Vrchovišť přestavěl do dnešní pozdně gotické podoby.',
-    y1403: 'Hrádek ještě nevypadá jako dnes. Velká přestavba proběhla až o necelých sto let později.',
-    zaj: 'Podle tradice Smíšek pod domem tajně těžil a tavil stříbro. Dnes je tu České muzeum stříbra s prohlídkou středověké štoly.',
-    hra: 'Všímej si, které budovy ve hře vypadají jako dnes. Některé získaly dnešní podobu až po roce 1403.' },
-  { id: 'ruthardka', name: 'Ruthardská ulice', cat: 'mesto', icon: 'lane', snd: 'sword', x: 452, y: 372,
-    hist: 'Pojmenovaná po rodu Ruthardů, jednom z nejbohatších a nejvlivnějších patricijských rodů Kutné Hory 14. století.',
-    y1403: 'Městu vládla rada bohatých měšťanů a těžařů, z velké části německého původu. Ruthardové k nim patřili.',
-    zaj: 'K ulici se váže pověst o Rozině Ruthardové, kterou prý otec za neposlušnost nechal zazdít. Jde o pověst, ne doložený příběh.',
-    hra: 'Všimni si jazyka měšťanů a nápisů. Hra pracuje s tím, že v Kutné Hoře žilo hodně německy mluvících obyvatel.' },
-  { id: 'rynk', name: 'Hlavní náměstí (rynk)', cat: 'mesto', icon: 'square', snd: 'sword', x: 500, y: 314,
-    hist: 'Hlavní tržiště a srdce města, dnes Palackého náměstí. Obchodovalo se tu, vyhlašovaly se tu vyhlášky a u pranýře se trestali provinilci.',
-    y1403: 'Kutná Hora patřila po Praze k největším městům Čech. Na trh se sjížděli kupci s obilím, masem i nástroji pro havíře.',
-    zaj: 'Město s desítkami tisíc lidí a tisíci havířů potřebovalo obrovské zásoby jídla a dřeva. Okolní krajina pro něj pracovala.',
-    hra: 'Projdi trh ve hře a zkus odhadnout, kolik obchodníků prodává zboží potřebné pro doly.' },
-  { id: 'kasna', name: 'Kašna a vodovod', cat: 'mesto', icon: 'water', snd: 'water', x: 582, y: 297,
-    hist: 'Kutná Hora měla trvalé potíže s pitnou vodou, protože těžba narušila prameny pod městem. Voda se přiváděla dřevěným potrubím z okolí.',
-    y1403: 'Dnešní kamenná dvanáctiboká kašna ještě nestojí. Vznikla až kolem roku 1495 a připisuje se Matěji Rejskovi.',
-    zaj: 'Kašna nesloužila k ozdobě, ale jako veřejná nádrž, ze které si lidé nabírali vodu.',
+  { id: 'vlassky-dvur', name: 'Vlašský dvůr', cat: 'moc', icon: 'crown', x: 590, y: 418,
+    hist: 'Královský dvůr vznikl na konci 13. století jako opevněné sídlo královských úředníků. Po mincovní reformě Václava II. roku 1300 se sem soustředila ražba mincí pro celé království a menší mincovny v zemi zanikly. Název připomíná italské (vlašské) odborníky z Florencie, kteří reformu pomáhali připravit.',
+    y1403: 'V dílnách mincovny ručně razí groše desítky pregéřů. Václav IV. dal dvůr kolem roku 1400 přestavět na královský palác s kaplí. Na přelomu let 1402 a 1403 však město ovládl Zikmund: zabavil královské poklady a nejvyššího mincmistra Konráda z Vechty nahradil svým člověkem.',
+    zaj: 'Roku 1409 tu Václav IV. vydal Dekret kutnohorský. Ten změnil poměr hlasů na pražské univerzitě ve prospěch českého „národa“ a většina německých mistrů a studentů pak z Prahy odešla.',
+    dnes: 'Ve Vlašském dvoře je expozice o ražbě mincí. Zachovala se gotická kaple i část královského paláce.',
+    hra: 'Kutná Hora se ve hře jmenuje Kuttenberg. Herní Vlašský dvůr je skutečné stavbě velmi věrný, jen některé detaily autoři upravili kvůli hratelnosti. Najdi mincovnu a sleduj, jak hra zobrazuje ražbu a stráže.' },
+  { id: 'sv-jakub', name: 'Kostel sv. Jakuba', cat: 'chram', icon: 'church', x: 512, y: 410,
+    hist: 'Farní kostel sv. Jakuba se začal stavět ve 30. letech 14. století a patří k nejstarším dochovaným stavbám města. Měl mít dvě věže, dokončena byla jen jedna. Je vysoká přes 80 metrů.',
+    y1403: 'Je hlavním farním kostelem rychle rostoucího města. Tady se křtilo, oddávalo a kázalo měšťanům i havířům. Spolu s Vlašským dvorem tvoří panorama nad údolím Vrchlice.',
+    zaj: 'Kostel stojí hned vedle Vlašského dvora, takže moc královská a moc církevní tu sousedily zeď na zeď. Bohaté město si mohlo dovolit stavět najednou několik velkých kostelů.',
+    dnes: 'Kostel slouží bohoslužbám a jeho věž je dodnes nejvýraznější dominantou historického centra.',
+    hra: 'Ve hře je kostel jednou z dominant Kuttenbergu. Porovnej jeho věž s dnešní fotografií.' },
+  { id: 'hradek', name: 'Hrádek', cat: 'moc', icon: 'tower', x: 396, y: 416,
+    hist: 'Hrádek se poprvé připomíná roku 1312. Šlo o opevněné sídlo, které v různých dobách sloužilo šlechticům a královským úředníkům a nějakou dobu i jako mincovna. Do dnešní pozdně gotické podoby ho koncem 15. století přestavěl královský úředník Jan Smíšek z Vrchovišť.',
+    y1403: 'Hrádek ještě nevypadá jako dnes. Velká přestavba, která mu dala reprezentativní vzhled, přišla až o necelých sto let později.',
+    zaj: 'Podle tradice Smíšek pod domem tajně těžil a tavil stříbro, a tak zbohatl. Ať je to pravda, nebo ne, příběh ukazuje, jak blízko pod městem se stříbro nacházelo.',
+    dnes: 'Sídlí tu České muzeum stříbra s expozicí o těžbě a zpracování stříbra. Součástí prohlídky je sestup do středověké štoly.',
+    hra: 'Všímej si, které budovy ve hře vypadají jako dnes. Některé získaly dnešní podobu až dlouho po roce 1403.' },
+  { id: 'ruthardka', name: 'Ruthardská ulice', cat: 'mesto', icon: 'lane', x: 452, y: 372,
+    hist: 'Ulice je pojmenovaná po Ruthardech, jednom z nejbohatších patricijských rodů Kutné Hory ve 14. století. Patricijové byli bohatí měšťané, kteří podnikali v dolech, obchodovali a obsazovali místa v městské radě.',
+    y1403: 'Městu vládla rada bohatých měšťanů a těžařů, z velké části německého původu. Ruthardové k nim patřili a vlastnili i statky v okolí, například tvrz Malešov.',
+    zaj: 'K ulici se váže pověst o Rozině Ruthardové, kterou prý otec za neposlušnost nechal zazdít. Je to pověst, ne doložený příběh.',
+    dnes: 'Úzká strmá ulička vede kolem Hrádku a patří k nejmalebnějším místům Kutné Hory.',
+    hra: 'Ve hře jsou Ruthardové mocným rodem se sídlem v Malešově (Maleschau). Všimni si také jazyka měšťanů: v Kutné Hoře žilo hodně německy mluvících obyvatel.' },
+  { id: 'rynk', name: 'Hlavní náměstí (rynk)', cat: 'mesto', icon: 'square', x: 500, y: 314,
+    hist: 'Hlavní tržiště a srdce města, dnes Palackého náměstí. Prodávalo se tu obilí, maso, sůl, plátno i nářadí pro havíře. Vyhlašovaly se tu vyhlášky a u pranýře se veřejně trestali provinilci.',
+    y1403: 'Kutná Hora patřila po Praze k největším městům Čech. Mnoho tisíc obyvatel včetně havířů potřebovalo každý den obrovské množství potravin, které se sem svážely z okolí.',
+    zaj: 'Město nebylo soběstačné. Na jeho zásobování pracovala celá okolní krajina: vesnice dodávaly obilí a dobytek, lesy dřevo a dřevěné uhlí pro doly a hutě.',
+    dnes: 'Palackého náměstí je dodnes centrem města, i když většina domů kolem něj dostala později novou podobu.',
+    hra: 'Ve hře jsou ulice pojmenované podle trhů a řemesel, například uhelný, masný a ovocný trh nebo ulice řezníků, ševců a krejčích. Autoři se inspirovali skutečným uspořádáním středověkých měst. Projdi trh a zkus odhadnout, kolik obchodníků prodává zboží potřebné pro doly.' },
+  { id: 'kasna', name: 'Kašna a vodovod', cat: 'mesto', icon: 'water', x: 582, y: 297,
+    hist: 'Kutná Hora měla trvalé potíže s pitnou vodou, protože doly narušily prameny pod městem a voda v šachtách nebyla k pití. Pitná voda se proto přiváděla dřevěným potrubím z pramenů v okolí.',
+    y1403: 'Dnešní kamenná kašna ještě nestojí. Lidé nabírají vodu ze studní a dřevěných nádrží.',
+    zaj: 'Kamenná dvanáctiboká kašna vznikla až kolem roku 1495 a připisuje se staviteli Matěji Rejskovi. Nesloužila k ozdobě, ale jako veřejná nádrž, ze které si lidé nabírali vodu.',
+    dnes: 'Kašna stojí na Rejskově náměstí a je jednou z nejcennějších gotických kašen v Česku.',
     hra: 'Najdi ve hře studny a nádrže. Jak se ve městě řeší voda?' },
-  { id: 'sv-barbora', name: 'Chrám sv. Barbory', cat: 'chram', icon: 'church', snd: 'bell', x: 270, y: 470,
-    hist: 'Stavba začala roku 1388 a vedla ji Parléřova huť. Chrám stál mimo městské hradby. Svatá Barbora je patronkou horníků.',
-    y1403: 'Chrám je rozestavěný: stojí jen část chóru, všude je lešení a jeřáby. Husitské války stavbu na dlouho přerušily a dokončena byla až roku 1905.',
-    zaj: 'Spolu s historickým centrem a sedleckou katedrálou je od roku 1995 zapsán na Seznam světového dědictví UNESCO.',
-    hra: 'Hra ukazuje chrám jako staveniště. Porovnej ho s dnešní fotografií.' },
-  { id: 'kaple', name: 'Kaple Božího těla', cat: 'chram', icon: 'church', snd: 'bell', x: 330, y: 500,
-    hist: 'Gotická kaple z konce 14. století v sousedství chrámu sv. Barbory, na hraně svahu nad údolím Vrchlice.',
-    y1403: 'Kaple je jednou z nejnovějších staveb ve městě. Barbora vedle ní se teprve začíná zvedat ze základů.',
-    zaj: 'Z vyhlídky u kaple je vidět hluboké údolí Vrchlice, kde stály hutě a stoupy.',
+  { id: 'sv-barbora', name: 'Chrám sv. Barbory', cat: 'chram', icon: 'church', x: 270, y: 470,
+    hist: 'Stavba začala roku 1388 z iniciativy kutnohorských měšťanů, kteří chtěli chrám srovnatelný s pražskou katedrálou. První fázi vedla Parléřova huť. Chrám stál mimo městské hradby. Svatá Barbora je patronkou horníků.',
+    y1403: 'Chrám je staveniště: stojí jen část chóru, všude je lešení a dřevěné jeřáby. Husitské války stavbu přerušily na desítky let a dokončen byl až roku 1905.',
+    zaj: 'Výzdoba chrámu připomíná, kdo stavbu platil: najdeme tu výjevy z práce horníků a mincířů. Spolu s historickým centrem a sedleckou katedrálou je od roku 1995 na Seznamu světového dědictví UNESCO.',
+    dnes: 'Chrám se stanovou střechou se třemi vrcholy je symbolem města a patří k nejznámějším gotickým stavbám střední Evropy.',
+    hra: 'Hra ukazuje chrám jako staveniště. Porovnej ho s dnešní fotografií: co z dnešní podoby v roce 1403 ještě chybí?' },
+  { id: 'kaple', name: 'Kaple Božího těla', cat: 'chram', icon: 'church', x: 330, y: 500,
+    hist: 'Gotická kaple Božího těla vznikla na konci 14. století v sousedství chrámu sv. Barbory, na hraně svahu nad údolím Vrchlice.',
+    y1403: 'Kaple je jednou z nejnovějších staveb ve městě, zatímco Barbora vedle ní se teprve zvedá ze základů.',
+    zaj: 'Od kaple je vidět hluboké údolí Vrchlice, kde stály hutě a stoupy. Dobře tu pochopíš, proč město stojí na vysokém svahu.',
     hra: 'Všimni si, jak hra zachycuje terén: město stojí na svahu nad údolím.' },
-  { id: 'kourimska', name: 'Kouřimská brána', cat: 'hradby', icon: 'tower', snd: 'sword', x: 332, y: 318,
-    hist: 'Západní brána městského opevnění. Vedla odtud cesta na Kouřim a dál k Praze.',
-    y1403: 'Na přelomu let 1402 a 1403 se město bránilo Zikmundovým vojskům a Pražanům, kteří přicházeli právě od západu.',
-    zaj: 'Brány se nedochovaly. Připomínají je hlavně názvy ulic a zbytky hradeb.',
+  { id: 'kourimska', name: 'Kouřimská brána', cat: 'hradby', icon: 'tower', x: 332, y: 318,
+    hist: 'Západní brána městského opevnění. Vycházela z ní cesta na Kouřim a dál k Praze, tedy nejdůležitější spojení Kutné Hory se sídlem krále.',
+    y1403: 'Od 3. prosince 1402 město obléhalo asi dvacetitisícové vojsko krále Zikmunda s kumánskými žoldnéři a s posilami z Prahy. Obránci svedli před hradbami několik tvrdých bojů, ale v lednu 1403 se město vzdalo.',
+    zaj: 'Po kapitulaci musela Kutná Hora zaplatit vysokou pokutu a Zikmundova vojska plenila okolí až do února.',
+    dnes: 'Brány se nedochovaly. Připomínají je hlavně názvy ulic a zbytky hradeb.',
     hra: 'U bran ve hře stojí stráže. Sleduj, kdo smí do města a za jakých podmínek.' },
-  { id: 'kolinska', name: 'Kolínská brána', cat: 'hradby', icon: 'tower', snd: 'sword', x: 500, y: 197,
+  { id: 'kolinska', name: 'Kolínská brána', cat: 'hradby', icon: 'tower', x: 500, y: 197,
     hist: 'Severní brána. Cesta odtud vedla k Sedlci, Kolínu a obchodním stezkám podél Labe.',
-    y1403: 'Tudy přijížděly vozy s obilím z úrodného Polabí, bez kterého by velké hornické město nepřežilo.',
-    zaj: 'Kutná Hora nebyla soběstačná: jídlo, dřevo i dobytek se do ní musely dovážet.',
+    y1403: 'Tudy přijíždějí vozy s obilím z úrodného Polabí. Do Kolína putovali i zástupci města prosit Zikmunda o milost, když se Kutná Hora v lednu 1403 vzdávala.',
+    zaj: 'Kutná Hora nebyla soběstačná: jídlo, dřevo i dobytek se do ní musely dovážet. Kolín, který Zikmund nedokázal dobýt, ležel jen asi 15 km severně.',
+    dnes: 'Brána se nedochovala, směr cesty připomíná dnešní silnice ke Kolínu.',
     hra: 'Sleduj na cestách ve hře povozy a obchodníky. Co vezou?' },
-  { id: 'caslavska', name: 'Čáslavská brána', cat: 'hradby', icon: 'tower', snd: 'sword', x: 648, y: 361,
+  { id: 'caslavska', name: 'Čáslavská brána', cat: 'hradby', icon: 'tower', x: 648, y: 361,
     hist: 'Východní brána. Cesta odtud vedla na Čáslav a dál na Moravu.',
-    y1403: 'Na Moravě vládl markrabě Jošt, který se později připojil k odpůrcům Zikmunda.',
-    zaj: 'Hradby chránily nejen lidi, ale hlavně královské stříbro a mincovnu.',
-    hra: 'Všimni si, jak hra zobrazuje opevnění a jestli odpovídá skutečné velikosti města.' },
-  { id: 'osel', name: 'Důl Osel', cat: 'tezba', icon: 'pick', snd: 'hammer', x: 232, y: 388,
-    hist: 'Nejbohatší a nejhlubší kutnohorský důl v Oselském rudním pásmu. Opuštěn byl v 16. století, kdy těžbu zdražovala voda a stříbro z Ameriky zlevnilo.',
+    y1403: 'Na Moravě vládl markrabě Jošt, Zikmundův bratranec a soupeř uvnitř lucemburského rodu. Po Zikmundově odchodu z Čech se v zemi znovu prosadili Václavovi stoupenci.',
+    zaj: 'Hradby chránily nejen obyvatele, ale hlavně královské stříbro, mincovnu a zásoby.',
+    hra: 'Všimni si, jak hra zobrazuje opevnění a zda odpovídá skutečné velikosti města.' },
+  { id: 'osel', name: 'Důl Osel', cat: 'tezba', icon: 'pick', x: 232, y: 388,
+    hist: 'Nejbohatší a nejhlubší kutnohorský důl v Oselském rudním pásmu západně od města. Opuštěn byl v 16. století, kdy těžbu zdražovala voda v hlubokých patrech a do Evropy proudilo levnější stříbro z Ameriky.',
     y1403: 'Doly Oselského pásma ještě nebyly příliš hluboké. Největší hloubky (uvádí se kolem půl kilometru) dosáhly až později.',
-    zaj: 'Pod Hrádkem se dá projít středověkou štolou, která odváděla vodu z dolů. Ukazuje, jak úzké byly chodby.',
-    hra: 'V podzemí ve hře si všimni výšky chodeb a osvětlení. Jak by se tu pracovalo celý den?' },
-  { id: 'kank', name: 'Vrch Kaňk', cat: 'tezba', icon: 'hill', snd: 'hammer', x: 440, y: 122,
-    hist: 'Vrch severně od města s jedním z nejstarších těžebních území. Haldy hlušiny jsou v krajině patrné dodnes.',
-    y1403: 'Na Kaňku stojí šachty, haldy a obydlí havířů. Je to pracovní krajina, ne příroda.',
-    zaj: 'Během husitských bouří v letech 1419–1420 vhazovali kutnohorští odpůrci kalicha zajaté husity do opuštěných šachet. Počty obětí uváděné v kronikách jsou nejisté.',
+    zaj: 'Žíly nejsou rovnoměrné: místy jsou široké a bohaté, jinde se zúží nebo úplně vyzní. Havíři proto museli žílu sledovat a někdy hledat její pokračování za poruchou v hornině.',
+    dnes: 'Pod Hrádkem se dá projít středověkou štolou, která odváděla vodu z dolů. Ukazuje, jak úzké a nízké byly chodby.',
+    hra: 'V podzemí ve hře si všimni výšky chodeb a osvětlení. Jak by se tu pracovalo celou šichtu?' },
+  { id: 'kank', name: 'Vrch Kaňk', cat: 'tezba', icon: 'hill', x: 440, y: 122,
+    hist: 'Vrch severně od města patří k nejstarším těžebním územím Kutné Hory. Haldy hlušiny jsou v krajině patrné dodnes.',
+    y1403: 'Na Kaňku stojí šachty, haldy, dřevěné stavby nad šachtami a chalupy havířů. Je to pracovní krajina, ne příroda.',
+    zaj: 'Během husitských bouří v letech 1419–1420 vhazovali kutnohorští odpůrci kalicha zajaté husity do opuštěných šachet. Kronikáři uvádějí stovky až tisíce obětí, přesná čísla nejsou jistá.',
     hra: 'Porovnej krajinu kolem dolů ve hře s okolím vesnic: haldy, vytěžené svahy, kouř.' },
-  { id: 'hute', name: 'Hutě a stoupy na Vrchlici', cat: 'tezba', icon: 'fire', snd: 'hammer', x: 205, y: 590,
-    hist: 'V údolí Vrchlice poháněla voda kola stoup, které drtily rudu, a dmychadla hutí, kde se ruda tavila.',
-    y1403: 'Údolí je plné kouře, rachotu a horka. Pro hutě se kácely lesy v širokém okolí.',
-    zaj: 'Při tavbě se uvolňovaly výpary olova a dalších kovů, které poškozovaly zdraví hutníků.',
+  { id: 'hute', name: 'Hutě a stoupy na Vrchlici', cat: 'tezba', icon: 'fire', x: 205, y: 590,
+    hist: 'V údolí Vrchlice poháněla voda kola stoup, které drtily rudu, a dmychadla hutí, kde se ruda tavila. Proto se úprava rudy soustředila u vody pod městem.',
+    y1403: 'Údolí je plné kouře, rachotu a horka. Hutě spotřebují obrovské množství dřeva a dřevěného uhlí, a tak se v širokém okolí kácejí lesy.',
+    zaj: 'Při tavbě se uvolňovaly výpary olova a dalších kovů, které poškozovaly zdraví hutníků i okolní krajinu.',
     hra: 'Najdi ve hře vodní kola a dílny u řeky. K čemu slouží?' },
-  { id: 'sedlec', name: 'Sedlecký klášter', cat: 'chram', icon: 'abbey', snd: 'bell', x: 832, y: 150,
-    hist: 'Cisterciácký klášter založený roku 1142, nejstarší cisterciácký klášter v Čechách. Na jeho pozemcích se těžilo stříbro ještě před vznikem města.',
-    y1403: 'Bohatý klášter s gotickou katedrálou Nanebevzetí Panny Marie. Roku 1421 ho vypálili husité.',
-    zaj: 'Podle tradice přivezl opat Jindřich ze Svaté země hlínu, a hřbitov se proto stal vyhledávaným místem posledního odpočinku. Slavná kostnice dostala dnešní podobu až mnohem později.',
+  { id: 'sedlec', name: 'Sedlecký klášter', cat: 'chram', icon: 'abbey', x: 832, y: 150,
+    hist: 'Cisterciácký klášter založil roku 1142 velmož Miroslav. Je nejstarším cisterciáckým klášterem v Čechách. Na jeho pozemcích se těžilo stříbro ještě před vznikem města, a klášter proto patřil k nejbohatším v zemi.',
+    y1403: 'Bohatý klášter s velkou gotickou katedrálou Nanebevzetí Panny Marie vlastní vesnice v okolí, například Bylany. Roku 1421 ho vypálili husité.',
+    zaj: 'Cisterciáci kladli důraz na práci a hospodaření. Jejich kláštery zakládaly vesnice, zúrodňovaly půdu a podnikaly.',
+    dnes: 'Katedrála Nanebevzetí Panny Marie a sv. Jana Křtitele je na Seznamu světového dědictví UNESCO.',
     hra: 'Klášter stojí mimo město. Všimni si, jak se život v klášteře liší od rušné Kutné Hory.' },
   { id: 'kostnice', name: 'Kostnice v Sedlci', cat: 'chram', icon: 'skull', x: 893, y: 138,
     hist: 'Hřbitov Sedleckého kláštera byl vyhledávaným pohřebištěm. Podle tradice na něj opat Jindřich kolem roku 1278 rozprostřel hlínu přivezenou z Golgoty. Ve 14. století se zaplnil oběťmi morové epidemie.',
     y1403: 'Uprostřed hřbitova právě vyrostl gotický kostel Všech svatých (kolem roku 1400). Do jeho spodní kaple se ukládaly kosti z hrobů, na které se narazilo při stavbě.',
     zaj: 'Kosti podle pověsti začal skládat napůl slepý mnich po roce 1511. Dnešní slavnou výzdobu z kostí vytvořil řezbář František Rint až roku 1870.',
+    dnes: 'Kostnice patří k nejnavštěvovanějším památkám v Česku. Jsou v ní uloženy ostatky asi 40 000 lidí.',
     hra: 'Kostnice ve hře je. Zamysli se, zda ji hra ukazuje tak, jak mohla vypadat roku 1403, nebo spíš jako dnešní turistickou atrakci.' },
   { id: 'malesov', name: 'Tvrz Malešov', cat: 'okoli', icon: 'keep', x: 566, y: 628,
     hist: 'Ves asi 5 km jižně od Kutné Hory, poprvé zmíněná roku 1303. Jméno má podle bohatého kutnohorského měšťana Maleše. V první polovině 14. století tu vznikla tvrz s mohutnou obytnou věží.',
     y1403: 'Malešov patří kutnohorskému patricijskému rodu Ruthardů, kteří ho roku 1364 získali od Sedleckého kláštera. Roku 1411 dal král tvrz svému stoupenci Martinu Kladnému z Těchlovic.',
-    zaj: 'Z okolních lesů se do Kutné Hory vozilo dřevo a dřevěné uhlí pro doly a hutě. Gotická věž tvrze stojí dodnes.',
+    zaj: 'Z okolních lesů se do Kutné Hory vozilo dřevo a dřevěné uhlí pro doly a hutě. Za husitských válek se tvrz stala důležitou vojenskou oporou.',
+    dnes: 'Gotická obytná věž tvrze stojí dodnes. Její pozůstatky byly opraveny v letech 2002–2003.',
     hra: 'Ve hře se jmenuje Maleschau a je sídlem Ruthardů. Porovnej to s Ruthardskou ulicí ve městě.' },
   { id: 'suchdol', name: 'Tvrz Suchdol', cat: 'okoli', icon: 'keep', x: 66, y: 210,
     hist: 'Ves asi 7 km západně od Kutné Hory, poprvé zmíněná roku 1257. Ve 14. století tu stála gotická tvrz.',
     y1403: 'Při obléhání Kutné Hory v prosinci 1402 se tvrz pod velením Petra Píška bránila spojencům krále Zikmunda. Pražský hejtman Markvart z Úlic tu 27. prosince padl zasažen šípem. Tvrz se brzy nato vzdala.',
-    zaj: 'Tvrz byla později přestavěna na renesanční zámek. Dnes v něm sídlí obecní úřad.',
+    zaj: 'Suchdol ležel západně od města, odkud přicházela Zikmundova vojska i posily z Prahy.',
+    dnes: 'Tvrz byla v 16. století přestavěna na renesanční zámek se sgrafity. Dnes v něm sídlí obecní úřad.',
     hra: 'Obléhání Suchdolu patří k vrcholům hry. Účast Jana Žižky při obraně je ale smyšlená.' },
   { id: 'miskovice', name: 'Miskovice', cat: 'okoli', icon: 'village', x: 196, y: 226,
     hist: 'Ves asi 4 km západně od Kutné Hory. Poprvé se připomíná už roku 1131, tedy dávno před vznikem města.',
@@ -1014,8 +1030,9 @@ const LOCS = [
     hra: 'Ve hře se ves jmenuje Miskovitz. Hra používá jiné podoby jmen, než jaké se tehdy skutečně používaly.' },
   { id: 'bylany', name: 'Bylany', cat: 'okoli', icon: 'village', x: 110, y: 452,
     hist: 'Ves asi 1,5 km jihozápadně od města na potoce Bylance. Roku 1143 ji Miroslav ze Zimburka daroval nově založenému Sedleckému klášteru.',
-    y1403: 'Podél Bylanky rostou haldy strusky a hlušiny z okolních dolů a hutí.',
-    zaj: 'Lidé tu žili už v mladší době kamenné. Bylany patří k nejvýznamnějším archeologickým nalezištěm této doby v Evropě.',
+    y1403: 'Podél Bylanky rostou haldy strusky a hlušiny z okolních dolů a hutí. Nedaleko vyvěrá pramen sv. Vojtěcha, odkud se do Kutné Hory přiváděla pitná voda.',
+    zaj: 'Lidé tu žili už v mladší době kamenné. Bylany patří k nejvýznamnějším archeologickým nalezištím této doby v Evropě.',
+    dnes: 'Bylany jsou dnes místní částí Kutné Hory.',
     hra: 'Bylany jsou ve hře vesnicí s rychlým cestováním. Všimni si hald kolem potoka.' }
 ];
 const seen = new Set(save.get('seen', []));
@@ -1058,12 +1075,13 @@ function fitMap() {
   const cs = getComputedStyle(sheet), lcs = getComputedStyle(layout);
   const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
   const innerW = layout.clientWidth - parseFloat(lcs.paddingLeft) - parseFloat(lcs.paddingRight);
-  const maxW = innerW - 340 - 20 - padX;
+  const detMin = fixed ? Math.max(440, Math.round(innerW * .3)) : 360;   // v celé obrazovce víc místa pro text
+  const maxW = innerW - detMin - 20 - padX;
   map.style.width = maxW + 'px'; map.style.height = '1px';
   const sr = sheet.getBoundingClientRect(), mr = map.getBoundingClientRect();
   const availH = innerHeight - (sr.top + (fixed ? 0 : scrollY)) - (mr.top - sr.top) - (sr.bottom - mr.bottom) - (fixed ? 10 : 14);
   const w = Math.max(420, Math.min(maxW, availH * 1000 / 680));
-  layout.style.gridTemplateColumns = `${Math.round(w + padX)}px minmax(340px,1fr)`;
+  layout.style.gridTemplateColumns = `${Math.round(w + padX)}px minmax(${detMin}px,1fr)`;
   map.style.width = w + 'px'; map.style.height = (w * 680 / 1000) + 'px';
   map.style.setProperty('--pin', Math.round(Math.max(24, Math.min(34, w / 24))) + 'px');
 }
@@ -1096,6 +1114,7 @@ function selectLoc(id, silent) {
   $('d-cat').textContent = CATS[l.cat].label;
   $('d-name').textContent = l.name;
   $('d-hist').textContent = l.hist; $('d-1403').textContent = l.y1403; $('d-zaj').textContent = l.zaj; $('d-hra').textContent = l.hra;
+  $('d-dnes').textContent = l.dnes || ''; $('d-dnes-card').hidden = !l.dnes;
   const b = $('d-badge');
   if (first) { b.textContent = 'Nové místo · +5 gr.'; b.className = 'badge new'; }
   else if (seen.has(id)) { b.textContent = 'Prozkoumáno'; b.className = 'badge'; }
@@ -1151,7 +1170,7 @@ const SEASONS = ['Jaro', 'Léto', 'Podzim', 'Zima'];
 const YEAR_WEEKS = 16, START_KASA = 300;
 const simDefault = () => ({ week: 1, year: 1403, kasa: START_KASA, yearStart: START_KASA, depth: 60, timber: 80, water: 15, morale: 65,
   vein: 1, rep: 60, wageFloor: 3, sealed: 0, sick: 0, dearFood: 0, horseDead: false, hidden: false, strikeThreat: false,
-  weak: 0, lostVein: false, drive: null, tries: 0, driveResult: null, veinsLost: 0,
+  veinBase: 1, thin: 0, lostVein: false, drive: null, tries: 0, driveResult: null, veinsLost: 0,
   pending: null, over: null, last: null, log: [], inp: null });
 let sim = Object.assign(simDefault(), save.get('sim2', {}));
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -1198,14 +1217,14 @@ function model(i) {
     + (air < 50 ? -12 : 0) + (sim.rep - 60) / 8 + (season === 'Zima' ? -4 : 0) + (haulRatio < .4 ? -6 : 0)
     + (i.method === 'fire' ? -5 : 0) + (sim.dearFood && i.ration !== 'rich' ? -4 : 0), 5, 98));
   const crew = Math.max(0, i.miners - { none: 0, slow: 2, fast: 4 }[i.deepen]) * (sim.sick ? .7 : 1);
-  const perMiner = 10.5 * sim.vein * (.7 + sim.depth / 200) * { short: .8, normal: 1, long: 1.3 }[i.shift] * (i.method === 'fire' ? 1.4 : 1)
+  const perMiner = 10.5 * sim.vein * (.7 + sim.depth / 170) * { short: .8, normal: 1, long: 1.3 }[i.shift] * (i.method === 'fire' ? 1.4 : 1)
     * (.5 + sim.morale / 100) * clamp(haulRatio / .5, .4, 1) * clamp(air / 70, .4, 1)
     * (sim.water > 60 ? clamp(1 - (sim.water - 60) / 80, .3, 1) : 1) * (sim.sealed ? .7 : 1) * (sim.drive ? .45 / Math.max(sim.vein, .15) : 1);
   const gross = Math.round(crew * perMiner), urbura = Math.round(gross / 8);
   const c = {
     wages: Math.round(i.miners * i.wage + i.haulers * i.wage * .6 + i.carp * i.wage * .8),
     food: Math.round(workers * { poor: .4, standard: .7, rich: 1.2 }[i.ration] * (sim.dearFood ? 1.6 : 1)),
-    water: { manual: 5, horse: 22, adit: 38 }[drain] + { none: 0, bellows: 8, shaft: 20 }[i.vent],
+    water: { manual: 5, horse: 22, adit: 32 }[drain] + { none: 0, bellows: 8, shaft: 20 }[i.vent],
     material: Math.round(workers * (i.light === 'torch' ? .1 : .3) + i.carp * (i.wood === 'oak' ? 3 : 2)),
     deepen: { none: 0, slow: 10, fast: 22 }[i.deepen] + (sim.drive ? DRIVE[sim.drive.kind].cost : 0),
     care: Math.round(workers * { none: 0, small: .2, big: .35 }[i.fund] + (i.guard ? 8 : 0))
@@ -1250,7 +1269,7 @@ const searchChoices = () => [
 ];
 function rollDrive() {
   // čím víc nezdarů, tím menší šance; hloubka dává trochu lepší naději
-  // s každou ztracenou žílou je okolí vyrubanější a naděje menší
+  // žíly blízko šachty už byly vytěženy, takže s každou další hledanou žílou je naděje menší
   const lost = sim.veinsLost || 1;
   const none = clamp(.12 + .2 * sim.tries + .1 * (lost - 1) - (sim.drive.kind === 'deep' ? .06 : 0), .08, .85);
   const x = Math.random();
@@ -1377,10 +1396,16 @@ const EV = {
       { label: 'Těžit dál', hint: '', go: () => [0, 'Těží se dál a výnosy zůstávají nízké.'] }
     ] },
   veinLost: { kind: 'bad', tag: 'Ztracená žíla', title: 'Žíla zmizela', snd: 'bad',
-    on: () => { sim.lostVein = true; sim.vein = .15; sim.weak = 0; sim.veinsLost = (sim.veinsLost || 0) + 1; },
-    text: () => 'Žíla se týdny ztenčovala, až úplně skončila. Lamači narážejí jen na hlušinu. Žíla mohla vyznít, nebo ji přerušila porucha v hornině a pokračuje jinde. Nikdo neví kde.'
+    on: () => { sim.lostVein = true; sim.vein = .15; sim.thin = 0; sim.veinsLost = (sim.veinsLost || 0) + 1; },
+    text: () => 'Žíla se zužovala, až úplně vyzněla. Lamači narážejí jen na hlušinu. Žíly nejsou rovnoměrné: tahle mohla prostě skončit, nebo ji přerušila porucha v hornině a pokračuje jinde. Nikdo neví kde.'
       + (sim.tries ? ` Už ${sim.tries}× se ražba minula.` : ''),
     choices: searchChoices },
+  thinning: { kind: '', tag: 'Žíla', title: 'Žíla se zužuje', snd: 'hammer',
+    text: () => 'Lamači hlásí, že se žíla zužuje a ruda je chudší. Žíly nejsou rovnoměrné: místy se rozšíří, jinde se zúží nebo úplně vyzní. Nikdo neví, co bude za dalším metrem.',
+    choices: [
+      { label: 'Těžit dál a doufat', hint: 'žíla se může zase rozšířit, nebo úplně zmizet', go: () => [0, 'Lamači postupují po žíle dál a sledují, jestli se zase rozšíří.'] },
+      { label: 'Hned začít razit průzkumnou chodbu', hint: '2 týdny slabší těžby, ale náskok, kdyby žíla zmizela', go: () => { sim.thin = 0; return startDrive('follow'); } }
+    ] },
   driveEnd: { tag: 'Ražba', snd: 'hammer',
     kindOf: () => DRIVE_RESULT[sim.driveResult].kind, titleOf: () => DRIVE_RESULT[sim.driveResult].title,
     text: () => DRIVE_RESULT[sim.driveResult].text,
@@ -1397,10 +1422,11 @@ const EV = {
       { label: 'Pracovat jako obvykle', hint: '', go: () => { sim.morale -= 8; return [0, 'Havíři museli fárat i o svátku. Reptají.']; } }
     ] }
 };
-function pickEvent(i, m, driveDone) {
+function pickEvent(i, m, driveDone, thinStart) {
   const r = p => Math.random() * 100 < p;
   if (driveDone) return 'driveEnd';
-  if (!sim.lostVein && !sim.drive && (sim.vein < .4 || (sim.weak >= 3 && r(35)))) return 'veinLost';
+  if (!sim.lostVein && !sim.drive && sim.vein < .35) return 'veinLost';
+  if (thinStart) return 'thinning';
   if ((sim.morale < 25 && r(70)) || (sim.strikeThreat && r(45))) return 'strike';
   if (r(m.risk.fire)) return 'fire';
   if (r(m.risk.collapse)) return 'collapse';
@@ -1411,13 +1437,13 @@ function pickEvent(i, m, driveDone) {
   if (!r(40)) return null;
   const searching = sim.lostVein || sim.drive;
   const pool = [['inspection', sim.hidden ? 5 : 2]];
-  if (!searching) pool.push(['vein', 2], ['neighbor', 1.5]);
+  if (!searching && !sim.thin) pool.push(['vein', 2]);
+  if (!searching) pool.push(['neighbor', 1.5]);
   if (!i.guard) pool.push(['theft', 3]);
   if (!sim.dearFood) pool.push(['dear', 1.5]);
   if (sim.year === 1403 && sim.week <= 8) pool.push(['army', 2.5]);
   if (seasonIdx() >= 2 && !sim.sick) pool.push(['sick', 2]);
   if (i.drain === 'horse' && !sim.horseDead) pool.push(['horse', 1.5]);
-  if (!searching && sim.vein < .65) pool.push(['poor', 5]);
   let t = Math.random() * pool.reduce((a, [, w]) => a + w, 0);
   for (const [id, w] of pool) if ((t -= w) < 0) return id;
   return null;
@@ -1440,11 +1466,24 @@ function runWeek() {
       driveDone = true; sim.driveResult = rollDrive();
       const res = sim.driveResult;
       if (res === 'none' || res === 'exhausted') { sim.tries++; sim.vein = .15; }
-      else { sim.lostVein = false; sim.tries = 0; sim.vein = (res === 'rich' ? 1.4 + Math.random() * .4 : res === 'avg' ? 1 + Math.random() * .2 : .6 + Math.random() * .15) * Math.max(.7, 1 - .06 * ((sim.veinsLost || 1) - 1)); }
+      else { sim.lostVein = false; sim.tries = 0; sim.thin = 0; sim.vein = sim.veinBase = (res === 'rich' ? 1.4 + Math.random() * .4 : res === 'avg' ? 1 + Math.random() * .2 : .6 + Math.random() * .15) * Math.max(.7, 1 - .06 * ((sim.veinsLost || 1) - 1)); }
       sim.drive = null;
     }
   }
-  const id = pickEvent(i, m, driveDone), ev = id && EV[id];
+  let thinStart = false;
+  if (!sim.lostVein && !sim.drive && !driveDone) {
+    // Žíla není rovnoměrná: jak po ní lamači postupují, je místy širší a bohatší, jinde užší a chudší.
+    // Může se i zúžit a úplně vyznít. Je to dáno přírodou, ne tím, kolik se vytěží.
+    if (sim.thin) {
+      sim.vein *= .72 + Math.random() * .1;
+      if (Math.random() < .3) sim.thin = 0; else sim.thin++;
+    } else {
+      sim.vein += (sim.veinBase - sim.vein) * .25 + (Math.random() - .5) * .25;
+      if (Math.random() < .06) { sim.thin = 1; thinStart = true; }
+    }
+    sim.vein = clamp(sim.vein, .1, 2);
+  }
+  const id = pickEvent(i, m, driveDone, thinStart), ev = id && EV[id];
   let gross = m.gross, urbura = m.urbura, cost = m.cost;
   if (ev && ev.blocks) { gross = 0; urbura = 0; cost -= m.c.wages; }
   const net = gross - urbura - cost;
@@ -1452,11 +1491,6 @@ function runWeek() {
   sim.timber += m.dTimber; sim.water += m.dWater;
   sim.morale += Math.round((m.mt - sim.morale) * .4);
   sim.depth += { none: 0, slow: 5, fast: 10 }[i.deepen];
-  if (!sim.lostVein && !sim.drive && !driveDone) {
-    // žíla se vytěžováním postupně ztenčuje; při prohlubování se občas objeví bohatší část
-    sim.vein = sim.vein * (.925 + Math.random() * .1) + (i.deepen !== 'none' ? .025 : 0);
-    sim.weak = sim.vein < .6 ? sim.weak + 1 : 0;
-  }
   if (!ev && sim.morale >= 60) sim.rep += 1;
   for (const k of ['sealed', 'sick', 'dearFood']) if (sim[k] > 0) sim[k]--;
   const weekText = ev && ev.blocks ? `Netěžilo se, výdaje bez mezd ${cost} gr.` : `Výtěžek ${gross} gr., urbura ${urbura} gr., výdaje ${cost} gr.`;
@@ -1532,7 +1566,7 @@ function renderSim() {
   if (sim.horseDead) flags.push('Chybí kůň u trejvu');
   if (sim.strikeThreat) flags.push('Hrozí stávka');
   if (sim.hidden) flags.push('Zatajená ruda');
-  if (sim.weak && !sim.lostVein) flags.push(`Žíla slábne: ${sim.weak} týd.`);
+  if (sim.thin && !sim.lostVein && !sim.drive) flags.push('Žíla se zužuje');
   if (sim.drive) flags.push(`Ražba nové chodby: zbývá ${sim.drive.left} týd.`);
   else if (sim.lostVein) flags.push('Žíla ztracena, netěží se');
   if (sim.tries) flags.push(`Neúspěšné ražby: ${sim.tries}`);
