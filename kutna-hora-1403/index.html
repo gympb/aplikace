@@ -203,12 +203,10 @@ body.exploring{overflow:hidden}
 }
 
 /* fotografie místa */
-.photo{margin:0 0 14px}
-.photo-btn{display:block;position:relative;width:100%;padding:0;border:2px solid #5a381b;border-radius:8px;overflow:hidden;cursor:zoom-in;background:#2a180b}
-.photo-btn img{display:block;width:100%;height:clamp(160px,26vh,280px);object-fit:cover}
-.photo-zoom{position:absolute;right:8px;bottom:8px;background:rgba(27,16,9,.8);color:#f6e6c2;font:600 12px var(--f-body);padding:4px 8px;border-radius:6px}
-.photo-cap{font-size:12px;line-height:1.4;color:var(--ink-2);margin-top:6px}
-.photo-cap a{color:var(--ink-2)}
+.photo-link{min-height:40px;padding:0 12px;border-radius:8px;border:1px solid #4f6b2f;background:rgba(79,107,47,.1);color:#33481c;
+  font:600 14px var(--f-body);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.photo-link:hover{background:rgba(79,107,47,.2)}
+.photo-link[hidden]{display:none}
 .lightbox{position:fixed;inset:0;z-index:300;background:rgba(10,6,3,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;cursor:zoom-out}
 .lightbox[hidden]{display:none}
 .lightbox img{max-width:100%;max-height:calc(100vh - 110px);object-fit:contain;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
@@ -526,18 +524,11 @@ footer a{color:#e8d6ad}
         <span class="badge" id="d-badge"></span>
       </div>
     </div>
-    <figure class="photo" id="d-photo" hidden>
-      <button type="button" class="photo-btn" id="d-photo-btn" aria-label="Zvětšit fotografii">
-        <img id="d-photo-img" alt="" loading="lazy" decoding="async">
-        <span class="photo-zoom" aria-hidden="true">⤢ Zvětšit</span>
-      </button>
-      <figcaption class="photo-cap" id="d-photo-cap"></figcaption>
-    </figure>
     <div class="grid g3">
       <div class="card c-hist"><h3>Historie</h3><p id="d-hist"></p></div>
       <div class="card c-1403"><h3>V roce 1403</h3><p id="d-1403"></p></div>
       <div class="card c-zaj"><h3>Zajímavost</h3><p id="d-zaj"></p></div>
-      <div class="card c-dnes" id="d-dnes-card"><h3>Dnes</h3><p id="d-dnes"></p></div>
+      <div class="card c-dnes" id="d-dnes-card"><h3>Dnes</h3><p id="d-dnes"></p><button type="button" class="photo-link" id="d-photo-btn">📷 Zobrazit fotografii</button></div>
     </div>
     <p class="note hint"><b>Při hraní KCD II:</b> <span id="d-hra"></span></p>
   </div>
@@ -1153,11 +1144,8 @@ function fotoCaption(f) {
   return `Foto: ${esc(f.autor)} · <a href="${esc(f.licUrl)}" target="_blank" rel="noopener">${esc(f.lic)}</a> · <a href="${esc(f.zdroj)}" target="_blank" rel="noopener">Wikimedia Commons</a>${f.upraveno ? ' · zmenšeno' : ''}`;
 }
 function renderPhoto(id) {
-  const f = FOTO[id], fig = $('d-photo');
-  if (!f) { fig.hidden = true; return; }
-  fig.hidden = false;
-  $('d-photo-img').src = f.src; $('d-photo-img').alt = f.popis;
-  $('d-photo-cap').innerHTML = `${esc(f.popis)}. ${fotoCaption(f)}`;
+  // fotografie se otevírá jen odkazem v kartě „Dnes“
+  $('d-photo-btn').hidden = !FOTO[id];
 }
 function openLightbox() {
   const f = FOTO[currentLoc]; if (!f) return;
@@ -1269,7 +1257,8 @@ function selectLoc(id, silent) {
   $('d-name').textContent = l.name;
   renderPhoto(id);
   $('d-hist').textContent = l.hist; $('d-1403').textContent = l.y1403; $('d-zaj').textContent = l.zaj; $('d-hra').textContent = l.hra;
-  $('d-dnes').textContent = l.dnes || ''; $('d-dnes-card').hidden = !l.dnes;
+  $('d-dnes').textContent = l.dnes || ''; $('d-dnes').hidden = !l.dnes;
+  $('d-dnes-card').hidden = !l.dnes && !FOTO[l.id];
   const b = $('d-badge');
   if (first) { b.textContent = 'Nové místo · +5 gr.'; b.className = 'badge new'; }
   else if (seen.has(id)) { b.textContent = 'Prozkoumáno'; b.className = 'badge'; }
