@@ -173,6 +173,34 @@ body.exploring{overflow:hidden}
   h1{font-size:clamp(28px,3.4vw,40px)}
 }
 
+/* simulátor přes celou obrazovku: lišta nahoře, pod ní tři sloupce s vlastním posouváním */
+.sim-fs{display:flex;gap:8px;align-items:center}
+.sim-sheet .fs-close{display:none}
+.sim-sheet.explore .fs-open{display:none}
+.sim-sheet.explore .fs-close{display:inline-flex}
+.sim-sheet.explore{position:fixed;inset:0;z-index:100;margin:0;border-radius:0;overflow:auto;
+  padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.sim-sheet.explore .sheet-head{padding-bottom:8px;margin-bottom:8px;align-items:center!important}
+.sim-sheet.explore .sheet-head p{display:none}
+.sim-sheet.explore .sheet-head h2{font-size:22px}
+.sim-sheet.explore > details{margin-bottom:8px!important;padding-block:4px}
+.sim-sheet.explore .history{max-height:none}
+@media (min-width:1024px){
+  .sim-sheet.explore{display:flex;flex-direction:column;overflow:hidden}
+  .sim-sheet.explore .sheet-head,.sim-sheet.explore > details{flex:0 0 auto}
+  .sim-sheet.explore .sim{flex:1 1 auto;min-height:0;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);align-items:stretch;gap:14px}
+  .sim-sheet.explore .sim > .card{overflow-y:auto;min-height:0;overscroll-behavior:contain;padding:12px 14px}
+  .sim-sheet.explore fieldset{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;margin-bottom:8px}
+  .sim-sheet.explore fieldset > legend{grid-column:1/-1}
+  .sim-sheet.explore fieldset > .wide{grid-column:1/-1}
+  .sim-sheet.explore .field{margin-bottom:8px}
+  .sim-sheet.explore .field select{font-size:14px;min-height:38px;padding:4px 6px}
+  .sim-sheet.explore .sim-actions{position:sticky;bottom:-12px;margin:10px -14px -12px;padding:10px 14px 12px;flex-wrap:nowrap;
+    background:#efe0bb;border-top:1px solid rgba(90,56,27,.3);z-index:2}
+  .sim-sheet.explore .sim-actions .btn:first-child{flex:1 1 auto}
+  .sim-sheet.explore .meter{margin-bottom:8px}
+}
+
 /* --- politika --- */
 .timeline{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .timeline li{display:grid;grid-template-columns:150px 1fr;gap:12px;background:rgba(255,250,235,.4);border-left:4px solid var(--red);padding:10px 14px;border-radius:0 6px 6px 0}
@@ -571,7 +599,7 @@ footer a{color:#e8d6ad}
 
 <!-- ==================== SIMULÁTOR ==================== -->
 <section id="p-simulator" role="tabpanel" aria-labelledby="t-simulator" hidden>
-  <div class="sheet">
+  <div class="sheet sim-sheet" id="sim-sheet">
     <div class="sheet-head" style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:flex-end">
       <div>
         <div class="kicker">Hra na nákladníka · rok 1403</div>
@@ -582,6 +610,10 @@ footer a{color:#e8d6ad}
         <div><small>Období</small><b id="s-cal">Jaro 1403</b></div>
         <div><small>Týden</small><b id="s-week">1 / 16</b></div>
         <div><small>Pokladna dolu</small><b id="s-kasa">300 gr.</b></div>
+      </div>
+      <div class="sim-fs">
+        <button class="btn ghost fs-open" id="sim-fs-open" type="button" title="Simulátor přes celou obrazovku">⛶ Celá obrazovka</button>
+        <button class="btn fs-close" id="sim-fs-close" type="button" title="Zavřít (Esc)">✕ Zavřít</button>
       </div>
     </div>
 
@@ -602,12 +634,12 @@ footer a{color:#e8d6ad}
       <div class="card">
         <h3>Provoz dolu</h3>
         <fieldset><legend>Lidé a mzdy</legend>
-          <div class="three">
+          <div class="three wide">
             <div class="field"><label for="s-miners">Lamači</label><input type="number" id="s-miners" min="4" max="60" value="20" inputmode="numeric"></div>
             <div class="field"><label for="s-haulers">Tahouni</label><input type="number" id="s-haulers" min="2" max="40" value="12" inputmode="numeric"></div>
             <div class="field"><label for="s-carp">Tesaři</label><input type="number" id="s-carp" min="0" max="12" value="2" inputmode="numeric"></div>
           </div>
-          <div class="field">
+          <div class="field wide">
             <label for="s-wage">Týdenní mzda lamače</label>
             <input type="range" id="s-wage" min="2" max="8" step="0.5" value="3">
             <div class="range-row"><span>2 gr.</span><b id="s-wage-v">3 gr.</b><span>8 gr.</span></div>
@@ -638,7 +670,7 @@ footer a{color:#e8d6ad}
             <select id="s-ration"><option value="poor">Skromná (chléb, kaše)</option><option value="standard" selected>Běžná (chléb, polévka, pivo)</option><option value="rich">Bohatá (i maso a víc piva)</option></select></div>
           <div class="field"><label for="s-fund">Příspěvek do bratrské pokladny</label>
             <select id="s-fund"><option value="none">Žádný</option><option value="small" selected>Malý</option><option value="big">Štědrý (zranění tě vyjdou levněji)</option></select></div>
-          <label class="check"><input type="checkbox" id="s-guard"> Šichtmistr dohlíží na práci a rudu (8 gr. týdně)</label>
+          <label class="check wide"><input type="checkbox" id="s-guard"> Šichtmistr dohlíží na práci a rudu (8 gr. týdně)</label>
         </fieldset>
       </div>
 
@@ -880,6 +912,7 @@ function showTab(name, focus) {
     $('p-' + t).hidden = !on;
   }
   if (name !== 'mapa') closeExplore();
+  if (name !== 'simulator') closeSimFs();
   if (name === 'mapa') fitMap();
   if (focus) $('t-' + name).focus();
   $('t-' + name).scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -1101,7 +1134,21 @@ function closeExplore() {
 $('fs-open').addEventListener('click', openExplore);
 $('fs-close').addEventListener('click', closeExplore);
 addEventListener('keydown', e => { if (e.key === 'Escape') closeExplore(); });
-document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) closeExplore(); else fitMap(); });
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) { closeExplore(); closeSimFs(); } else fitMap(); });
+function requestFs() { try { const pr = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {} }
+function openSimFs() {
+  $('sim-sheet').classList.add('explore'); document.body.classList.add('exploring');
+  requestFs(); $('sim-fs-close').focus({ preventScroll: true });
+}
+function closeSimFs() {
+  if (!$('sim-sheet').classList.contains('explore')) return;
+  $('sim-sheet').classList.remove('explore'); document.body.classList.remove('exploring');
+  try { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {}
+  $('sim-fs-open').focus({ preventScroll: true });
+}
+$('sim-fs-open').addEventListener('click', openSimFs);
+$('sim-fs-close').addEventListener('click', closeSimFs);
+addEventListener('keydown', e => { if (e.key === 'Escape') closeSimFs(); });
 addEventListener('resize', fitMap);
 DESKTOP.addEventListener('change', fitMap);
 if (document.fonts) document.fonts.ready.then(fitMap);
@@ -1522,6 +1569,8 @@ function resolve(k) {
   pushLog(`${p.label}: ${ev.tag.toLowerCase()} (${ch.label.toLowerCase()}), ${fmt(total)}`);
   sim.pending = null; play(delta > 0 ? 'coin' : 'hammer');
   if (!sim.over) endWeek(); save.set('sim2', sim); renderSim();
+  // po rozhodnutí vrátit klávesnici na hlavní tlačítko
+  if (!sim.over) $('s-run').focus({ preventScroll: true });
 }
 const evChoices = ev => typeof ev.choices === 'function' ? ev.choices() : ev.choices;
 const evKind = ev => ev.kindOf ? ev.kindOf() : ev.kind;
@@ -1536,7 +1585,11 @@ function endWeek() {
 }
 function newMine() { const inp = sim.inp; sim = simDefault(); sim.inp = inp; save.set('sim2', sim); renderSim(); play('hammer'); }
 function nextYear() { sim.year++; sim.week = 1; sim.yearStart = sim.kasa; sim.over = null; sim.last = null; save.set('sim2', sim); renderSim(); play('hammer'); }
-function focusEntry() { if (matchMedia('(max-width:980px)').matches) $('s-entry').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+function focusEntry() {
+  const log = $('s-entry').closest('.card');
+  if ($('sim-sheet').classList.contains('explore') && DESKTOP.matches) { log.scrollTop = 0; return; }
+  if (matchMedia('(max-width:980px)').matches) $('s-entry').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 /* --- vykreslení --- */
 function setMeter(id, v, good) {
