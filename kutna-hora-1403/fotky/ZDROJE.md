@@ -1,0 +1,24 @@
+# Zdroje fotografií
+
+Fotografie míst v aplikaci Kutná Hora 1403 pocházejí z Wikimedia Commons. Byly zmenšeny na nejvýše 1200 px a jsou šířeny pod licencemi uvedenými níže, nikoli pod licencí CC BY 4.0 celé aplikace.
+
+| Soubor | Popis | Autor | Licence | Zdroj |
+|---|---|---|---|---|
+| vlassky-dvur.jpg | Nádvoří Vlašského dvora | Ondřej Kořínek | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Pal%C3%A1c_Vla%C5%A1sk%C3%BD_dv%C5%AFr_(Kutn%C3%A1_Hora)_(12).jpg) |
+| sv-jakub.jpg | Kostel sv. Jakuba | Jiří Sedláček | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Front_view_of_Church_of_Saint_James_in_Kutn%C3%A1_Hora,_Kutn%C3%A1_Hora_District.JPG) |
+| hradek.jpg | Hrádek, gotický arkýř | Txllxt TxllxT | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Kutn%C3%A1_Hora_-_Barborsk%C3%A1_-_Hr%C3%A1dek_-_View_SE.jpg) |
+| ruthardka.jpg | Ruthardská ulice | ŠJů | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Kutn%C3%A1_Hora,_Ruthardsk%C3%A1_(01).jpg) |
+| rynk.jpg | Palackého náměstí, dříve rynk | Jiří Sedláček | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Square_of_Palack%C3%BD_in_Kutn%C3%A1_Hora,_Kutn%C3%A1_Hora_District.JPG) |
+| kasna.jpg | Kamenná kašna z doby kolem roku 1495 | Txllxt TxllxT | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Kutn%C3%A1_Hora_-_Rejskova_-_Kamenn%C3%A1_ka%C5%A1na_1495_attributed_to_Maty%C3%A1%C5%A1_Rejsek_-_Gothic_Water_Basin_-_View_West.jpg) |
+| sv-barbora.jpg | Chrám sv. Barbory | Txllxt TxllxT | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Kutn%C3%A1_Hora_-_Chr%C3%A1m_svat%C3%A9_Barbory_-_View_NE.jpg) |
+| kaple.jpg | Kaple Božího těla, interiér | MONUDET | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Kutn%C3%A1_Hora,_kaple_Bo%C5%BE%C3%ADho_T%C4%9Bla_(7687322948).jpg) |
+| kourimska.jpg | Zbytky městského opevnění Kutné Hory | Petr1888 | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:M%C4%9Bstsk%C3%A9_opevn%C4%9Bn%C3%AD_(Kutn%C3%A1_Hora).JPG) |
+| kank.jpg | Pohled z Kaňku na Kutnou Horu | Czeva | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ka%C5%88k,_view_of_Kutn%C3%A1_Hora_01.jpg) |
+| hute.jpg | Údolí Vrchlice | Jiří Sedláček | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Vrchlice_Valley_in_Kutn%C3%A1_Hora,_Kutn%C3%A1_Hora_District.JPG) |
+| sedlec.jpg | Katedrála Nanebevzetí Panny Marie v Sedlci | Sergey Ashmarin | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Sedlec_(Kutn%C3%A1_Hora),_katedr%C3%A1la_Nanebevzet%C3%AD_Panny_Marie_-_panoramio.jpg) |
+| kostnice.jpg | Kostel Všech svatých s kostnicí v Sedlci | H2k4 | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Sedlec,_kaple_V%C5%A1ech_svat%C3%BDch_s_kostnic%C3%AD.JPG) |
+| malesov.jpg | Tvrz Malešov | Jstojanov | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Tvrz_Male%C5%A1ov_1.JPG) |
+| suchdol.jpg | Zámek Suchdol, dříve gotická tvrz | MartinVeselka | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Suchdol_(u_Kutn%C3%A9_Hory)_-_z%C3%A1mek_(stav_leden_2023)_(4).jpg) |
+| miskovice.jpg | Statek v Miskovicích | MartinVeselka | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Miskovice_-_dv%C5%AFr_%C4%8Dp._1_z_d%C3%A1lky,_vlevo_%C4%8Dp._57_(%C4%8D%C3%A1st)_a_%C4%8Dp._29_(stav_leden_2023).jpg) |
+| bylany.jpg | Bylany dnes | Juan de Vojníkov | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Bylany_(Miskovice)_v%C3%BDchod.JPG) |
+| osel.jpg | Středověký hornický kahan z Kutné Hory | Bergminerale/Claas Schembor | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Mittelalterliches_Bergmanns_Geleucht_aus_Kutna_Hora7792.jpg) |

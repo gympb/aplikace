@@ -10,6 +10,7 @@
 <meta property="og:description" content="Stříbrné město ve hře Kingdom Come: Deliverance II a ve skutečnosti.">
 <meta property="og:image" content="nahled.png">
 <link rel="stylesheet" href="fonty/fonty.css">
+<script src="fotky/fotky.js"></script>
 <style>
 /* Layout: tmavý dřevěný rám, uvnitř pergamenové listy; nahoře lišta s měšcem a záložky, pod nimi obsah záložky */
 :root{
@@ -200,6 +201,20 @@ body.exploring{overflow:hidden}
   .sim-sheet.explore .sim-actions .btn:first-child{flex:1 1 auto}
   .sim-sheet.explore .meter{margin-bottom:8px}
 }
+
+/* fotografie místa */
+.photo{margin:0 0 14px}
+.photo-btn{display:block;position:relative;width:100%;padding:0;border:2px solid #5a381b;border-radius:8px;overflow:hidden;cursor:zoom-in;background:#2a180b}
+.photo-btn img{display:block;width:100%;height:clamp(160px,26vh,280px);object-fit:cover}
+.photo-zoom{position:absolute;right:8px;bottom:8px;background:rgba(27,16,9,.8);color:#f6e6c2;font:600 12px var(--f-body);padding:4px 8px;border-radius:6px}
+.photo-cap{font-size:12px;line-height:1.4;color:var(--ink-2);margin-top:6px}
+.photo-cap a{color:var(--ink-2)}
+.lightbox{position:fixed;inset:0;z-index:300;background:rgba(10,6,3,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;cursor:zoom-out}
+.lightbox[hidden]{display:none}
+.lightbox img{max-width:100%;max-height:calc(100vh - 110px);object-fit:contain;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.lb-cap{color:#d9c49b;font-size:13px;text-align:center;max-width:900px;margin:0;cursor:auto}
+.lb-cap a{color:#f2d27a}
+.lb-close{position:absolute;top:12px;right:16px;min-height:40px}
 
 /* --- politika --- */
 .timeline{list-style:none;margin:0;padding:0;display:grid;gap:8px}
@@ -511,6 +526,13 @@ footer a{color:#e8d6ad}
         <span class="badge" id="d-badge"></span>
       </div>
     </div>
+    <figure class="photo" id="d-photo" hidden>
+      <button type="button" class="photo-btn" id="d-photo-btn" aria-label="Zvětšit fotografii">
+        <img id="d-photo-img" alt="" loading="lazy" decoding="async">
+        <span class="photo-zoom" aria-hidden="true">⤢ Zvětšit</span>
+      </button>
+      <figcaption class="photo-cap" id="d-photo-cap"></figcaption>
+    </figure>
     <div class="grid g3">
       <div class="card c-hist"><h3>Historie</h3><p id="d-hist"></p></div>
       <div class="card c-1403"><h3>V roce 1403</h3><p id="d-1403"></p></div>
@@ -883,11 +905,17 @@ footer a{color:#e8d6ad}
 
 <footer>
   <p>Kingdom Come: Deliverance je hra studia Warhorse Studios. Tato výuková aplikace s autory hry nijak nesouvisí. Mapa je schematická a nezachycuje přesnou polohu ani měřítko.</p>
+  <p>Fotografie míst pocházejí z <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a>. Mají vlastní licence (většinou CC BY-SA), které jsou uvedené u každé fotografie, spolu s autorem a odkazem na zdroj.</p>
   <p>Pro další studium: expozice Českého muzea stříbra v Kutné Hoře (Hrádek a Tylův dům), učebnice dějepisu pro období lucemburských králů.</p>
   <p>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" target="_blank" rel="noopener">CC BY 4.0</a> · Aktualizace: 25. 10. 2026 · <button class="iconbtn" id="reset-all" type="button" style="min-height:32px;font-size:13px">Vymazat postup</button></p>
 </footer>
 </div>
 <div class="toast" id="toast" role="status"></div>
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Fotografie">
+  <button type="button" class="btn lb-close" id="lb-close">✕ Zavřít</button>
+  <img id="lb-img" alt="">
+  <p class="lb-cap" id="lb-cap"></p>
+</div>
 
 <script>
 'use strict';
@@ -1119,6 +1147,32 @@ const LOCS = [
     dnes: 'Bylany jsou dnes místní částí Kutné Hory.',
     hra: 'Bylany jsou ve hře vesnicí s rychlým cestováním. Všimni si hald kolem potoka.' }
 ];
+/* Fotografie z Wikimedia Commons, uložené ve složce fotky/. Každá má vlastní licenci a autora. */
+const FOTO = window.FOTO_DATA || {};
+function fotoCaption(f) {
+  return `Foto: ${esc(f.autor)} · <a href="${esc(f.licUrl)}" target="_blank" rel="noopener">${esc(f.lic)}</a> · <a href="${esc(f.zdroj)}" target="_blank" rel="noopener">Wikimedia Commons</a>${f.upraveno ? ' · zmenšeno' : ''}`;
+}
+function renderPhoto(id) {
+  const f = FOTO[id], fig = $('d-photo');
+  if (!f) { fig.hidden = true; return; }
+  fig.hidden = false;
+  $('d-photo-img').src = f.src; $('d-photo-img').alt = f.popis;
+  $('d-photo-cap').innerHTML = `${esc(f.popis)}. ${fotoCaption(f)}`;
+}
+function openLightbox() {
+  const f = FOTO[currentLoc]; if (!f) return;
+  $('lb-img').src = f.src; $('lb-img').alt = f.popis;
+  $('lb-cap').innerHTML = `${esc(f.popis)}. ${fotoCaption(f)}`;
+  $('lightbox').hidden = false; $('lb-close').focus({ preventScroll: true });
+}
+function closeLightbox() {
+  if ($('lightbox').hidden) return false;
+  $('lightbox').hidden = true; $('d-photo-btn').focus({ preventScroll: true }); return true;
+}
+$('d-photo-btn').addEventListener('click', openLightbox);
+$('lightbox').addEventListener('click', e => { if (!e.target.closest('a')) closeLightbox(); });
+// Esc nejdřív zavře fotografii a teprve další Esc celou obrazovku
+addEventListener('keydown', e => { if (e.key === 'Escape' && closeLightbox()) e.stopImmediatePropagation(); }, true);
 const seen = new Set(save.get('seen', []));
 let filter = 'all', currentLoc = null;
 
@@ -1185,7 +1239,9 @@ function closeExplore() {
 $('fs-open').addEventListener('click', openExplore);
 $('fs-close').addEventListener('click', closeExplore);
 addEventListener('keydown', e => { if (e.key === 'Escape') closeExplore(); });
-document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) { closeExplore(); closeSimFs(); } else fitMap(); });
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) { if (closeLightbox()) { fitMap(); return; } closeExplore(); closeSimFs(); } else fitMap();
+});
 function requestFs() { try { const pr = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {} }
 function openSimFs() {
   $('sim-sheet').classList.add('explore'); document.body.classList.add('exploring');
@@ -1211,6 +1267,7 @@ function selectLoc(id, silent) {
   if (!silent) play(l.snd);
   $('d-cat').textContent = CATS[l.cat].label;
   $('d-name').textContent = l.name;
+  renderPhoto(id);
   $('d-hist').textContent = l.hist; $('d-1403').textContent = l.y1403; $('d-zaj').textContent = l.zaj; $('d-hra').textContent = l.hra;
   $('d-dnes').textContent = l.dnes || ''; $('d-dnes-card').hidden = !l.dnes;
   const b = $('d-badge');
