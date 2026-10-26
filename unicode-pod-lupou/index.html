@@ -71,7 +71,9 @@ nav.toc a:hover{color:var(--accent)}
 
 section{padding-block:44px;border-top:1px solid var(--line);display:grid;gap:18px;scroll-margin-top:52px}
 section:first-of-type{border-top:0}
-.panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:14px;min-width:0}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:14px;min-width:0;align-content:start}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:14px 28px;align-items:start}
+.split>div{display:grid;gap:10px}
 .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:18px}
 
 /* inputs */
@@ -827,21 +829,23 @@ details.teacher ol{margin:8px 0 2px;padding-left:1.3em;display:grid;gap:4px}
   <div class="ptoc"><a class="chip" href="#p-utf16">UTF-16 a BOM</a><a class="chip" href="#p-dec">Dekodér a validace</a><a class="chip" href="#p-len">Délky řetězců</a><a class="chip" href="#p-norm">Normalizace a bezpečnost</a><a class="chip" href="#p-code">Zápis v kódu a řazení</a><a class="chip" href="#p-check">Kontrolní seznam</a></div>
   <p class="muted">Krokový rozbor libovolného znaku včetně náhradních párů UTF-16 a zápisů pro HTML, JavaScript a URL najdete v <a href="#lab" data-go="lab">Laboratoři</a>, která se v této úrovni přepne na plnou podrobnost.</p>
 
-  <div class="cols" id="p-utf16" style="scroll-margin-top:60px">
+  <div id="p-utf16" style="display:grid;gap:18px;scroll-margin-top:60px">
     <div class="panel">
       <h3>UTF-16: 2 nebo 4 bajty</h3>
-      <p class="muted">Znaky z roviny 0 (BMP) se vejdou do jedné 16bitové jednotky. Ostatní se rozdělí na <b>náhradní pár</b> (surrogate pair). Body D800–DFFF jsou pro tento účel vyhrazené a nejsou to znaky. Hranice U+10FFFF celého Unicode vychází právě z kapacity náhradních párů.</p>
+      <div class="split"><p class="muted">Znaky z roviny 0 (BMP) se vejdou do jedné 16bitové jednotky. Ostatní se rozdělí na <b>náhradní pár</b> (surrogate pair). Body D800–DFFF jsou pro tento účel vyhrazené a nejsou to znaky. Hranice U+10FFFF celého Unicode vychází právě z kapacity náhradních párů.</p>
       <div class="tw"><table class="tpl" id="t16">
         <thead><tr><th>Rozsah</th><th>Jednotek</th><th>Zápis</th><th>Příklad</th></tr></thead>
         <tbody>
           <tr data-n="1"><td><code>U+0000–FFFF</code><br><small class="muted">kromě D800–DFFF</small></td><td>1</td><td><code><span class="x">xxxxxxxxxxxxxxxx</span></code></td><td>€ → <code>20AC</code></td></tr>
           <tr data-n="2"><td><code>U+10000–10FFFF</code></td><td>2</td><td><code>110110<span class="x">yyyyyyyyyy</span><br>110111<span class="x">xxxxxxxxxx</span></code><br><small class="muted">y, x = bity čísla (kód − 0x10000)</small></td><td>😀 → <code>D83D DE00</code></td></tr>
-        </tbody></table></div>
+        </tbody></table></div></div>
     </div>
     <div class="panel">
       <h3>Pořadí bajtů a BOM</h3>
+      <div class="split"><div>
       <p><b>BOM</b> (Byte Order Mark, značka pořadí bajtů) je neviditelný znak U+FEFF vložený na úplný začátek souboru. Řeší to, že 16bitovou nebo 32bitovou jednotku lze uložit dvojím způsobem: nejvýznamnějším bajtem napřed (<b>big-endian</b>, BE: € jako <code>20 AC</code>), nebo nejméně významným napřed (<b>little-endian</b>, LE: <code>AC 20</code>). Podle toho, v jakém pořadí program přečte bajty BOM (<code>FE FF</code>, nebo <code>FF FE</code>), pozná pořadí bajtů celého souboru.</p>
       <p>V UTF-8 pořadí bajtů nehraje roli, BOM tam slouží jen jako podpis „tento soubor je v UTF-8“. Program, který ho nečeká, ukáže na začátku textu rozsypaný čaj, např. <code>ď»ż</code> ve Windows-1250 nebo <code>ï»¿</code> ve Windows-1252.</p>
+      </div>
       <div class="tw"><table>
         <thead><tr><th>Kódování</th><th>BOM (U+FEFF)</th><th>Poznámka</th></tr></thead>
         <tbody>
@@ -850,6 +854,7 @@ details.teacher ol{margin:8px 0 2px;padding-left:1.3em;display:grid;gap:4px}
           <tr><td>UTF-16LE</td><td><code>FF FE</code></td><td>Windows („Unicode“ v Poznámkovém bloku).</td></tr>
           <tr><td>UTF-32BE / LE</td><td><code>00 00 FE FF</code> / <code>FF FE 00 00</code></td><td>Pozor: <code>FF FE 00 00</code> může být i UTF-16LE s BOM a znakem NUL.</td></tr>
         </tbody></table></div>
+      </div>
       <p class="muted">Historické varianty: UCS-2 (jen BMP, bez náhradních párů), UTF-7 (pro 7bitový e-mail, dnes zakázané v HTML kvůli XSS).</p>
     </div>
   </div>
