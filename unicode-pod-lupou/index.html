@@ -233,7 +233,19 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
 :root:not([data-lvl="pro"]) .adv{display:none!important}
 :root[data-lvl="r1"] .n1{display:none!important}
 
-.levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px;margin-top:6px}
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,.9fr);gap:12px;margin-top:6px}
+.toolcol{display:grid;gap:12px}
+/* nástroje: odlišené od úrovní – bez barevného pruhu, čárkovaný rámeček, ikona, menší */
+.lv.tool{--lc:var(--accent);border:1.5px dashed var(--line);background:transparent;min-height:0;padding:10px 12px 10px 52px;gap:1px}
+.lv.tool .ico{position:absolute;left:14px;top:50%;width:26px;height:26px;margin-top:-13px;color:var(--accent)}
+.lv.tool b{font-size:1.05rem}
+.lv.tool span{font-size:.84rem}
+.lv.tool small{order:-1;margin-top:0;font-size:.64rem;color:var(--muted)}
+.lv.tool:hover{border-color:var(--accent);background:var(--paper)}
+.lv.tool[aria-pressed="true"]{border-style:solid;background:var(--accent-soft)}
+@media (max-width:1000px){.levels{grid-template-columns:repeat(3,minmax(0,1fr))}.toolcol{grid-column:1/-1;grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.levels{grid-template-columns:1fr;gap:8px}.levels .lv{min-height:0;padding-block:10px}.levels .lv.tool small{display:none}.lv:not(.tool)>span:not(.mini){display:none}
+  .lv .mini,.lv .mini .cajik{width:44px}.lv.l1{padding-right:60px}.lv.tool span{display:none}.lv.tool{padding-left:46px}.levels .lv.tool{align-content:center}.lv .mini{top:50%;transform:translateY(-50%)}.lv.tool .ico{left:12px}}
 .lv{position:relative;text-align:left;border:1px solid var(--line);border-left:5px solid var(--lc);border-radius:12px;background:var(--paper);
   padding:14px 16px 14px 18px;cursor:pointer;display:grid;gap:4px;align-content:start;min-height:120px}
 .lv b{font:800 1.35rem/1.15 var(--display)}
@@ -401,25 +413,19 @@ details.teacher ol{margin:8px 0 2px;padding-left:1.3em;display:grid;gap:4px}
   <a class="back" href="../">← Všechny školní aplikace</a>
   <span class="eyebrow">Výukový průvodce · ASCII, Unicode, UTF-8</span>
   <h1>Unicode pod lupou</h1>
-  <p>Jak počítač ukládá písmena, proč se z češtiny někdy stane „rozsypaný čaj“ a co je UTF-8. Vyberte úroveň:</p>
+  <p>Jak počítač ukládá písmena, proč se z češtiny někdy stane „rozsypaný čaj“ a co je UTF-8. Vyberte úroveň výkladu nebo nástroj:</p>
   <div class="levels">
     <button class="lv l1" data-go="r1"><span class="mini cj" data-s="s-ok"></span><small>1 vyučovací hodina</small><b>1. ročník</b><span>Základy: znaky jsou čísla, ASCII, Unicode a UTF-8 v kostce. S maskotem Čajíkem a hrou.</span></button>
     <button class="lv l4" data-go="r4"><small>2–3 vyučovací hodiny</small><b>4. ročník</b><span>Kódový bod a glyf, historie kódování, UTF-8 do bitů, procvičování a test.</span></button>
     <button class="lv lp" data-go="pro"><small>příručka</small><b>Profesionál</b><span>Pro IT: UTF-16, validace, normalizace, bezpečnost, délky řetězců, databáze a web.</span></button>
+    <div class="toolcol">
+      <button class="lv tool" data-go="lab"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M7.5 10h5M10 7.5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><small>nástroj pro všechny úrovně</small><b>Laboratoř</b><span>Rozbor textu a znaku do bajtů</span></button>
+      <button class="lv tool" data-go="tabulka"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke="currentColor" stroke-width="1.4"/></svg><small>nástroj pro všechny úrovně</small><b>Tabulka znaků</b><span>Roviny, bloky, kopírování</span></button>
+    </div>
   </div>
-  <div class="tools">Nástroje pro všechny úrovně: <button data-go="lab">Laboratoř: rozbor textu a znaku</button><button data-go="tabulka">Tabulka znaků s kopírováním</button></div>
 </header>
 
-<nav class="toc" aria-label="Úrovně a nástroje">
-  <div class="tabs" role="tablist">
-    <button role="tab" data-tab="r1" aria-selected="true">1. ročník</button>
-    <button role="tab" data-tab="r4" aria-selected="false">4. ročník</button>
-    <button role="tab" data-tab="pro" aria-selected="false">Profesionál</button>
-    <span class="sep" aria-hidden="true"></span>
-    <button role="tab" data-tab="lab" aria-selected="false">Laboratoř</button>
-    <button role="tab" data-tab="tabulka" aria-selected="false">Tabulka</button>
-  </div>
-</nav>
+<div id="obsah" style="scroll-margin-top:12px"></div>
 
 <!-- ================= 1. ROČNÍK ================= -->
 <div class="view v-r1">
@@ -1475,14 +1481,12 @@ function setTab(t,push){
   t=OLD[t]||t; if(!TABS.includes(t)) t='r1';
   document.documentElement.dataset.tab=t;
   setLvl(LVLS.includes(t)?t:labLvl);
-  document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
   document.querySelectorAll('.lv').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===t));
   placeLupa();
   lsSet('unicodeTab',t);
   if(push){try{history.replaceState(null,'','#'+t);}catch(e){}}
 }
-function goTab(t){setTab(t,true);$('nav.toc').scrollIntoView({behavior:'auto',block:'start'});}
-document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)goTab(b.dataset.tab);});
+function goTab(t){setTab(t,true);const r=$('#obsah').getBoundingClientRect();if(r.top<0||r.top>innerHeight*.6)$('#obsah').scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;e.preventDefault();goTab(b.dataset.go);});
 $('#labLvl').onclick=e=>{const b=e.target.closest('[data-l]');if(!b)return;labLvl=b.dataset.l;lsSet('unicodeLabLvl',labLvl);setLvl(labLvl);};
 let startTab=(location.hash||'').slice(1); startTab=OLD[startTab]||startTab;
