@@ -142,7 +142,8 @@ select{font:500 1rem var(--body)}
 
 /* planes */
 .planes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
-.plane{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--paper);display:grid;gap:3px}
+.plane{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--paper);display:grid;gap:3px;align-content:start;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.plane:hover{border-color:var(--accent)}
 .plane .pn{font:600 .75rem var(--mono);color:var(--muted)}
 .plane b{font-family:var(--display);font-size:1.05rem}
 .plane small{font-size:.8rem;color:var(--muted);line-height:1.35}
@@ -933,9 +934,11 @@ details.teacher ol{margin:8px 0 2px;padding-left:1.3em;display:grid;gap:4px}
   <div><span class="eyebrow">Tabulka znaků</span><h2>Mapa Unicode: roviny a bloky</h2></div>
   <p>Kódových bodů je <b>1 114 112</b> (od U+0000 do U+10FFFF). Dělí se do 17 rovin po 65 536 bodech. Znaky jsou přiřazené jen malé části z nich, verze Unicode 18.0 (září 2026) jich obsahuje 172 808. Uvnitř rovin se znaky sdružují do <b>bloků</b> podle písma nebo účelu.</p>
   <p class="note"><b>Kliknutím na znak v tabulce ho zkopírujete do schránky</b> a můžete ho vložit kamkoli (Ctrl+V).</p>
+  <h3>1 · Rovina <small class="muted" style="font:400 .9rem var(--body)">klepnutím rovinu vyberete</small></h3>
+  <div class="planes" id="planes"></div>
   <div class="panel">
     <div class="blkbar">
-      <div class="field"><label for="blk">Blok</label><select id="blk"></select></div>
+      <div class="field"><label for="blk">2 · Blok ve vybrané rovině</label><select id="blk"></select></div>
       <button class="btn" id="pgPrev">‹ Předchozích 256</button>
       <button class="btn" id="pgNext">Dalších 256 ›</button>
     </div>
@@ -943,8 +946,6 @@ details.teacher ol{margin:8px 0 2px;padding-left:1.3em;display:grid;gap:4px}
     <div class="gridwrap"><div class="cgrid" id="cgrid"></div></div>
     <div class="preview" id="prev2"></div>
   </div>
-  <h3>Roviny Unicode</h3>
-  <div class="planes" id="planes"></div>
 </section>
 </div>
 
@@ -1003,7 +1004,9 @@ const BLOCKS=[
  [0x10000,0x1007F,'Lineární písmo B, slabičné'],[0x13000,0x1342F,'Egyptské hieroglyfy'],[0x1D100,0x1D1FF,'Hudební symboly'],
  [0x1D400,0x1D7FF,'Matematické alfanumerické symboly'],[0x1F000,0x1F02F,'Dlaždice mahjongu'],[0x1F0A0,0x1F0FF,'Hrací karty'],
  [0x1F300,0x1F5FF,'Různé symboly a piktogramy'],[0x1F600,0x1F64F,'Emotikony'],[0x1F680,0x1F6FF,'Doprava a mapové symboly'],
- [0x1F900,0x1F9FF,'Doplňkové symboly a piktogramy'],[0x20000,0x2A6DF,'Ideogramy CJK, rozšíření B']];
+ [0x1F900,0x1F9FF,'Doplňkové symboly a piktogramy'],[0x20000,0x2A6DF,'Ideogramy CJK, rozšíření B'],
+ [0x30000,0x323AF,'Ideogramy CJK, rozšíření G a H'],[0xE0000,0xE007F,'Tagy'],[0xE0100,0xE01EF,'Doplňkové selektory variant'],
+ [0xF0000,0xFFFFF,'Soukromé použití A (celá rovina)'],[0x100000,0x10FFFF,'Soukromé použití B (celá rovina)']];
 const blockOf=cp=>{const b=BLOCKS.find(b=>cp>=b[0]&&cp<=b[1]);return b?b[2]:'(blok není v tomto přehledu)';};
 
 const PLANES=[[0,'BMP','Základní vícejazyčná rovina','Běžná písma světa, interpunkce, většina CJK','',0x0000,0xFFFF],
@@ -1096,7 +1099,6 @@ function renderInspector(){
   $('#p8').innerHTML=explain8(cp); $('#p16').innerHTML=explain16(cp);
   document.querySelectorAll('#t8 tr[data-n]').forEach(r=>r.classList.toggle('act',!sur&&+r.dataset.n===b8.length));
   document.querySelectorAll('#t16 tr[data-n]').forEach(r=>r.classList.toggle('act',!sur&&+r.dataset.n===u16(cp).length));
-  document.querySelectorAll('.plane').forEach(p=>p.classList.toggle('on',cp>=+p.dataset.a&&cp<=+p.dataset.b));
   
 }
 
@@ -1153,10 +1155,24 @@ function explain16adv(cp){
   <div class="result">UTF-16: ${hx(hi,4)} ${hx(lo,4)}</div>`;
 }
 /* ---------- 3. mapa ---------- */
-$('#planes').innerHTML=PLANES.map(p=>`<div class="plane ${p[4]}" data-a="${p[5]}" data-b="${p[6]}"><span class="pn">Rovina ${p[0]}${p[1]!=='—'?' · '+p[1]:''}</span><b>${p[2]}</b><small>${p[3]}</small><code>${U(p[5])}–${U(p[6])}</code></div>`).join('');
-$('#blk').innerHTML=BLOCKS.map((b,i)=>`<option value="${i}">${U(b[0])}–${U(b[1])} · ${esc(b[2])}</option>`).join('');
-let blkIdx=2, page=0, selCell=null;
+$('#planes').innerHTML=PLANES.map((p,i)=>`<button class="plane ${p[4]}" data-p="${i}" aria-pressed="false"><span class="pn">Rovina ${p[0]}${p[1]!=='—'?' · '+p[1]:''}</span><b>${p[2]}</b><small>${p[3]}</small><code>${U(p[5])}–${U(p[6])}</code></button>`).join('');
+let blkIdx=2, page=0, selCell=null, planeIdx=0;
+const planeOfBlock=i=>PLANES.findIndex(p=>BLOCKS[i][0]>=p[5]&&BLOCKS[i][0]<=p[6]);
+// výběr roviny: v nabídce bloků zůstanou jen bloky této roviny
+function setPlane(pi,keepBlock){
+  planeIdx=pi;
+  document.querySelectorAll('.plane').forEach(x=>{const on=+x.dataset.p===pi;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on);});
+  const ids=BLOCKS.map((b,i)=>i).filter(i=>planeOfBlock(i)===pi);
+  $('#blk').innerHTML=ids.map(i=>`<option value="${i}">${U(BLOCKS[i][0])}–${U(BLOCKS[i][1])} · ${esc(BLOCKS[i][2])}</option>`).join('');
+  $('#blk').disabled=!ids.length;
+  if(!ids.length){blkIdx=-1;renderBlock();return;}
+  if(!(keepBlock&&ids.includes(blkIdx))){blkIdx=ids[0];page=0;}
+  $('#blk').value=blkIdx; renderBlock();
+}
+$('#planes').onclick=e=>{const b=e.target.closest('[data-p]');if(b)setPlane(+b.dataset.p);};
 function renderBlock(){
+  if(blkIdx<0){$('#pgPrev').disabled=$('#pgNext').disabled=true;
+    $('#blkInfo').textContent='Roviny 4–13 jsou zatím prázdné: Unicode v nich nemá přiřazený žádný znak.';$('#cgrid').innerHTML='';return;}
   const [a,b,name]=BLOCKS[blkIdx], total=b-a+1, pages=Math.ceil(total/256);
   page=Math.max(0,Math.min(page,pages-1));
   const start=a+page*256, end=Math.min(b,start+255);
@@ -1575,7 +1591,7 @@ window.addEventListener('hashchange',()=>{const h=OLD[location.hash.slice(1)]||l
   try{$('#idn').textContent=new URL('https://příbram.cz').hostname;}catch(e){}
 })();
 /* start */
-$('#blk').value=blkIdx; renderBlock(); preview(0x010D); selCell=0x010D; renderBlock();
+selCell=0x010D; setPlane(0,true); preview(0x010D);
 analyze(); setCP(0x010D); pNew();
 </script>
 
