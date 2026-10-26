@@ -713,7 +713,7 @@ details.teacher ol{margin:8px 0 2px;padding-left:1.3em;display:grid;gap:4px}
         <p>Text v UTF-8 přečtený podle Windows-1250 nebo 1252. Každý dvoubajtový znak se rozpadne na dva.</p>
         <div class="demo" id="dMoji"></div></div>
       <div class="panel trap"><h3>Dvě „é“, které nejsou stejné</h3>
-        <p>„é“ jde zapsat jedním kódovým bodem, nebo jako „e“ a kombinující čárku. Vypadají stejně, ale porovnání vrátí „různé“. Pomůže <b>normalizace</b>.</p>
+        <p>„é“ jde zapsat jedním kódovým bodem, nebo jako „e“ a kombinující čárku. Vypadají stejně, ale porovnání vrátí „různé“. Pomůže <b>normalizace</b>: převod textu do jednotné podoby. Forma <b>NFC</b> (složená) zapíše „é“ jedním kódovým bodem U+00E9, forma <b>NFD</b> (rozložená) jako „e“ U+0065 a kombinující čárku U+0301. Porovnávat se dají jen texty ve stejné formě.</p>
         <div class="demo" id="dNorm"></div></div>
       <div class="panel trap"><h3>Jeden obrázek, pět kódových bodů</h3>
         <p>Emoji rodiny jsou tři emoji spojená neviditelným spojovačem ZWJ (U+200D). Na obrazovce je to jeden grafém.</p>
@@ -897,7 +897,13 @@ details.teacher ol{margin:8px 0 2px;padding-left:1.3em;display:grid;gap:4px}
   <div class="cols" id="p-norm" style="scroll-margin-top:60px">
     <div class="panel">
       <h3>Normalizační formy</h3>
-      <p class="muted">NFC skládá, NFD rozkládá. Formy K (kompatibilitní) navíc převádějí ligatury, horní indexy a varianty šířky na základní znaky, takže mění význam. Před porovnáním řetězců (přihlašovací jména, hledání) sjednoťte formu. macOS ukládá názvy souborů rozložené.</p>
+      <p class="muted">Mnoho znaků jde v Unicode zapsat více způsoby, proto standard definuje čtyři normalizační formy (UAX #15):</p>
+      <ul class="check muted">
+        <li><b>NFC</b> (Normalization Form Canonical Composition, složená): znak se zapíše co nejméně kódovými body, „é“ = U+00E9. Doporučená forma pro web a výměnu dat (W3C).</li>
+        <li><b>NFD</b> (Canonical Decomposition, rozložená): základní písmeno a za ním kombinující znaménka, „é“ = U+0065 U+0301. Tak ukládal názvy souborů starší systém souborů macOS (HFS+).</li>
+        <li><b>NFKC</b> a <b>NFKD</b> (K = kompatibilitní): jako NFC a NFD, ale navíc převádějí ligatury, horní indexy a varianty šířky na základní znaky („ﬁ“ → „fi“, „²“ → „2“). Mění tím význam, hodí se pro vyhledávání a identifikátory, ne pro ukládání textu.</li>
+      </ul>
+      <p class="muted">Před porovnáním řetězců (přihlašovací jména, hledání, deduplikace) sjednoťte formu, obvykle na NFC.</p>
       <div class="field"><label for="normIn">Text</label><input type="text" id="normIn" value="Žluť ﬁ ² Å ｶ" autocomplete="off" spellcheck="false"></div>
       <div class="tw"><table id="normTbl"></table></div>
     </div>
