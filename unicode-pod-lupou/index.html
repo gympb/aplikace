@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Unicode pod lupou</title>
-<meta name="description" content="Tabulka znaků Unicode s kopírováním, výklad pro 1. ročník (ASCII, Unicode, UTF-8) a podrobnosti pro IT profesionály.">
+<meta name="description" content="Unicode, ASCII a UTF-8 ve třech úrovních: 1. ročník s maskotem Čajíkem, 4. ročník s procvičováním a příručka pro IT profesionály. Laboratoř a tabulka znaků.">
 <meta name="author" content="Ivo Bešťák, Gymnázium Příbram">
 <meta property="og:title" content="Unicode pod lupou">
 <meta property="og:image" content="nahled.png">
@@ -180,10 +180,6 @@ tr.act td{background:var(--accent-soft)}
 .trap{display:grid;gap:10px}
 .trap .demo{font-family:var(--mono);font-size:.9rem;display:grid;gap:4px;overflow-wrap:anywhere}
 .ok{color:var(--k4);font-weight:600}.bad{color:var(--k1);font-weight:600}
-:root:not([data-tab="zaklady"]) .bas{display:none!important}
-:root:not([data-tab="expert"]) .adv{display:none!important}
-:root[data-tab="tabulka"] .t-learn{display:none!important}
-:root:not([data-tab="tabulka"]) .t-table{display:none!important}
 nav.toc{align-items:center}
 .tabs{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--paper)}
 .tabs button{border:0;background:transparent;padding:8px 18px;cursor:pointer;font:600 1rem var(--display);color:var(--muted)}
@@ -226,120 +222,438 @@ ul.check{margin:0;padding-left:1.2em;display:grid;gap:6px;font-size:.94rem}
 .ascii button:hover{border-color:var(--accent);background:var(--accent-soft)}
 footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+/* ---------- úrovně a pohledy ---------- */
+/* pohled = karta v navigaci (r1, r4, pro, lab, tabulka); úroveň podrobnosti = data-lvl (r1, r4, pro) */
+.view{display:none}
+:root[data-tab="r1"] .v-r1,:root[data-tab="r4"] .v-r4,:root[data-tab="pro"] .v-pro,
+:root[data-tab="lab"] .v-lab,:root[data-tab="tabulka"] .v-tabulka{display:block}
+.view>section:first-child{border-top:0}
+:root[data-lvl="pro"] .bas{display:none!important}
+:root:not([data-lvl="pro"]) .adv{display:none!important}
+:root[data-lvl="r1"] .n1{display:none!important}
+
+.levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px;margin-top:6px}
+.lv{position:relative;text-align:left;border:1px solid var(--line);border-left:5px solid var(--lc);border-radius:12px;background:var(--paper);
+  padding:14px 16px 14px 18px;cursor:pointer;display:grid;gap:4px;align-content:start;min-height:120px}
+.lv b{font:800 1.35rem/1.15 var(--display)}
+.lv span{font-size:.93rem;color:var(--muted)}
+.lv small{font:600 .72rem/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--lc);margin-top:auto}
+.lv:hover{border-color:var(--lc)}
+.lv[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--lc);border-color:var(--lc)}
+.lv .mini{position:absolute;right:10px;top:10px;width:62px}
+.lv.l1{padding-right:82px}
+.lv .mini .cajik{width:62px}
+.lv.l1{--lc:var(--k1)}.lv.l4{--lc:var(--k2)}.lv.lp{--lc:var(--k3)}
+.tools{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.95rem;color:var(--muted);align-items:center}
+.tools button{border:0;background:none;padding:0;color:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+nav.toc{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
+.tabs{flex:none}
+.tabs button{white-space:nowrap}
+.tabs .sep{width:1px;background:var(--line);margin:6px 2px}
+.tabs .sep+button{border-left:0}
+@media (max-width:640px){.tabs button{padding:8px 11px;font-size:.92rem}}
+
+/* ---------- kurz: kapitoly ---------- */
+.course{display:grid;gap:18px;padding-block:28px 48px}
+.course-head{display:grid;gap:10px}
+.goals{margin:0;padding:12px 16px 12px 34px;border-radius:10px;background:var(--accent-soft);display:grid;gap:3px;font-size:.95rem}
+.goals::before{content:"Po této lekci umíš:";font-weight:700;margin-left:-18px}
+details.teacher{border:1px dashed var(--muted);border-radius:10px;padding:10px 14px;background:var(--paper);font-size:.94rem}
+details.teacher summary{cursor:pointer;font-weight:600}
+details.teacher ol{margin:8px 0 2px;padding-left:1.3em;display:grid;gap:4px}
+.prog{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}
+.prog button{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 12px;font-size:.88rem;cursor:pointer;color:var(--muted)}
+.prog button:hover{border-color:var(--accent);color:var(--accent)}
+.prog button.done::before{content:"✓ ";color:var(--k4);font-weight:700}
+.prog button[aria-current="step"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.prog button[aria-current="step"].done::before{color:var(--paper)}
+.ch{display:none;gap:18px;scroll-margin-top:70px}
+.ch.on{display:grid}
+.ch>p{font-size:1.05rem}
+.chnav{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:16px;flex-wrap:wrap}
+.chnav span{color:var(--muted);font-size:.9rem}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.btn.pri:hover{filter:brightness(1.1)}
+.btn:disabled{opacity:.45;cursor:default}
+.box{border-left:4px solid var(--bc,var(--accent));background:var(--paper);border-radius:0 10px 10px 0;padding:12px 16px;display:grid;gap:8px}
+.box>.lbl{font:700 .72rem/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--bc,var(--accent))}
+.box.ask{--bc:var(--k2)}.box.try{--bc:var(--k4)}.box.fun{--bc:var(--k1)}.box.tip{--bc:var(--k3)}
+.links2{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.95rem}
+
+/* kontrolní otázky a testy */
+.kq{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--paper);display:grid;gap:10px}
+.kq .q{font-weight:600;font-size:1.02rem}
+.kq .q::before{content:"Kontrolní otázka";font:700 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--k2);display:block;margin-bottom:4px}
+.quiz .kq .q::before{content:"Otázka " attr(data-n);}
+.kq.poll .q::before{content:"Hlasování";}
+.opts{display:grid;gap:6px}
+.opts button{text-align:left;border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:var(--bg);cursor:pointer;font-size:.98rem}
+.opts button:hover:not(:disabled){border-color:var(--accent)}
+.opts button:disabled{cursor:default;color:var(--ink)}
+.opts button.right{border-color:var(--k4);background:color-mix(in srgb,var(--k4) 16%,var(--paper))}
+.opts button.wrong{border-color:var(--k1);background:color-mix(in srgb,var(--k1) 14%,var(--paper))}
+.opts button.picked{border-color:var(--k2);background:color-mix(in srgb,var(--k2) 14%,var(--paper))}
+.why{display:none;font-size:.95rem}
+.kq.done .why{display:block}
+.why .v{font-weight:700;margin-right:4px}
+.why .v.ok{color:var(--k4)}.why .v.bad{color:var(--k1)}
+.quiz{display:grid;gap:12px}
+.qres{border-radius:12px;padding:16px;background:var(--accent-soft);display:none;gap:12px}
+.qres.on{display:grid}
+.qres .score{font:800 2rem/1 var(--display)}
+
+/* Čajík */
+.cj-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.cajik{width:118px;height:auto;flex:none;overflow:visible}
+.cajik .v{display:none}
+.cajik.s-ok .s-ok,.cajik.s-boo .s-boo,.cajik.s-sip .s-sip{display:inline}
+.cajik .cup{transform-origin:80px 140px;transition:transform .3s}
+.cajik.s-boo .cup{transform:rotate(-9deg)}
+.cajik .steam path{animation:steam 2.4s ease-in-out infinite}
+.cajik .steam path:nth-child(2){animation-delay:.4s}.cajik .steam path:nth-child(3){animation-delay:.8s}
+@keyframes steam{0%,100%{transform:translateY(0);opacity:.9}50%{transform:translateY(-4px);opacity:.4}}
+.cajik.s-boo .spill{animation:spill .6s ease-out}
+@keyframes spill{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.cajik .steam path,.cajik.s-boo .spill{animation:none}.cajik .cup{transition:none}}
+.say{position:relative;background:var(--paper);border:1.5px solid var(--ink);border-radius:14px;padding:10px 14px;font-weight:500;max-width:52ch;margin-bottom:34px;flex:1 1 200px}
+.say::before{content:"";position:absolute;left:-9px;bottom:14px;width:14px;height:14px;background:var(--paper);border-left:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(45deg)}
+.say b.who{display:block;font:700 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--k1);margin-bottom:2px}
+
+/* zprávy, dlaždice znaků, váha */
+.msg{background:var(--paper);border:1px solid var(--line);border-radius:18px 18px 18px 4px;padding:12px 16px;font:500 1.12rem/1.45 var(--glyph);max-width:560px;overflow-wrap:anywhere;display:grid;gap:4px}
+.msg small{font:600 .75rem var(--body);color:var(--muted)}
+.tiles{display:flex;flex-wrap:wrap;gap:8px}
+.tile{border:1px solid var(--line);border-radius:10px;background:var(--paper);padding:8px 10px;display:grid;gap:3px;justify-items:center;min-width:68px}
+.tile .tg{font:500 1.9rem/1.2 var(--glyph);min-height:2.3rem}
+.tile code{font-size:.8rem}
+.tile small{font-size:.74rem;color:var(--muted);text-align:center;max-width:16ch;line-height:1.3}
+.tile .bin{font:500 .72rem var(--mono);color:var(--k2);letter-spacing:.04em}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.gal .tile{justify-items:start;min-width:0}
+.wt{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.wc{display:grid;gap:4px;justify-items:center;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--paper)}
+.wc .tg{font:500 1.5rem/1.2 var(--glyph)}
+.wc .sq{display:flex;gap:2px}
+.wc .sq i{width:11px;height:11px;border-radius:2px;background:var(--k)}
+.wc small{font:600 .7rem var(--mono);color:var(--muted)}
+.total{font:700 1.15rem var(--mono)}
+.sms{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.sms div{background:var(--paper);padding:10px 14px;display:grid;gap:2px}
+.sms b{font:600 1.35rem/1.15 var(--mono)}
+.sms span{font-size:.8rem;color:var(--muted)}
+.seg{justify-self:start;display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--paper);flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:7px 14px;cursor:pointer;font-weight:600;font-size:.92rem;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--paper)}
+.game{display:grid;gap:12px}
+.game .opts button{font-family:var(--glyph)}
+.gstat{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font:600 .9rem var(--mono);color:var(--muted)}
+.font-demo{display:flex;flex-wrap:wrap;gap:10px}
+.font-demo span{border:1px solid var(--line);border-radius:8px;background:var(--paper);width:78px;height:78px;display:grid;place-items:center;font-size:3rem;line-height:1}
+.font-demo small{display:block;text-align:center;font-size:.72rem;color:var(--muted);margin-top:2px}
+.tofu{display:inline-block;width:.62em;height:.9em;border:2px solid currentColor;border-radius:2px;vertical-align:-.1em}
+.prac{display:grid;gap:12px}
+.prac .task{font-size:1.1rem}
+.prac .task .big{font:500 2.2rem/1.2 var(--glyph);margin-right:10px;vertical-align:middle}
+.prac .row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.prac .row input{flex:1 1 200px;font-family:var(--mono)}
+.prac .res{display:grid;gap:10px}
+.lvlbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding-top:22px;font-size:.93rem;color:var(--muted)}
+.ptoc{display:flex;flex-wrap:wrap;gap:6px}
+.ptoc .chip{text-decoration:none;color:var(--ink)}
+@media (max-width:560px){.cj-row{flex-wrap:nowrap;align-items:center}.cj-row .cajik{width:70px}.cj-row .say{margin-bottom:0;min-width:0}}
+
 </style>
 </head>
 <body>
 
+<template id="cjT"><svg class="cajik s-ok" viewBox="0 0 160 160" role="img" aria-label="Čajík, hrneček čaje">
+  <g class="cup">
+    <g class="v s-ok s-sip steam" fill="none" stroke="#8fa3b0" stroke-width="3" stroke-linecap="round"><path d="M62 32c-6-7 6-11 0-18"/><path d="M80 30c-6-8 6-12 0-20"/><path d="M98 32c-6-7 6-11 0-18"/></g>
+    <ellipse cx="80" cy="141" rx="64" ry="11" fill="#e3ebf0" stroke="#132029" stroke-width="3"/>
+    <path d="M126 64c26-4 28 40-4 42" fill="none" stroke="#132029" stroke-width="13" stroke-linecap="round"/>
+    <path d="M126 64c26-4 28 40-4 42" fill="none" stroke="#fffdf8" stroke-width="7" stroke-linecap="round"/>
+    <path d="M28 50h104c0 42-14 74-34 82H62C42 124 28 92 28 50z" fill="#fffdf8" stroke="#132029" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M31 66c30 8 68 8 98 0" fill="none" stroke="#0c5f8f" stroke-width="5"/>
+    <ellipse cx="80" cy="50" rx="52" ry="10" fill="#a8622a" stroke="#132029" stroke-width="3"/>
+    <ellipse cx="64" cy="48" rx="14" ry="3" fill="#c98a4f"/>
+    <g class="v s-ok s-sip"><ellipse cx="48" cy="101" rx="6" ry="4" fill="#f4a6a0" opacity=".85"/><ellipse cx="112" cy="101" rx="6" ry="4" fill="#f4a6a0" opacity=".85"/></g>
+    <g class="v s-ok"><circle cx="63" cy="88" r="6" fill="#132029"/><circle cx="97" cy="88" r="6" fill="#132029"/><circle cx="65" cy="86" r="2" fill="#fff"/><circle cx="99" cy="86" r="2" fill="#fff"/>
+      <path d="M68 103q12 11 24 0" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/>
+      <path d="M30 84c-12-4-18-14-16-26" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/><circle cx="14" cy="55" r="5.5" fill="#fffdf8" stroke="#132029" stroke-width="3"/></g>
+    <g class="v s-sip"><path d="M55 90q8-8 16 0M89 90q8-8 16 0" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/>
+      <path d="M73 104q7 5 14 0" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/>
+      <path d="M30 96c-10 2-14 8-14 14" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/><circle cx="16" cy="113" r="5.5" fill="#fffdf8" stroke="#132029" stroke-width="3"/>
+      <path d="M134 22c-3-5-11-2-8 4l8 8 8-8c3-6-5-9-8-4z" fill="#d7262e"/></g>
+    <g class="v s-boo"><circle cx="62" cy="86" r="10" fill="#fff" stroke="#132029" stroke-width="3"/><circle cx="98" cy="86" r="10" fill="#fff" stroke="#132029" stroke-width="3"/>
+      <circle cx="62" cy="88" r="3.5" fill="#132029"/><circle cx="98" cy="88" r="3.5" fill="#132029"/>
+      <path d="M50 69l15 5M110 69l-15 5" stroke="#132029" stroke-width="3" stroke-linecap="round"/>
+      <ellipse cx="80" cy="109" rx="6" ry="8" fill="#132029"/>
+      <path d="M30 82c-12-6-16-18-12-30M130 108c10-2 18 2 22 10" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="18" cy="50" r="5.5" fill="#fffdf8" stroke="#132029" stroke-width="3"/>
+      <g class="spill" font-family="IBM Plex Mono, monospace" font-weight="700" fill="#a8622a"><text x="30" y="32" font-size="16">Ĺ™</text><text x="88" y="16" font-size="15">Ă˝</text><text x="118" y="36" font-size="14">ÄŤ</text><circle cx="72" cy="34" r="4"/><circle cx="58" cy="18" r="3"/><circle cx="108" cy="22" r="3"/></g></g>
+  </g></svg></template>
+
 <div class="wrap">
 <header class="hero">
   <a class="back" href="../">← Všechny školní aplikace</a>
-  <span class="eyebrow">Výukový průvodce · Unicode, UTF-8, UTF-16</span>
+  <span class="eyebrow">Výukový průvodce · ASCII, Unicode, UTF-8</span>
   <h1>Unicode pod lupou</h1>
-  <p>Unicode přiřazuje každému znaku na světě číslo, tzv. <b>kódový bod</b>. O tom, jak se číslo zapíše do bajtů, rozhoduje <b>kódování</b>: UTF-8, UTF-16 nebo UTF-32. Vyberte kartu podle toho, co potřebujete.</p>
+  <p>Jak počítač ukládá písmena, proč se z češtiny někdy stane „rozsypaný čaj“ a co je UTF-8. Vyberte úroveň:</p>
+  <div class="levels">
+    <button class="lv l1" data-go="r1"><span class="mini cj" data-s="s-ok"></span><small>1 vyučovací hodina</small><b>1. ročník</b><span>Základy: znaky jsou čísla, ASCII, Unicode a UTF-8 v kostce. S maskotem Čajíkem a hrou.</span></button>
+    <button class="lv l4" data-go="r4"><small>2–3 vyučovací hodiny</small><b>4. ročník</b><span>Kódový bod a glyf, historie kódování, UTF-8 do bitů, procvičování a test.</span></button>
+    <button class="lv lp" data-go="pro"><small>příručka</small><b>Profesionál</b><span>Pro IT: UTF-16, validace, normalizace, bezpečnost, délky řetězců, databáze a web.</span></button>
+  </div>
+  <div class="tools">Nástroje pro všechny úrovně: <button data-go="lab">Laboratoř: rozbor textu a znaku</button><button data-go="tabulka">Tabulka znaků s kopírováním</button></div>
 </header>
 
-<nav class="toc" aria-label="Karty a obsah">
+<nav class="toc" aria-label="Úrovně a nástroje">
   <div class="tabs" role="tablist">
-    <button role="tab" data-tab="tabulka" aria-selected="true">Tabulka</button>
-    <button role="tab" data-tab="zaklady" aria-selected="false">Základy</button>
-    <button role="tab" data-tab="expert" aria-selected="false">Expert</button>
-  </div>
-  <div class="links">
-    <a class="bas" href="#pojmy">Pojmy</a><a class="t-learn" href="#text">Rozbor textu</a><a class="t-learn" href="#lupa">Znak krok za krokem</a><a class="t-learn" href="#pravidla">Pravidla</a><a class="t-learn" href="#pasti">Pasti</a><a class="adv" href="#pro">Pro vývojáře</a>
+    <button role="tab" data-tab="r1" aria-selected="true">1. ročník</button>
+    <button role="tab" data-tab="r4" aria-selected="false">4. ročník</button>
+    <button role="tab" data-tab="pro" aria-selected="false">Profesionál</button>
+    <span class="sep" aria-hidden="true"></span>
+    <button role="tab" data-tab="lab" aria-selected="false">Laboratoř</button>
+    <button role="tab" data-tab="tabulka" aria-selected="false">Tabulka</button>
   </div>
 </nav>
 
-<section id="pojmy" class="bas">
-  <div><span class="eyebrow">Základy</span><h2>Jak počítač ukládá text</h2></div>
-  <div class="chain" style="margin-top:0" aria-label="Od znaku k bajtům">
-    <div><small>1 · Znak</small><span class="big" id="hG">č</span><small>to, co vidíme</small></div>
-    <div><small>2 · Kódový bod (Unicode)</small><span class="big mono" id="hU">U+010D</span><small id="hD">= 269 desítkově</small></div>
-    <div><small>3 · Bajty (kódování)</small>
-      <span class="enc">UTF-8&nbsp;&nbsp;<b id="h8">C4 8D</b></span>
-      <span class="enc">UTF-16&nbsp;<b id="h16">01 0D</b></span>
-      <span class="enc">UTF-32&nbsp;<b id="h32">00 00 01 0D</b></span></div>
+<!-- ================= 1. ROČNÍK ================= -->
+<div class="view v-r1">
+<div class="course" data-course="r1">
+  <div class="course-head">
+    <ul class="goals"><li>vysvětlit, že počítač ukládá místo písmen čísla,</li><li>říct, co je ASCII a proč mu chybí „ř“,</li><li>vysvětlit, k čemu je Unicode a co dělá UTF-8,</li><li>poznat rozsypaný čaj a říct, proč vzniká.</li></ul>
+    <details class="teacher"><summary>Pro učitele: plán vyučovací hodiny (45 minut)</summary>
+      <ol>
+        <li><b>0–5 min</b> · Kapitola 1: promítněte rozbitou pozvánku, žáci hlasují, co se stalo. Odpověď nechte na konec hodiny.</li>
+        <li><b>5–12 min</b> · Kapitola 2: každý napíše své jméno a přečte nahlas jeho čísla.</li>
+        <li><b>12–17 min</b> · Kapitola 3: ASCII, hledání „ř“. Kdo chce víc, má aplikaci Kód ASCII.</li>
+        <li><b>17–24 min</b> · Kapitola 4: Unicode; žáci najdou v Tabulce nejpodivnější znak a pošlou ho spolužákovi.</li>
+        <li><b>24–32 min</b> · Kapitola 5: váha zprávy a SMS s háčky.</li>
+        <li><b>32–40 min</b> · Kapitola 6: rozluštění pozvánky a hra Zachraň zprávu ve dvojicích.</li>
+        <li><b>40–45 min</b> · Kapitola 7: test, společná kontrola.</li>
+      </ol></details>
+    <ol class="prog" aria-label="Kapitoly"></ol>
   </div>
 
-  <p>Počítač umí uložit jen čísla, přesněji jedničky a nuly (bity), seskupené po osmi do <b>bajtů</b>. Aby mohl uložit písmeno, musí existovat dohoda, které číslo patří kterému znaku. Taková dohoda se jmenuje <b>kódová tabulka</b>.</p>
-  <dl class="terms">
-    <div><dt>Znak</dt><dd>Písmeno, číslice, mezera, symbol nebo emoji. Třeba „A“, „č“ nebo „€“.</dd></div>
-    <div><dt>Kódový bod</dt><dd>Číslo, které znaku přidělil Unicode. Píše se šestnáctkově jako U+0041.</dd></div>
-    <div><dt>Kódování</dt><dd>Pravidlo, jak kódový bod zapsat do bajtů. Nejčastěji UTF-8.</dd></div>
-    <div><dt>Bajt</dt><dd>8 bitů. Může mít 256 hodnot (0–255), šestnáctkově 00–FF.</dd></div>
-  </dl>
-  <div class="timeline">
-    <div class="tl"><span class="yr">1963</span><span class="kind">kódová tabulka</span><b>ASCII</b><p>7 bitů, 128 znaků: anglická abeceda, číslice, interpunkce a řídicí znaky. Žádná diakritika.</p></div>
-    <div class="tl"><span class="yr">80. a 90. léta</span><span class="kind">kódové tabulky</span><b>Kódové stránky</b><p>8 bitů, 256 znaků. Horní polovina se liší podle jazyka. Pro češtinu Windows-1250, ISO 8859-2 nebo Kamenických. Stejný bajt znamenal v každé tabulce něco jiného.</p></div>
-    <div class="tl"><span class="yr">1991</span><span class="kind">kódová tabulka</span><b>Unicode</b><p>Jedna společná tabulka pro všechna písma světa. Každý znak má své číslo (kódový bod) bez ohledu na jazyk.</p></div>
-    <div class="tl enc"><span class="yr">1992</span><span class="kind">kódování · způsob zápisu</span><b>UTF-8</b><p>Není to další tabulka. Je to pravidlo, jak čísla z tabulky Unicode zapsat do bajtů. Anglický text zabere 1 bajt na znak, česká písmena s háčkem 2 bajty. Dnes standard webu.</p></div>
-  </div>
-  <div class="panel">
-    <h3>Tabulka ASCII: tisknutelné znaky 32–126</h3>
-    <p class="muted">Pod každým znakem je jeho číslo v desítkové soustavě. Kliknutím znak rozložíte na bity. Tato čísla platí beze změny i v Unicode a UTF-8.</p>
-    <div class="ascii" id="ascii"></div>
-  </div>
-</section>
-
-<section id="text" class="t-learn">
-  <div><span class="eyebrow">Rozbor textu</span><h2>Napište cokoli a podívejte se, z čeho se skládá</h2></div>
-  <p class="muted">Každý rámeček je jeden viditelný znak (grafém). Pod ním jsou kódové body, ze kterých se skládá, a počet bajtů v UTF-8. Najetím myši zvýrazníte odpovídající bajty, kliknutím znak rozložíte na bity.</p>
-  <div class="panel">
-    <div class="field"><label for="txt">Text</label><input type="text" id="txt" value="Aé€𝄞 čeština 😀" autocomplete="off" spellcheck="false"></div>
-    <div class="chips" id="samples"></div>
-    <div class="counts" id="counts"></div>
-    <div class="graphs" id="graphs"></div>
-    <div class="striplbl"><span>UTF-8 · bajty</span><b id="n8"></b></div>
-    <div class="strip" id="s8"></div>
-    <div class="striplbl"><span>UTF-16 · 16bitové jednotky</span><b id="n16"></b></div>
-    <div class="strip" id="s16"></div>
-    <p class="muted" id="trunc" hidden>Zobrazeno prvních 300 kódových bodů.</p>
-  </div>
-</section>
-
-<section id="lupa" class="t-learn">
-  <div><span class="eyebrow">Jeden znak krok za krokem</span><h2>Jak se z kódového bodu stanou bajty</h2></div>
-  <div class="panel">
-    <div class="walk">
-      <div class="field"><label for="cpIn">Znak nebo kódový bod (např. č, U+1F600, 20AC)</label><input type="text" id="cpIn" autocomplete="off" spellcheck="false"></div>
-      <button class="btn" id="prev" aria-label="Předchozí kódový bod">‹ −1</button>
-      <button class="btn" id="next" aria-label="Následující kódový bod">+1 ›</button>
+  <article class="ch" data-title="Rozbitá pozvánka">
+    <div><span class="eyebrow">Kapitola 1</span><h2>Pozvánka, která dorazila rozbitá</h2></div>
+    <p>Spolužák poslal pozvánku na ples. Kamarádovi ale na starém počítači dorazila takhle:</p>
+    <div class="msg"><small>Od: Tomáš · Předmět: ples</small><span id="inv1"></span></div>
+    <div class="cj-row"><span class="cj" data-s="s-boo"></span><p class="say"><b class="who">Čajík</b>Ouha! Někdo mi rozsypal čaj. Tedy… písmenka. Takhle rozbitému textu se česky opravdu říká <b>rozsypaný čaj</b>.</p></div>
+    <div class="kq poll" data-ok="*">
+      <p class="q">Co myslíš, že se stalo?</p>
+      <div class="opts"><button data-v="a">Tomáš má rozbitou klávesnici.</button><button data-v="b">Zprávu cestou pokazil virus.</button><button data-v="c">Počítač kamaráda si zprávu „přečetl“ jinak, než ji Tomášův počítač zapsal.</button></div>
+      <div class="why">Tvůj tip si zapamatuj. Jestli jsi měl pravdu, zjistíš v kapitole 6. Napovíme: o čaj ani o virus nejde.</div>
     </div>
-    <div class="insp-head">
-      <div class="bigglyph" id="ig"></div>
-      <dl class="facts" id="facts"></dl>
-    </div>
-    <div class="sizes" id="sizes"></div>
-  </div>
-  <div class="cols">
-    <div class="panel" id="p8"></div>
-    <div class="panel" id="p16"></div>
-  </div>
-</section>
+  </article>
 
-<section id="mapa" class="t-table">
-  <div><span class="eyebrow">Tabulka znaků</span><h2>Mapa Unicode: roviny a bloky</h2></div>
-  <p>Kódových bodů je <b>1 114 112</b> (od U+0000 do U+10FFFF). Dělí se do 17 rovin po 65 536 bodech. Znaky jsou přiřazené jen malé části z nich, verze Unicode 17.0 (2025) jich obsahuje téměř 160 000. Uvnitř rovin se znaky sdružují do <b>bloků</b> podle písma nebo účelu.</p>
-  <p class="note"><b>Kliknutím na znak v tabulce ho zkopírujete do schránky</b> a můžete ho vložit kamkoli (Ctrl+V).</p>
-  <div class="panel">
-    <div class="blkbar">
-      <div class="field"><label for="blk">Blok</label><select id="blk"></select></div>
-      <button class="btn" id="pgPrev">‹ Předchozích 256</button>
-      <button class="btn" id="pgNext">Dalších 256 ›</button>
+  <article class="ch" data-title="Znaky jsou čísla">
+    <div><span class="eyebrow">Kapitola 2</span><h2>Počítač zná jen čísla</h2></div>
+    <p>Počítač neumí uložit písmeno. Umí uložit jen čísla, přesněji jedničky a nuly. Proto existuje dohoda: <b>každý znak má své číslo</b>. Takové dohodě se říká <b>kódová tabulka</b> a číslu znaku <b>kód</b>.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej</span>
+      <div class="field"><label for="nameIn">Napiš své jméno</label><input type="text" id="nameIn" value="Čajík" autocomplete="off" spellcheck="false" maxlength="40"></div>
+      <div class="tiles" id="nameOut"></div>
+      <p class="muted" style="font-size:.92rem">Nahoře je znak, uprostřed jeho číslo, dole totéž číslo ve dvojkové soustavě, tak jak ho ukládá počítač.</p>
     </div>
-    <p class="muted" id="blkInfo"></p>
-    <div class="gridwrap"><div class="cgrid" id="cgrid"></div></div>
-    <div class="preview" id="prev2"></div>
-  </div>
-  <h3>Roviny Unicode</h3>
-  <div class="planes" id="planes"></div>
-</section>
+    <div class="kq" data-ok="b">
+      <p class="q">Co počítač skutečně uloží, když napíšeš velké „A“?</p>
+      <div class="opts"><button data-v="a">Malý obrázek písmene A.</button><button data-v="b">Číslo 65 zapsané jedničkami a nulami.</button><button data-v="c">Zvuk, jak se A vyslovuje.</button></div>
+      <div class="why">Počítač uloží číslo 65, ve dvojkové soustavě 01000001. Jak má „A“ vypadat na obrazovce, pozná až podle písma (fontu).</div>
+    </div>
+  </article>
 
-<section id="pravidla" class="t-learn">
-  <div><span class="eyebrow">Pravidla</span><h2>UTF-8, UTF-16 a UTF-32 v tabulkách</h2></div>
-  <div class="cols">
+  <article class="ch" data-title="ASCII">
+    <div><span class="eyebrow">Kapitola 3</span><h2>ASCII: 128 znaků z doby dálnopisu</h2></div>
+    <p>Nejznámější starou kódovou tabulku vymysleli v roce 1963 v USA a jmenuje se <b>ASCII</b>. Má 128 znaků: anglickou abecedu, číslice, interpunkci a řídicí znaky pro dálnopisy, třeba „zazvoň zvonkem“. Každé číslo se vejde do 7 bitů.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej</span>
+      <p>Tisknutelné znaky ASCII. Klepni na znak a uvidíš jeho číslo ve dvojkové soustavě. <b>Najdeš tu „ř“?</b></p>
+      <div class="ascii" id="ascii"></div>
+      <p class="out" id="asciiOut">Klepni na nějaký znak.</p>
+    </div>
+    <div class="cj-row"><span class="cj" data-s="s-ok"></span><p class="say"><b class="who">Čajík</b>Neboj, „ř“ tam opravdu není. Ani „č“, „ž“ nebo „ů“. ASCII vymysleli Američané pro angličtinu. Každá země si pak udělala vlastní tabulku a čeština jich měla v 90. letech hned několik. Stejné číslo tak jednou znamenalo „ř“ a jinde úplně jiný znak.</p></div>
+    <div class="links2"><a href="../ascii-kod/">Aplikace Kód ASCII: přenos po bitech →</a><a href="../baudotuv-kod/">Baudotův kód: předchůdce z dálnopisů →</a></div>
+    <div class="kq" data-ok="a">
+      <p class="q">Proč ASCII nestačí na češtinu?</p>
+      <div class="opts"><button data-v="a">Nemá čísla pro písmena s háčky a čárkami.</button><button data-v="b">Neumí velká písmena.</button><button data-v="c">Je na češtinu moc pomalé.</button></div>
+      <div class="why">ASCII má jen 128 míst a všechna zabrala angličtina, číslice, interpunkce a řídicí znaky. Na „ř“ nezbylo místo.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Unicode">
+    <div><span class="eyebrow">Kapitola 4</span><h2>Unicode: jedna tabulka pro celý svět</h2></div>
+    <p>Aby skončil zmatek s mnoha tabulkami, vznikl v roce 1991 <b>Unicode</b>: jedna společná tabulka pro všechna písma světa. Každý znak má v ní <b>své číslo, které platí všude</b>. Dnes obsahuje <b>172 808 znaků</b> (verze 18.0 ze září 2026) a každý rok přibývají další, včetně nových emoji.</p>
+    <p>Čísla se v Unicode píšou šestnáctkově se značkou U+. Třeba <code>U+0159</code> je „ř“ a desítkově je to 345.</p>
+    <div class="gal" id="gal"></div>
+    <div class="links2"><a href="#tabulka" data-go="tabulka">Prohlédni si všechny znaky v Tabulce. Klepnutím je zkopíruješ a pošleš kamarádovi →</a></div>
+    <div class="kq" data-ok="c">
+      <p class="q">Má písmeno „ř“ v Unicode na všech počítačích světa stejné číslo?</p>
+      <div class="opts"><button data-v="a">Ne, každá země ho má jinde.</button><button data-v="b">Jen na počítačích s Windows.</button><button data-v="c">Ano, právě proto Unicode vznikl.</button></div>
+      <div class="why">Ano. „ř“ je všude U+0159. Díky tomu se text ze Česka přečte správně v Japonsku i na mobilu.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="UTF-8">
+    <div><span class="eyebrow">Kapitola 5</span><h2>UTF-8: písmena různé váhy</h2></div>
+    <p>Unicode říká, <b>jaké číslo</b> znak má. Ještě je potřeba domluvit, <b>jak to číslo uložit do bajtů</b> (bajt = 8 bitů, čísla 0 až 255). Nejčastější způsob se jmenuje <b>UTF-8</b> a používá ho 99 % webů.</p>
+    <p>UTF-8 je šetrné: malá čísla uloží do 1 bajtu, větší do 2, 3 nebo 4 bajtů. Anglické písmeno tak „váží“ 1 bajt, české s háčkem 2, znak eura 3 a emoji 4.</p>
+    <div class="box try"><span class="lbl">Kolik váží tvoje zpráva?</span>
+      <div class="field"><label for="wIn">Napiš zprávu</label><input type="text" id="wIn" value="Čau 😀 kup čaj za 5 €" autocomplete="off" spellcheck="false" maxlength="60"></div>
+      <div class="wt" id="wOut"></div>
+      <p class="total" id="wTot"></p>
+      <div class="cj-row"><span class="cj" id="wCj" data-s="s-ok"></span><p class="say" id="wSay"></p></div>
+    </div>
+    <div class="box fun"><span class="lbl">Proč babička píše SMS bez háčků</span>
+      <p>Do jedné SMS se vejde jen 140 bajtů. Bez háčků používá telefon úsporné kódování se 7 bity na znak, takže se vejde <b>160 znaků</b>. Stačí jedno „č“ a telefon přepne na kódování se 2 bajty na znak. Do SMS se pak vejde jen <b>70 znaků</b>.</p>
+      <div class="field"><label for="smsIn">Zkus napsat SMS</label><input type="text" id="smsIn" value="Ahoj babi, přijedu v sobotu na buchty. Upeč jich hodně!" autocomplete="off" spellcheck="false"></div>
+      <div class="sms" id="smsOut"></div>
+      <div><button class="btn" id="smsStrip">Odstranit háčky a čárky</button></div>
+    </div>
+    <div class="kq" data-ok="b">
+      <p class="q">Kolik bajtů zabere v UTF-8 slovo „kůň“?</p>
+      <div class="opts"><button data-v="a">3 bajty, jsou to tři písmena.</button><button data-v="b">5 bajtů.</button><button data-v="c">6 bajtů.</button></div>
+      <div class="why">„k“ zabere 1 bajt, „ů“ a „ň“ po 2 bajtech: 1 + 2 + 2 = 5 bajtů.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Rozsypaný čaj">
+    <div><span class="eyebrow">Kapitola 6</span><h2>Rozluštění: jak vzniká rozsypaný čaj</h2></div>
+    <p>Tomášův počítač zapsal pozvánku v UTF-8. Starý počítač kamaráda ale bajty přečetl podle staré české tabulky Windows-1250. Písmeno „ř“ se v UTF-8 ukládá do dvou bajtů. Stará tabulka každý z nich přečetla jako samostatný znak, a tak z jednoho „ř“ vznikly dva podivné znaky:</p>
+    <div class="tw"><table id="mojiTbl"></table></div>
+    <div class="box try"><span class="lbl">Oprav pozvánku</span>
+      <p>Zvol, podle čeho má počítač bajty přečíst:</p>
+      <div class="seg" id="invSeg"><button data-e="windows-1250" aria-pressed="true">Windows-1250</button><button data-e="iso-8859-2" aria-pressed="false">ISO 8859-2</button><button data-e="utf-8" aria-pressed="false">UTF-8</button></div>
+      <div class="msg"><small>Od: Tomáš · Předmět: ples</small><span id="inv2"></span></div>
+      <div class="cj-row"><span class="cj" id="invCj" data-s="s-boo"></span><p class="say" id="invSay">Pořád rozsypané…</p></div>
+    </div>
+    <p>Odpověď z kapitoly 1 tedy zní: <b>počítač kamaráda si zprávu přečetl podle jiné tabulky</b>, než podle které ji Tomášův počítač zapsal. Bajty dorazily v pořádku, jen je čtenář pochopil jinak.</p>
+    <div class="box fun game" id="game"><span class="lbl">Hra: Zachraň zprávu</span>
+      <div class="gstat"><span id="gRound"></span><span id="gScore"></span></div>
+      <div id="gBody"></div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Test">
+    <div><span class="eyebrow">Kapitola 7</span><h2>Test: co jsi zjistil</h2></div>
+    <div class="quiz" id="quizR1">
+      <div class="kq" data-ok="a"><p class="q">Co je kód znaku v Unicode (kódový bod)?</p>
+        <div class="opts"><button data-v="a">Číslo, které Unicode přidělil znaku.</button><button data-v="b">Bod, který dostaneš za správně napsaný program.</button><button data-v="c">Tečka nad písmenem i.</button></div>
+        <div class="why">Kódový bod je číslo znaku, třeba U+0159 pro „ř“.</div></div>
+      <div class="kq" data-ok="c"><p class="q">Kolik bajtů zabere v UTF-8 písmeno „A“?</p>
+        <div class="opts"><button data-v="a">3, za každou čáru jeden.</button><button data-v="b">2, protože je velké.</button><button data-v="c">1.</button></div>
+        <div class="why">Znaky z ASCII zaberou v UTF-8 jediný bajt. Velikost písmene nehraje roli.</div></div>
+      <div class="kq" data-ok="b"><p class="q">Proč vznikl Unicode?</p>
+        <div class="opts"><button data-v="a">Aby šla poslat emoji v SMS.</button><button data-v="b">Aby měl každý znak všech písem jedno číslo platné všude.</button><button data-v="c">Protože se Američanům ASCII omrzelo.</button></div>
+        <div class="why">Unicode nahradil desítky různých kódových tabulek jednou společnou.</div></div>
+      <div class="kq" data-ok="a"><p class="q">Kamarádovi přišlo „DobrĂ˝ den“. Co se stalo?</p>
+        <div class="opts"><button data-v="a">Text zapsaný v UTF-8 se přečetl podle jiné tabulky.</button><button data-v="b">Zpráva se cestou nachladila.</button><button data-v="c">Kamarád má prasklý displej.</button></div>
+        <div class="why">Je to rozsypaný čaj: „ý“ má v UTF-8 dva bajty a stará tabulka z nich udělala dva znaky „Ă˝“.</div></div>
+      <div class="kq" data-ok="c"><p class="q">Co je UTF-8?</p>
+        <div class="opts"><button data-v="a">Nová verze ASCII pro Česko.</button><button data-v="b">Značka mobilního telefonu.</button><button data-v="c">Způsob, jak čísla znaků z Unicode uložit do bajtů.</button></div>
+        <div class="why">Unicode určuje číslo znaku, UTF-8 určuje, jak to číslo zapsat do 1 až 4 bajtů.</div></div>
+      <div class="qres"><div class="cj-row"><span class="cj" data-s="s-sip"></span><div class="say"><b class="who">Čajík</b><span class="score"></span><p class="qsay"></p></div></div>
+        <div class="box tip"><span class="lbl">Co si odnášíš</span><ul class="check" style="list-style:disc"><li>Počítač ukládá místo znaků čísla.</li><li>ASCII má 128 znaků a chybí mu česká písmena.</li><li>Unicode dává každému znaku světa jedno číslo.</li><li>UTF-8 ukládá ta čísla do 1 až 4 bajtů. Přečtení podle jiné tabulky dá rozsypaný čaj.</li></ul></div>
+        <div><button class="btn qreset">Zkusit test znovu</button></div></div>
+    </div>
+  </article>
+
+  <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
+</div>
+</div>
+
+<!-- ================= 4. ROČNÍK ================= -->
+<div class="view v-r4">
+<div class="course" data-course="r4">
+  <div class="course-head">
+    <ul class="goals"><li>rozlišit znak, kódový bod, glyf a kódování,</li><li>popsat vývoj od ASCII přes kódové stránky k Unicode,</li><li>ručně zakódovat a dekódovat znak v UTF-8,</li><li>porovnat UTF-8 s UTF-16 a UTF-32,</li><li>vysvětlit typické chyby: rozsypaný čaj, dvě různá „é“, délku řetězce.</li></ul>
+    <details class="teacher"><summary>Pro učitele: plán na 2–3 vyučovací hodiny</summary>
+      <ol>
+        <li><b>1. hodina</b> · Kapitoly 1–3: pojmy, historie a stavba Unicode. Domácí úkol: najít v Tabulce znak z roviny 1.</li>
+        <li><b>2. hodina</b> · Kapitoly 4–5: UTF-8 do bitů. Žáci nejprve kódují na papír a pak se kontrolují v aplikaci. UTF-16 a UTF-32 jen pro přehled.</li>
+        <li><b>3. hodina</b> · Kapitoly 6–8: pasti, procvičování (soutěž ve dvojicích: kdo vyřeší víc úloh za 10 minut) a test.</li>
+      </ol></details>
+    <ol class="prog" aria-label="Kapitoly"></ol>
+  </div>
+
+  <article class="ch" data-title="Pojmy">
+    <div><span class="eyebrow">Kapitola 1</span><h2>Znak, kódový bod, glyf, písmo</h2></div>
+    <div class="chain" aria-label="Od znaku k bajtům">
+      <div><small>1 · Znak</small><span class="big" id="hG">č</span><small>abstraktní „písmeno č“</small></div>
+      <div><small>2 · Kódový bod (Unicode)</small><span class="big mono" id="hU">U+010D</span><small id="hD">= 269 desítkově</small></div>
+      <div><small>3 · Bajty (kódování)</small>
+        <span class="enc">UTF-8&nbsp;&nbsp;<b id="h8">C4 8D</b></span>
+        <span class="enc">UTF-16&nbsp;<b id="h16">01 0D</b></span>
+        <span class="enc">UTF-32&nbsp;<b id="h32">00 00 01 0D</b></span></div>
+    </div>
+    <dl class="terms">
+      <div><dt>Znak</dt><dd>Nejmenší jednotka textu s významem: písmeno, číslice, symbol, emoji. Nezáleží na tom, jak je nakreslený.</dd></div>
+      <div><dt>Kódový bod</dt><dd>Číslo znaku v Unicode, zapisuje se U+0000 až U+10FFFF.</dd></div>
+      <div><dt>Glyf</dt><dd>Konkrétní obrázek znaku v určitém písmu. Jeden znak má v každém fontu jiný glyf.</dd></div>
+      <div><dt>Písmo (font)</dt><dd>Sada glyfů. Když glyf pro znak chybí, ukáže se prázdný obdélník <span class="tofu" aria-label="prázdný obdélník"></span>, tzv. „tofu“.</dd></div>
+      <div><dt>Kódování</dt><dd>Pravidlo, jak kódový bod zapsat do bajtů: UTF-8, UTF-16, UTF-32.</dd></div>
+      <div><dt>Grafém</dt><dd>To, co člověk vnímá jako jeden znak. Může se skládat z více kódových bodů, třeba emoji rodiny.</dd></div>
+    </dl>
+    <div class="box try"><span class="lbl">Jeden znak, čtyři glyfy</span>
+      <div class="font-demo"><div><span style="font-family:Georgia,'Times New Roman',serif">g</span><small>patkové</small></div><div><span style="font-family:var(--body)">g</span><small>bezpatkové</small></div><div><span style="font-family:var(--mono)">g</span><small>neproporcionální</small></div><div><span style="font-family:'Comic Sans MS','Segoe Print',cursive">g</span><small>rukopisné</small></div></div>
+      <p>Všechny čtyři mají stejný kódový bod U+0067. Liší se jen glyf. Google kvůli „tofu“ vytvořil rodinu písem <b>Noto</b>: název je zkratka „no more tofu“ a pokrývá skoro celý Unicode.</p>
+    </div>
+    <div class="kq" data-ok="a">
+      <p class="q">Písmeno „a“ napsané v Arialu a v Times New Roman: mají stejný kódový bod?</p>
+      <div class="opts"><button data-v="a">Ano, liší se jen glyf.</button><button data-v="b">Ne, každý font má vlastní čísla.</button><button data-v="c">Jen pokud jsou stejně velká.</button></div>
+      <div class="why">Kódový bod patří znaku, ne písmu. Font jen rozhoduje, jak znak vypadá.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Historie">
+    <div><span class="eyebrow">Kapitola 2</span><h2>Od dálnopisu k UTF-8</h2></div>
+    <div class="timeline">
+      <div class="tl"><span class="yr">1870–1930</span><span class="kind">telegraf</span><b>Baudotův kód</b><p>5 bitů na znak, přepínání písmen a číslic. <a href="../baudotuv-kod/">Aplikace Baudotův kód</a>.</p></div>
+      <div class="tl"><span class="yr">1963</span><span class="kind">kódová tabulka</span><b>ASCII</b><p>7 bitů, 128 znaků. Angličtina, číslice, interpunkce, řídicí znaky. <a href="../ascii-kod/">Aplikace Kód ASCII</a>.</p></div>
+      <div class="tl"><span class="yr">80. léta</span><span class="kind">kódové stránky</span><b>8 bitů, 256 znaků</b><p>Horních 128 míst si každý jazyk obsadil po svém. Pro češtinu vznikly Kamenických, IBM CP852 (Latin 2 pro DOS) a ISO 8859-2.</p></div>
+      <div class="tl"><span class="yr">90. léta</span><span class="kind">kódová válka</span><b>Windows-1250 a spol.</b><p>Windows používaly 1250, Unix ISO 8859-2, DOS CP852 nebo Kamenických. Weby nabízely odkazy „verze bez háčků / ISO / Windows“. Soubor z jiného počítače se často zobrazil rozsypaný.</p></div>
+      <div class="tl"><span class="yr">1991</span><span class="kind">kódová tabulka</span><b>Unicode 1.0</b><p>Jedna tabulka pro všechna písma. Původně počítal s 65 536 znaky, později se rozšířil na 1 114 112 kódových bodů.</p></div>
+      <div class="tl enc"><span class="yr">1992</span><span class="kind">kódování</span><b>UTF-8</b><p>Ken Thompson a Rob Pike ho navrhli během jednoho večera, náčrt prý vznikl na papírovém prostírání v restauraci. Kompatibilní s ASCII a úsporné.</p></div>
+      <div class="tl"><span class="yr">2008</span><span class="kind">web</span><b>UTF-8 vede</b><p>UTF-8 se stává nejrozšířenějším kódováním na webu.</p></div>
+      <div class="tl"><span class="yr">2026</span><span class="kind">dnes</span><b>99 % webů</b><p>UTF-8 používá 99,1 % webů (W3Techs, říjen 2026). Unicode 18.0 má 172 808 znaků.</p></div>
+    </div>
+    <div class="kq" data-ok="b">
+      <p class="q">Proč se v 90. letech stejný český soubor zobrazoval na různých počítačích různě?</p>
+      <div class="opts"><button data-v="a">Soubory se při kopírování na disketu poškozovaly.</button><button data-v="b">Každý systém používal jinou kódovou stránku, takže stejný bajt znamenal jiný znak.</button><button data-v="c">Starší počítače neuměly zobrazit malá písmena.</button></div>
+      <div class="why">Bajt nad 127 znamenal ve Windows-1250, ISO 8859-2 a Kamenických pokaždé něco jiného. Soubor sám neříkal, podle které tabulky ho číst.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Stavba Unicode">
+    <div><span class="eyebrow">Kapitola 3</span><h2>Jak je Unicode uspořádaný</h2></div>
+    <p>Unicode má místo pro <b>1 114 112 kódových bodů</b> (U+0000 až U+10FFFF). Dělí se do <b>17 rovin</b> po 65 536 bodech a roviny se dělí na <b>bloky</b> podle písma nebo účelu. Přiřazeno je zatím 172 808 znaků, většina místa je volná.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Rovina</th><th>Rozsah</th><th>Co obsahuje</th></tr></thead>
+      <tbody>
+        <tr><td><b>0 · BMP</b></td><td><code>U+0000–FFFF</code></td><td>Základní vícejazyčná rovina: latinka, cyrilice, řečtina, arabština, většina čínských znaků, symboly</td></tr>
+        <tr><td><b>1 · SMP</b></td><td><code>U+10000–1FFFF</code></td><td>Emoji, historická písma (hieroglyfy), hudební a matematické symboly</td></tr>
+        <tr><td><b>2 a 3</b></td><td><code>U+20000–3FFFF</code></td><td>Vzácné čínské znaky</td></tr>
+        <tr><td><b>4–13</b></td><td></td><td>Zatím prázdné</td></tr>
+        <tr><td><b>14</b></td><td><code>U+E0000–EFFFF</code></td><td>Speciální účely (tagy, selektory variant)</td></tr>
+        <tr><td><b>15 a 16</b></td><td><code>U+F0000–10FFFF</code></td><td>Soukromé použití: vlastní znaky, třeba ikony ve fontech</td></tr>
+      </tbody></table></div>
+    <p>Nové znaky přidává <b>Unicode Consortium</b>, nová verze vychází zhruba jednou ročně. Návrhy nových emoji může poslat kdokoli, schvalování ale trvá i dva roky.</p>
+    <div class="box try"><span class="lbl">Kde bydlí znak?</span>
+      <div class="field"><label for="whereIn">Vlož znak</label><input type="text" id="whereIn" value="😀" autocomplete="off" spellcheck="false"></div>
+      <p class="out" id="whereOut"></p>
+    </div>
+    <div class="kq" data-ok="c">
+      <p class="q">V které rovině leží většina emoji?</p>
+      <div class="opts"><button data-v="a">V rovině 0 (BMP).</button><button data-v="b">V rovině 15, jsou to vlastní znaky.</button><button data-v="c">V rovině 1 (SMP).</button></div>
+      <div class="why">Většina emoji má kódový bod nad U+1F000, tedy v rovině 1. Proto v UTF-8 zaberou 4 bajty.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="UTF-8 do bitů">
+    <div><span class="eyebrow">Kapitola 4</span><h2>UTF-8 podrobně: od čísla k bajtům</h2></div>
+    <p>UTF-8 zapíše kódový bod do 1 až 4 bajtů. <b>Úvodní bity prvního bajtu</b> říkají, kolik bajtů znak má. <b>Navazující bajty</b> začínají vždy <code>10</code>. Bity kódového bodu se doplní místo <span style="color:var(--k2);font-weight:600">x</span>.</p>
     <div class="panel">
-      <h3>UTF-8: 1 až 4 bajty</h3>
-      <p class="muted">Úvodní bity prvního bajtu říkají, kolik bajtů znak má. Navazující bajty začínají vždy <code>10</code>. Bity kódového bodu se doplní místo <span class="x" style="color:var(--k2);font-weight:600">x</span>.</p>
       <div class="tw"><table class="tpl" id="t8">
         <thead><tr><th>Rozsah</th><th>Bitů</th><th>Šablona</th><th>Příklad</th></tr></thead>
         <tbody>
@@ -349,9 +663,165 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
           <tr data-n="4"><td><code>U+10000–10FFFF</code></td><td>21</td><td><code>11110<span class="x">xxx</span> 10<span class="x">xxxxxx</span> 10<span class="x">xxxxxx</span> 10<span class="x">xxxxxx</span></code></td><td>😀 → <code>F0 9F 98 80</code></td></tr>
         </tbody></table></div>
     </div>
-    <div class="panel adv">
+    <p>Díky této stavbě má UTF-8 dvě výhody. Je <b>kompatibilní s ASCII</b>: znaky 0–127 mají stejný jediný bajt jako v ASCII. A je <b>samosynchronizující</b>: když čtení začne uprostřed, program přeskočí bajty <code>10xxxxxx</code> a najde začátek dalšího znaku.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: znak krok za krokem</span><p>Zadej znak nebo kódový bod a sleduj, jak se z něj stanou bajty. Řádek použité šablony se v tabulce nahoře zvýrazní.</p></div>
+    <div id="slotR4"></div>
+    <div class="cj-row"><span class="cj" data-s="s-ok"></span><p class="say"><b class="who">Tip od Čajíka</b>Navazující bajt poznáš i bez převodu do dvojkové soustavy: v šestnáctkové je to vždy <code>80</code> až <code>BF</code>. První bajt <code>C2–DF</code> ohlašuje 2 bajty, <code>E0–EF</code> 3 bajty a <code>F0–F4</code> 4 bajty.</p></div>
+    <div class="kq" data-ok="b">
+      <p class="q">Bajt ve tvaru 10xxxxxx je v UTF-8…</p>
+      <div class="opts"><button data-v="a">…první bajt dvoubajtového znaku.</button><button data-v="b">…navazující bajt, pokračování předchozího znaku.</button><button data-v="c">…znak z ASCII.</button></div>
+      <div class="why">Bajty začínající 10 jsou vždy navazující. Znak ASCII začíná 0, první bajt vícebajtového znaku 110, 1110 nebo 11110.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="UTF-16 a UTF-32">
+    <div><span class="eyebrow">Kapitola 5</span><h2>UTF-16 a UTF-32 pro přehled</h2></div>
+    <p>Kromě UTF-8 existují další dva způsoby, jak zapsat stejné kódové body. <b>UTF-16</b> ukládá znaky po 16 bitech: znaky z roviny 0 zaberou 2 bajty, ostatní (emoji) 4 bajty. Používají ho Windows, Java a JavaScript pro řetězce v paměti. <b>UTF-32</b> zapíše každý znak do 4 bajtů. Je jednoduché, ale plýtvá místem, proto se pro soubory skoro nepoužívá.</p>
+    <div class="panel">
+      <div class="tw"><table>
+        <thead><tr><th></th><th>UTF-8</th><th>UTF-16</th><th>UTF-32</th></tr></thead>
+        <tbody>
+          <tr><td>Délka znaku</td><td>1–4 bajty</td><td>2 nebo 4 bajty</td><td>vždy 4 bajty</td></tr>
+          <tr><td>Anglický text</td><td>1 bajt na znak</td><td>2 bajty na znak</td><td>4 bajty na znak</td></tr>
+          <tr><td>Český text</td><td>1–2 bajty na znak</td><td>2 bajty na znak</td><td>4 bajty na znak</td></tr>
+          <tr><td>Kde se používá</td><td>web, soubory, e-mail, Linux</td><td>Windows, Java, JavaScript (v paměti)</td><td>zřídka, vnitřní zpracování</td></tr>
+        </tbody></table></div>
+    </div>
+    <p class="muted">Jak přesně UTF-16 zapisuje emoji (náhradní páry) a proč záleží na pořadí bajtů, najdete v úrovni Profesionál.</p>
+    <div class="kq" data-ok="c">
+      <p class="q">Kolik bajtů zabere libovolný znak v UTF-32?</p>
+      <div class="opts"><button data-v="a">1 až 4 podle znaku.</button><button data-v="b">2.</button><button data-v="c">Vždy 4.</button></div>
+      <div class="why">UTF-32 má pevnou délku 4 bajty (32 bitů) pro každý znak.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Pasti">
+    <div><span class="eyebrow">Kapitola 6</span><h2>Pasti v praxi</h2></div>
+    <div class="cols">
+      <div class="panel trap"><h3>Rozsypaný čaj</h3>
+        <p>Text v UTF-8 přečtený podle Windows-1250 nebo 1252. Každý dvoubajtový znak se rozpadne na dva.</p>
+        <div class="demo" id="dMoji"></div></div>
+      <div class="panel trap"><h3>Dvě „é“, které nejsou stejné</h3>
+        <p>„é“ jde zapsat jedním kódovým bodem, nebo jako „e“ a kombinující čárku. Vypadají stejně, ale porovnání vrátí „různé“. Pomůže <b>normalizace</b>.</p>
+        <div class="demo" id="dNorm"></div></div>
+      <div class="panel trap"><h3>Jeden obrázek, pět kódových bodů</h3>
+        <p>Emoji rodiny jsou tři emoji spojená neviditelným spojovačem ZWJ (U+200D). Na obrazovce je to jeden grafém.</p>
+        <div class="demo" id="dZwj"></div></div>
+      <div class="panel trap"><h3>Délka řetězce v programu</h3>
+        <p>JavaScript, Java i C# počítají délku v jednotkách UTF-16. Emoji z roviny 1 má proto délku 2.</p>
+        <div class="demo" id="dLen"></div></div>
+    </div>
+    <div class="kq" data-ok="a">
+      <p class="q">Uživatel se zaregistroval jako „René“ a pak se nemůže přihlásit, i když jméno píše stejně. Co je nejpravděpodobnější příčina?</p>
+      <div class="opts"><button data-v="a">„é“ bylo jednou zapsané jedním kódovým bodem a podruhé jako e + čárka; chybí normalizace.</button><button data-v="b">Databáze neumí velká písmena.</button><button data-v="c">„é“ v UTF-8 nejde uložit.</button></div>
+      <div class="why">Různé klávesnice a systémy (třeba macOS) zapisují diakritiku různě. Před porovnáním je potřeba text normalizovat, obvykle do NFC.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Procvičování">
+    <div><span class="eyebrow">Kapitola 7</span><h2>Procvičování</h2></div>
+    <p>Úlohy se generují náhodně, takže každý dostane jiné. Když se spleteš, aplikace ukáže celý postup.</p>
+    <div class="panel prac">
+      <div class="seg" id="pType"><button data-t="mix" aria-pressed="true">Mix</button><button data-t="bytes" aria-pressed="false">Kolik bajtů</button><button data-t="enc" aria-pressed="false">Zakóduj</button><button data-t="dec" aria-pressed="false">Dekóduj</button></div>
+      <div class="gstat"><span id="pStat">Vyřešeno 0 z 0</span><span id="pStreak"></span></div>
+      <div class="task" id="pTask"></div>
+      <div id="pAns"></div>
+      <div class="res" id="pRes"></div>
+      <div><button class="btn pri" id="pNext">Další úloha</button></div>
+    </div>
+    <div class="cj-row"><span class="cj" id="pCj" data-s="s-ok"></span><p class="say" id="pSay"><b class="who">Čajík</b>Na papír si napiš šablonu z kapitoly 4. Pak už je to jen doplňování bitů.</p></div>
+  </article>
+
+  <article class="ch" data-title="Test">
+    <div><span class="eyebrow">Kapitola 8</span><h2>Test</h2></div>
+    <div class="quiz" id="quizR4">
+      <div class="kq" data-ok="b"><p class="q">Kódový bod znaku € je U+20AC. Kolik bajtů zabere v UTF-8?</p>
+        <div class="opts"><button data-v="a">2</button><button data-v="b">3</button><button data-v="c">4</button></div>
+        <div class="why">20AC leží v rozsahu U+0800–FFFF, tedy 3 bajty: E2 82 AC.</div></div>
+      <div class="kq" data-ok="b"><p class="q">Který z bajtů znaku „č“ (C4 8D) je navazující?</p>
+        <div class="opts"><button data-v="a">C4</button><button data-v="b">8D</button><button data-v="c">Oba.</button></div>
+        <div class="why">8D = 10001101 začíná 10, je tedy navazující. C4 = 11000100 ohlašuje dvoubajtový znak.</div></div>
+      <div class="kq" data-ok="a"><p class="q">Proč je UTF-8 zpětně kompatibilní s ASCII?</p>
+        <div class="opts"><button data-v="a">Znaky 0–127 mají v UTF-8 stejný jediný bajt jako v ASCII.</button><button data-v="b">UTF-8 obsahuje jen znaky ASCII.</button><button data-v="c">ASCII bylo v roce 1992 přejmenováno na UTF-8.</button></div>
+        <div class="why">Každý soubor v čistém ASCII je zároveň platný soubor v UTF-8.</div></div>
+      <div class="kq" data-ok="c"><p class="q">Co je glyf?</p>
+        <div class="opts"><button data-v="a">Číslo znaku v Unicode.</button><button data-v="b">16bitová jednotka v UTF-16.</button><button data-v="c">Konkrétní grafická podoba znaku v daném písmu.</button></div>
+        <div class="why">Znak je abstraktní, glyf je jeho obrázek v konkrétním fontu.</div></div>
+      <div class="kq" data-ok="a"><p class="q">Kolik kódových bodů má Unicode k dispozici?</p>
+        <div class="opts"><button data-v="a">1 114 112 (U+0000 až U+10FFFF).</button><button data-v="b">65 536.</button><button data-v="c">Neomezeně, rozšiřuje se podle potřeby.</button></div>
+        <div class="why">17 rovin × 65 536 = 1 114 112. Hranici U+10FFFF určuje UTF-16, které víc neumí zapsat.</div></div>
+      <div class="kq" data-ok="a"><p class="q">Slovo „Příliš“ se zobrazilo jako „PĹ™ĂliĹˇ“. Co se stalo?</p>
+        <div class="opts"><button data-v="a">Bajty UTF-8 byly přečteny jako Windows-1250.</button><button data-v="b">Text ve Windows-1250 byl přečten jako UTF-8.</button><button data-v="c">Chybí font s českými znaky.</button></div>
+        <div class="why">Opačná chyba (1250 čtená jako UTF-8) dá místo písmen náhradní znak �. Chybějící font by ukázal „tofu“.</div></div>
+      <div class="kq" data-ok="b"><p class="q">Kolik bajtů zabere 😀 (U+1F600) v UTF-16?</p>
+        <div class="opts"><button data-v="a">2</button><button data-v="b">4</button><button data-v="c">3</button></div>
+        <div class="why">Znaky mimo rovinu 0 zabírají v UTF-16 dvě 16bitové jednotky (náhradní pár), tedy 4 bajty.</div></div>
+      <div class="kq" data-ok="c"><p class="q">Proč "👍".length v JavaScriptu vrací 2?</p>
+        <div class="opts"><button data-v="a">Emoji se skládá ze dvou obrázků.</button><button data-v="b">Je to chyba prohlížeče.</button><button data-v="c">JavaScript počítá jednotky UTF-16 a toto emoji zabere dvě.</button></div>
+        <div class="why">👍 je jediný kódový bod U+1F44D, ale v UTF-16 se zapíše dvěma jednotkami. Počet kódových bodů dá [..."👍"].length.</div></div>
+      <div class="qres"><div class="cj-row"><span class="cj" data-s="s-sip"></span><div class="say"><b class="who">Čajík</b><span class="score"></span><p class="qsay"></p></div></div>
+        <div><button class="btn qreset">Zkusit test znovu</button></div></div>
+    </div>
+  </article>
+
+  <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
+</div>
+</div>
+
+<!-- ================= LABORATOŘ ================= -->
+<div class="view v-lab">
+<div class="lvlbar"><span>Podrobnost výkladu:</span><div class="seg" id="labLvl"><button data-l="r1" aria-pressed="false">1. ročník</button><button data-l="r4" aria-pressed="true">4. ročník</button><button data-l="pro" aria-pressed="false">Profesionál</button></div></div>
+<section id="text">
+  <div><span class="eyebrow">Laboratoř</span><h2>Napište cokoli a podívejte se, z čeho se skládá</h2></div>
+  <p class="muted">Každý rámeček je jeden viditelný znak. Pod ním jsou kódové body, ze kterých se skládá, a počet bajtů v UTF-8. Najetím myši zvýrazníte odpovídající bajty, kliknutím znak rozložíte níže.</p>
+  <div class="panel">
+    <div class="field"><label for="txt">Text</label><input type="text" id="txt" value="Aé€𝄞 čeština 😀" autocomplete="off" spellcheck="false"></div>
+    <div class="chips" id="samples"></div>
+    <div class="counts" id="counts"></div>
+    <div class="graphs" id="graphs"></div>
+    <div class="striplbl"><span>UTF-8 · bajty</span><b id="n8"></b></div>
+    <div class="strip" id="s8"></div>
+    <div class="striplbl n1"><span>UTF-16 · 16bitové jednotky</span><b id="n16"></b></div>
+    <div class="strip n1" id="s16"></div>
+    <p class="muted" id="trunc" hidden>Zobrazeno prvních 300 kódových bodů.</p>
+  </div>
+</section>
+<section>
+  <div><span class="eyebrow">Laboratoř</span><h2>Jeden znak pod lupou</h2></div>
+  <div id="slotLab">
+  <div id="lupa" style="display:grid;gap:18px;scroll-margin-top:60px">
+    <div class="panel">
+      <div class="walk">
+        <div class="field"><label for="cpIn">Znak nebo kódový bod (např. č, U+1F600, 20AC)</label><input type="text" id="cpIn" autocomplete="off" spellcheck="false"></div>
+        <button class="btn" id="prev" aria-label="Předchozí kódový bod">‹ −1</button>
+        <button class="btn" id="next" aria-label="Následující kódový bod">+1 ›</button>
+      </div>
+      <div class="insp-head">
+        <div class="bigglyph" id="ig"></div>
+        <dl class="facts" id="facts"></dl>
+      </div>
+      <div class="sizes" id="sizes"></div>
+    </div>
+    <div class="cols n1">
+      <div class="panel" id="p8"></div>
+      <div class="panel" id="p16"></div>
+    </div>
+  </div>
+  </div>
+</section>
+</div>
+
+<!-- ================= PROFESIONÁL ================= -->
+<div class="view v-pro">
+<section id="pro">
+  <div><span class="eyebrow">Profesionál · příručka</span><h2>Unicode v praxi IT</h2></div>
+  <div class="ptoc"><a class="chip" href="#p-utf16">UTF-16 a BOM</a><a class="chip" href="#p-dec">Dekodér a validace</a><a class="chip" href="#p-len">Délky řetězců</a><a class="chip" href="#p-norm">Normalizace a bezpečnost</a><a class="chip" href="#p-code">Zápis v kódu a řazení</a><a class="chip" href="#p-check">Kontrolní seznam</a></div>
+  <p class="muted">Krokový rozbor libovolného znaku včetně náhradních párů UTF-16 a zápisů pro HTML, JavaScript a URL najdete v <a href="#lab" data-go="lab">Laboratoři</a>, která se v této úrovni přepne na plnou podrobnost.</p>
+
+  <div class="cols" id="p-utf16" style="scroll-margin-top:60px">
+    <div class="panel">
       <h3>UTF-16: 2 nebo 4 bajty</h3>
-      <p class="muted">Znaky z roviny 0 (BMP) se vejdou do jedné 16bitové jednotky. Ostatní se rozdělí na <b>náhradní pár</b> (surrogate pair). Body D800–DFFF jsou pro tento účel vyhrazené a nejsou to znaky.</p>
+      <p class="muted">Znaky z roviny 0 (BMP) se vejdou do jedné 16bitové jednotky. Ostatní se rozdělí na <b>náhradní pár</b> (surrogate pair). Body D800–DFFF jsou pro tento účel vyhrazené a nejsou to znaky. Hranice U+10FFFF celého Unicode vychází právě z kapacity náhradních párů.</p>
       <div class="tw"><table class="tpl" id="t16">
         <thead><tr><th>Rozsah</th><th>Jednotek</th><th>Zápis</th><th>Příklad</th></tr></thead>
         <tbody>
@@ -359,46 +829,21 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
           <tr data-n="2"><td><code>U+10000–10FFFF</code></td><td>2</td><td><code>110110<span class="x">yyyyyyyyyy</span><br>110111<span class="x">xxxxxxxxxx</span></code><br><small class="muted">y, x = bity čísla (kód − 0x10000)</small></td><td>😀 → <code>D83D DE00</code></td></tr>
         </tbody></table></div>
     </div>
+    <div class="panel">
+      <h3>Pořadí bajtů a BOM</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Kódování</th><th>BOM (U+FEFF)</th><th>Poznámka</th></tr></thead>
+        <tbody>
+          <tr><td>UTF-8</td><td><code>EF BB BF</code></td><td>Pořadí bajtů nehraje roli. BOM je nepovinný a v Unixu spíš škodí (shebang, konkatenace).</td></tr>
+          <tr><td>UTF-16BE</td><td><code>FE FF</code></td><td>Výchozí pro „UTF-16“ bez BOM podle RFC 2781.</td></tr>
+          <tr><td>UTF-16LE</td><td><code>FF FE</code></td><td>Windows („Unicode“ v Poznámkovém bloku).</td></tr>
+          <tr><td>UTF-32BE / LE</td><td><code>00 00 FE FF</code> / <code>FF FE 00 00</code></td><td>Pozor: <code>FF FE 00 00</code> může být i UTF-16LE s BOM a znakem NUL.</td></tr>
+        </tbody></table></div>
+      <p class="muted">Historické varianty: UCS-2 (jen BMP, bez náhradních párů), UTF-7 (pro 7bitový e-mail, dnes zakázané v HTML kvůli XSS).</p>
+    </div>
   </div>
-  <div class="panel">
-    <h3>Srovnání kódování</h3>
-    <div class="tw"><table>
-      <thead><tr><th></th><th>UTF-8</th><th>UTF-16</th><th>UTF-32</th></tr></thead>
-      <tbody>
-        <tr><td>Kódová jednotka</td><td>8 bitů</td><td>16 bitů</td><td>32 bitů</td></tr>
-        <tr><td>Délka znaku</td><td>1–4 bajty</td><td>2 nebo 4 bajty</td><td>vždy 4 bajty</td></tr>
-        <tr><td>ASCII text</td><td>beze změny, 1 bajt na znak</td><td>2 bajty na znak</td><td>4 bajty na znak</td></tr>
-        <tr><td>Český text</td><td>písmena s diakritikou 2 bajty</td><td>2 bajty na znak</td><td>4 bajty na znak</td></tr>
-        <tr class="adv"><td>Pořadí bajtů</td><td>nehraje roli</td><td>BE nebo LE (BOM <code>FE FF</code> / <code>FF FE</code>)</td><td>BE nebo LE</td></tr>
-        <tr><td>Kde se používá</td><td>web, HTML, JSON, Linux, e-maily, většina souborů</td><td>Windows API, Java, JavaScript, .NET (řetězce v paměti)</td><td>vnitřní zpracování, kde je potřeba pevná délka</td></tr>
-      </tbody></table></div>
-  </div>
-</section>
 
-<section id="pasti" class="t-learn">
-  <div><span class="eyebrow">Pasti v praxi</span><h2>Na co si dát pozor</h2></div>
-  <div class="cols">
-    <div class="panel trap adv"><h3>Dvě „é“, které nejsou stejné</h3>
-      <p>Písmeno é lze zapsat jedním kódovým bodem, nebo jako e + kombinující čárku. Vypadají stejně, ale počítač je bez <b>normalizace</b> (NFC/NFD) nepovažuje za shodné.</p>
-      <div class="demo" id="dNorm"></div></div>
-    <div class="panel trap adv"><h3>Jeden obrázek, pět kódových bodů</h3>
-      <p>Emoji rodiny vzniká spojením tří emoji pomocí neviditelného spojovače ZWJ (U+200D). Na obrazovce je to jeden znak.</p>
-      <div class="demo" id="dZwj"></div></div>
-    <div class="panel trap"><h3>Rozsypaný čaj (mojibake)</h3>
-      <p>Když se bajty UTF-8 přečtou ve špatném kódování, vznikne nesmysl. Typické pro staré české stránky a e-maily.</p>
-      <div class="demo" id="dMoji"></div></div>
-    <div class="panel trap bas"><h3>Kolik místa zabere text</h3>
-      <p>Stejně dlouhá věta zabere různý počet bajtů podle toho, jaké znaky obsahuje a jaké kódování použijeme.</p>
-      <div class="demo" id="dSize"></div></div>
-    <div class="panel trap adv"><h3>Délka řetězce v programu</h3>
-      <p>JavaScript, Java i C# počítají délku v jednotkách UTF-16. Emoji mimo BMP proto mají délku 2.</p>
-      <div class="demo" id="dLen"></div></div>
-  </div>
-</section>
-
-<section id="pro" class="adv">
-  <div><span class="eyebrow">Pro vývojáře a správce</span><h2>Unicode v praxi IT</h2></div>
-  <div class="cols">
+  <div class="cols" id="p-dec" style="scroll-margin-top:60px">
     <div class="panel">
       <h3>Dekodér bajtů</h3>
       <p class="muted">Vložte bajty šestnáctkově a zjistěte, co znamenají. Chybné sekvence dekodér nahradí znakem U+FFFD &#xFFFD;, přesně jako prohlížeč.</p>
@@ -423,20 +868,20 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
           <tr><td>Maximum je U+10FFFF</td><td><code>F4 90 80 80</code></td></tr>
           <tr><td>Navazující bajt musí být <code>80–BF</code> a sekvence nesmí skončit předčasně</td><td><code>E2 82</code>, <code>C4 41</code></td></tr>
         </tbody></table></div>
-      <p class="muted">Java v JNI a serializaci používá „Modified UTF-8“: NUL jako <code>C0 80</code> a znaky mimo BMP jako dva zakódované surrogáty (CESU-8). Ani jedno není platné UTF-8.</p>
+      <p class="muted">Java v JNI a serializaci používá „Modified UTF-8“: NUL jako <code>C0 80</code> a znaky mimo BMP jako dva zakódované surrogáty (CESU-8). Ani jedno není platné UTF-8. Windows názvy souborů mohou obsahovat nepárové surrogáty, pro jejich přenos existuje WTF-8.</p>
     </div>
   </div>
 
-  <div class="panel">
+  <div class="panel" id="p-len" style="scroll-margin-top:60px">
     <h3>Délka řetězce v programovacích jazycích</h3>
-    <p class="muted">„Délka“ může znamenat bajty, jednotky UTF-16, kódové body nebo grafémy. Pro řetězec <b id="lenStr"></b>:</p>
+    <p class="muted">„Délka“ může znamenat bajty, jednotky UTF-16, kódové body nebo grafémy (rozšířené grafémové shluky podle UAX #29). Pro limit délky ve formuláři počítejte grafémy, pro limit v databázi bajty nebo znaky podle typu sloupce. Pro řetězec <b id="lenStr"></b>:</p>
     <div class="tw"><table id="lenTbl"></table></div>
   </div>
 
-  <div class="cols">
+  <div class="cols" id="p-norm" style="scroll-margin-top:60px">
     <div class="panel">
       <h3>Normalizační formy</h3>
-      <p class="muted">NFC skládá, NFD rozkládá. Formy K (kompatibilitní) navíc převádějí ligatury, horní indexy a varianty šířky na základní znaky, takže mění význam. Před porovnáním řetězců (přihlašovací jména, hledání) sjednoťte formu.</p>
+      <p class="muted">NFC skládá, NFD rozkládá. Formy K (kompatibilitní) navíc převádějí ligatury, horní indexy a varianty šířky na základní znaky, takže mění význam. Před porovnáním řetězců (přihlašovací jména, hledání) sjednoťte formu. macOS ukládá názvy souborů rozložené.</p>
       <div class="field"><label for="normIn">Text</label><input type="text" id="normIn" value="Žluť ﬁ ² Å ｶ" autocomplete="off" spellcheck="false"></div>
       <div class="tw"><table id="normTbl"></table></div>
     </div>
@@ -449,7 +894,7 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
     </div>
   </div>
 
-  <div class="cols">
+  <div class="cols" id="p-code" style="scroll-margin-top:60px">
     <div class="panel">
       <h3>Zápis znaku v kódu</h3>
       <div class="field"><label for="escIn">Znak</label><input type="text" id="escIn" value="č😀" autocomplete="off" spellcheck="false"></div>
@@ -457,12 +902,12 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
     </div>
     <div class="panel">
       <h3>Řazení a velikost písmen</h3>
-      <p class="muted">Řazení podle čísel kódových bodů neodpovídá české abecedě. Správné pořadí dává kolace pro daný jazyk (ICU, <code>Intl.Collator</code>, kolace v databázi).</p>
+      <p class="muted">Řazení podle čísel kódových bodů neodpovídá české abecedě. Správné pořadí dává kolace pro daný jazyk (ICU, <code>Intl.Collator</code>, kolace v databázi). Pro porovnání bez ohledu na velikost používejte case folding, ne <code>toLowerCase()</code>.</p>
       <div class="demo trap" id="collDemo" style="font-family:var(--mono);font-size:.9rem;display:grid;gap:6px"></div>
     </div>
   </div>
 
-  <div class="panel">
+  <div class="panel" id="p-check" style="scroll-margin-top:60px">
     <h3>Kontrolní seznam pro web, databáze a soubory</h3>
     <ul class="check">
       <li><b>HTML:</b> <code>&lt;meta charset="utf-8"&gt;</code> jako první prvek v <code>&lt;head&gt;</code>, v prvních 1024 bajtech dokumentu.</li>
@@ -476,13 +921,36 @@ footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem
       <li><b>Windows konzole:</b> <code>chcp 65001</code> přepne na UTF-8; PowerShell 7 používá UTF-8 výchozím způsobem, Windows PowerShell 5.1 ne.</li>
       <li><b>Domény (IDN):</b> <code>příbram.cz</code> se v DNS zapisuje Punycode jako <code id="idn">xn--pbram-…</code>. Prohlížeče zobrazují Punycode místo Unicode, když doména míchá písma.</li>
       <li><b>E-mail:</b> hlavičky s diakritikou se kódují MIME (<code>=?UTF-8?B?…?=</code>), tělo deklaruje <code>charset=utf-8</code>.</li>
+      <li><b>Regulární výrazy:</b> pro písmena používejte třídy Unicode (<code>\p{L}</code> s příznakem <code>u</code> v JavaScriptu), ne <code>[a-zA-Z]</code>, které vynechá „ř“.</li>
     </ul>
   </div>
 </section>
+</div>
+
+<!-- ================= TABULKA ================= -->
+<div class="view v-tabulka">
+<section id="mapa">
+  <div><span class="eyebrow">Tabulka znaků</span><h2>Mapa Unicode: roviny a bloky</h2></div>
+  <p>Kódových bodů je <b>1 114 112</b> (od U+0000 do U+10FFFF). Dělí se do 17 rovin po 65 536 bodech. Znaky jsou přiřazené jen malé části z nich, verze Unicode 18.0 (září 2026) jich obsahuje 172 808. Uvnitř rovin se znaky sdružují do <b>bloků</b> podle písma nebo účelu.</p>
+  <p class="note"><b>Kliknutím na znak v tabulce ho zkopírujete do schránky</b> a můžete ho vložit kamkoli (Ctrl+V).</p>
+  <div class="panel">
+    <div class="blkbar">
+      <div class="field"><label for="blk">Blok</label><select id="blk"></select></div>
+      <button class="btn" id="pgPrev">‹ Předchozích 256</button>
+      <button class="btn" id="pgNext">Dalších 256 ›</button>
+    </div>
+    <p class="muted" id="blkInfo"></p>
+    <div class="gridwrap"><div class="cgrid" id="cgrid"></div></div>
+    <div class="preview" id="prev2"></div>
+  </div>
+  <h3>Roviny Unicode</h3>
+  <div class="planes" id="planes"></div>
+</section>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<footer>Unicode pod lupou · výukový materiál. Názvy bloků jsou přeloženy pro výuku, oficiální údaje najdete na <a href="https://www.unicode.org/charts/" target="_blank" rel="noopener">unicode.org/charts</a>.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 22. 10. 2026</footer>
+<footer>Unicode pod lupou · výukový materiál. Názvy bloků jsou přeloženy pro výuku, oficiální údaje najdete na <a href="https://www.unicode.org/charts/" target="_blank" rel="noopener">unicode.org/charts</a>. Údaje o počtu znaků: Unicode 18.0, podíl UTF-8 na webu: W3Techs, říjen 2026.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 26. 10. 2026</footer>
 </div>
 
 <script>
@@ -547,7 +1015,6 @@ const PLANES=[[0,'BMP','Základní vícejazyčná rovina','Běžná písma svět
  [15,'PUA-A','Soukromé použití A','Vlastní znaky, např. ikony ve fontech','pua',0xF0000,0xFFFFF],
  [16,'PUA-B','Soukromé použití B','Vlastní znaky','pua',0x100000,0x10FFFF]];
 const planeName=cp=>{const p=PLANES.find(p=>cp>=p[5]&&cp<=p[6]);return p[0]+' – '+p[2]+(p[1]!=='—'?' ('+p[1]+')':'');};
-
 /* ---------- 1. analýza textu ---------- */
 const seg=(typeof Intl!=='undefined'&&Intl.Segmenter)?new Intl.Segmenter('cs',{granularity:'grapheme'}):null;
 const SAMPLES=[['Aé€𝄞 čeština 😀','1, 2, 3 a 4 bajty'],['Příliš žluťoučký kůň','čeština'],['é / é','dvě é'],
@@ -580,8 +1047,8 @@ function analyze(){
   $('#trunc').hidden=allCps.length<=LIMIT;
   const n8=allCps.reduce((a,c)=>a+u8(c).length,0), n16=text.length;
   $('#n8').textContent=n8+' B'; $('#n16').textContent=n16+' jednotek = '+(n16*2)+' B';
-  $('#counts').innerHTML=[[graphemes.length,'viditelných znaků (grafémů)'],[allCps.length,'kódových bodů','adv'],[n8,'bajtů v UTF-8'],
-    [n16*2,'bajtů v UTF-16'],[allCps.length*4,'bajtů v UTF-32','adv'],[n16,'délka v JavaScriptu','adv']]
+  $('#counts').innerHTML=[[graphemes.length,'viditelných znaků (grafémů)'],[allCps.length,'kódových bodů','n1'],[n8,'bajtů v UTF-8'],
+    [n16*2,'bajtů v UTF-16','n1'],[allCps.length*4,'bajtů v UTF-32','adv'],[n16,'délka v JavaScriptu','adv']]
     .map(([v,l,c])=>`<div class="${c||''}"><b>${v}</b><span>${l}</span></div>`).join('');
 }
 $('#txt').addEventListener('input',analyze);
@@ -590,7 +1057,6 @@ tx.addEventListener('mouseover',e=>{const t=e.target.closest('[data-i]');tx.quer
   if(t) tx.querySelectorAll(`[data-i="${t.dataset.i}"]`).forEach(x=>x.classList.add('hl'));});
 tx.addEventListener('mouseleave',()=>tx.querySelectorAll('.hl').forEach(x=>x.classList.remove('hl')));
 tx.addEventListener('click',e=>{const t=e.target.closest('.cp');if(t) setCP(+t.dataset.cp,true);});
-
 /* ---------- 2. lupa ---------- */
 let cur=0x010D;
 function parseCP(v){
@@ -620,19 +1086,18 @@ function renderInspector(){
   const b8=u8(cp);
   const url=sur?'—':b8.map(b=>'%'+hx(b)).join('');
   $('#facts').innerHTML=[
-    ['Kódový bod',U(cp)],['Desítkově',cp.toLocaleString('cs-CZ')],['Binárně',cp.toString(2)],
-    ['Rovina',planeName(cp),'adv'],['Blok',blockOf(cp)],['Kategorie',cat(cp)],
+    ['Kódový bod',U(cp)],['Desítkově',cp.toLocaleString('cs-CZ')],['Binárně',cp.toString(2),'n1'],
+    ['Rovina',planeName(cp),'n1'],['Blok',blockOf(cp)],['Kategorie',cat(cp)],
     ['HTML entita',`&amp;#x${hx(cp,1)};`,'adv'],['JavaScript',`"\\u{${hx(cp,1)}}"`,'adv'],['V adrese URL',url,'adv']
   ].map(([k,v,c])=>`<dt class="${c||''}">${k}</dt><dd class="${c||''}">${v}</dd>`).join('');
   $('#sizes').innerHTML=sur?'<p class="note">Kódové body D800–DFFF jsou vyhrazené pro náhradní páry UTF-16. Samy o sobě nejsou znaky a v žádném kódování se samostatně zapsat nesmějí.</p>':
-    [[b8.length,'UTF-8'],[u16(cp).length*2,'UTF-16'],[4,'UTF-32','adv']].map(([n,l,c])=>`<div class="${c||''}"><b>${n} B</b><span>${l}</span></div>`).join('')+
+    [[b8.length,'UTF-8'],[u16(cp).length*2,'UTF-16','n1'],[4,'UTF-32','adv']].map(([n,l,c])=>`<div class="${c||''}"><b>${n} B</b><span>${l}</span></div>`).join('')+
     `<div class="adv"><b class="mono" style="font-size:1rem">${hx(cp,8).match(/../g).join(' ')}</b><span>UTF-32 (BE): číslo bodu na 4 bajtech</span></div>`;
   $('#p8').innerHTML=explain8(cp); $('#p16').innerHTML=explain16(cp);
   document.querySelectorAll('#t8 tr[data-n]').forEach(r=>r.classList.toggle('act',!sur&&+r.dataset.n===b8.length));
   document.querySelectorAll('#t16 tr[data-n]').forEach(r=>r.classList.toggle('act',!sur&&+r.dataset.n===u16(cp).length));
   document.querySelectorAll('.plane').forEach(p=>p.classList.toggle('on',cp>=+p.dataset.a&&cp<=+p.dataset.b));
-  $('#hG').textContent=glyph(cp)||'·'; $('#hU').textContent=U(cp); $('#hD').textContent='= '+cp.toLocaleString('cs-CZ')+' desítkově';
-  $('#h8').textContent=sur?'—':bytesHex(b8); $('#h16').textContent=sur?'—':bytesHex(u16bytes(cp)); $('#h32').textContent=hx(cp,8).match(/../g).join(' ');
+  
 }
 
 function explain8(cp){
@@ -660,7 +1125,7 @@ function explain16(cp){
        <div class="bits"><span class="c k2">${cp.toString(2).padStart(16,'0')}</span></div><div class="result">UTF-16: ${hx(cp,4)}</div>
        <p class="muted">Srovnání: v UTF-8 zabere ${u8(cp).length} B. ${u8(cp).length<2?'Pro anglický text je UTF-8 úspornější.':u8(cp).length===2?'U češtiny vychází obě kódování stejně.':'Pro asijská písma je UTF-16 úspornější.'}</p></div>`
     :`<div class="bas"><h3>UTF-16</h3><p>${U(cp)} je větší než FFFF a do 16 bitů se nevejde. UTF-16 ho proto zapíše jako <b>dvojici jednotek</b>, celkem 4 bajty.</p>
-       <div class="result">UTF-16: ${u16(cp).map(u=>hx(u,4)).join(' ')}</div><p class="muted">Jak se dvojice počítá, ukazuje pokročilý režim.</p></div>`;
+       <div class="result">UTF-16: ${u16(cp).map(u=>hx(u,4)).join(' ')}</div><p class="muted">Jak se dvojice počítá, ukazuje podrobnost Profesionál.</p></div>`;
   return basic+'<div class="adv" style="display:grid;gap:14px">'+explain16adv(cp)+'</div>';
 }
 function explain16adv(cp){
@@ -687,7 +1152,6 @@ function explain16adv(cp){
     <div class="byte"><span class="hx">${bytesHex([hi&255,hi>>8,lo&255,lo>>8])}</span><small>little-endian</small></div></div></div>
   <div class="result">UTF-16: ${hx(hi,4)} ${hx(lo,4)}</div>`;
 }
-
 /* ---------- 3. mapa ---------- */
 $('#planes').innerHTML=PLANES.map(p=>`<div class="plane ${p[4]}" data-a="${p[5]}" data-b="${p[6]}"><span class="pn">Rovina ${p[0]}${p[1]!=='—'?' · '+p[1]:''}</span><b>${p[2]}</b><small>${p[3]}</small><code>${U(p[5])}–${U(p[6])}</code></div>`).join('');
 $('#blk').innerHTML=BLOCKS.map((b,i)=>`<option value="${i}">${U(b[0])}–${U(b[1])} · ${esc(b[2])}</option>`).join('');
@@ -718,7 +1182,7 @@ function preview(cp){
   $('#prev2').innerHTML=`<span class="pg">${esc(glyph(cp))}</span><code>${U(cp)}</code><span>${esc(cat(cp))}</span>
    <span>UTF-8: <code>${sur?'—':bytesHex(u8(cp))}</code></span><span>UTF-16: <code>${sur?'—':u16(cp).map(u=>hx(u,4)).join(' ')}</code></span>
    <button class="btn" id="goLupa">Rozložit na bity →</button>`;
-  $('#goLupa').onclick=()=>{setTab(lastLearn);setCP(cp,true);};
+  $('#goLupa').onclick=()=>{setTab('lab',true);setCP(cp,true);};
 }
 $('#blk').onchange=e=>{blkIdx=+e.target.value;page=0;renderBlock();};
 $('#pgPrev').onclick=()=>{page--;renderBlock();};
@@ -746,7 +1210,6 @@ function copyChar(cp,cell){
     navigator.clipboard.writeText(ch).then(()=>done(true),()=>done(fallbackCopy(ch)));
   } else done(fallbackCopy(ch));
 }
-
 /* ---------- 5. pasti ---------- */
 (function traps(){
   const cpl=s=>Array.from(s).map(c=>U(c.codePointAt(0))).join(' + ');
@@ -766,33 +1229,250 @@ function copyChar(cp,cell){
   $('#dLen').innerHTML=`<span>"A".length → ${'A'.length}</span><span>"č".length → ${'č'.length}</span><span>"😀".length → <span class="bad">${'😀'.length}</span> (dvě jednotky UTF-16)</span>
    <span>[..."😀"].length → <span class="ok">${[...'😀'].length}</span> (počet kódových bodů)</span>`;
 })();
+/* ---------- Čajík ---------- */
+function cjDraw(el,state){
+  if(!el) return;
+  if(!el.firstElementChild) el.appendChild($('#cjT').content.firstElementChild.cloneNode(true));
+  const svg=el.firstElementChild; svg.classList.remove('s-ok','s-boo','s-sip'); svg.classList.add(state||el.dataset.s||'s-ok');
+}
+document.querySelectorAll('.cj').forEach(el=>cjDraw(el));
+const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
 
-(function(){
-  const enc=s=>new TextEncoder().encode(s).length;
-  $('#dSize').innerHTML=[['Hello world','angličtina'],['Ahoj světe','čeština'],['Γειά σου κόσμε','řečtina'],['你好世界','čínština'],['😀😀😀','emoji']]
-    .map(([t,l])=>`<span>${l}: „${t}“ → ${Array.from(t).length} znaků, UTF-8 <b>${enc(t)} B</b>, UTF-16 <b>${t.length*2} B</b></span>`).join('');
+/* ---------- kontrolní otázky a testy ---------- */
+const OKW=['Správně!','Přesně tak.','Výborně!','Ano!'], BADW=['Tohle ne.','Vedle, ale nevadí.','Skoro, ale ne.'];
+function initKq(kq,onAnswer){
+  const ok=kq.dataset.ok, why=kq.querySelector('.why'), whyHtml=why.innerHTML;
+  kq.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{
+    if(kq.classList.contains('done')) return;
+    kq.classList.add('done');
+    const right=ok==='*'||b.dataset.v===ok;
+    kq.querySelectorAll('.opts button').forEach(x=>{x.disabled=true;
+      if(ok==='*'){if(x===b)x.classList.add('picked');}
+      else if(x.dataset.v===ok)x.classList.add('right'); else if(x===b)x.classList.add('wrong');});
+    if(ok!=='*') why.innerHTML=`<span class="v ${right?'ok':'bad'}">${(right?OKW:BADW)[Math.floor(Math.random()*(right?OKW:BADW).length)]}</span>`+whyHtml;
+    if(onAnswer) onAnswer(right);
+  });
+  kq.reset=()=>{kq.classList.remove('done');why.innerHTML=whyHtml;kq.querySelectorAll('.opts button').forEach(x=>{x.disabled=false;x.className='';});};
+}
+document.querySelectorAll('.kq').forEach(kq=>{if(!kq.closest('.quiz')) initKq(kq);});
+document.querySelectorAll('.quiz').forEach(qz=>{
+  const items=[...qz.querySelectorAll('.kq')], res=qz.querySelector('.qres');
+  let answered=0, score=0;
+  items.forEach((kq,i)=>{kq.querySelector('.q').dataset.n=`${i+1} z ${items.length}`;
+    initKq(kq,right=>{answered++; if(right) score++; if(answered===items.length) finish();});});
+  function finish(){
+    const r=score/items.length;
+    res.querySelector('.score').textContent=`${score} z ${items.length}`;
+    res.querySelector('.qsay').textContent=r===1?'Plný počet! Na tvou počest si dávám šálek.':r>=.75?'Výborně, skoro všechno sedí.':r>=.5?'Slušné. Projdi si ještě kapitoly, kde ses spletl.':'Čaj se trochu rozsypal. Vrať se ke kapitolám a zkus to znovu.';
+    cjDraw(res.querySelector('.cj'),r>=.5?'s-sip':'s-boo');
+    res.classList.add('on'); res.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'nearest'});
+  }
+  res.querySelector('.qreset').onclick=()=>{answered=0;score=0;items.forEach(k=>k.reset());res.classList.remove('on');items[0].scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'center'});};
+});
+
+/* ---------- kurzy: kapitoly s ukazatelem postupu ---------- */
+document.querySelectorAll('.course').forEach(co=>{
+  const id=co.dataset.course, chs=[...co.querySelectorAll('.ch')], prog=co.querySelector('.prog');
+  const nav=co.querySelector('.chnav'), done=new Set((lsGet('unicode-done-'+id)||'').split(',').filter(Boolean).map(Number));
+  prog.innerHTML=chs.map((c,i)=>`<li><button data-i="${i}">${i+1}. ${esc(c.dataset.title)}</button></li>`).join('');
+  let cur=Math.min(+(lsGet('unicode-ch-'+id)||0)||0,chs.length-1);
+  function show(i,scroll){
+    cur=i; chs.forEach((c,k)=>c.classList.toggle('on',k===i));
+    done.add(i); lsSet('unicode-done-'+id,[...done].join(',')); lsSet('unicode-ch-'+id,i);
+    prog.querySelectorAll('button').forEach((b,k)=>{b.classList.toggle('done',done.has(k)&&k!==i);if(k===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
+    nav.querySelector('.prev').disabled=i===0;
+    const nx=nav.querySelector('.next'); nx.disabled=i===chs.length-1; nx.textContent=i===chs.length-2?'Na test ›':'Další kapitola ›';
+    nav.querySelector('.pos').textContent=`Kapitola ${i+1} z ${chs.length}`;
+    if(id==='r4'&&chs[i].querySelector('#slotR4')) placeLupa();
+    if(scroll) co.querySelector('.course-head').scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});
+  }
+  prog.onclick=e=>{const b=e.target.closest('[data-i]');if(b)show(+b.dataset.i,false);};
+  nav.querySelector('.prev').onclick=()=>show(Math.max(0,cur-1),true);
+  nav.querySelector('.next').onclick=()=>show(Math.min(chs.length-1,cur+1),true);
+  show(cur,false);
+});
+
+/* ---------- 1. ročník ---------- */
+const moji=(s,enc='windows-1250')=>{try{return new TextDecoder(enc).decode(new TextEncoder().encode(s));}catch(e){return s;}};
+const visMoji=s=>s.replace(/[\u0080-\u009F­]/g,'');
+const INV='Pozvánka na maturitní ples: v sobotu ve 20.00 v sokolovně. Přijď, bude i tombola!';
+$('#inv1').textContent=visMoji(moji(INV));
+
+function nameTiles(){
+  const t=Array.from($('#nameIn').value).slice(0,40);
+  $('#nameOut').innerHTML=t.length?t.map(c=>{const cp=c.codePointAt(0);
+    return `<div class="tile"><span class="tg">${c===' '?'␣':esc(c)}</span><b class="mono">${cp}</b><span class="bin">${cp.toString(2).padStart(8,'0')}</span></div>`;}).join('')
+    +(t.some(c=>c.codePointAt(0)>255)?'<p class="muted" style="flex-basis:100%;font-size:.92rem">Čísla větší než 255 mají víc než 8 bitů, do jednoho bajtu se nevejdou. Jak se uloží, ukáže kapitola 5.</p>':'')
+    :'<p class="muted">Napiš něco.</p>';
+}
+$('#nameIn').addEventListener('input',nameTiles); nameTiles();
+
+(function asciiGrid(){
   let h='';for(let c=32;c<127;c++)h+=`<button data-cp="${c}" title="${U(c)}"><span>${c===32?'␣':esc(String.fromCharCode(c))}</span><small>${c}</small></button>`;
   $('#ascii').innerHTML=h;
-  $('#ascii').addEventListener('click',e=>{const b=e.target.closest('[data-cp]');if(b)setCP(+b.dataset.cp,true);});
+  $('#ascii').addEventListener('click',e=>{const b=e.target.closest('[data-cp]');if(!b)return;const c=+b.dataset.cp;
+    $('#asciiOut').innerHTML=`<b>${c===32?'mezera':esc(String.fromCharCode(c))}</b> = ${c} desítkově = <b>${c.toString(2).padStart(7,'0')}</b> dvojkově (7 bitů)`;});
 })();
 
-/* karty */
-const TABS=['tabulka','zaklady','expert'];
-let lastLearn='zaklady';
+const GAL=[['A','velké latinské A'],['ř','malé ř, česká specialita'],['Ж','cyrilské Ž'],['א','hebrejské alef'],['日','japonsky „slunce, den“'],
+  ['𓀀','egyptský hieroglyf: sedící muž'],['♞','šachový jezdec'],['€','euro'],['😂','slzy smíchu, dlouho nejpoužívanější emoji'],
+  ['🫠','tající obličej (přibyl v roce 2021)'],['🦄','jednorožec'],['💩','hromádka. Ano, i ta má oficiální číslo.']];
+$('#gal').innerHTML=GAL.map(([c,n])=>{const cp=c.codePointAt(0);return `<div class="tile"><span class="tg">${c}</span><code>${U(cp)} = ${cp.toLocaleString('cs-CZ')}</code><small>${esc(n)}</small></div>`;}).join('');
+
+function weigh(){
+  const t=Array.from($('#wIn').value).slice(0,60);
+  let tot=0,max=0;
+  $('#wOut').innerHTML=t.map(c=>{const n=u8(c.codePointAt(0)).length;tot+=n;max=Math.max(max,n);
+    return `<div class="wc k${n}"><span class="tg">${c===' '?'␣':esc(c)}</span><span class="sq">${'<i></i>'.repeat(n)}</span><small>${n} B</small></div>`;}).join('');
+  $('#wTot').textContent=t.length?`${t.length} znaků · ${tot} bajtů v UTF-8`:'';
+  const say=max===4?'Emoji jsou těžká váha: 4 bajty každé! Šetři jimi… nebo ne, bajtů je dost.':max===3?'Znak € váží 3 bajty. Euro je drahá měna i v bajtech.':max===2?'Háčky a čárky stojí bajt navíc. Čeština je prostě luxus.':t.length?'Samá lehká váha, 1 bajt na znak. Úsporné jako angličtina.':'Napiš něco, ať mám co vážit.';
+  $('#wSay').innerHTML='<b class="who">Čajík</b>'+say; cjDraw($('#wCj'),max===4?'s-boo':'s-ok');
+}
+$('#wIn').addEventListener('input',weigh); weigh();
+
+const GSM='@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà';
+const GSMX='^{}\\[~]|€\f';
+function sms(){
+  const t=$('#smsIn').value; let gsm=true,len=0,bad='';
+  for(const c of t){if(GSM.includes(c))len++;else if(GSMX.includes(c))len+=2;else{gsm=false;if(!bad)bad=c;}}
+  if(!gsm) len=t.length;
+  const one=gsm?160:70, per=gsm?153:67, parts=!t?0:len<=one?1:Math.ceil(len/per);
+  $('#smsOut').innerHTML=`<div><b>${Array.from(t).length}</b><span>znaků</span></div><div><b>${gsm?'7 bitů':'2 bajty'}</b><span>${gsm?'kódování GSM, bez háčků':'kódování UCS-2 kvůli „'+esc(bad)+'“'}</span></div><div><b>${one}</b><span>znaků se vejde do 1 SMS</span></div><div><b>${parts}</b><span>${parts===1?'SMS':parts>1&&parts<5?'SMS (zpráva se rozdělí)':'SMS'}</span></div>`;
+}
+$('#smsIn').addEventListener('input',sms);
+$('#smsStrip').onclick=()=>{$('#smsIn').value=$('#smsIn').value.normalize('NFD').replace(/\p{M}/gu,'');sms();};
+sms();
+
+(function mojiTable(){
+  const w='Přijď';
+  $('#mojiTbl').innerHTML='<thead><tr><th>Písmeno</th><th>Bajty v UTF-8</th><th>Přečteno jako Windows-1250</th></tr></thead><tbody>'+
+    Array.from(w).map(c=>{const b=u8(c.codePointAt(0));return `<tr><td style="font:600 1.2rem var(--glyph)">${c}</td><td><code>${bytesHex(b)}</code></td><td style="font:600 1.2rem var(--glyph)">${esc(visMoji(moji(c)))||'·'}</td></tr>`;}).join('')+'</tbody>';
+})();
+function inv2(enc){
+  $('#inv2').textContent=enc==='utf-8'?INV:visMoji(moji(INV,enc));
+  document.querySelectorAll('#invSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.e===enc));
+  const ok=enc==='utf-8';
+  cjDraw($('#invCj'),ok?'s-sip':'s-boo');
+  $('#invSay').innerHTML='<b class="who">Čajík</b>'+(ok?'Ahh, čaj zase v hrnku! Text byl zapsán v UTF-8, tak se musí v UTF-8 i číst.':enc==='iso-8859-2'?'Jiná stará tabulka, jiný nepořádek. Některé bajty tu dokonce nejsou vidět vůbec.':'Pořád rozsypané. Takhle to viděl kamarád.');
+}
+$('#invSeg').onclick=e=>{const b=e.target.closest('[data-e]');if(b)inv2(b.dataset.e);};
+inv2('windows-1250');
+
+/* hra Zachraň zprávu */
+const GAME=[
+  ['Babička','Upekla jsem buchty. Přijď v neděli a vezmi i kamaráda!',['Upekla jsem štrúdl. Přijď v sobotu a vezmi i kamaráda!','Upekla jsem buchty. Přijď v pondělí a vezmi i psa!']],
+  ['Školní jídelna','Zítra svíčková. Knedlíků je dost pro všechny.',['Zítra řízek. Brambor je dost pro všechny.','Zítra svíčková. Knedlíky došly už včera.']],
+  ['Třídní učitelka','Písemka z fyziky se přesouvá na čtvrtek.',['Písemka z fyziky se ruší úplně.','Písemka z češtiny se přesouvá na pátek.']],
+  ['Kamarád','Mám lístky na koncert! Sraz v sedm u nádraží.',['Mám lístky do kina! Sraz v sedm u školy.','Ztratil jsem lístky na koncert, sraz se ruší.']],
+  ['Trenér','Trénink začíná až v 17.00, vezměte si míče.',['Trénink začíná už v 15.00, vezměte si švihadla.','Trénink odpadá, běžte se učit.']],
+  ['Mamka','Nezapomeň koupit rohlíky a mléko. A ukliď si pokoj!',['Nezapomeň koupit chleba a máslo. A vyvenči psa!','Kup si, co chceš. Pokoj počká.']]];
+let gOrder=[],gI=0,gScore=0;
+function gStart(){gOrder=shuffle([...GAME.keys()]);gI=0;gScore=0;gRound();}
+function gRound(){
+  $('#gRound').textContent=`Zpráva ${gI+1} z ${GAME.length}`; $('#gScore').textContent=`Zachráněno: ${gScore}`;
+  const [from,txt,bad]=GAME[gOrder[gI]], opts=shuffle([txt,...bad]);
+  $('#gBody').innerHTML=`<div class="msg"><small>Od: ${esc(from)}</small><span>${esc(visMoji(moji(txt)))}</span></div>
+    <p><b>Co ve zprávě původně stálo?</b></p><div class="opts">${opts.map((o,i)=>`<button data-i="${i}">${esc(o)}</button>`).join('')}</div><div class="gfb"></div>`;
+  $('#gBody').querySelector('.opts').onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
+    const right=opts[+b.dataset.i]===txt; if(right)gScore++;
+    $('#gBody').querySelectorAll('.opts button').forEach(x=>{x.disabled=true;if(opts[+x.dataset.i]===txt)x.classList.add('right');else if(x===b)x.classList.add('wrong');});
+    $('#gScore').textContent=`Zachráněno: ${gScore}`;
+    const last=gI===GAME.length-1;
+    $('#gBody').querySelector('.gfb').innerHTML=`<div class="cj-row"><span class="cj"></span><p class="say"><b class="who">Čajík</b>${right?'Zachráněno! Přečteno správně.':'Tahle zpráva zůstala rozsypaná. Správná odpověď je zeleně.'}</p></div><button class="btn pri">${last?'Výsledek hry':'Další zpráva ›'}</button>`;
+    cjDraw($('#gBody').querySelector('.gfb .cj'),right?'s-sip':'s-boo');
+    $('#gBody').querySelector('.gfb .btn').onclick=()=>{if(last)gEnd();else{gI++;gRound();}};
+  };
+}
+function gEnd(){
+  $('#gRound').textContent='Konec hry';
+  const all=gScore===GAME.length;
+  $('#gBody').innerHTML=`<div class="cj-row"><span class="cj"></span><p class="say"><b class="who">Čajík</b>Zachránil jsi <b>${gScore} z ${GAME.length}</b> zpráv. ${all?'Jsi mistr rozsypaného čaje!':gScore>=4?'Pěkná práce, čtení rozsypaného čaje ti jde.':'Chce to cvik. Všímej si, že rozbitá jsou jen písmena s háčky a čárkami.'}</p></div><button class="btn">Hrát znovu</button>`;
+  cjDraw($('#gBody').querySelector('.cj'),gScore>=4?'s-sip':'s-boo');
+  $('#gBody').querySelector('.btn').onclick=gStart;
+}
+gStart();
+
+/* ---------- 4. ročník ---------- */
+function where(){
+  const v=Array.from($('#whereIn').value.trim());
+  if(!v.length){$('#whereOut').textContent='Vlož nějaký znak.';return;}
+  const cp=v[0].codePointAt(0);
+  $('#whereOut').innerHTML=`<b style="font-family:var(--glyph);font-size:1.3rem">${esc(v[0])}</b> · ${U(cp)} · rovina ${esc(planeName(cp))} · blok ${esc(blockOf(cp))} · ${u8(cp).length} B v UTF-8`;
+}
+$('#whereIn').addEventListener('input',where); where();
+
+/* procvičování */
+const POOL={1:['A','z','7','?','@','K','#'],2:['č','ř','ž','ů','é','ß','Ω','Ж','א','ñ'],3:['€','♥','日','→','‰','✓','中','☺'],4:['😀','🎉','𝄞','🦄','🚀','🍕']};
+let pType='mix',pDone=0,pOk=0,pStreak=0,pCur=null;
+function pNew(){
+  const t=pType==='mix'?['bytes','enc','dec'][Math.floor(Math.random()*3)]:pType;
+  const n=1+Math.floor(Math.random()*4), list=t==='bytes'?POOL[n]:POOL[Math.max(2,n)];
+  const ch=list[Math.floor(Math.random()*list.length)], cp=ch.codePointAt(0);
+  pCur={t,cp,ch,answered:false};
+  $('#pRes').innerHTML='';
+  if(t==='bytes'){
+    $('#pTask').innerHTML=`<span class="big">${esc(ch)}</span>Kolik bajtů zabere znak <code>${U(cp)}</code> v UTF-8?`;
+    $('#pAns').innerHTML=`<div class="opts" style="grid-template-columns:repeat(4,minmax(0,1fr))">${[1,2,3,4].map(k=>`<button data-v="${k}">${k} B</button>`).join('')}</div>`;
+    $('#pAns').querySelector('.opts').onclick=e=>{const b=e.target.closest('button');if(!b||pCur.answered)return;
+      $('#pAns').querySelectorAll('button').forEach(x=>{x.disabled=true;if(+x.dataset.v===u8(cp).length)x.classList.add('right');else if(x===b)x.classList.add('wrong');});
+      pCheck(+b.dataset.v===u8(cp).length,`${U(cp)} leží v rozsahu ${['U+0000–007F','U+0080–07FF','U+0800–FFFF','U+10000–10FFFF'][u8(cp).length-1]}, proto ${u8(cp).length} B: <code>${bytesHex(u8(cp))}</code>.`);};
+  } else {
+    $('#pTask').innerHTML=t==='enc'?`<span class="big">${esc(ch)}</span>Zakóduj <code>${U(cp)}</code> do UTF-8. Bajty napiš šestnáctkově.`
+      :`Dekóduj bajty UTF-8 <code style="font-size:1.2rem">${bytesHex(u8(cp))}</code>. Napiš kódový bod (např. U+010D) nebo rovnou znak.`;
+    $('#pAns').innerHTML=`<div class="row"><div class="field" style="flex:1 1 220px"><label for="pIn">${t==='enc'?'Bajty (např. C4 8D)':'Kódový bod nebo znak'}</label><input type="text" id="pIn" autocomplete="off" spellcheck="false"></div><button class="btn pri" id="pGo">Zkontrolovat</button></div>`;
+    const go=()=>{if(pCur.answered)return;const v=$('#pIn').value.trim();if(!v)return;
+      let right;
+      if(t==='enc') right=v.replace(/0x/gi,'').replace(/[^0-9a-f]/gi,'').toUpperCase()===u8(cp).map(b=>hx(b)).join('');
+      else right=parseCP(v)===cp;
+      $('#pIn').disabled=true;
+      pCheck(right,t==='enc'?`Správně: <code>${bytesHex(u8(cp))}</code>.`:`Správně: <code>${U(cp)}</code> = <span style="font-family:var(--glyph);font-size:1.2rem">${esc(ch)}</span>.`);};
+    $('#pGo').onclick=go; $('#pIn').onkeydown=e=>{if(e.key==='Enter')go();};
+    $('#pIn').focus({preventScroll:true});
+  }
+}
+function pCheck(right,msg){
+  pCur.answered=true; pDone++; if(right){pOk++;pStreak++;}else pStreak=0;
+  $('#pStat').textContent=`Vyřešeno ${pOk} z ${pDone}`; $('#pStreak').textContent=pStreak>=3?`Série: ${pStreak} 🔥`:'';
+  $('#pRes').innerHTML=`<p><span class="v ${right?'ok':'bad'}" style="font-weight:700">${right?'Správně!':'Tohle ne.'}</span> ${msg}</p>`+(!right&&pCur.t!=='bytes'?`<div class="panel">${explain8(pCur.cp)}</div>`:'');
+  cjDraw($('#pCj'),right?(pStreak>=3?'s-sip':'s-ok'):'s-boo');
+  $('#pSay').innerHTML='<b class="who">Čajík</b>'+(right?(pStreak>=5?'Pět v řadě! Tobě by UTF-8 svěřil i Ken Thompson.':pStreak>=3?'Tři v řadě, to si zaslouží doušek.':'Sedí.'):'Nevadí. Projdi postup a zkus další úlohu.');
+}
+$('#pType').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;pType=b.dataset.t;
+  $('#pType').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));pNew();};
+$('#pNext').onclick=pNew;
+
+/* ---------- úrovně a karty ---------- */
+const TABS=['r1','r4','pro','lab','tabulka'], LVLS=['r1','r4','pro'];
+const OLD={zaklady:'r1',expert:'pro'};
+let labLvl=LVLS.includes(lsGet('unicodeLabLvl'))?lsGet('unicodeLabLvl'):'r4';
+function placeLupa(){
+  const t=document.documentElement.dataset.tab, slot=t==='r4'?$('#slotR4'):$('#slotLab');
+  if(slot&&$('#lupa').parentNode!==slot) slot.appendChild($('#lupa'));
+}
+function setLvl(l){
+  document.documentElement.dataset.lvl=l;
+  document.querySelectorAll('#labLvl button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===labLvl));
+}
 function setTab(t,push){
-  if(!TABS.includes(t)) t='tabulka';
+  t=OLD[t]||t; if(!TABS.includes(t)) t='r1';
   document.documentElement.dataset.tab=t;
-  if(t!=='tabulka') lastLearn=t;
+  setLvl(LVLS.includes(t)?t:labLvl);
   document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
-  try{localStorage.setItem('unicodeTab',t);}catch(e){}
+  document.querySelectorAll('.lv').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===t));
+  placeLupa();
+  lsSet('unicodeTab',t);
   if(push){try{history.replaceState(null,'','#'+t);}catch(e){}}
 }
-document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;setTab(b.dataset.tab,true);
-  window.scrollTo({top:0,behavior:'auto'});});
-let startTab=(location.hash||'').slice(1);
-if(!TABS.includes(startTab)){try{startTab=localStorage.getItem('unicodeTab')||'tabulka';}catch(e){startTab='tabulka';}}
+function goTab(t){setTab(t,true);$('nav.toc').scrollIntoView({behavior:'auto',block:'start'});}
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)goTab(b.dataset.tab);});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;e.preventDefault();goTab(b.dataset.go);});
+$('#labLvl').onclick=e=>{const b=e.target.closest('[data-l]');if(!b)return;labLvl=b.dataset.l;lsSet('unicodeLabLvl',labLvl);setLvl(labLvl);};
+let startTab=(location.hash||'').slice(1); startTab=OLD[startTab]||startTab;
+if(!TABS.includes(startTab)) startTab=lsGet('unicodeTab')||'r1';
 setTab(startTab);
-window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS.includes(h))setTab(h);});
+window.addEventListener('hashchange',()=>{const h=OLD[location.hash.slice(1)]||location.hash.slice(1);if(TABS.includes(h))setTab(h);});
 
 /* ---------- Expert: pro vývojáře ---------- */
 (function pro(){
@@ -894,10 +1574,9 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
    <span>"i".toUpperCase() → ${'i'.toUpperCase()}, ale v turečtině ("tr") → ${'i'.toLocaleUpperCase('tr')}</span>`;
   try{$('#idn').textContent=new URL('https://příbram.cz').hostname;}catch(e){}
 })();
-
 /* start */
 $('#blk').value=blkIdx; renderBlock(); preview(0x010D); selCell=0x010D; renderBlock();
-analyze(); setCP(0x010D);
+analyze(); setCP(0x010D); pNew();
 </script>
 
 </body>
