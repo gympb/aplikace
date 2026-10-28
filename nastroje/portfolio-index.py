@@ -7,7 +7,7 @@ Spuštění z kořene repozitáře:
 
 Struktura (přesně pět úrovní):
     portfolio/<rok>/<predmet>/<skupina>/<tema>/<prezdivka>_<nazev-prace>/index.html
-    např. portfolio/2026-27/informatika/4a-bst/binarni-soustava/kocour-tom_prevodnik/index.html
+    např. portfolio/2026-27/informatika/4a-sen/binarni-soustava/kocour-tom_prevodnik/index.html
 
 Práce se zveřejní (zapíše do indexu), jen když nemá chybu ani varování.
 Práci s varováním může učitel potvrdit přidáním její cesty do portfolio/povolene.json.

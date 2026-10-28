@@ -177,14 +177,14 @@ Portfolio je oddělené od katalogu: nepatří do `katalog.json`, nezobrazuje se
 portfolio/
   2026-27/                      školní rok (tvar 2026-27)
     informatika/                předmět
-      4a-bst/                   skupina studentů
+      4a-sen/                   skupina studentů
         binarni-soustava/       téma
           kocour-tom_prevodnik/ práce: prezdivka_nazev-prace
             index.html
 ```
 
 - Názvy všech složek jsou malá písmena bez diakritiky a mezer, slova se oddělují pomlčkou. Složka práce má tvar `prezdivka_nazev-prace` (mezi přezdívkou a názvem jedno podtržítko).
-- Zobrazované názvy (např. „Binární soustava“, „4A-BST“) se berou z názvu složky. Název s diakritikou lze doplnit v `portfolio/nazvy.json` (klíč je název složky nebo celá cesta, hodnota zobrazovaný název). Žádné další soubory s údaji o práci se nepíšou.
+- Zobrazované názvy (např. „Binární soustava“, „4A-SEN“) se berou z názvu složky. Název s diakritikou lze doplnit v `portfolio/nazvy.json` (klíč je název složky nebo celá cesta, hodnota zobrazovaný název). Žádné další soubory s údaji o práci se nepíšou.
 - **Autoři jsou uvedeni jen přezdívkou nebo iniciály.** Celá jména žáků se v portfoliu a v pracích nepoužívají.
 - Práce nahrává vyučující, ověří, že splňuje pravidla z bodu 8, a **zodpovídá za její obsah**. Na žádost autora nebo zákonného zástupce se práce stáhne.
 - Platí totéž co pro aplikace: žádné cizí zdroje, žádná analytika, žádné odesílání dat. Odkaz zpět do portfolia je žádoucí.
