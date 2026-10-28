@@ -188,7 +188,7 @@ portfolio/
 - **Autoři jsou uvedeni jen přezdívkou nebo iniciály.** Celá jména žáků se v portfoliu a v pracích nepoužívají.
 - Práce nahrává vyučující, ověří, že splňuje pravidla z bodu 8, a **zodpovídá za její obsah**. Na žádost autora nebo zákonného zástupce se práce stáhne.
 - Platí totéž co pro aplikace: žádné cizí zdroje, žádná analytika, žádné odesílání dat.
-- **Jednotný rámec.** Každá zveřejněná práce má nahoře černý pruh s odkazem „← Zpět do portfolia“ (na složku tématu) a dole patičku „Gymnázium Příbram · Autor: přezdívka · Licence CC BY 4.0“. Rámec je v práci označen komentáři `gp-ramec` (styl, pruh, patička) a při úpravě se nahrazuje, ne zdvojuje. Fonty se berou ze sdíleného `assets/fonty/fonty.css` (od složky práce `../../../../../../assets/fonty/fonty.css`), ne z internetu.
+- **Jednotný rámec.** Každá zveřejněná práce má nahoře odkaz „← Zpět do portfolia“ (na složku tématu) a dole patičku „Gymnázium Příbram · Autor: přezdívka · Licence CC BY 4.0“. Rámec je v práci označen komentáři `gp-ramec` (styl, pruh, patička) a při úpravě se nahrazuje, ne zdvojuje. Fonty se berou ze sdíleného `assets/fonty/fonty.css` (od složky práce `../../../../../../assets/fonty/fonty.css`), ne z internetu.
 - Jedna práce má nejvýše **5 MB**. Žádná videa ani velké obrázky.
 - Práce se do portfolia nepřidávají přes `katalog.json` ani přes administraci v Macaly, jen nahráním složky do repozitáře.
 
