@@ -11,6 +11,8 @@ index.html          katalog aplikací (úvodní stránka)
 katalog.json        údaje o aplikacích, ze kterých se skládá katalog
 assets/fonty/       sdílená písma (katalog: Montserrat, Atkinson Hyperlegible; Enigma: Cinzel, Source Sans 3, JetBrains Mono)
 CNAME               vlastní doména pro GitHub Pages
+portfolio/          studentské práce (jen přes odkaz v patičce, bez indexace), viz PRAVIDLA.md, bod 11
+nastroje/           pomocné skripty (portfolio-index.py)
 caesarova-sifra/    jedna složka = jedna aplikace
   index.html        aplikace
   nahled.png        náhled 1200 × 630 px pro sdílení odkazu

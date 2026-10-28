@@ -1,0 +1,30 @@
+name: Portfolio index
+# Při každé změně ve složce portfolio/ zkontroluje studentské práce a obnoví portfolio/index.json.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'portfolio/**'
+      - '!portfolio/index.json'
+permissions:
+  contents: write
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zkontrolovat práce a sestavit index
+        id: build
+        run: python3 nastroje/portfolio-index.py
+        continue-on-error: true
+      - name: Uložit změny (index.json, doplněné noindex)
+        run: |
+          git config user.name "portfolio-bot"
+          git config user.email "portfolio-bot@users.noreply.github.com"
+          git add portfolio
+          git diff --cached --quiet || git commit -m "Portfolio: obnoven index a kontrola prací"
+          git pull --rebase origin main
+          git push
+      - name: Označit běh jako chybný, když kontrola našla chyby
+        if: steps.build.outcome == 'failure'
+        run: exit 1

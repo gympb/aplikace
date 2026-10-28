@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Převodník dvojkové soustavy (ukázková práce)</title>
+<style>
+body{margin:0;font:18px/1.5 system-ui,"Segoe UI",sans-serif;background:#f4f1ea;color:#111}
+main{max-width:560px;margin:0 auto;padding:16px}
+a{color:#111}
+.card{background:#fff;border:1px solid #d9d3c7;padding:18px;display:grid;gap:12px}
+h1{font-size:28px;margin:8px 0}
+input{font:inherit;padding:10px;border:2px solid #111;width:100%}
+.bits{display:flex;gap:6px;flex-wrap:wrap}
+.bit{width:56px;text-align:center;border:2px solid #111;padding:6px 0;background:#fff;cursor:pointer;font:inherit}
+.bit[aria-pressed="true"]{background:#ff972e}
+.bit small{display:block;font-size:12px}
+output{font:700 32px ui-monospace,Consolas,monospace}
+footer{font-size:14px;color:#555;margin-top:20px}
+</style>
+</head>
+<body>
+<main>
+<a href="../../../../../#/2026-27/informatika/4a-bst/binarni-soustava">← Zpět do portfolia</a>
+<h1>Převodník dvojkové soustavy</h1>
+<p>Ukázková práce, která slouží jen k předvedení portfolia. Klepáním na bity složíte číslo, nebo napište číslo a bity se nastaví.</p>
+<div class="card">
+  <div class="bits" id="bits"></div>
+  <label>Číslo (0–255) <input id="n" type="number" min="0" max="255" value="42"></label>
+  <div>Dvojkově: <output id="bin"></output></div>
+</div>
+<footer>Autor: kocour tom, 4A-BST · ukázka · licence CC BY 4.0</footer>
+</main>
+<script>
+const w=[128,64,32,16,8,4,2,1];let v=42;
+const bits=document.getElementById('bits'),n=document.getElementById('n'),bin=document.getElementById('bin');
+bits.innerHTML=w.map(x=>`<button class="bit" data-w="${x}" aria-pressed="false">${x}<small>0</small></button>`).join('');
+function draw(){bits.querySelectorAll('.bit').forEach(b=>{const on=(v&+b.dataset.w)>0;b.setAttribute('aria-pressed',on);b.querySelector('small').textContent=on?1:0;});
+  n.value=v;bin.textContent=v.toString(2).padStart(8,'0');}
+bits.onclick=e=>{const b=e.target.closest('.bit');if(!b)return;v^=+b.dataset.w;draw();};
+n.oninput=()=>{v=Math.max(0,Math.min(255,parseInt(n.value)||0));draw();};
+draw();
+</script>
+</body>
+</html>

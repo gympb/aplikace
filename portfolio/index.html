@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Portfolio studentských prací · gymplikace</title>
+<meta name="description" content="Portfolio studentských prací Gymnázia Příbram: procházení podle školního roku, předmětu, skupiny a tématu.">
+<link rel="stylesheet" href="../assets/fonty/fonty.css">
+<style>
+/* Portfolio studentských prací. Stejný vzhled jako katalog gymplikace; obsah se kreslí z portfolio/index.json */
+:root{
+  --bg:#FFFFFF; --panel:#F4F1EA; --ink:#111111; --muted:#555555; --line:#DDDDDD;
+  --card-line:#D9D3C7; --cat-bg:#E7E1D5; --brand:#FF972E; --on-brand:#111111; --accent-soft:#FFE8D1;
+  --foot-bg:#111111; --foot-fg:#FFFFFF; --foot-muted:#C8C8C8;
+  --f-display:"Montserrat","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible Next","Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --f-mono:"Atkinson Hyperlegible Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111111; --panel:#1C1C1C; --ink:#F2F2F2; --muted:#ABABAB; --line:#333333;
+  --card-line:#3A3A3A; --cat-bg:#050505; --accent-soft:#3A2410; --foot-bg:#000000; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--f-body)}
+.in{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;margin:0;text-wrap:balance}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.label{font:600 13px/1.3 var(--f-display);letter-spacing:.14em;text-transform:uppercase}
+.label .sq{display:inline-block;width:6px;height:6px;background:var(--brand);margin:0 12px;vertical-align:middle;position:relative;top:-1px}
+
+.top{padding-block:24px 0}
+.topline{display:flex;justify-content:space-between;align-items:flex-end;gap:12px 24px;flex-wrap:wrap;padding-bottom:14px;border-bottom:2px solid var(--ink)}
+.school{font:700 20px/1.1 var(--f-display);letter-spacing:-.015em;text-decoration:none}
+.school span{display:block;font-weight:500;font-size:14px;letter-spacing:0;color:var(--muted);margin-top:4px}
+.back{font:600 14px var(--f-display);text-decoration:none;border:2px solid var(--ink);padding:6px 12px}
+.back:hover{background:var(--ink);color:var(--bg)}
+.hero{padding-block:40px 24px}
+.hero h1{font-size:clamp(36px,5vw,60px);line-height:1;letter-spacing:-.04em;margin-top:10px}
+.hero h1 i{font-style:normal;color:var(--brand)}
+.hero p{margin:14px 0 0;max-width:62ch}
+
+.bar{background:var(--brand);color:var(--on-brand);padding-block:16px;position:sticky;top:0;z-index:20;box-shadow:0 2px 10px rgba(17,17,17,.12)}
+.bar .in{display:grid;gap:12px}
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;list-style:none;margin:0;padding:0;font:600 15px var(--f-display)}
+.crumbs li{display:flex;align-items:center;gap:8px}
+.crumbs li+li::before{content:"›";font-weight:800}
+.crumbs a{text-decoration:none;padding:4px 8px;border:2px solid transparent}
+.crumbs a:hover{border-color:var(--on-brand)}
+.crumbs [aria-current]{background:var(--on-brand);color:var(--brand);padding:4px 10px}
+.up{display:none;font:700 14px var(--f-display);text-decoration:none;border:2px solid var(--on-brand);padding:4px 10px;align-self:flex-start}
+@media (max-width:640px){
+  .crumbs li:not(:nth-last-child(-n+2)){display:none}
+  .crumbs li:nth-last-child(2)::before{content:none}
+  .up{display:inline-block}
+  .bar{position:static}
+  .bar .row{display:grid;gap:10px}
+}
+.bar .row{display:flex;gap:12px 24px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.search{display:flex;border:2px solid var(--on-brand);background:#FFFFFF;flex:1 1 280px;max-width:520px}
+.search input{flex:1;min-width:0;border:0;background:none;font:17px var(--f-body);color:#111111;padding:10px 14px}
+.search input:focus{outline:none}
+.search:focus-within{outline:3px solid #111111;outline-offset:2px}
+
+.cat{padding-block:32px 64px;background:var(--cat-bg);min-height:50vh}
+.cat-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.cat-head h2{font-size:26px;letter-spacing:-.02em}
+.count{font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:20px}
+.tile,.card{position:relative;display:flex;flex-direction:column;border:1px solid var(--card-line);background:var(--bg);min-width:0;
+  box-shadow:0 1px 2px rgba(17,17,17,.06),0 4px 14px rgba(17,17,17,.07);transition:transform .15s,box-shadow .15s,border-color .15s;text-decoration:none;color:inherit}
+.tile:hover,.card:hover,.tile:focus-visible,.card:focus-visible{transform:translateY(-3px);border-color:var(--brand);box-shadow:0 2px 4px rgba(17,17,17,.06),0 12px 28px rgba(17,17,17,.12)}
+@media (prefers-reduced-motion:reduce){.tile,.card{transition:none}.tile:hover,.card:hover{transform:none}}
+.tile{padding:18px;gap:6px;flex-direction:row;align-items:center}
+.tile .ico{width:44px;height:44px;flex:none;color:var(--brand)}
+.tile b{font:700 20px/1.2 var(--f-display);display:block;overflow-wrap:anywhere}
+.tile span{font-size:14px;color:var(--muted)}
+.card{border-top:6px solid var(--brand)}
+.card-body{padding:16px 18px 14px;display:grid;gap:8px;flex:1;align-content:start}
+.card h3{font-size:20px;line-height:1.2;letter-spacing:-.015em;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font:600 12px var(--f-display);padding:3px 8px;background:var(--panel);border:1px solid var(--line)}
+.tag.a{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.path{font-size:13px;color:var(--muted)}
+.card-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--card-line);padding:10px 18px;font:600 14px var(--f-display)}
+.go{font-size:22px;line-height:1;transition:transform .15s}
+.card:hover .go{transform:translateX(4px)}
+.empty{padding:32px;border:2px dashed var(--muted);background:var(--bg);max-width:640px}
+.empty b{font:700 20px var(--f-display);display:block;margin-bottom:6px}
+
+footer{background:var(--foot-bg);color:var(--foot-fg);padding-block:32px;font-size:15px}
+footer a{color:var(--foot-fg)}
+footer p{margin:10px 0 0;color:var(--foot-muted);max-width:80ch}
+footer .school{color:var(--foot-fg)}
+footer .school span{color:var(--foot-muted)}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="in"><div class="topline">
+  <a class="school" href="../">Gymnázium Příbram<span>Legionářů 402, Příbram</span></a>
+  <a class="back" href="../">← Všechny školní aplikace</a>
+</div></div></header>
+
+<section class="hero"><div class="in">
+  <span class="label">gymplikace<span class="sq"></span>Portfolio</span>
+  <h1>Studentské <i>práce</i></h1>
+  <p>Procházejte složky podle školního roku, předmětu, skupiny a tématu. Až narazíte na práci, otevřete ji kliknutím na kartu. Autoři jsou uvedeni jen přezdívkou.</p>
+</div></section>
+
+<div class="bar"><div class="in">
+  <div class="row">
+    <nav aria-label="Cesta"><ol class="crumbs" id="crumbs"></ol></nav>
+    <div class="search" role="search"><label class="sr" for="q">Hledat v celém portfoliu</label><input id="q" type="search" placeholder="Hledat podle názvu, přezdívky nebo tématu" autocomplete="off"></div>
+  </div>
+  <a class="up" id="up" href="#/">‹ O úroveň výš</a>
+</div></div>
+
+<main class="cat"><div class="in">
+  <div class="cat-head"><h2 id="h">Portfolio</h2><span class="count" id="count" aria-live="polite"></span></div>
+  <div class="grid" id="grid"></div>
+</div></main>
+
+<footer><div class="in">
+  <div class="school">Gymnázium Příbram<span>Legionářů 402, Příbram</span></div>
+  <p>Portfolio obsahuje práce studentů, autoři jsou uvedeni jen přezdívkou. Stránka není indexována vyhledávači, nepoužívá cookies ani měření návštěvnosti. Za obsah prací odpovídá vyučující, který je zveřejnil. Chcete-li práci stáhnout, kontaktujte školu.<br><a href="../">Všechny školní aplikace</a> · <a href="../o-projektu/">O projektu gymplikace</a></p>
+</div></footer>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const LEVELS=['Školní rok','Předmět','Skupina','Téma'];
+let DATA={prace:[],nazvy:{}};
+const FOLDER='<svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M4 10a3 3 0 0 1 3-3h13l5 6h16a3 3 0 0 1 3 3v22a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="currentColor"/></svg>';
+
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+// zobrazovaný název: nejdřív celá cesta, pak samotný název složky v souboru nazvy.json, jinak úprava názvu složky
+function nm(path){
+  const N=DATA.nazvy||{}, seg=path.split('/').pop();
+  if(N[path]) return N[path];
+  if(N[seg]) return N[seg];
+  if(/^\d{4}-\d{2}$/.test(seg)) return seg.slice(0,4)+'/'+seg.slice(5);
+  if(/^\d+[a-z]-/.test(seg)||/^\d+[a-z]$/.test(seg)) return seg.toUpperCase();
+  return cap(seg.replace(/-/g,' '));
+}
+const lv=p=>[p.rok,p.predmet,p.skupina,p.tema];
+const pathNames=p=>lv(p).map((_,i)=>nm(lv(p).slice(0,i+1).join('/')));
+const workPath=p=>lv(p).concat(p.slozka).join('/');
+const workTitle=p=>(DATA.nazvy||{})[workPath(p)]||cap(p.nazev.replace(/-/g,' '));
+const workAuthor=p=>(DATA.nazvy||{})[p.autor]||cap(p.autor.replace(/-/g,' '));
+const size=b=>b<1024*1024?Math.max(1,Math.round(b/1024))+' kB':(b/1048576).toFixed(1).replace('.',',')+' MB';
+const plural=(n,a,b,c)=>n===1?a:n>=2&&n<=4?b:c;
+
+function route(){
+  const h=decodeURIComponent((location.hash||'#/').slice(2)).split('/').filter(Boolean);
+  return h.slice(0,4);
+}
+function crumbs(parts){
+  const items=[['Portfolio','#/']];
+  parts.forEach((p,i)=>items.push([nm(parts.slice(0,i+1).join('/')),'#/'+parts.slice(0,i+1).join('/')]));
+  $('#crumbs').innerHTML=items.map(([t,h],i)=>i===items.length-1?`<li><span aria-current="page">${esc(t)}</span></li>`:`<li><a href="${esc(h)}">${esc(t)}</a></li>`).join('');
+  $('#up').hidden=parts.length===0;
+  if(parts.length) $('#up').href=items[items.length-2][1];
+}
+function card(p,showPath){
+  const url=encodeURI(workPath(p))+'/';
+  const path=pathNames(p).join(' › ');
+  return `<a class="card" href="${esc(url)}"><div class="card-body"><h3>${esc(workTitle(p))}</h3>
+    <div class="meta"><span class="tag a" title="Autor (přezdívka)">${esc(workAuthor(p))}</span><span class="tag">${size(p.velikost)}</span></div>
+    ${showPath?`<div class="path">${esc(path)}</div>`:''}</div>
+    <div class="card-foot"><span>Otevřít práci</span><span class="go" aria-hidden="true">→</span></div></a>`;
+}
+function render(){
+  const parts=route(), q=norm($('#q').value.trim());
+  crumbs(parts);
+  const all=DATA.prace;
+  if(q){
+    const hit=all.filter(p=>norm([workTitle(p),workAuthor(p),p.nazev,p.autor,...pathNames(p)].join(' ')).includes(q));
+    $('#h').textContent='Výsledky hledání';
+    $('#count').textContent=`Nalezeno ${hit.length} z ${all.length}`;
+    $('#grid').innerHTML=hit.length?hit.map(p=>card(p,true)).join(''):'<div class="empty"><b>Nic nenalezeno</b>Zkuste jiné slovo nebo hledání zrušte.</div>';
+    return;
+  }
+  // práce v aktuální složce
+  const inHere=all.filter(p=>parts.every((s,i)=>lv(p)[i]===s));
+  $('#h').textContent=parts.length?nm(parts.join('/')):'Školní roky';
+  if(!all.length){
+    $('#count').textContent='';
+    $('#grid').innerHTML='<div class="empty"><b>Portfolio je zatím prázdné</b>Zde se objeví práce studentů, jakmile je učitel zveřejní.</div>';
+    return;
+  }
+  if(!inHere.length){
+    $('#count').textContent='';
+    $('#grid').innerHTML='<div class="empty"><b>Tato složka neexistuje nebo je prázdná</b><a href="#/">Zpět na začátek portfolia</a></div>';
+    return;
+  }
+  if(parts.length===4){
+    $('#count').textContent=`${inHere.length} ${plural(inHere.length,'práce','práce','prací')}`;
+    $('#grid').innerHTML=inHere.sort((a,b)=>workTitle(a).localeCompare(workTitle(b),'cs')).map(p=>card(p,false)).join('');
+    return;
+  }
+  // podsložky o úroveň níž
+  const keys=[...new Set(inHere.map(p=>lv(p)[parts.length]))];
+  if(parts.length===0) keys.sort().reverse(); else keys.sort((a,b)=>nm(parts.concat(a).join('/')).localeCompare(nm(parts.concat(b).join('/')),'cs'));
+  $('#count').textContent=`${keys.length} ${plural(keys.length,'složka','složky','složek')}, celkem ${inHere.length} ${plural(inHere.length,'práce','práce','prací')}`;
+  $('#grid').innerHTML=keys.map(k=>{
+    const n=inHere.filter(p=>lv(p)[parts.length]===k).length, path=parts.concat(k).join('/');
+    return `<a class="tile" href="#/${esc(path)}">${FOLDER}<div><b>${esc(nm(path))}</b><span>${n} ${plural(n,'práce','práce','prací')}</span></div></a>`;}).join('');
+}
+$('#q').addEventListener('input',render);
+window.addEventListener('hashchange',()=>{$('#q').value='';render();window.scrollTo({top:0});});
+fetch('index.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(d=>{DATA=d;render();})
+  .catch(()=>{$('#grid').innerHTML='<div class="empty"><b>Portfolio se nepodařilo načíst</b>Zkuste stránku znovu načíst za chvíli.</div>';crumbs([]);});
+</script>
+</body>
+</html>

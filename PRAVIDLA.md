@@ -158,7 +158,7 @@ Humorná knižní perokresba tenkou, lehce roztřesenou sépiovou linkou s voln�
 
 ## 9. Co neměnit bez výslovného pokynu
 
-- `index.html` v kořeni (úvodní stránka katalogu), `README.md`, `PRAVIDLA.md`, `CNAME`, `assets/`.
+- `index.html` v kořeni (úvodní stránka katalogu), `README.md`, `PRAVIDLA.md`, `CNAME`, `robots.txt`, `assets/`, `nastroje/`, `.github/`.
 - Záznamy v katalogu a složky jiných aplikací.
 - Složku aplikace nikdy nemaž. Vyřazená aplikace dostane stav `archiv`.
 
@@ -166,6 +166,32 @@ Humorná knižní perokresba tenkou, lehce roztřesenou sépiovou linkou s voln�
 
 - Jeden commit = jedna změna.
 - Zpráva česky ve tvaru „Název aplikace: co se změnilo“.
+
+## 11. Portfolio studentských prací
+
+Portfolio je oddělené od katalogu: nepatří do `katalog.json`, nezobrazuje se v katalogu a na hlavní stránce na něj vede jen odkaz v patičce. Prohlíží se na stránce `portfolio/`, která ukazuje složky jako v průzkumníku. Vyhledávače je nesmějí indexovat (`robots.txt` a značka `noindex`).
+
+**Struktura (přesně pět úrovní):**
+
+```
+portfolio/
+  2026-27/                      školní rok (tvar 2026-27)
+    informatika/                předmět
+      4a-bst/                   skupina studentů
+        binarni-soustava/       téma
+          kocour-tom_prevodnik/ práce: prezdivka_nazev-prace
+            index.html
+```
+
+- Názvy všech složek jsou malá písmena bez diakritiky a mezer, slova se oddělují pomlčkou. Složka práce má tvar `prezdivka_nazev-prace` (mezi přezdívkou a názvem jedno podtržítko).
+- Zobrazované názvy (např. „Binární soustava“, „4A-BST“) se berou z názvu složky. Název s diakritikou lze doplnit v `portfolio/nazvy.json` (klíč je název složky nebo celá cesta, hodnota zobrazovaný název). Žádné další soubory s údaji o práci se nepíšou.
+- **Autoři jsou uvedeni jen přezdívkou nebo iniciály.** Celá jména žáků se v portfoliu a v pracích nepoužívají.
+- Práce nahrává vyučující, ověří, že splňuje pravidla z bodu 8, a **zodpovídá za její obsah**. Na žádost autora nebo zákonného zástupce se práce stáhne.
+- Platí totéž co pro aplikace: žádné cizí zdroje, žádná analytika, žádné odesílání dat. Odkaz zpět do portfolia je žádoucí.
+- Jedna práce má nejvýše **5 MB**. Žádná videa ani velké obrázky.
+- Práce se do portfolia nepřidávají přes `katalog.json` ani přes administraci v Macaly, jen nahráním složky do repozitáře.
+
+**Kontrola a seznam prací.** Skript `nastroje/portfolio-index.py` (spouští se automaticky po každé změně ve složce `portfolio/`, ručně `python3 nastroje/portfolio-index.py`) ověří strukturu a názvy, velikost, přítomnost `index.html` a cizí zdroje, doplní `noindex` a sestaví `portfolio/index.json`. Práci s chybou ani s varováním (cizí zdroj) neuvede v seznamu. Varování může vyučující potvrdit přidáním cesty práce do `portfolio/povolene.json`. `portfolio/index.json` se nikdy nepíše ručně.
 
 ## Kontrolní seznam pro novou aplikaci
 
