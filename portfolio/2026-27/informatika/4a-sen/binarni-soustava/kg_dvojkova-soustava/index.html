@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dvojková soustava</title>
+<link rel="stylesheet" href="../../../../../../assets/fonty/fonty.css">
+<style>
+:root{--bg:#f5f6fa;--card:#fff;--ink:#161a2b;--mut:#646b85;--line:#e3e6f0;--on:#2563ff;--onink:#fff;--good:#12b76a;--goodbg:#e7f8ef;--bad:#f04438;--badbg:#fdecea;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0f1220;--card:#181c30;--ink:#eef0fa;--mut:#98a0bd;--line:#2a2f4a;--on:#5b8cff;--goodbg:#0f2a20;--badbg:#341a1a}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0f1220;--card:#181c30;--ink:#eef0fa;--mut:#98a0bd;--line:#2a2f4a;--on:#5b8cff;--goodbg:#0f2a20;--badbg:#341a1a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 Montserrat,system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 64px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.brand{font-weight:800;font-size:18px;letter-spacing:-.01em}
+.xp{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--mut)}
+.xp b{color:var(--ink)}
+.track{width:90px;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.track i{display:block;height:100%;width:0;background:var(--on);border-radius:99px;transition:width .5s cubic-bezier(.3,1.4,.5,1)}
+nav{display:flex;gap:4px;padding:4px;background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:24px}
+nav button{flex:1;border:0;background:none;color:var(--mut);font:600 15px Montserrat,system-ui,sans-serif;padding:10px 8px;border-radius:10px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--on);color:var(--onink)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--on);outline-offset:2px}
+h1{font-size:clamp(28px,6vw,38px);line-height:1.15;letter-spacing:-.025em;font-weight:800;margin:0 0 12px}
+h2{font-size:22px;letter-spacing:-.015em;margin:0 0 8px}
+p{margin:0 0 14px;max-width:62ch}
+.mut{color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;margin:20px 0}
+.bits{display:grid;grid-template-columns:repeat(var(--n,8),1fr);gap:6px;max-width:100%;margin:18px 0}
+.bits:has(.bit:nth-child(-n+4):last-child){max-width:360px}
+.bit{border:1.5px solid var(--line);background:var(--bg);color:var(--mut);border-radius:14px;padding:8px 0 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:inherit;transition:transform .12s,background .15s,box-shadow .15s}
+.bit small{font-size:12px;font-weight:600}
+.bit b{font-size:clamp(24px,6vw,34px);font-weight:800;line-height:1.1}
+.bit:active{transform:scale(.92)}
+.bit.on{background:var(--on);border-color:var(--on);color:var(--onink);box-shadow:0 6px 20px -6px var(--on)}
+.bit:disabled{cursor:default}
+.readout{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.dec{font-size:clamp(48px,12vw,72px);font-weight:800;letter-spacing:-.04em;line-height:1}
+.btn{border:0;background:var(--ink);color:var(--bg);font:600 15px Montserrat,system-ui,sans-serif;padding:12px 20px;border-radius:12px;cursor:pointer;transition:transform .12s}
+.btn:active{transform:scale(.96)}
+.btn.ghost{background:none;color:var(--ink);border:1.5px solid var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.goal{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;background:var(--bg);border:1px dashed var(--line)}
+.goal strong{font-size:26px;font-weight:800}
+.goal.done{background:var(--goodbg);border-color:var(--good);border-style:solid}
+input[type=number]{font:800 28px Montserrat,system-ui,sans-serif;width:130px;padding:8px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+.steps div{padding:6px 0;border-bottom:1px solid var(--line);font-size:16px}
+.steps b{color:var(--on)}
+.result{font-size:clamp(28px,7vw,40px);font-weight:800;letter-spacing:.04em;margin:6px 0 0}
+.qhead{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--mut);margin-bottom:8px}
+.pbar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:6px}
+.pbar i{display:block;height:100%;width:0;background:var(--on);transition:width .4s}
+.qtext{font-size:20px;margin:18px 0 6px}
+.big{font-size:1.5em;font-weight:800;letter-spacing:.03em}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.opt{font:800 24px Montserrat,system-ui,sans-serif;padding:18px 0;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;transition:transform .12s}
+.opt:active{transform:scale(.96)}
+.opt.good{background:var(--goodbg);border-color:var(--good)}
+.opt.bad{background:var(--badbg);border-color:var(--bad)}
+.opt:disabled{cursor:default;color:var(--ink);opacity:1}
+.fb{margin-top:18px;padding:16px;border-radius:14px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.fb.ok{background:var(--goodbg)}.fb.no{background:var(--badbg)}
+.fb strong{font-size:20px}
+.fb p{margin:0}
+.lvl{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.lvl button{text-align:left;padding:18px;border-radius:16px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:600 16px/1.4 Montserrat,system-ui,sans-serif;cursor:pointer}
+.lvl button span{display:block;font-weight:400;font-size:14px;color:var(--mut)}
+.lvl button:hover{border-color:var(--on)}
+.score{font-size:72px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.win{animation:win .7s}
+.shake{animation:shake .4s}
+@keyframes win{0%{box-shadow:0 0 0 0 var(--good)}40%{box-shadow:0 0 0 10px transparent,0 0 40px 4px var(--good)}100%{box-shadow:0 0 0 0 transparent}}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.float{position:fixed;z-index:60;pointer-events:none;font-weight:800;font-size:28px;color:var(--good);transform:translate(-50%,0);animation:fl 1.1s ease-out forwards}
+@keyframes fl{to{transform:translate(-50%,-90px);opacity:0}}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){.win,.shake,.float{animation:none}*{transition:none!important}}
+@media (max-width:480px){.wrap{padding-inline:12px}.card{padding:16px}}
+</style>
+</head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="wrap">
+<header>
+  <div class="brand">Dvojková soustava</div>
+  <div class="xp"><span>Úroveň <b id="lv">1</b></span><div class="track"><i id="xpbar"></i></div><span><b id="xpn">0</b> XP</span></div>
+</header>
+<nav role="tablist">
+  <button role="tab" aria-selected="true" data-t="t1">Zkoumej</button>
+  <button role="tab" aria-selected="false" data-t="t2">Převod</button>
+  <button role="tab" aria-selected="false" data-t="t3">Kvíz</button>
+</nav>
+
+<section id="t1">
+  <h1>Jen dvě číslice: 0 a 1</h1>
+  <p>Počítač umí rozlišit jen „zapnuto“ (1) a „vypnuto“ (0). Jedné číslici se říká bit. Klikej na bity a sleduj, co se stane s číslem.</p>
+  <div class="card">
+    <div class="bits" id="lessonBits"></div>
+    <div class="readout"><div class="dec" id="dec">0</div><div class="mut" id="sum">Zatím žádný bit nesvítí</div></div>
+  </div>
+  <div class="goal" id="goal"><span>Výzva: nastav číslo</span><strong id="target">0</strong><span class="mut" id="goalmsg"></span></div>
+  <div class="row" style="margin:16px 0 28px">
+    <button class="btn ghost" id="b0">Vynulovat</button>
+    <button class="btn ghost" id="b1">Všechno zapnout</button>
+    <button class="btn ghost" id="bR">Náhodné číslo</button>
+  </div>
+  <h2>Jak to funguje</h2>
+  <p><b>Každý bit má svou hodnotu.</b> Zprava je to 1, 2, 4, 8, 16… Každá další je dvakrát větší.</p>
+  <p><b>Sečti ty, které svítí.</b> Bity, které jsou vypnuté, se nepočítají.</p>
+  <p><b>8 bitů je jeden bajt.</b> Dají se s ním zapsat všechna čísla od 0 do 255.</p>
+</section>
+
+<section id="t2" hidden>
+  <h1>Z desítkové do dvojkové</h1>
+  <p>Číslo dělíme dvěma a zapisujeme zbytky. Zbytek je vždy 0 nebo 1. Zkus různá čísla.</p>
+  <div class="card">
+    <div class="row"><label for="num" class="mut">Číslo (0 až 255)</label><input id="num" type="number" inputmode="numeric" min="0" max="255" value="37"></div>
+    <div class="steps" id="steps" style="margin-top:14px"></div>
+    <p class="mut" style="margin-top:14px">Zbytky čti odspodu nahoru:</p>
+    <div class="result" id="res"></div>
+  </div>
+</section>
+
+<section id="t3" hidden>
+  <div id="qstart">
+    <h1>Otestuj se</h1>
+    <p>10 otázek. Za každou správnou odpověď dostaneš XP. Když odpovíš správně několikrát za sebou, získáš bonus.</p>
+    <div class="lvl">
+      <button id="L1">Lehká<span>4 bity, čísla 0 až 15</span></button>
+      <button id="L2">Těžší<span>8 bitů, čísla 0 až 255</span></button>
+    </div>
+  </div>
+  <div id="qplay" hidden>
+    <div class="card" id="qcard">
+      <div class="qhead"><span id="qcount"></span><span id="qstreak"></span></div>
+      <div class="pbar"><i id="qbar"></i></div>
+      <div id="qbody"></div>
+      <div class="fb" id="fb" hidden><strong id="fbt"></strong><p id="fbp"></p><button class="btn" id="nextBtn">Další</button></div>
+    </div>
+  </div>
+  <div id="qend" hidden>
+    <div class="card">
+      <div class="score"><span id="sc">0</span><span class="mut" style="font-size:28px"> / 10</span></div>
+      <h2 id="endt" style="margin-top:12px"></h2>
+      <p class="mut" id="endp"></p>
+      <div class="row"><button class="btn" id="again">Hrát znovu</button><button class="btn ghost" id="chg">Změnit úroveň</button></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const bin=(n,w)=>n.toString(2).padStart(w,'0');
+const pick=a=>a[rnd(0,a.length-1)];
+let store={xp:0};
+try{const s=JSON.parse(localStorage.getItem('dvojkova')||'null');if(s&&typeof s.xp==='number')store=s}catch(e){}
+const save=()=>{try{localStorage.setItem('dvojkova',JSON.stringify(store))}catch(e){}};
+const lvl=()=>Math.floor(store.xp/100)+1;
+function render(){$('#lv').textContent=lvl();$('#xpn').textContent=store.xp;$('#xpbar').style.width=(store.xp%100)+'%'}
+function addXP(n){const a=lvl();store.xp+=n;save();render();return lvl()>a}
+render();
+
+/* zvuk */
+let ac;
+function tone(f,t=0,d=.14,type='sine',v=.1){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(ac.destination);const s=ac.currentTime+t;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(v,s+.01);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d+.02)}catch(e){}}
+function chime(st){const b=440*Math.pow(2,Math.min(st,7)/12);[1,1.25,1.5,2].forEach((m,i)=>tone(b*m,i*.07,.18,'triangle'))}
+const buzz=ms=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
+
+/* konfety z nul a jedniček */
+const cv=$('#fx'),cx=cv.getContext('2d');let P=[],raf=0;
+function size(){const d=devicePixelRatio||1;cv.width=innerWidth*d;cv.height=innerHeight*d;cx.setTransform(d,0,0,d,0,0)}
+addEventListener('resize',size);size();
+function burst(x,y,n=40,pw=1){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)n=Math.min(n,8);
+  const cols=['#2563ff','#12b76a','#f59e0b','#ec4899','#06b6d4'];
+  for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=(3+Math.random()*9)*pw;
+    P.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-5,c:pick(cols),l:1,r:Math.random()*6,vr:(Math.random()-.5)*.3,t:Math.random()<.65?String(rnd(0,1)):null,z:14+Math.random()*16})}
+  if(!raf)raf=requestAnimationFrame(loop)}
+function loop(){cx.clearRect(0,0,innerWidth,innerHeight);
+  P.forEach(p=>{p.vy+=.28;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.l-=.012;cx.save();cx.globalAlpha=Math.max(p.l,0);cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;
+    if(p.t){cx.font='800 '+p.z+'px Montserrat,system-ui,sans-serif';cx.textAlign='center';cx.fillText(p.t,0,0)}else cx.fillRect(-4,-2,8,4);cx.restore()});
+  P=P.filter(p=>p.l>0&&p.y<innerHeight+40);
+  if(P.length)raf=requestAnimationFrame(loop);else{raf=0;cx.clearRect(0,0,innerWidth,innerHeight)}}
+function floatTxt(t,x,y){const e=document.createElement('div');e.className='float';e.textContent=t;e.style.left=x+'px';e.style.top=y+'px';document.body.append(e);setTimeout(()=>e.remove(),1100)}
+const center=el=>{const r=el.getBoundingClientRect();return[r.left+r.width/2,r.top+r.height/2]};
+
+/* bity */
+function makeBits(el,w,cb){
+  el.style.setProperty('--n',w);el.innerHTML='';let v=0;const bs=[];
+  for(let i=w-1;i>=0;i--){const b=document.createElement('button');b.type='button';b.className='bit';b.dataset.i=i;b.setAttribute('aria-pressed','false');
+    b.setAttribute('aria-label','Bit s hodnotou '+(1<<i));b.innerHTML='<small>'+(1<<i)+'</small><b>0</b>';
+    b.onclick=()=>{set(v^(1<<i));tone((v>>i&1)?660:420,0,.08,'triangle',.07)};bs.push(b);el.append(b)}
+  function set(n){v=n;bs.forEach(b=>{const on=!!(v>>b.dataset.i&1);b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);b.querySelector('b').textContent=on?1:0});cb&&cb(v)}
+  return{get:()=>v,set,lock:()=>bs.forEach(b=>b.disabled=true)}}
+const parts=(n,w)=>{const a=[];for(let i=w-1;i>=0;i--)if(n>>i&1)a.push(1<<i);return a};
+
+/* karty */
+$$('nav button').forEach(b=>b.onclick=()=>{$$('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));['t1','t2','t3'].forEach(id=>$('#'+id).hidden=id!==b.dataset.t)});
+
+/* Zkoumej */
+let target=rnd(1,255),locked=false;
+function newTarget(){do{target=rnd(1,255)}while(target===L.get());$('#target').textContent=target;$('#goal').classList.remove('done');$('#goalmsg').textContent='';locked=false}
+const L=makeBits($('#lessonBits'),8,v=>{
+  $('#dec').textContent=v;const p=parts(v,8);
+  $('#sum').textContent=p.length?p.join(' + ')+' = '+v:'Zatím žádný bit nesvítí';
+  if(!locked&&v===target){locked=true;$('#goal').classList.add('done');$('#goalmsg').textContent='Správně! +5 XP';
+    const[x,y]=center($('#lessonBits'));burst(x,y,50);chime(3);buzz(30);floatTxt('+5 XP',x,y);addXP(5);setTimeout(newTarget,1400)}});
+$('#target').textContent=target;
+$('#b0').onclick=()=>L.set(0);$('#b1').onclick=()=>L.set(255);$('#bR').onclick=()=>L.set(rnd(0,255));
+
+/* Převod */
+function conv(){
+  let n=parseInt($('#num').value);if(isNaN(n)||n<0)n=0;if(n>255)n=255;
+  let q=n,r=[],h='';
+  if(n===0){h='<div>0 ÷ 2 = 0, zbytek <b>0</b></div>';r=[0]}
+  while(q>0){h+='<div>'+q+' ÷ 2 = '+(q>>1)+', zbytek <b>'+(q&1)+'</b></div>';r.push(q&1);q>>=1}
+  $('#steps').innerHTML=h;$('#res').textContent=r.reverse().join('');
+}
+$('#num').oninput=conv;conv();
+
+/* Kvíz */
+const Q={level:1,i:0,score:0,streak:0,gain:0,cur:null,done:false,bits:null};
+const show=id=>['qstart','qplay','qend'].forEach(x=>$('#'+x).hidden=x!==id);
+function start(l){Object.assign(Q,{level:l,i:0,score:0,streak:0,gain:0});show('qplay');next()}
+$('#L1').onclick=()=>start(1);$('#L2').onclick=()=>start(2);
+$('#again').onclick=()=>start(Q.level);$('#chg').onclick=()=>show('qstart');
+$('#nextBtn').onclick=next;
+
+function next(){
+  if(Q.i>=10)return finish();
+  Q.i++;Q.done=false;Q.bits=null;
+  $('#fb').hidden=true;$('#qcard').classList.remove('win','shake');
+  const w=Q.level===1?4:8,max=(1<<w)-1;let n;
+  do{n=rnd(1,max)}while(Q.cur&&n===Q.cur.n);
+  const type=pick(['choice','input','toggle']);Q.cur={w,n,type};
+  $('#qcount').textContent='Otázka '+Q.i+' z 10';
+  $('#qbar').style.width=((Q.i-1)*10)+'%';
+  $('#qstreak').textContent=Q.streak>1?'🔥 Série '+Q.streak:'';
+  const b=$('#qbody');
+  if(type==='toggle'){
+    b.innerHTML='<p class="qtext">Nastav číslo <span class="big">'+n+'</span> pomocí bitů.</p><div class="bits" id="qbits"></div><button class="btn" id="check">Zkontrolovat</button>';
+    Q.bits=makeBits($('#qbits'),w);$('#check').onclick=()=>answer(Q.bits.get()===n);
+  }else{
+    b.innerHTML='<p class="qtext">Kolik je <span class="big">'+bin(n,w)+'</span> v desítkové soustavě?</p>'+
+      (type==='choice'?'<div class="opts" id="opts"></div>':'<div class="row" style="margin-top:16px"><input id="ans" type="number" inputmode="numeric" aria-label="Tvoje odpověď"><button class="btn" id="check">Zkontrolovat</button></div>');
+    if(type==='choice'){
+      const s=new Set([n]);[n+1,n-1,n+2,n^1,n^2,n^4].forEach(x=>{if(x>=0&&x<=max&&s.size<4)s.add(x)});while(s.size<4)s.add(rnd(0,max));
+      [...s].sort(()=>Math.random()-.5).forEach(v=>{const o=document.createElement('button');o.className='opt';o.textContent=v;o.onclick=()=>{o.classList.add(v===n?'good':'bad');answer(v===n)};$('#opts').append(o)});
+    }else{
+      const a=$('#ans');a.focus();const go=()=>{if(a.value!=='')answer(parseInt(a.value)===n)};
+      $('#check').onclick=go;a.onkeydown=e=>{if(e.key==='Enter')go()};
+    }
+  }
+}
+const praise=['Přesně!','Skvělé!','Správně!','Bomba!','Ty to umíš!','Šlape ti to!'];
+function answer(ok){
+  if(Q.done)return;Q.done=true;
+  const{n,w}=Q.cur,card=$('#qcard'),fb=$('#fb');
+  if(Q.bits)Q.bits.lock();
+  $$('#qbody button,#qbody input').forEach(e=>e.disabled=true);
+  const p=parts(n,w),ex=bin(n,w)+' = '+p.join(' + ')+' = '+n;
+  const[x,y]=center(card);
+  if(ok){
+    Q.score++;Q.streak++;const g=10+Math.min(Q.streak-1,5)*2;Q.gain+=g;
+    const up=addXP(g);
+    card.classList.add('win');burst(x,y-40,35+Q.streak*12,1+Q.streak*.08);chime(Q.streak);buzz(25);floatTxt('+'+g+' XP',x,y-60);
+    fb.className='fb ok';$('#fbt').textContent=Q.streak>=5?'Nezastavitelný!':pick(praise);
+    $('#fbp').textContent=ex+(Q.streak>1?'. Série '+Q.streak+' správně za sebou, bonus k XP!':'.');
+    if(up){setTimeout(()=>{burst(innerWidth/2,innerHeight/3,120,1.6);tone(880,0,.3,'triangle');tone(1175,.12,.4,'triangle');floatTxt('Nová úroveň: '+lvl(),innerWidth/2,innerHeight/3)},350)}
+  }else{
+    Q.streak=0;card.classList.add('shake');tone(190,0,.28,'sawtooth',.05);buzz(80);
+    fb.className='fb no';$('#fbt').textContent='Skoro to bylo.';$('#fbp').textContent='Správně je '+n+'. '+ex+'. Příště to vyjde!';
+    $$('#opts .opt').forEach(o=>{if(+o.textContent===n)o.classList.add('good')});
+  }
+  $('#qstreak').textContent=Q.streak>1?'🔥 Série '+Q.streak:'';
+  $('#qbar').style.width=(Q.i*10)+'%';
+  $('#nextBtn').textContent=Q.i>=10?'Výsledek':'Další';
+  fb.hidden=false;$('#nextBtn').focus({preventScroll:true});
+}
+function finish(){
+  show('qend');$('#sc').textContent=Q.score;
+  let t,m='Získal jsi '+Q.gain+' XP.';
+  if(Q.score===10){t='Perfektní kolo!';m+=' Bonus za bezchybné kolo: +20 XP.';addXP(20);
+    setTimeout(()=>{burst(innerWidth/2,innerHeight/3,160,1.8);chime(7)},200);setTimeout(()=>burst(innerWidth/3,innerHeight/2,80,1.4),600);setTimeout(()=>burst(innerWidth*.7,innerHeight/2,80,1.4),900)}
+  else if(Q.score>=7){t='Výborně!';setTimeout(()=>{burst(innerWidth/2,innerHeight/3,90,1.3);chime(4)},200)}
+  else if(Q.score>=4){t='Dobrý základ.';m+=' Zkus to ještě jednou, uvidíš rozdíl.'}
+  else{t='Procvičuj dál.';m+=' Vrať se na kartu Zkoumej a zkus si to s bity.'}
+  $('#endt').textContent=t;$('#endp').textContent=m;
+}
+</script>
+</body>
+</html>
