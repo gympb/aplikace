@@ -80,6 +80,8 @@ Používej **jen** tyto štítky. Nové nevytvářej.
   - celým českým názvem s velkým počátečním písmenem (`"Dějepis"`, ne `"dějepis"` ani `"D"`),
   - jen pokud už neexistuje v jiném zápisu.
 - Pro zkušební aplikace je povolený předmět `Test` (zapisuje se takto, ne `TEST`).
+- **Složky na úvodní stránce.** Katalog má přepínač Podle předmětů (výchozí) / Hromada. Složky se tvoří za běhu z štítků `predmet`, nic se pro ně nezakládá. Aplikace se dvěma předměty je ve dvou složkách. Na dlaždici je název předmětu, počet aplikací a datum zveřejnění poslední z nich. Pozor na přesný zápis: „Fyzika“ a „fyzika“ by byly dvě různé složky.
+- **Ilustrace předmětu** je `assets/obrazky/predmety/<slug>.svg` (slug je název malými písmeny bez diakritiky, např. `dejepis.svg`, poměr stran 360 × 310, jednoduchá ručně kreslená ilustrace v barvách školy bez cizích postav a značek). Předmět bez vlastní ilustrace dostane záložní `zaloha.svg`.
 
 ## 6. Stav a štítek „Nové“
 

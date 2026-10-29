@@ -96,7 +96,7 @@ a{color:inherit}
 /* katalog */
 .cat{padding-block:36px 64px;background:var(--cat-bg)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.cat-head{display:flex;justify-content:flex-end;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.cat-head{display:flex;justify-content:space-between;align-items:center;gap:12px 20px;flex-wrap:wrap;margin-bottom:18px}
 .cat-head h2{font-size:28px;letter-spacing:-.02em}
 /* vhodnost pro mobil: štítek na kartě a přepínač v liště */
 .ico{width:14px;height:14px;flex:none;display:inline-block;vertical-align:-2px}
@@ -188,6 +188,25 @@ footer .in{display:flex;justify-content:space-between;gap:16px 40px;flex-wrap:wr
 footer .school span{color:var(--foot-muted)}
 footer p{margin:0;font-size:14px;line-height:1.55;color:var(--foot-muted);max-width:60ch}
 
+/* přepínač způsobu zobrazení a složky předmětů */
+.cat-left{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap}
+.seg{display:inline-flex;border:2px solid var(--ink);background:var(--bg)}
+.seg button{font:600 14px var(--f-display);border:0;background:transparent;color:var(--ink);padding:8px 14px;min-height:40px;cursor:pointer}
+.seg button+button{border-left:2px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:focus-visible{outline:3px solid var(--brand);outline-offset:-3px}
+.backlink{font:600 14px var(--f-display);color:var(--ink);text-decoration:none;border-bottom:2px solid var(--brand);padding:6px 0}
+.backlink:hover{background:var(--accent-soft)}
+.grid.folders .card{aspect-ratio:364/470}
+.folder{position:relative;display:grid;grid-template-rows:2fr 1fr}
+.folder::before{content:"";position:absolute;left:-1px;top:-11px;width:96px;height:11px;border:1px solid var(--card-line);border-bottom:0;background:var(--bg);transition:border-color .15s}
+.folder:hover::before,.folder:focus-within::before{border-color:var(--brand)}
+.folder .card-art.has-img{aspect-ratio:auto;min-height:0;height:auto}
+.folder .card-body{min-height:0;align-content:center;padding:14px 18px 16px;gap:8px}
+.folder h3{font-size:24px}
+.folder .meta{margin-top:0}
+.folder .meta .n{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.folder .go{position:absolute;right:16px;bottom:14px}
 /* filtr v oranžovém pruhu */
 .bar-box{display:grid;gap:14px}
 /* ilustrace na kartách */
@@ -233,7 +252,12 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
 </div></div></div>
 
 <main class="cat"><div class="in">
-  <div class="cat-head"><h2 class="sr">Katalog aplikací</h2><span class="count" id="count"></span></div>
+  <div class="cat-head"><h2 class="sr">Katalog aplikací</h2>
+    <div class="cat-left">
+      <div class="seg" role="group" aria-label="Způsob zobrazení katalogu"><button type="button" id="v-subj" aria-pressed="true">Podle předmětů</button><button type="button" id="v-all" aria-pressed="false">Hromada</button></div>
+      <a class="backlink" id="back" href="#" hidden>← Všechny předměty</a>
+    </div>
+    <span class="count" id="count"></span></div>
   <div class="grid" id="grid"></div>
 </div></main>
 
@@ -309,11 +333,48 @@ const TAGS=[...ROCNIKY,'NG','VG','All'];
 const expand=r=>new Set(r.flatMap(g=>SKUPINY[g]||[g]));
 const gOrder=g=>{const k=TAGS.indexOf(g);return k<0?99:k;};
 const f={s:'Vše',g:'Vše',q:'',m:false};
+// způsob zobrazení: „subj“ = složky podle předmětů (výchozí při prvním otevření), „all“ = hromada všech aplikací; volba se pamatuje v prohlížeči
+let VIEW='subj';
+try{const v=localStorage.getItem('gymplikace-pohled');if(v==='all'||v==='subj')VIEW=v;}catch(e){}
+const slugP=s=>norm(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+// složky se tvoří za běhu ze štítků „predmet“, aplikace se dvěma předměty je ve dvou složkách; obrázek je assets/obrazky/predmety/<slug>.svg, jinak záložní
+const plA=n=>n===1?'aplikace':(n>=2&&n<=4?'aplikace':'aplikací');
+function folderHTML(name){
+  const apps=APPS.filter(a=>a.predmet.includes(name));
+  const last=apps.map(a=>a.zverejneno||a.aktualizace||'').sort().pop();
+  const sl=slugP(name);
+  return `<article class="card folder ready">
+    <div class="card-art has-img" aria-hidden="true"><img src="assets/obrazky/predmety/${esc(sl)}.svg" alt="" loading="lazy" onerror="this.onerror=null;this.src='assets/obrazky/predmety/zaloha.svg'"></div>
+    <div class="card-body">
+      <h3><a href="#/${esc(sl)}">${esc(name)}</a></h3>
+      <div class="meta"><span class="tag n">${apps.length} ${plA(apps.length)}</span>${last?`<span class="tag d" title="Datum zveřejnění poslední aplikace">poslední ${datum(last)}</span>`:''}</div>
+    </div>
+    <span class="go" aria-hidden="true">→</span>
+  </article>`;
+}
+// výběr předmětu (složky) se promítá do adresy (#/fyzika), takže funguje tlačítko Zpět i sdílení odkazu
+function setSubject(name,push){
+  f.s=name;
+  if(push!==false){const h=name==='Vše'?location.pathname+location.search:'#/'+slugP(name);
+    try{history.pushState(null,'',h);}catch(e){}}
+  chips('f-subj',SUBJ,'s');render();toResults();
+}
+function applyHash(){
+  const m=/^#\/([a-z0-9-]+)$/.exec(location.hash);
+  const name=m?(SUBJ.find(x=>x!=='Vše'&&slugP(x)===m[1])||'Vše'):'Vše';
+  if(name!==f.s){f.s=name;chips('f-subj',SUBJ,'s');render();toResults();}
+}
+function setView(v){
+  VIEW=v;try{localStorage.setItem('gymplikace-pohled',v);}catch(e){}
+  render();toResults();
+}
 
 function chips(el,list,key){
   $(el).innerHTML=list.map(v=>`<button class="chip" data-v="${esc(v)}" aria-pressed="${String(f[key])===String(v)}">${esc(v)}</button>`).join('');
   // ročníky nemají tlačítko Vše: opětovné klepnutí na vybraný ročník filtr zruší
-  $(el).onclick=e=>{const b=e.target.closest('button');if(!b)return;f[key]=(key==='g'&&f.g===b.dataset.v)?'Vše':b.dataset.v;chips(el,list,key);render();toResults();};
+  $(el).onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(key==='s'){setSubject(b.dataset.v);return;}
+    f[key]=(key==='g'&&f.g===b.dataset.v)?'Vše':b.dataset.v;chips(el,list,key);render();toResults();};
 }
 // po změně filtru ukázat začátek výsledků (první vyhovující aplikaci), ne místo, kde stránka zrovna je
 function toResults(){
@@ -324,6 +385,17 @@ function toResults(){
 }
 function render(){
   const q=norm(f.q.trim());
+  $('v-subj').setAttribute('aria-pressed',String(VIEW==='subj'));$('v-all').setAttribute('aria-pressed',String(VIEW==='all'));
+  $('back').hidden=!(VIEW==='subj'&&f.s!=='Vše');
+  // složky se ukazují, dokud není vybraný předmět, hledání ani jiný filtr; jinak plochý seznam vyhovujících aplikací
+  if(VIEW==='subj'&&f.s==='Vše'&&!q&&f.g==='Vše'&&!f.m){
+    const names=SUBJ.filter(x=>x!=='Vše');
+    $('count').textContent=`${names.length} ${names.length===1?'předmět':names.length<5?'předměty':'předmětů'} · ${APPS.length} ${plA(APPS.length)}`;
+    $('grid').className='grid folders';
+    $('grid').innerHTML=names.map(folderHTML).join('');
+    return;
+  }
+  $('grid').className='grid';
   const list=APPS.filter(a=>(!f.m||a.zarizeni==='mobil')&&(f.s==='Vše'||a.predmet.includes(f.s))&&(f.g==='Vše'||expand(a.rocnik).has(f.g))
     &&(!q||norm([a.nazev,a.popis,...(a.temata||[])].join(' ')).includes(q)));
   $('count').textContent=`Zobrazeno ${list.length} z ${APPS.length}`;
@@ -357,12 +429,15 @@ fetch('katalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.sta
   const nU=new Set(APPS.map(a=>a.autor).filter(Boolean)).size;
   $('st-aut').textContent=nU; $('st-aut').nextElementSibling.textContent=pl(nU,'autor','autoři','autorů');
   if(d.aktualizace)$('upd').textContent=`Katalog aktualizován ${datum(d.aktualizace)}.`;
-  chips('f-subj',SUBJ,'s'); chips('f-grade',GRADES,'g'); render();
+  chips('f-subj',SUBJ,'s'); chips('f-grade',GRADES,'g'); applyHash(); render();
 }).catch(()=>{
   $('count').textContent='';
   $('grid').innerHTML='<div class="empty">Katalog se nepodařilo načíst. Soubor katalog.json se načítá jen přes webový server, ne z disku. Otevřete stránku na adrese aplikace.gympb.cz, nebo ji spusťte lokálně příkazem <code>python3 -m http.server</code>.</div>';
 });
 $('q').oninput=e=>{f.q=e.target.value;render();};
+$('v-subj').onclick=()=>setView('subj');$('v-all').onclick=()=>setView('all');
+$('back').onclick=e=>{e.preventDefault();setSubject('Vše');};
+addEventListener('hashchange',applyHash);
 // přepínač „Jen pro mobil“
 function setMob(on){f.m=on;$('f-mob').setAttribute('aria-pressed',String(on));render();toResults();}
 $('f-mob').onclick=()=>setMob(!f.m);

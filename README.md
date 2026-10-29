@@ -10,6 +10,7 @@ Interaktivní výukové aplikace, které fungují v prohlížeči bez přihláš
 index.html          katalog aplikací (úvodní stránka)
 katalog.json        údaje o aplikacích, ze kterých se skládá katalog
 assets/fonty/       sdílená písma (katalog: Montserrat, Atkinson Hyperlegible; Enigma: Cinzel, Source Sans 3, JetBrains Mono)
+assets/obrazky/predmety/  ilustrace předmětů pro složky na úvodní stránce (<slug>.svg, záložní zaloha.svg)
 CNAME               vlastní doména pro GitHub Pages
 portfolio/          studentské práce (jen přes odkaz v patičce, bez indexace), viz PRAVIDLA.md, bod 11
 nastroje/           pomocné skripty (portfolio-index.py)
