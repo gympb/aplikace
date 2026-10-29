@@ -195,6 +195,14 @@ footer p{margin:0;font-size:14px;line-height:1.55;color:var(--foot-muted);max-wi
 .seg button+button{border-left:2px solid var(--ink)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .seg button:focus-visible{outline:3px solid var(--brand);outline-offset:-3px}
+/* v oranžovém pruhu (počítač) vlevo od přepínače „Jen pro mobil“; na telefonu je přepínač nad katalogem */
+.seg-bar{background:transparent;border-color:var(--on-brand);flex:none}
+.seg-bar button{color:var(--on-brand);min-height:38px}
+.seg-bar button+button{border-left-color:var(--on-brand)}
+.seg-bar button[aria-pressed="true"]{background:var(--on-brand);color:var(--brand)}
+.seg-bar button:focus-visible{outline-color:#111111}
+.seg-mob{display:none}
+@media (max-width:640px){.seg-bar{display:none}.seg-mob{display:inline-flex}}
 .backlink{font:600 14px var(--f-display);color:var(--ink);text-decoration:none;border-bottom:2px solid var(--brand);padding:6px 0}
 .backlink:hover{background:var(--accent-soft)}
 .grid.folders .card{aspect-ratio:364/470}
@@ -243,6 +251,7 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
       <label for="q">Hledat aplikaci</label>
       <input id="q" type="search" placeholder="Hledat podle názvu nebo tématu, např. šifra" autocomplete="off">
     </div>
+    <div class="seg seg-bar" role="group" aria-label="Způsob zobrazení katalogu"><button type="button" class="v-subj" aria-pressed="true">Podle předmětů</button><button type="button" class="v-all" aria-pressed="false">Hromada</button></div>
     <button class="chip mobchip" id="f-mob" aria-pressed="false" aria-label="Jen pro mobil" title="Zobrazit jen aplikace optimalizované pro použití na mobilu"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="1.5" width="8" height="13" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 12.3h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="lbl">Jen pro mobil</span></button>
   </div>
   <div class="filters">
@@ -254,7 +263,7 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
 <main class="cat"><div class="in">
   <div class="cat-head"><h2 class="sr">Katalog aplikací</h2>
     <div class="cat-left">
-      <div class="seg" role="group" aria-label="Způsob zobrazení katalogu"><button type="button" id="v-subj" aria-pressed="true">Podle předmětů</button><button type="button" id="v-all" aria-pressed="false">Hromada</button></div>
+      <div class="seg seg-mob" role="group" aria-label="Způsob zobrazení katalogu"><button type="button" class="v-subj" aria-pressed="true">Podle předmětů</button><button type="button" class="v-all" aria-pressed="false">Hromada</button></div>
       <a class="backlink" id="back" href="#" hidden>← Všechny předměty</a>
     </div>
     <span class="count" id="count"></span></div>
@@ -385,7 +394,7 @@ function toResults(){
 }
 function render(){
   const q=norm(f.q.trim());
-  $('v-subj').setAttribute('aria-pressed',String(VIEW==='subj'));$('v-all').setAttribute('aria-pressed',String(VIEW==='all'));
+  document.querySelectorAll('.v-subj').forEach(b=>b.setAttribute('aria-pressed',String(VIEW==='subj')));document.querySelectorAll('.v-all').forEach(b=>b.setAttribute('aria-pressed',String(VIEW==='all')));
   $('back').hidden=!(VIEW==='subj'&&f.s!=='Vše');
   // složky se ukazují, dokud není vybraný předmět, hledání ani jiný filtr; jinak plochý seznam vyhovujících aplikací
   if(VIEW==='subj'&&f.s==='Vše'&&!q&&f.g==='Vše'&&!f.m){
@@ -435,7 +444,7 @@ fetch('katalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.sta
   $('grid').innerHTML='<div class="empty">Katalog se nepodařilo načíst. Soubor katalog.json se načítá jen přes webový server, ne z disku. Otevřete stránku na adrese aplikace.gympb.cz, nebo ji spusťte lokálně příkazem <code>python3 -m http.server</code>.</div>';
 });
 $('q').oninput=e=>{f.q=e.target.value;render();};
-$('v-subj').onclick=()=>setView('subj');$('v-all').onclick=()=>setView('all');
+document.querySelectorAll('.v-subj').forEach(b=>b.onclick=()=>setView('subj'));document.querySelectorAll('.v-all').forEach(b=>b.onclick=()=>setView('all'));
 $('back').onclick=e=>{e.preventDefault();setSubject('Vše');};
 addEventListener('hashchange',applyHash);
 // přepínač „Jen pro mobil“
