@@ -200,6 +200,7 @@ footer p{margin:0;font-size:14px;line-height:1.55;color:var(--foot-muted);max-wi
 .seg-bar button[aria-pressed="true"]{background:var(--on-brand);color:var(--brand)}
 .seg-bar button:focus-visible{outline-color:#111111}
 .seg-mob{display:none}
+.chips.skryto{visibility:hidden}
 @media (max-width:640px){.seg-bar{display:none}.seg-mob{display:inline-flex}}
 .backlink{font:600 14px var(--f-display);color:var(--ink);text-decoration:none;border-bottom:2px solid var(--brand);padding:6px 0}
 .backlink:hover{background:var(--accent-soft)}
@@ -395,7 +396,10 @@ function render(){
   document.querySelectorAll('.v-subj').forEach(b=>b.setAttribute('aria-pressed',String(VIEW==='subj')));document.querySelectorAll('.v-all').forEach(b=>b.setAttribute('aria-pressed',String(VIEW==='all')));
   $('back').hidden=!(VIEW==='subj'&&f.s!=='Vše');
   // složky se ukazují, dokud není vybraný předmět, hledání ani jiný filtr; jinak plochý seznam vyhovujících aplikací
-  if(VIEW==='subj'&&f.s==='Vše'&&!q&&f.g==='Vše'&&!f.m){
+  const slozky=VIEW==='subj'&&f.s==='Vše'&&!q&&f.g==='Vše'&&!f.m;
+  // při zobrazení složek je řádek s výběrem předmětů skrytý, ale drží své místo, aby se oranžový pruh nezmenšil
+  $('f-subj').parentElement.classList.toggle('skryto',slozky);
+  if(slozky){
     const names=SUBJ.filter(x=>x!=='Vše');
     $('count').textContent=`${names.length} ${names.length===1?'předmět':names.length<5?'předměty':'předmětů'} · ${APPS.length} ${plA(APPS.length)}`;
     $('grid').className='grid folders';
