@@ -204,6 +204,8 @@ footer p{margin:0;font-size:14px;line-height:1.55;color:var(--foot-muted);max-wi
 @media (max-width:640px){.seg-bar{display:none}.seg-mob{display:inline-flex}}
 .backlink{font:600 14px var(--f-display);color:var(--ink);text-decoration:none;border-bottom:2px solid var(--brand);padding:6px 0}
 .backlink:hover{background:var(--accent-soft)}
+.ftitle{font-size:26px;letter-spacing:-.02em;margin:0}
+.ftitle:empty{display:none}
 .grid.folders .card{aspect-ratio:364/470}
 .folder{position:relative;display:grid;grid-template-rows:2fr 1fr}
 .folder::before{content:"";position:absolute;left:-1px;top:-11px;width:96px;height:11px;border:1px solid var(--card-line);border-bottom:0;background:var(--bg);transition:border-color .15s}
@@ -264,6 +266,7 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
     <div class="cat-left">
       <div class="seg seg-mob" role="group" aria-label="Způsob zobrazení katalogu"><button type="button" class="v-subj" aria-pressed="true">Podle předmětů</button><button type="button" class="v-all" aria-pressed="false">Hromada</button></div>
       <a class="backlink" id="back" href="#" hidden>← Všechny předměty</a>
+      <h2 class="ftitle" id="ftitle"></h2>
     </div>
     <span class="count" id="count"></span></div>
   <div class="grid" id="grid"></div>
@@ -397,8 +400,9 @@ function render(){
   $('back').hidden=!(VIEW==='subj'&&f.s!=='Vše');
   // složky se ukazují, dokud není vybraný předmět, hledání ani jiný filtr; jinak plochý seznam vyhovujících aplikací
   const slozky=VIEW==='subj'&&f.s==='Vše'&&!q&&f.g==='Vše'&&!f.m;
-  // při zobrazení složek je řádek s výběrem předmětů skrytý, ale drží své místo, aby se oranžový pruh nezmenšil
-  $('f-subj').parentElement.classList.toggle('skryto',slozky);
+  // v zobrazení podle předmětů (složky i obsah složky) je řádek s výběrem předmětů skrytý, ale drží své místo, aby se oranžový pruh nezmenšil; název otevřené složky je nad výpisem
+  $('f-subj').parentElement.classList.toggle('skryto',VIEW==='subj');
+  $('ftitle').textContent=VIEW==='subj'&&f.s!=='Vše'?f.s:'';
   if(slozky){
     const names=SUBJ.filter(x=>x!=='Vše');
     $('count').textContent=`${names.length} ${names.length===1?'předmět':names.length<5?'předměty':'předmětů'} · ${APPS.length} ${plA(APPS.length)}`;
