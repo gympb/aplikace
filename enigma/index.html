@@ -295,7 +295,7 @@ footer a{color:inherit}
   <section>
     <div class="io">
       <div><label class="lab" for="input-text">Vstupní text</label>
-        <textarea id="input-text" spellcheck="false" placeholder="Sem pište zprávu…"></textarea></div>
+        <textarea id="input-text" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="characters" placeholder="Sem pište zprávu…"></textarea></div>
       <div><label class="lab" for="output-text">Výstupní (šifrovaný) text</label>
         <textarea id="output-text" readonly placeholder="Šifrovaný text se objeví zde…"></textarea></div>
     </div>
@@ -649,7 +649,7 @@ footer a{color:inherit}
   </div>
 
 
-  <footer>Rotory I–V a reflektory B a C mají historické zapojení. Při nastavení rotorů I-II-III na AAA se zpráva AAAAA zašifruje jako BDZGO. Enigma šifruje vratně: zašifrovaný text se stejným nastavením stroje znovu zadaný vrátí původní zprávu.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 22. 10. 2026</footer>
+  <footer>Rotory I–V a reflektory B a C mají historické zapojení. Při nastavení rotorů I-II-III na AAA se zpráva AAAAA zašifruje jako BDZGO. Enigma šifruje vratně: zašifrovaný text se stejným nastavením stroje znovu zadaný vrátí původní zprávu.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 31. 10. 2026</footer>
 </div>
 
 <script>
@@ -800,58 +800,35 @@ footer a{color:inherit}
             updateUI();
         }
 
-        inputArea.addEventListener('input', (e) => {
+        // Šifruje se podle změny textu v poli (událost input), ne podle klávesy: na telefonu hlásí klávesnice
+        // u keydown "Unidentified", takže původní řešení tam nefungovalo. Přidané znaky se najdou porovnáním s předchozím textem.
+        let prevInput = '';
+        inputArea.addEventListener('input', () => {
+            const v = inputArea.value, old = prevInput;
+            prevInput = v;
+            if (v.length <= old.length) return;            // mazání nic nešifruje
+            let p = 0; while (p < old.length && old[p] === v[p]) p++;
+            let q = 0; while (q < old.length - p && old[old.length - 1 - q] === v[v.length - 1 - q]) q++;
+            const added = v.slice(p, v.length - q);
             syncMachineSettings();
-            const text = inputArea.value.toUpperCase();
-            
-            // Re-encrypt everything from start to ensure rotor positions stay synced with text length
-            // In a real Enigma, you'd do it char by char, but for simplicity of the UI we re-run
-            const originalPos = {
-                left: machine.leftRotor.pos,
-                middle: machine.middleRotor.pos,
-                right: machine.rightRotor.pos
-            };
-
-            // Temporary machine to calculate result without moving the "main" machine state permanently
-            // Actually, let's just use the current state and append last char if it was a single keypress
-            // But if user deletes, it's messy. So we'll reset machine to current UI state and process full text.
-            
-            // To make it look like a real machine, we only process the *change* if possible,
-            // but for a text area, full re-processing is safer.
-            
-            // Let's implement a "Typewriter" mode:
-        });
-
-        // Refined Interaction Logic: Keydown based
-        let lastLength = 0;
-        inputArea.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' || e.key === 'Delete') {
-                // When deleting, we can't easily "un-rotate" a mechanical Enigma in this UI logic 
-                // easily without keeping a history. Let's just clear if they delete.
-                return;
-            }
-
-            if (e.key.length === 1 && ALPHABET.includes(e.key.toUpperCase())) {
-                syncMachineSettings();
-                const encrypted = machine.encryptChar(e.key);
-                
-                // Visual feedback
+            for (const ch of added) {
+                if (!ALPHABET.includes(ch.toUpperCase())) continue;
+                const encrypted = machine.encryptChar(ch);
                 const lamp = document.getElementById(`lamp-${encrypted}`);
                 if (lamp) {
                     lamp.classList.add('active');
                     setTimeout(() => lamp.classList.remove('active'), 300);
                 }
-
-                // Update output
                 outputArea.value += encrypted;
-                updateUI();
             }
+            updateUI();
         });
 
         // Reset functionality
         document.getElementById('reset-btn').addEventListener('click', () => {
             machine.reset();
             inputArea.value = '';
+            prevInput = '';
             outputArea.value = '';
             updateUI();
         });
