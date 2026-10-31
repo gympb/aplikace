@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vernamova šifra</title>
+<meta name="description" content="Interaktivní výuková aplikace: šifrování jednorázovým klíčem, sčítání písmen modulo 26, proč je šifra nerozluštitelná a co se stane, když se klíč použije dvakrát.">
+<meta name="author" content="Ivo Bešťák, Gymnázium Příbram">
+<meta property="og:title" content="Vernamova šifra">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+:root{
+  --bg:#eef0ee; --panel:#f8faf9; --ink:#17201f; --muted:#566360; --line:#d0d8d5;
+  --accent:#1d6a73; --accent-soft:#d9ebed; --gold:#98712a; --good:#2f7a4f; --bad:#b3412f; --bad-soft:#f3dcd6;
+  --f-display:"Cinzel","Trajan Pro",Georgia,serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121817; --panel:#1a2221; --ink:#e6eceb; --muted:#9aa8a5; --line:#2c3836;
+  --accent:#6cc5cf; --accent-soft:#1f3a3d; --gold:#d6b066; --good:#6cc391; --bad:#ee8c78; --bad-soft:#3b2420; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+[hidden]{display:none!important}
+.wrap{max-width:1040px;margin:0 auto;display:grid;gap:40px}
+.back{font:600 14px var(--f-body);color:var(--muted);text-decoration:none;padding:6px 0;display:inline-block}.back:hover{color:var(--accent)}
+h1,h2{font-family:var(--f-display);font-weight:700;letter-spacing:.06em;text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,5vw,48px);line-height:1.1}
+h2{font-size:22px}
+h3{margin:0;font:700 16px var(--f-body)}
+.eyebrow{font:600 12px/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.lede{color:var(--muted);max-width:64ch;margin:10px 0 0}
+header{display:grid;gap:6px}
+section{display:grid;gap:14px;min-width:0}
+.sec-head{display:grid;gap:4px}
+.sec-head p{margin:0;color:var(--muted);max-width:72ch}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:14px;min-width:0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.cards .panel{padding:14px 16px;gap:6px}
+.cards .num{font:700 12px var(--f-mono);color:var(--accent);letter-spacing:.1em}
+.cards p{margin:0;font-size:15px;color:var(--muted)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:760px){.cols{grid-template-columns:minmax(0,1fr)}}
+label.lab{font:600 12px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+textarea,input[type=text]{width:100%;font:15px/1.5 var(--f-mono);color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-transform:uppercase}
+textarea{min-height:92px;resize:vertical}
+textarea:focus,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--bg);width:max-content;max-width:100%}
+.seg button{border:0;background:none;color:var(--muted);font:600 14px var(--f-body);padding:9px 18px;border-radius:999px;cursor:pointer;min-height:40px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+.btn{font:600 14px var(--f-body);color:var(--accent);background:var(--bg);border:1.5px solid var(--accent);border-radius:8px;padding:9px 14px;min-height:40px;cursor:pointer}
+.btn:hover{background:var(--accent-soft)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.opt{font-size:14px;color:var(--muted);display:inline-flex;gap:8px;align-items:center;min-height:40px}
+.opt input{accent-color:var(--accent);width:18px;height:18px}
+.out{font:600 17px/1.7 var(--f-mono);letter-spacing:.08em;word-break:break-all;background:var(--accent-soft);border:1px solid var(--accent);border-radius:8px;padding:12px 14px;min-height:50px;color:var(--ink)}
+.msg{font-size:14px;color:var(--muted);margin:0}
+.msg.warn{color:var(--bad);font-weight:600}
+.msg.ok{color:var(--good);font-weight:600}
+.scroll{overflow-x:auto;max-width:100%;padding-bottom:4px}
+table.steps{border-collapse:collapse;font:13px var(--f-mono);min-width:max-content}
+table.steps th{font:600 11px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:5px 12px 5px 0;white-space:nowrap;position:sticky;left:0;background:var(--panel)}
+table.steps td{text-align:center;padding:5px 7px;min-width:34px;border-left:1px solid var(--line);cursor:pointer}
+table.steps tr.res td{font-weight:700;color:var(--accent)}
+table.steps td.sel{background:var(--accent-soft)}
+table.steps td.num{color:var(--muted)}
+/* Vernamův čtverec */
+.sq{display:grid;grid-template-columns:repeat(27,minmax(0,1fr));max-width:600px;font:600 clamp(7px,2.1vw,12px)/1 var(--f-mono);border:1px solid var(--line);background:var(--bg)}
+.sq b{font-weight:600;display:flex;align-items:center;justify-content:center;aspect-ratio:1;color:var(--muted)}
+.sq b.hd{color:var(--accent);background:var(--panel)}
+.sq b.r,.sq b.c{background:var(--accent-soft);color:var(--ink)}
+.sq b.hit{background:var(--accent);color:var(--panel);outline:2px solid var(--gold);outline-offset:-1px;z-index:1}
+.legend{font-size:13px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.legend i{display:inline-block;width:11px;height:11px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
+.mono{font-family:var(--f-mono);letter-spacing:.06em;word-break:break-all}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:baseline;font-size:15px}
+.kv dt{font:600 12px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kv dd{margin:0;min-width:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font:600 13px var(--f-mono);padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--muted)}
+.chip.hit{border-color:var(--good);color:var(--good);background:transparent}
+.chip.sel{border-color:var(--accent);color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent);min-height:32px}
+ul.rules{margin:0;padding-left:20px;display:grid;gap:6px}
+ul.rules b{color:var(--accent)}
+.bits{font:13px var(--f-mono);border-collapse:collapse;min-width:max-content}
+.bits th{font:600 11px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:5px 10px 5px 0;text-align:left;white-space:nowrap}
+.bits td{padding:5px 8px;border-left:1px solid var(--line);text-align:center;letter-spacing:.06em}
+.bits tr.res td{font-weight:700;color:var(--accent)}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <header>
+    <div class="eyebrow">Kryptografie · šifry s jednorázovým klíčem</div>
+    <h1>Vernamova šifra</h1>
+    <p class="lede">Jediná šifra, o které je matematicky dokázáno, že ji nelze prolomit. Každé písmeno zprávy se posune o jiné, náhodné číslo. Vyzkoušej ji, zkus ji „prolomit“ a uvidíš, proč se klíč smí použít jen jednou.</p>
+  </header>
+
+  <section aria-labelledby="h-princip">
+    <div class="sec-head"><h2 id="h-princip">Jak to funguje</h2></div>
+    <div class="cards">
+      <div class="panel"><span class="num">1</span><h3>Písmena na čísla</h3><p>A = 0, B = 1, … Z = 25. Háčky a čárky se vynechají, mezery a interpunkce také.</p></div>
+      <div class="panel"><span class="num">2</span><h3>Sečti s klíčem</h3><p>K číslu písmene zprávy přičti číslo písmene klíče. Je-li výsledek 26 nebo víc, odečti 26 (počítáš modulo 26).</p></div>
+      <div class="panel"><span class="num">3</span><h3>Zpět na písmena</h3><p>Výsledné číslo je šifrové písmeno. Příjemce se stejným klíčem čísla odečte a dostane původní zprávu.</p></div>
+    </div>
+    <ul class="rules">
+      <li><b>Klíč je náhodný.</b> Každé písmeno klíče je stejně pravděpodobné a nezávislé na ostatních.</li>
+      <li><b>Klíč je stejně dlouhý jako zpráva</b> (nebo delší).</li>
+      <li><b>Klíč se použije jen jednou.</b> Proto se mu říká jednorázový.</li>
+      <li><b>Klíč zná jen odesilatel a příjemce</b> a po použití se zničí.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="h-sifrator">
+    <div class="sec-head"><h2 id="h-sifrator">Šifrátor</h2><p>Napiš zprávu. Klíč se vytvoří náhodně, nebo ho zadej sám. Kliknutím na sloupec v tabulce vybereš písmeno, které se ukáže ve čtverci níž.</p></div>
+    <div class="panel">
+      <div class="seg" role="group" aria-label="Režim"><button id="m-enc" aria-pressed="true">Šifrovat</button><button id="m-dec" aria-pressed="false">Dešifrovat</button></div>
+      <div class="cols">
+        <div><label class="lab" for="txt" id="lab-txt">Zpráva</label><textarea id="txt" spellcheck="false" autocomplete="off">UTOK ZACNE V POLEDNE</textarea></div>
+        <div><label class="lab" for="key">Klíč</label><textarea id="key" spellcheck="false" autocomplete="off"></textarea></div>
+      </div>
+      <div class="row">
+        <button class="btn" id="newkey">Nový náhodný klíč</button>
+        <label class="opt"><input type="checkbox" id="five" checked> Po pěti písmenech</label>
+      </div>
+      <p class="msg" id="info"></p>
+      <div><label class="lab" id="lab-out">Šifrový text</label><div class="out" id="out" aria-live="polite"></div></div>
+      <div class="row"><button class="btn" id="swap">Výsledek použít jako vstup a přepnout režim</button></div>
+      <div class="scroll"><table class="steps" id="steps"></table></div>
+      <p class="msg" id="stepinfo"></p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-ctverec">
+    <div class="sec-head"><h2 id="h-ctverec">Vernamův čtverec</h2><p>Sčítání modulo 26 v jedné tabulce. Řádek určuje písmeno klíče, sloupec písmeno zprávy, ve zvýrazněném políčku je šifrové písmeno. Při dešifrování najdeš v řádku klíče šifrové písmeno a nahoře přečteš písmeno zprávy.</p></div>
+    <div class="panel">
+      <div class="sq" id="sq" role="img" aria-label="Tabulka sčítání písmen modulo 26"></div>
+      <div class="legend"><span><i style="background:var(--accent-soft)"></i>řádek klíče a sloupec zprávy</span><span><i style="background:var(--accent)"></i>šifrové písmeno</span></div>
+      <p class="msg" id="sqinfo"></p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-proc">
+    <div class="sec-head"><h2 id="h-proc">Proč ji nejde prolomit</h2><p>Útočník má šifrový text. Napiš libovolný jiný text stejné délky a aplikace spočítá klíč, který by z něj dal přesně tentýž šifrový text. Každý text je stejně možný, a tak šifrový text neříká nic o zprávě.</p></div>
+    <div class="panel">
+      <dl class="kv">
+        <dt>Šifrový text</dt><dd class="mono" id="w-c">–</dd>
+        <dt>Skutečná zpráva</dt><dd class="mono" id="w-p">–</dd>
+      </dl>
+      <div><label class="lab" for="alt">Jiný text stejné délky</label><input type="text" id="alt" spellcheck="false" autocomplete="off" placeholder="Zkus třeba jiné slovo nebo větu"></div>
+      <div class="row"><button class="btn" id="suggest">Navrhnout jiný text</button></div>
+      <dl class="kv">
+        <dt>Klíč, který to dá</dt><dd class="mono" id="w-k">–</dd>
+      </dl>
+      <p class="msg" id="w-info"></p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-dvakrat">
+    <div class="sec-head"><h2 id="h-dvakrat">Když se klíč použije dvakrát</h2><p>Dvě zprávy zašifrované stejným klíčem prozradí rozdíl mezi zprávami: klíč se při odečtení šifrových textů vyruší. Pak stačí hádat známá slova.</p></div>
+    <div class="panel">
+      <div class="cols">
+        <div><label class="lab" for="p1">Zpráva 1</label><input type="text" id="p1" spellcheck="false" autocomplete="off" value="UTOK ZACNE V POLEDNE"></div>
+        <div><label class="lab" for="p2">Zpráva 2</label><input type="text" id="p2" spellcheck="false" autocomplete="off" value="SEJDEME SE U BRANY"></div>
+      </div>
+      <div class="row"><button class="btn" id="newkey2">Nový náhodný klíč (použije se u obou)</button></div>
+      <dl class="kv">
+        <dt>Klíč</dt><dd class="mono" id="d-k">–</dd>
+        <dt>Šifra 1</dt><dd class="mono" id="d-c1">–</dd>
+        <dt>Šifra 2</dt><dd class="mono" id="d-c2">–</dd>
+        <dt>Šifra 1 − šifra 2</dt><dd class="mono" id="d-d">–</dd>
+      </dl>
+      <p class="msg" id="d-eq"></p>
+      <h3>Hádání známého slova</h3>
+      <p class="msg">Zkus uhodnout slovo ve zprávě 1 (třeba ÚTOK) a posouvej ho po textu. Na každé pozici se ukáže, co by v tom případě stálo ve zprávě 2. Zeleně je pozice, kde to dává smysl.</p>
+      <div><label class="lab" for="crib">Hádané slovo ve zprávě 1</label><input type="text" id="crib" spellcheck="false" autocomplete="off" value="UTOK"></div>
+      <div class="chips" id="chips"></div>
+      <p class="msg" id="c-info"></p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-xor">
+    <div class="sec-head"><h2 id="h-xor">Původní verze: bity a XOR</h2><p>Gilbert Vernam ji roku 1917 vymyslel pro dálnopisy, kde se každý znak přenáší jako 5 bitů. Místo sčítání se používá XOR: výsledný bit je 1, když se vstupní bity liší. Stejná operace šifruje i dešifruje. Písmena se zde berou z prvního šifrátoru (A = 00000 … Z = 11001).</p></div>
+    <div class="panel">
+      <div class="scroll"><table class="bits" id="bits"></table></div>
+      <p class="msg" id="bitinfo"></p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-hist">
+    <div class="sec-head"><h2 id="h-hist">Trocha historie</h2></div>
+    <div class="panel">
+      <p style="margin:0">Gilbert Vernam z firmy AT&amp;T navrhl roku 1917 automatické šifrování dálnopisu a patent získal v roce 1919. Jeho klíč byl na děrné pásce a mohl se opakovat. Teprve později Joseph Mauborgne zjistil, že úplně náhodný a nikdy neopakovaný klíč dává šifru, kterou nelze rozluštit. Matematicky to roku 1949 dokázal Claude Shannon.</p>
+      <p style="margin:0">V praxi je těžké sdílet obrovské množství náhodných klíčů a nikdy je neopakovat. Když to Sovětský svaz za války kvůli nedostatku klíčů udělal, americký projekt Venona část zpráv rozluštil právě díky opakovaným klíčům, jako ve cvičení výše. Dnes se jednorázové klíče používají jen ve zvláštních případech.</p>
+      <p style="margin:0">Podobné šifry v tomto katalogu: <a href="../caesarova-sifra/">Caesarova šifra</a> (jeden pevný posun), <a href="../enigma/">Enigma</a> a <a href="../baudotuv-kod/">Baudotův kód</a> (5bitový kód, který Vernam používal).</p>
+    </div>
+  </section>
+
+  <footer>Šifrování: C = (P + K) mod 26 · Dešifrování: P = (C − K) mod 26 · Bitová verze: C = P XOR K · Aplikace pracuje jen ve tvém prohlížeči, nic neodesílá.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" style="color:inherit" target="_blank" rel="noopener">CC BY 4.0</a> · Aktualizace: 31. 10. 2026</footer>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/[^A-Z]/g, '');
+  const num = c => A.indexOf(c);
+  const ch = n => A[((n % 26) + 26) % 26];
+  const group = s => s.replace(/(.{5})/g, '$1 ').trim();
+  function rnd(n) {            // rovnoměrně náhodná písmena, bez zkreslení modulo
+    let out = '';
+    const buf = new Uint8Array(64);
+    while (out.length < n) {
+      crypto.getRandomValues(buf);
+      for (const b of buf) { if (b < 234 && out.length < n) out += A[b % 26]; }  // 234 = 9·26
+    }
+    return out;
+  }
+  const add = (p, k) => [...p].map((c, i) => ch(num(c) + num(k[i]))).join('');
+  const sub = (c, k) => [...c].map((x, i) => ch(num(x) - num(k[i]))).join('');
+
+  /* ---------- šifrátor ---------- */
+  let mode = 'enc', keyAuto = true, sel = 0, last = { p: '', k: '', out: '', n: 0 };
+  const txt = $('txt'), key = $('key');
+  function setMode(m) {
+    mode = m;
+    $('m-enc').setAttribute('aria-pressed', m === 'enc');
+    $('m-dec').setAttribute('aria-pressed', m === 'dec');
+    $('lab-txt').textContent = m === 'enc' ? 'Zpráva' : 'Šifrový text';
+    $('lab-out').textContent = m === 'enc' ? 'Šifrový text' : 'Rozluštěná zpráva';
+    update();
+  }
+  function update() {
+    const P = norm(txt.value);
+    if (mode === 'enc' && keyAuto && norm(key.value).length < P.length) key.value = norm(key.value) + rnd(P.length - norm(key.value).length);
+    const K = norm(key.value);
+    const n = Math.min(P.length, K.length);
+    const out = mode === 'enc' ? add(P.slice(0, n), K) : sub(P.slice(0, n), K);
+    last = { p: P.slice(0, n), k: K.slice(0, n), out, n };
+    $('out').textContent = $('five').checked ? group(out) : out;
+    const info = $('info');
+    info.className = 'msg';
+    if (!P.length) info.textContent = 'Napiš zprávu. Používají se jen písmena A–Z, háčky, čárky, mezery a čísla se vynechají.';
+    else if (K.length < P.length) { info.className = 'msg warn'; info.textContent = `Klíč je o ${P.length - K.length} znaků kratší než zpráva. Kdyby se klíč opakoval, šifra by přestala být bezpečná, proto se zašifruje jen prvních ${K.length} znaků.`; }
+    else if (K.length > P.length) info.textContent = `Zpráva má ${P.length} znaků, klíč ${K.length}. Použije se jeho začátek.`;
+    else info.textContent = `Zpráva i klíč mají ${P.length} znaků.`;
+    if (sel >= n) sel = Math.max(0, n - 1);
+    renderSteps(); renderSquare(); renderBits(); renderWhy();
+  }
+  function renderSteps() {
+    const { p, k, out, n } = last, t = $('steps'), m = Math.min(n, 26);
+    const enc = mode === 'enc';
+    const rows = [
+      [enc ? 'Zpráva' : 'Šifra', i => p[i], ''],
+      ['Číslo', i => num(p[i]), 'num'],
+      ['Klíč', i => k[i], ''],
+      ['Číslo', i => num(k[i]), 'num'],
+      [enc ? 'Součet' : 'Rozdíl', i => enc ? num(p[i]) + num(k[i]) : num(p[i]) - num(k[i]), 'num'],
+      ['mod 26', i => (num(out[i])), 'num'],
+      [enc ? 'Šifra' : 'Zpráva', i => out[i], 'res']
+    ];
+    t.innerHTML = '';
+    if (!n) { $('stepinfo').textContent = ''; return; }
+    for (const [lab, f, cls] of rows) {
+      const tr = document.createElement('tr'); if (cls === 'res') tr.className = 'res';
+      const th = document.createElement('th'); th.scope = 'row'; th.textContent = lab; tr.appendChild(th);
+      for (let i = 0; i < m; i++) {
+        const td = document.createElement('td'); td.textContent = f(i); td.dataset.i = i;
+        if (cls === 'num') td.className = 'num'; if (i === sel) td.classList.add('sel');
+        tr.appendChild(td);
+      }
+      t.appendChild(tr);
+    }
+    $('stepinfo').textContent = n > 26 ? `Tabulka ukazuje prvních 26 znaků z ${n}.` : '';
+  }
+  $('steps').addEventListener('click', e => {
+    const td = e.target.closest('td'); if (!td) return;
+    sel = +td.dataset.i; renderSteps(); renderSquare();
+  });
+  function renderSquare() {
+    const sq = $('sq');
+    if (!sq.firstChild) {
+      const f = document.createDocumentFragment();
+      const add1 = (t, c) => { const b = document.createElement('b'); b.textContent = t; if (c) b.className = c; f.appendChild(b); return b; };
+      add1('', 'hd');
+      for (let j = 0; j < 26; j++) add1(A[j], 'hd');
+      for (let i = 0; i < 26; i++) {
+        add1(A[i], 'hd');
+        for (let j = 0; j < 26; j++) { const b = add1(A[(i + j) % 26]); b.dataset.r = i; b.dataset.c = j; }
+      }
+      sq.appendChild(f);
+    }
+    const n = last.n;
+    let pl = -1, ke = -1;
+    if (n) { const i = sel; pl = mode === 'enc' ? num(last.p[i]) : num(last.out[i]); ke = num(last.k[i]); }
+    for (const b of sq.children) {
+      if (b.dataset.r === undefined) continue;
+      const r = +b.dataset.r, c = +b.dataset.c;
+      b.className = r === ke ? (c === pl ? 'hit' : 'r') : c === pl ? 'c' : '';
+    }
+    $('sqinfo').textContent = n ? (mode === 'enc'
+      ? `Znak ${sel + 1}: zpráva ${A[pl]} + klíč ${A[ke]} = šifra ${ch(pl + ke)}.`
+      : `Znak ${sel + 1}: šifra ${last.p[sel]} − klíč ${A[ke]} = zpráva ${A[pl]}.`) : 'Napiš zprávu a klíč.';
+  }
+  txt.addEventListener('input', () => { sel = 0; update(); });
+  key.addEventListener('input', () => { keyAuto = false; update(); });
+  $('newkey').addEventListener('click', () => { keyAuto = true; key.value = rnd(Math.max(norm(txt.value).length, 1)); update(); });
+  $('five').addEventListener('change', update);
+  $('m-enc').addEventListener('click', () => setMode('enc'));
+  $('m-dec').addEventListener('click', () => setMode('dec'));
+  $('swap').addEventListener('click', () => {
+    if (!last.out) return;
+    const k = key.value, o = last.out;
+    txt.value = o; keyAuto = false; key.value = k; sel = 0;
+    setMode(mode === 'enc' ? 'dec' : 'enc');
+  });
+
+  /* ---------- proč ji nejde prolomit ---------- */
+  const PHRASES = ['AHOJ','NIKDO','DNES NE','ZITRA','NA SHLEDANOU','PRIJD DOMU','UTOK ZITRA','KOUPIT CHLEB','SCHUZKA V PATEK','NEVERTE NIKOMU','POSLI MI ODPOVED','PRINES KLICE OD AUTA','SEJDEME SE U FONTANY','ZITRA NEBUDE ZKOUSENI','NEVER NIKOMU ANI SOBE','KDO JE TADY NEJCHYTREJSI','CHCI DOMU UZ JE POZDE','DNES VECER BUDE PRSET HODNE','ZAVRI OKNA A ZHASNI SVETLO','VERNAMOVA SIFRA JE NEPROLOMITELNA','PRINES SVACINU A JDI DO ZAHRADY','POTKAME SE ZITRA PRED SKOLOU V OSM'];
+  let altManual = false;
+  function renderWhy() {
+    const { p, k, out, n } = last;
+    const C = mode === 'enc' ? out : p, Pl = mode === 'enc' ? p : out;
+    $('w-c').textContent = n ? C : '–'; $('w-p').textContent = n ? Pl : '–';
+    const alt = norm($('alt').value);
+    const info = $('w-info'); info.className = 'msg';
+    if (!n) { $('w-k').textContent = '–'; info.textContent = 'Nejdřív napiš zprávu a klíč v šifrátoru.'; return; }
+    if (alt.length !== n) {
+      $('w-k').textContent = '–';
+      info.textContent = alt.length ? `Napsal jsi ${alt.length} písmen, potřebuješ přesně ${n}.` : `Napiš text o ${n} písmenech.`;
+      return;
+    }
+    const K2 = sub(C, alt);
+    $('w-k').textContent = K2;
+    info.className = 'msg ok';
+    info.textContent = alt === Pl ? 'To je skutečná zpráva a skutečný klíč.' : 'Tento klíč by z textu „' + alt + '“ dal přesně stejný šifrový text. Útočník nemá jak poznat, který klíč je ten pravý.';
+  }
+  $('alt').addEventListener('input', renderWhy);
+  $('suggest').addEventListener('click', () => {
+    const n = last.n; if (!n) return;
+    const real = mode === 'enc' ? last.p : last.out, all = PHRASES.map(norm);
+    const pool = all.filter(x => x.length === n && x !== real);
+    let t;
+    if (pool.length) t = pool[Math.floor(Math.random() * pool.length)];
+    else { t = ''; while (t.length < n) t += all[Math.floor(Math.random() * all.length)]; t = t.slice(0, n); }   // jinak se větné části spojí a zkrátí
+    $('alt').value = t; renderWhy();
+  });
+
+  /* ---------- dvojí použití klíče ---------- */
+  let K2 = rnd(40);
+  function renderTwice() {
+    const p1 = norm($('p1').value), p2 = norm($('p2').value);
+    const n = Math.min(p1.length, p2.length);
+    if (K2.length < n) K2 += rnd(n - K2.length);
+    const k = K2.slice(0, n), a = p1.slice(0, n), b = p2.slice(0, n);
+    const c1 = add(a, k), c2 = add(b, k), d = sub(c1, c2), dp = sub(a, b);
+    $('d-k').textContent = n ? k : '–'; $('d-c1').textContent = n ? c1 : '–'; $('d-c2').textContent = n ? c2 : '–'; $('d-d').textContent = n ? d : '–';
+    $('d-eq').className = 'msg'; $('d-eq').textContent = n ? (d === dp ? 'Rozdíl šifer je stejný jako rozdíl zpráv (zpráva 1 − zpráva 2). Klíč se vyrušil.' : '') : 'Napiš obě zprávy.';
+    const crib = norm($('crib').value), chips = $('chips'); chips.innerHTML = '';
+    const info = $('c-info'); info.className = 'msg';
+    if (!n || !crib.length || crib.length > n) { info.textContent = n && crib.length > n ? 'Hádané slovo je delší než zprávy.' : 'Napiš hádané slovo.'; return; }
+    let hits = 0;
+    for (let o = 0; o + crib.length <= n; o++) {
+      const frag = sub(crib, d.slice(o, o + crib.length));   // P2 = P1 − (P1−P2)
+      const real = b.slice(o, o + crib.length);
+      const s = document.createElement('span'); s.className = 'chip'; s.textContent = `${o + 1}: ${frag}`;
+      if (frag === real && crib === a.slice(o, o + crib.length)) { s.classList.add('hit'); hits++; }
+      chips.appendChild(s);
+    }
+    info.className = hits ? 'msg ok' : 'msg';
+    info.textContent = hits ? 'Našel jsi slovo ve zprávě 1. Zelená pozice ukazuje, že na stejném místě je ve zprávě 2 čitelný text. Tím se prozradí i část klíče.' : 'Zatím nikde nevychází čitelný text. Zkus jiné slovo, třeba ZITRA, SCHUZKA nebo POLEDNE.';
+  }
+  ['p1', 'p2', 'crib'].forEach(id => $(id).addEventListener('input', renderTwice));
+  $('newkey2').addEventListener('click', () => { K2 = rnd(40); renderTwice(); });
+
+  /* ---------- bity ---------- */
+  const b5 = n => n.toString(2).padStart(5, '0');
+  function renderBits() {
+    const { p, k, n } = last, t = $('bits'), m = Math.min(n, 10);
+    t.innerHTML = '';
+    if (!n) { $('bitinfo').textContent = ''; return; }
+    const rows = [
+      [mode === 'enc' ? 'Zpráva' : 'Šifra', i => p[i], ''], ['Bity', i => b5(num(p[i])), ''],
+      ['Klíč', i => k[i], ''], ['Bity', i => b5(num(k[i])), ''],
+      ['XOR', i => b5(num(p[i]) ^ num(k[i])), 'res'],
+      ['Číslo', i => num(p[i]) ^ num(k[i]), 'res'],
+      ['Znak', i => { const v = num(p[i]) ^ num(k[i]); return v < 26 ? A[v] : '·'; }, 'res']
+    ];
+    for (const [lab, f, cls] of rows) {
+      const tr = document.createElement('tr'); if (cls) tr.className = cls;
+      const th = document.createElement('th'); th.scope = 'row'; th.textContent = lab; tr.appendChild(th);
+      for (let i = 0; i < m; i++) { const td = document.createElement('td'); td.textContent = f(i); tr.appendChild(td); }
+      t.appendChild(tr);
+    }
+    $('bitinfo').textContent = 'Výsledek XOR může být i číslo 26 až 31, které žádné písmeno nemá (značka ·). Dálnopis na ně měl řídicí znaky, proto v bitové verzi šifrový text nemusí být čitelný jako písmena.' + (n > 10 ? ` Zobrazeno prvních 10 znaků z ${n}.` : '');
+  }
+
+  update(); renderTwice();
+})();
+</script>
+</body>
+</html>
