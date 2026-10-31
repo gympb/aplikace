@@ -160,7 +160,7 @@ Humorná knižní perokresba tenkou, lehce roztřesenou sépiovou linkou s voln�
 
 ## 9. Co neměnit bez výslovného pokynu
 
-- `index.html` v kořeni (úvodní stránka katalogu), `README.md`, `PRAVIDLA.md`, `CNAME`, `robots.txt`, `assets/`, `nastroje/`, `.github/`.
+- `manifest.webmanifest`, `sw.js` (instalace jako aplikace; při změně seznamu souborů v `sw.js` zvyš `VERZE`), `index.html` v kořeni (úvodní stránka katalogu), `README.md`, `PRAVIDLA.md`, `CNAME`, `robots.txt`, `assets/`, `nastroje/`, `.github/`.
 - Záznamy v katalogu a složky jiných aplikací.
 - Složku aplikace nikdy nemaž. Vyřazená aplikace dostane stav `archiv`.
 
