@@ -1242,12 +1242,16 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
     <p class="muted">Mnoho protokolů je historicky 7bitových: e-mail, URL, DNS. Znaky mimo ASCII se proto před odesláním zakódují do podoby z tisknutelných znaků ASCII. Zadejte text a porovnejte metody:</p>
     <div class="field"><label for="encIn">Text</label><input type="text" id="encIn" value="Příliš žluťoučký kůň" autocomplete="off" spellcheck="false"></div>
     <div class="tw"><table id="encTbl"></table></div>
+    <h3>Co je Punycode</h3>
+    <p>Názvy domén (DNS) smějí obsahovat jen písmena a–z, číslice a pomlčku. Doména s diakritikou, například <code>příbram.cz</code>, se proto před zápisem do DNS převede na ASCII pomocí <b>Punycode</b> (RFC 3492). Výsledek dostane předponu <code>xn--</code>, podle které prohlížeč pozná zakódovaný název a v adresním řádku ho zase ukáže s diakritikou.</p>
+    <p>Postup je jednoduchý: nejdřív se opíšou všechny znaky ASCII (<code>příbram</code> → <code>pbram</code>), pak následuje pomlčka a za ní zkratkový zápis, na kterých místech a jaké znaky mimo ASCII chybějí. Převod je vratný, takže z kódu jde přesně získat původní text. Nejde o šifrování, jen o jiný zápis. V tabulce výše ho vidíte u prvního slova zadaného textu.</p>
   </div>
 
   <div class="panel" id="p-lang" style="scroll-margin-top:60px">
     <h3>Kód znaku v programovacích jazycích</h3>
     <div class="field" style="max-width:14rem"><label for="lgIn">Znak</label><input type="text" id="lgIn" value="A" maxlength="1" autocomplete="off" spellcheck="false"></div>
     <div class="tw"><table id="lgTbl"></table></div>
+    <p class="muted" style="font-size:.95rem">V tabulkách se funkce píší v jazyce programu a v české verzi se liší názvem: <code>KÓD</code> a <code>ZNAK</code> jsou české názvy funkcí <code>CODE</code> a <code>CHAR</code>. Pozor na starší dvojici <code>CODE</code> a <code>CHAR</code>: v Excelu pracuje s kódovou stránkou systému (ANSI), takže pro znaky nad 127 dává jiné číslo než Unicode (např. „ř“ vrátí 248 ve Windows-1250). <code>UNICODE</code> a <code>UNICHAR</code> vrací vždy kód Unicode. Při zápisu více argumentů se v české verzi odděluje středníkem, v anglické čárkou. Názvy funkcí v české lokalizaci Google Sheets a Excelu ověřte v nápovědě svého programu.</p>
     <h3>Regulární výrazy a ASCII</h3>
     <ul class="check">
       <li><b>JavaScript:</b> <code>\w</code> a <code>\d</code> jsou bez příznaku <code>u</code> jen ASCII (<code>[A-Za-z0-9_]</code>), „ř“ se nepovažuje za písmeno. Pro písmena všech jazyků použijte <code>\p{L}</code> s příznakem <code>u</code>.</li>
@@ -2295,6 +2299,7 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
   function lg(){
     const ch=Array.from($('#lgIn').value)[0]; const t=$('#lgTbl'); if(!ch){t.innerHTML='';return;}
     const c=ch.codePointAt(0), q=c===39?"'\\''":c===92?"'\\\\'":"'"+(c<32||c===127?'\\x'+hx(c):String.fromCharCode(c))+"'";
+    const X=ch==='"'?'""""':'"'+ch+'"';
     const r=(l,a,b)=>`<tr><td>${l}</td><td><code>${esc(a)}</code></td><td><code>${esc(b)}</code></td></tr>`;
     t.innerHTML=`<thead><tr><th>Jazyk</th><th>Znak → kód</th><th>Kód → znak</th></tr></thead><tbody>
     ${r('Python',`ord(${JSON.stringify(ch)})`,`chr(${c})`)}
@@ -2302,6 +2307,12 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
     ${r('C',`(int) ${q}`,`(char) ${c}`)}
     ${r('Java',`(int) ${q}`,`(char) ${c}`)}
     ${r('Bash',`printf '%d' "'${ch.replace(/'/g,"'\\''")}"`,`printf "\\x${hx(c)}"`)}
+    ${r('Excel (anglicky)',`=UNICODE(${X})`,`=UNICHAR(${c})`)}
+    ${r('Excel (česky)',`=UNICODE(${X})`,`=UNIZNAK(${c})`)}
+    ${r('Excel, starší funkce (anglicky)',`=CODE(${X})`,c<256?`=CHAR(${c})`:'jen kódy 1 až 255')}
+    ${r('Excel, starší funkce (česky)',`=KÓD(${X})`,c<256?`=ZNAK(${c})`:'jen kódy 1 až 255')}
+    ${r('Google Sheets (anglicky)',`=UNICODE(${X})`,`=UNICHAR(${c})`)}
+    ${r('Google Sheets (česky)',`=UNICODE(${X})`,`=UNIZNAK(${c})`)}
     </tbody>`;
   }
   $('#lgIn').addEventListener('input',lg); lg();
