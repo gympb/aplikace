@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Body, procenta, známky</title>
+<meta name="description" content="Přepočet bodů na procenta a známky. Kotouče hranic podle klasifikačního řádu, pásek s body pro jednotlivé známky a deset vlastních předvoleb.">
+<meta name="author" content="Ivo Bešťák">
+<meta name="robots" content="noindex">
+<!-- Vše je uložené přímo u aplikace, nic se nenačítá z cizích serverů (PRAVIDLA.md, bod 8) -->
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+/* Layout: tmavý pruh s názvem a záložkami, pod ním sdílená karta s kotouči hranic a předvolbami, pak obsah záložky.
+   Barvy: oranžová #FF972E a černá, písmo Montserrat. */
+:root {
+  color-scheme: light;
+  --font: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --bg: #F2F2F0;
+  --surface: #FFFFFF;
+  --surface-2: #F6F6F4;
+  --ink: #111111;
+  --muted: #5B5B57;
+  --line: #D9D9D4;
+  --accent: #FF972E;
+  --accent-ink: #111111;
+  --accent-text: #A85200;
+  --accent-soft: #FFEBD2;
+  --bad: #B42318;
+  --bad-soft: #FDE4E1;
+  --focus: #111111;
+  --band: #0A0A0A;
+  --band-ink: #F5F5F3;
+  --band-muted: #B3B3AD;
+  --knob: #131313;
+  --knob-ink: #F5F5F3;
+  --knob-ring: #131313;
+  --tick: #B9B9B2;
+  --g1: #2E7D4F; --g1-ink: #FFFFFF;
+  --g2: #A9C74F; --g2-ink: #111111;
+  --g3: #F4CF45; --g3-ink: #111111;
+  --g4: #FF972E; --g4-ink: #111111;
+  --g5: #C93C2B; --g5-ink: #FFFFFF;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101010;
+    --surface: #1A1A19;
+    --surface-2: #222221;
+    --ink: #F3F3F1;
+    --muted: #A5A5A0;
+    --line: #33332F;
+    --accent-text: #FFA94D;
+    --accent-soft: #3A2812;
+    --bad: #FF8A7A;
+    --bad-soft: #3F1B17;
+    --focus: #F3F3F1;
+    --band: #000000;
+    --knob: #262624;
+    --knob-ink: #F3F3F1;
+    --knob-ring: #4A4A46;
+    --tick: #4A4A46;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101010;
+  --surface: #1A1A19;
+  --surface-2: #222221;
+  --ink: #F3F3F1;
+  --muted: #A5A5A0;
+  --line: #33332F;
+  --accent-text: #FFA94D;
+  --accent-soft: #3A2812;
+  --bad: #FF8A7A;
+  --bad-soft: #3F1B17;
+  --focus: #F3F3F1;
+  --band: #000000;
+  --knob: #262624;
+  --knob-ink: #F3F3F1;
+  --knob-ring: #4A4A46;
+  --tick: #4A4A46;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* Záhlaví */
+.band { background: var(--band); color: var(--band-ink); }
+.band .inner { padding-block: 28px; }
+.back { margin: 0 0 18px; }
+.back a { color: var(--band-muted); text-decoration: none; font-weight: 600; font-size: .88rem; }
+.back a:hover { color: var(--band-ink); text-decoration: underline; }
+.back a:focus-visible { outline-color: var(--accent); }
+.foot { padding-block: 0 32px; color: var(--muted); font-size: .82rem; }
+.eyebrow { margin: 0 0 6px; font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+h1 { margin: 0; font-size: clamp(1.7rem, 4.2vw, 2.6rem); font-weight: 800; letter-spacing: -.02em; line-height: 1.1; text-wrap: balance; }
+.lede { margin: 10px 0 0; max-width: 62ch; color: var(--band-muted); }
+
+.main { padding-block: 24px 48px; display: grid; gap: 20px; }
+.stack { display: grid; gap: 20px; min-width: 0; }
+.cols { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0; }
+h2 { margin: 0 0 4px; font-size: 1.1rem; font-weight: 700; letter-spacing: -.005em; }
+.hint { margin: 0 0 16px; color: var(--muted); font-size: .88rem; max-width: 70ch; }
+.lbl { display: block; margin: 0 0 6px; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.eff-off { color: var(--bad); font-weight: 700; }
+.warn { margin: 8px 0 0; min-height: 1.2em; font-size: .85rem; font-weight: 600; color: var(--bad); }
+.note { margin: 8px 0 0; font-size: .85rem; color: var(--muted); }
+
+input[type="text"], select, textarea {
+  font: inherit; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; min-width: 0; width: 100%;
+}
+input[type="text"]:hover, select:hover { border-color: var(--muted); }
+input[aria-invalid="true"] { border-color: var(--bad); background: var(--bad-soft); }
+input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px; margin: 0; }
+.check { display: flex; align-items: center; gap: 10px; font-weight: 500; cursor: pointer; }
+.field { min-width: 0; }
+.field.narrow { max-width: 240px; }
+
+.btn { font: inherit; font-weight: 700; font-size: .9rem; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; }
+.btn:hover:not(:disabled) { background: var(--surface-2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.06); background: var(--accent); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn.small { padding: 4px 10px; font-size: 1rem; line-height: 1.2; min-width: 36px; }
+.btnrow { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip { display: inline-grid; place-items: center; min-width: 1.9em; height: 1.9em; padding: 0 .4em; border-radius: 6px; font-weight: 700; font-size: .85rem; font-variant-numeric: tabular-nums; background: var(--accent-soft); color: var(--ink); border: 1px solid var(--accent); }
+.chip.g5 { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+
+/* Kotouče */
+.hr-grid { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 960px) { .hr-grid { grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); } }
+.dials { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.dial { display: grid; justify-items: center; gap: 6px; min-width: 0; }
+.dial-head { display: flex; align-items: center; gap: 8px; font-size: .78rem; font-weight: 600; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.dial-svg { width: 100%; max-width: 150px; height: auto; touch-action: none; cursor: grab; border-radius: 8px; user-select: none; -webkit-user-select: none; }
+.dial-svg:active { cursor: grabbing; }
+.d-knob { fill: var(--knob); stroke: var(--knob-ring); stroke-width: 2; }
+.d-num { fill: var(--knob-ink); font-family: var(--font); font-weight: 800; font-size: 28px; }
+.d-pct { fill: var(--knob-ink); font-family: var(--font); font-weight: 600; font-size: 11px; opacity: .75; }
+.d-ind { stroke: var(--accent); stroke-width: 5; stroke-linecap: round; }
+.d-tick { stroke: var(--tick); stroke-width: 2; stroke-linecap: round; }
+.d-tick.on { stroke: var(--accent); }
+.d-lab { fill: var(--muted); font-family: var(--font); font-weight: 600; font-size: 11px; }
+.dial-ctl { display: flex; align-items: center; gap: 4px; }
+.dial-range { font-size: .72rem; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 5em; text-align: center; white-space: nowrap; }
+
+/* Předvolby */
+.side { display: grid; gap: 18px; align-content: start; min-width: 0; }
+.pr-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.pchip { font: inherit; text-align: left; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); cursor: pointer; display: grid; gap: 1px; min-width: 0; max-width: 100%; }
+.pchip:hover { border-color: var(--muted); }
+.pchip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.pn { font-weight: 700; font-size: .88rem; overflow-wrap: anywhere; }
+.pv { font-size: .74rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pr-empty { color: var(--muted); font-size: .88rem; margin: 0 0 14px; }
+.pr-edit { display: grid; gap: 10px; }
+#pr-state { min-height: 1.3em; margin: 0; font-size: .84rem; color: var(--accent-text); font-weight: 600; }
+#pr-msg { min-height: 1.3em; margin: 0; font-size: .84rem; color: var(--muted); }
+
+/* Tabulky */
+.scroll { overflow-x: auto; }
+.tall { max-height: 520px; overflow: auto; }
+.tbl { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.tbl th { font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--surface); }
+.tall .tbl th { position: sticky; top: 0; z-index: 2; }
+.tbl tr.on td { background: var(--accent-soft); font-weight: 700; }
+.tbl .r { text-align: right; }
+@media (max-width: 520px) { .tbl th, .tbl td { white-space: normal; padding: 8px 6px; } }
+.rowf { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin: 12px 0 16px; }
+
+/* Pásek známek */
+.strip { display: flex; gap: 2px; min-height: 68px; border-radius: 8px; overflow: hidden; margin: 0 0 4px; }
+.seg { display: grid; place-content: center; text-align: center; min-width: 0; overflow: hidden; line-height: 1.25; padding: 8px 4px; }
+.seg b { font-size: 1.15rem; font-weight: 800; }
+.seg span { font-size: .82rem; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.seg.s1 { background: var(--g1); color: var(--g1-ink); }
+.seg.s2 { background: var(--g2); color: var(--g2-ink); }
+.seg.s3 { background: var(--g3); color: var(--g3-ink); }
+.seg.s4 { background: var(--g4); color: var(--g4-ink); }
+.seg.s5 { background: var(--g5); color: var(--g5-ink); }
+.axis { position: relative; height: 20px; margin: 0 0 14px; font-size: .72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.axis span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+.axis span.first { transform: none; }
+.axis span.last { transform: translateX(-100%); }
+
+/* Převodník */
+.result { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: center; margin-top: 18px; }
+.grade { width: 112px; height: 112px; background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 4.2rem; display: grid; place-items: center; border-radius: 12px; line-height: 1; }
+.res-pct { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.res-note { color: var(--muted); font-size: .9rem; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="inner">
+    <p class="back"><a href="../">← Všechny školní aplikace</a></p>
+    <p class="eyebrow">Klasifikace</p>
+    <h1>Body, procenta, známky</h1>
+    <p class="lede">Zadejte maximum bodů a uvidíte, kolik bodů potřebujete na kterou známku.</p>
+  </div>
+</header>
+
+<main class="inner main">
+  <section class="card" aria-labelledby="h-hr">
+    <h2 id="h-hr">Hranice známek</h2>
+    <p class="hint">Otáčejte kotouči myší nebo prstem, nebo je dolaďte tlačítky či šipkami na klávesnici. Každé cvaknutí je jedno procento. Rozsah každého kotouče vychází z klasifikačního řádu školy (čl. 7). Známka platí od zvolené hranice včetně.</p>
+    <div class="hr-grid">
+      <div>
+        <div class="dials" id="dials"></div>
+        <p class="warn" id="hr-warn" role="status"></p>
+      </div>
+      <div class="side">
+        <label class="check" for="floor"><input type="checkbox" id="floor"> Zaokrouhlit hranice bodů dolů</label>
+        <div>
+          <span class="lbl">Předvolby <span id="pr-count"></span></span>
+          <div class="pr-list" id="pr-list"></div>
+          <div class="pr-edit">
+            <div class="field">
+              <label class="lbl" for="pr-name">Štítek, například název předmětu</label>
+              <input type="text" id="pr-name" maxlength="24" autocomplete="off" placeholder="Matematika">
+            </div>
+            <div class="btnrow">
+              <button type="button" class="btn primary" id="pr-new">Uložit jako novou</button>
+              <button type="button" class="btn" id="pr-over">Přepsat vybranou</button>
+              <button type="button" class="btn" id="pr-del">Smazat vybranou</button>
+            </div>
+            <p id="pr-state" role="status"></p>
+            <p id="pr-msg" role="status"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="v-prevodnik" class="stack" aria-label="Převodník">
+    <div class="card">
+      <h2>Body na jednotlivé známky</h2>
+      <div class="rowf">
+        <div class="field narrow">
+          <label class="lbl" for="c-max">Maximální počet bodů</label>
+          <input type="text" id="c-max" inputmode="decimal" autocomplete="off">
+        </div>
+      </div>
+      <div class="strip" id="c-strip"></div>
+      <div class="axis" id="c-axis" aria-hidden="true"></div>
+      <div class="scroll">
+        <table class="tbl">
+          <thead><tr><th>Známka</th><th>Procenta</th><th>Body</th><th>Celé body</th><th id="c-eff" hidden>Skutečně</th></tr></thead>
+          <tbody id="c-thr"></tbody>
+        </table>
+      </div>
+      <p class="note">Sloupec Celé body ukazuje, kolik celých bodů žák potřebuje na danou známku a kolik jich stačí na nejlepší z ní.</p>
+    </div>
+    <div class="cols">
+      <div class="card">
+        <h2>Zjistit známku</h2>
+        <p class="hint">Zadejte body, nebo procenta. Druhá hodnota se dopočítá.</p>
+        <div class="pair">
+          <div class="field">
+            <label class="lbl" for="c-points">Dosažené body</label>
+            <input type="text" id="c-points" inputmode="decimal" autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="lbl" for="c-percent">Procenta</label>
+            <input type="text" id="c-percent" inputmode="decimal" autocomplete="off">
+          </div>
+        </div>
+        <div class="result" aria-live="polite">
+          <div class="grade" id="c-grade">–</div>
+          <div>
+            <div class="res-pct" id="c-respct">–</div>
+            <div class="res-note" id="c-note"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Všechny body</h2>
+        <div class="rowf">
+          <div class="field narrow">
+            <label class="lbl" for="c-step">Krok</label>
+            <select id="c-step"><option value="1">po 1 bodu</option><option value="0.5">po půl bodu</option></select>
+          </div>
+        </div>
+        <div class="tall">
+          <table class="tbl">
+            <thead><tr><th>Body</th><th class="r">Procenta</th><th>Známka</th></tr></thead>
+            <tbody id="c-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="inner foot">Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 1. 11. 2026</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /*PURE*/
+  var EPS = 1e-9;
+  var RANGES = [[83, 90], [67, 78], [50, 60], [25, 44]]; // Školní a klasifikační řád, čl. 7.1.2 až 7.4.2
+  var MAXP = 10;
+
+  function parseNum(s) {
+    if (s == null) return NaN;
+    s = String(s).trim().replace(/\s/g, '').replace(',', '.');
+    if (s === '') return NaN;
+    var n = Number(s);
+    return isFinite(n) ? n : NaN;
+  }
+  function thresholds(max, pcts, floor) {
+    return pcts.map(function (p) {
+      var t = max * p / 100;
+      return floor ? Math.floor(t + EPS) : t;
+    });
+  }
+  function gradeOf(points, max, pcts, floor) {
+    var t = thresholds(max, pcts, floor), g = 1;
+    for (var i = 0; i < 4; i++) {
+      if (points + EPS >= t[i]) break;
+      g++;
+    }
+    return g;
+  }
+  function wholeRange(g, t, max) {
+    var lo = g < 5 ? Math.ceil(t[g - 1] - EPS) : 0;
+    var hi = g === 1 ? Math.floor(max + EPS) : Math.ceil(t[g - 2] - EPS) - 1;
+    if (lo < 0) lo = 0;
+    if (lo > hi) return null;
+    return [lo, hi];
+  }
+  function clampT(arr) {
+    var out = [];
+    for (var i = 0; i < 4; i++) {
+      var v = Math.round(Number(arr && arr[i]));
+      if (!isFinite(v)) v = RANGES[i][1];
+      out.push(Math.min(RANGES[i][1], Math.max(RANGES[i][0], v)));
+    }
+    return out;
+  }
+  /*ENDPURE*/
+
+  var STORE = 'gympb-body-procenta-znamky-v1';
+  var GN = { 1: 'výborný', 2: 'chvalitebný', 3: 'dobrý', 4: 'dostatečný', 5: 'nedostatečný' };
+  var NS = 'http://www.w3.org/2000/svg';
+
+  function $(s, r) { return (r || document).querySelector(s); }
+  function mk(tag, props, kids) {
+    var e = document.createElement(tag);
+    if (props) for (var k in props) {
+      if (k === 'text') e.textContent = props[k];
+      else if (k === 'cls') e.className = props[k];
+      else e.setAttribute(k, props[k]);
+    }
+    if (kids) kids.forEach(function (c) { if (c) e.appendChild(c); });
+    return e;
+  }
+  function sv(tag, attrs) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function fmt(n, d) {
+    if (!isFinite(n)) return '–';
+    return n.toLocaleString('cs-CZ', { minimumFractionDigits: 0, maximumFractionDigits: d == null ? 2 : d });
+  }
+  function fmtF(n) {
+    return n.toLocaleString('cs-CZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function chip(g) { return mk('span', { cls: 'chip g' + g, text: String(g) }); }
+  function setInvalid(el, bad) { if (bad) el.setAttribute('aria-invalid', 'true'); else el.removeAttribute('aria-invalid'); }
+
+  /* Stav */
+  function defaults() {
+    return {
+      t: [85, 70, 50, 25], floor: false, sel: -1,
+      presets: [{ n: 'Úkol 1', p: [85, 70, 50, 25] }, { n: 'Úkol 2', p: [90, 75, 50, 30] }],
+      conv: { max: 15, pts: '12', step: 1 }
+    };
+  }
+  function load() {
+    var d = defaults();
+    try {
+      var o = JSON.parse(localStorage.getItem(STORE));
+      if (!o || !o.conv) return d;
+      o.t = clampT(o.t);
+      o.floor = !!o.floor;
+      o.presets = (Array.isArray(o.presets) ? o.presets : []).slice(0, MAXP).map(function (p) {
+        return { n: String((p && p.n) || '').slice(0, 24), p: clampT(p && p.p) };
+      });
+      if (typeof o.sel !== 'number' || o.sel >= o.presets.length) o.sel = -1;
+      o.conv.max = Number(o.conv.max) > 0 ? Number(o.conv.max) : 15;
+      o.conv.pts = String(o.conv.pts == null ? '' : o.conv.pts);
+      o.conv.step = Number(o.conv.step) === 0.5 ? 0.5 : 1;
+      return o;
+    } catch (e) { return d; }
+  }
+  var S = load();
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }
+
+  /* Tabulka hranic */
+  function renderThr(tb, max) {
+    tb.textContent = '';
+    var ok = max > 0, t = thresholds(max, S.t, S.floor);
+    for (var g = 1; g <= 5; g++) {
+      var i = g < 5 ? g - 1 : 3, pre = g < 5 ? 'od ' : 'pod ';
+      var pts = '–', whole = '–';
+      if (ok) {
+        pts = g < 5 ? 'od ' + fmt(t[i], 2) : 'méně než ' + fmt(t[3], 2);
+        var w = wholeRange(g, t, max);
+        whole = w ? (w[0] === w[1] ? fmt(w[0], 0) : fmt(w[0], 0) + ' – ' + fmt(w[1], 0)) : '–';
+      }
+      var cells = [
+        mk('td', null, [chip(g)]),
+        mk('td', { text: pre + S.t[i] + ' %' }),
+        mk('td', { text: pts }),
+        mk('td', { text: whole })
+      ];
+      if (S.floor && ok) {
+        var ev = t[i] / max * 100;
+        var et = mk('td', { text: pre + fmtF(ev) + ' %' });
+        if (g < 5 && ev + EPS < RANGES[i][0]) et.className = 'eff-off';
+        cells.push(et);
+      }
+      tb.appendChild(mk('tr', null, cells));
+    }
+  }
+
+  /* Kotouče */
+  var dials = [];
+  function polar(r, deg) { var a = deg * Math.PI / 180; return [80 + r * Math.sin(a), 80 - r * Math.cos(a)]; }
+  function angOf(i, v) { var r = RANGES[i]; return -135 + (v - r[0]) / (r[1] - r[0]) * 270; }
+
+  function makeDial(i) {
+    var r = RANGES[i], min = r[0], max = r[1];
+    var svg = sv('svg', { viewBox: '0 0 160 160', 'class': 'dial-svg', role: 'slider', tabindex: '0',
+      'aria-label': 'Hranice známky ' + (i + 1) + ' v procentech', 'aria-valuemin': min, 'aria-valuemax': max });
+    var ticks = [];
+    for (var v = min; v <= max; v++) {
+      var major = v === min || v === max || v % 5 === 0;
+      var a = angOf(i, v), p1 = polar(major ? 59 : 62, a), p2 = polar(70, a);
+      var ln = sv('line', { x1: p1[0].toFixed(2), y1: p1[1].toFixed(2), x2: p2[0].toFixed(2), y2: p2[1].toFixed(2), 'class': 'd-tick' });
+      svg.appendChild(ln); ticks.push(ln);
+    }
+    svg.appendChild(sv('circle', { cx: 80, cy: 80, r: 50, 'class': 'd-knob' }));
+    var g = sv('g', {});
+    g.appendChild(sv('line', { x1: 80, y1: 50, x2: 80, y2: 37, 'class': 'd-ind' }));
+    svg.appendChild(g);
+    var num = sv('text', { x: 80, y: 88, 'text-anchor': 'middle', 'class': 'd-num' });
+    var pct = sv('text', { x: 80, y: 104, 'text-anchor': 'middle', 'class': 'd-pct' }); pct.textContent = '%';
+    svg.appendChild(num); svg.appendChild(pct);
+    var pl = polar(76, -135), pr = polar(76, 135);
+    var l1 = sv('text', { x: pl[0].toFixed(1), y: (pl[1] + 12).toFixed(1), 'text-anchor': 'middle', 'class': 'd-lab' }); l1.textContent = min;
+    var l2 = sv('text', { x: pr[0].toFixed(1), y: (pr[1] + 12).toFixed(1), 'text-anchor': 'middle', 'class': 'd-lab' }); l2.textContent = max;
+    svg.appendChild(l1); svg.appendChild(l2);
+
+    var minus = mk('button', { type: 'button', cls: 'btn small', 'aria-label': 'Snížit hranici známky ' + (i + 1) + ' o procento', text: '−' });
+    var plus = mk('button', { type: 'button', cls: 'btn small', 'aria-label': 'Zvýšit hranici známky ' + (i + 1) + ' o procento', text: '+' });
+    var wrap = mk('div', { cls: 'dial' }, [
+      mk('div', { cls: 'dial-head' }, [chip(i + 1), mk('span', { text: 'od' })]),
+      svg,
+      mk('div', { cls: 'dial-ctl' }, [minus, mk('span', { cls: 'dial-range', text: min + ' až ' + max + ' %' }), plus])
+    ]);
+
+    function dragTo(e) {
+      var rc = svg.getBoundingClientRect();
+      var dx = e.clientX - (rc.left + rc.width / 2), dy = e.clientY - (rc.top + rc.height / 2);
+      if (dx * dx + dy * dy < 100) return;
+      var a = Math.atan2(dx, -dy) * 180 / Math.PI, val;
+      if (Math.abs(a) > 135) val = (S.t[i] - min < (max - min) / 2) ? min : max;
+      else val = min + Math.round((a + 135) / 270 * (max - min));
+      setT(i, val);
+    }
+    svg.addEventListener('pointerdown', function (e) {
+      try { svg.setPointerCapture(e.pointerId); } catch (x) {}
+      svg.focus(); dragTo(e); e.preventDefault();
+    });
+    svg.addEventListener('pointermove', function (e) {
+      var cap = false;
+      try { cap = svg.hasPointerCapture(e.pointerId); } catch (x) {}
+      if (cap) dragTo(e);
+    });
+    svg.addEventListener('keydown', function (e) {
+      var d = 0, k = e.key;
+      if (k === 'ArrowUp' || k === 'ArrowRight') d = 1;
+      else if (k === 'ArrowDown' || k === 'ArrowLeft') d = -1;
+      else if (k === 'PageUp') d = 5;
+      else if (k === 'PageDown') d = -5;
+      else if (k === 'Home') { setT(i, min); e.preventDefault(); return; }
+      else if (k === 'End') { setT(i, max); e.preventDefault(); return; }
+      else return;
+      e.preventDefault(); setT(i, S.t[i] + d);
+    });
+    minus.addEventListener('click', function () { setT(i, S.t[i] - 1); });
+    plus.addEventListener('click', function () { setT(i, S.t[i] + 1); });
+
+    return { el: wrap, svg: svg, ticks: ticks, ind: g, num: num, minus: minus, plus: plus };
+  }
+  function refreshDial(i) {
+    var d = dials[i], r = RANGES[i], v = S.t[i];
+    d.num.textContent = v;
+    d.ind.setAttribute('transform', 'rotate(' + angOf(i, v).toFixed(2) + ' 80 80)');
+    d.svg.setAttribute('aria-valuenow', v);
+    d.svg.setAttribute('aria-valuetext', v + ' procent');
+    d.ticks.forEach(function (t, k) { t.setAttribute('class', 'd-tick' + (r[0] + k <= v ? ' on' : '')); });
+    d.minus.disabled = v <= r[0];
+    d.plus.disabled = v >= r[1];
+  }
+  function setT(i, v) {
+    v = Math.min(RANGES[i][1], Math.max(RANGES[i][0], Math.round(v)));
+    if (v === S.t[i]) return;
+    S.t[i] = v;
+    refreshDial(i);
+    onThresholds();
+  }
+  function onThresholds() {
+    save();
+    presetUI();
+    convUpdate(false);
+  }
+
+  /* Předvolby */
+  var delTimer = null;
+  function samePct(a, b) { return a.every(function (v, i) { return v === b[i]; }); }
+  function presetUI() {
+    var list = $('#pr-list'); list.textContent = '';
+    $('#pr-count').textContent = '(' + S.presets.length + ' z ' + MAXP + ')';
+    if (!S.presets.length) list.appendChild(mk('p', { cls: 'pr-empty', text: 'Zatím nemáte žádnou předvolbu. Nastavte hranice, pojmenujte je a uložte.' }));
+    S.presets.forEach(function (p, i) {
+      var b = mk('button', { type: 'button', cls: 'pchip', 'aria-pressed': S.sel === i ? 'true' : 'false' }, [
+        mk('span', { cls: 'pn', text: p.n }),
+        mk('span', { cls: 'pv', text: p.p.join(' · ') + ' %' })
+      ]);
+      b.addEventListener('click', function () {
+        S.sel = i; S.t = clampT(p.p);
+        $('#pr-name').value = p.n;
+        dials.forEach(function (d, k) { refreshDial(k); });
+        $('#pr-msg').textContent = '';
+        onThresholds();
+      });
+      list.appendChild(b);
+    });
+    var sel = S.sel >= 0 ? S.presets[S.sel] : null;
+    $('#pr-new').disabled = S.presets.length >= MAXP;
+    $('#pr-over').disabled = !sel;
+    $('#pr-del').disabled = !sel;
+    $('#pr-state').textContent = (sel && !samePct(sel.p, S.t)) ? 'Hranice se liší od předvolby „' + sel.n + '“. Uložíte je tlačítkem Přepsat vybranou.' : '';
+    if (S.presets.length >= MAXP) $('#pr-msg').textContent = 'Je uloženo deset předvoleb. Jednu přepište nebo smažte.';
+    var w = $('#hr-warn');
+    w.textContent = '';
+  }
+  function bindPresets() {
+    $('#pr-new').addEventListener('click', function () {
+      if (S.presets.length >= MAXP) return;
+      var n = $('#pr-name').value.trim() || 'Předvolba ' + (S.presets.length + 1);
+      S.presets.push({ n: n.slice(0, 24), p: S.t.slice() });
+      S.sel = S.presets.length - 1;
+      save(); presetUI();
+      $('#pr-msg').textContent = 'Uloženo jako „' + S.presets[S.sel].n + '“.';
+    });
+    $('#pr-over').addEventListener('click', function () {
+      if (S.sel < 0) return;
+      var p = S.presets[S.sel], n = $('#pr-name').value.trim();
+      if (n) p.n = n.slice(0, 24);
+      p.p = S.t.slice();
+      save(); presetUI();
+      $('#pr-msg').textContent = 'Předvolba „' + p.n + '“ je přepsaná.';
+    });
+    $('#pr-del').addEventListener('click', function () {
+      if (S.sel < 0) return;
+      var b = $('#pr-del');
+      if (!delTimer) {
+        b.textContent = 'Opravdu smazat?';
+        delTimer = setTimeout(function () { delTimer = null; b.textContent = 'Smazat vybranou'; }, 4000);
+        return;
+      }
+      clearTimeout(delTimer); delTimer = null; b.textContent = 'Smazat vybranou';
+      var nm = S.presets[S.sel].n;
+      S.presets.splice(S.sel, 1); S.sel = -1;
+      save(); presetUI();
+      $('#pr-msg').textContent = 'Předvolba „' + nm + '“ je smazaná.';
+    });
+    $('#floor').addEventListener('change', function (e) { S.floor = e.target.checked; onThresholds(); });
+  }
+
+  /* Převodník */
+  function wholeText(w) { return w ? (w[0] === w[1] ? fmt(w[0], 0) : fmt(w[0], 0) + ' – ' + fmt(w[1], 0)) : '–'; }
+  function renderConvTable() {
+    var C = S.conv, tb = $('#c-table'); tb.textContent = '';
+    if (!(C.max > 0)) return;
+    var v = C.max, n = 0;
+    while (v > -EPS && n < 500) {
+      var val = Math.max(0, v);
+      var tr = mk('tr', { 'data-v': String(val) }, [
+        mk('td', { text: fmt(val, 2) }),
+        mk('td', { cls: 'r', text: fmtF(val / C.max * 100) + ' %' }),
+        mk('td', null, [chip(gradeOf(val, C.max, S.t, S.floor))])
+      ]);
+      tb.appendChild(tr);
+      v -= C.step; n++;
+    }
+  }
+  function wholeList(w) {
+    if (!w) return '–';
+    if (w[1] - w[0] + 1 > 16) return wholeText(w);
+    var out = [];
+    for (var v = w[0]; v <= w[1]; v++) out.push(fmt(v, 0));
+    return out.join(', ');
+  }
+  function rangeWarn(max) {
+    var w = $('#hr-warn'), th = $('#c-eff');
+    th.hidden = !S.floor;
+    w.textContent = '';
+    if (!S.floor || !(max > 0)) return;
+    var t = thresholds(max, S.t, true), msgs = [];
+    for (var i = 0; i < 4; i++) {
+      var ev = t[i] / max * 100;
+      if (ev + EPS < RANGES[i][0]) msgs.push('známka ' + (i + 1) + ' od ' + fmtF(ev) + ' % (řád: ' + RANGES[i][0] + ' až ' + RANGES[i][1] + ' %)');
+    }
+    if (msgs.length) w.textContent = 'Při ' + fmt(max, 2) + ' bodech vycházejí po zaokrouhlení dolů pod rozsah řádu tyto hranice: ' + msgs.join('; ') + '.';
+  }
+  function renderStrip(max) {
+    var strip = $('#c-strip'), axis = $('#c-axis');
+    strip.textContent = ''; axis.textContent = '';
+    if (!(max > 0)) { strip.hidden = true; axis.hidden = true; return; }
+    strip.hidden = false; axis.hidden = false;
+    var t = thresholds(max, S.t, S.floor), bounds = [0, t[3], t[2], t[1], t[0], max], parts = [];
+    for (var g = 5; g >= 1; g--) {
+      var lo = bounds[5 - g], hi = bounds[6 - g];
+      var txt = wholeList(wholeRange(g, t, max));
+      var seg = mk('div', { cls: 'seg s' + g }, [mk('b', { text: String(g) }), mk('span', { text: txt })]);
+      seg.style.flex = Math.max(0, (hi - lo) / max) + ' 1 0';
+      strip.appendChild(seg);
+      parts.push('známka ' + g + ': ' + txt + ' b.');
+    }
+    strip.setAttribute('role', 'img');
+    strip.setAttribute('aria-label', 'Body na jednotlivé známky: ' + parts.join(', '));
+    var prev = null;
+    bounds.forEach(function (b, k) {
+      if (prev !== null && Math.abs(b - prev) < EPS) return;
+      prev = b;
+      var s = mk('span', { text: fmt(b, 2) });
+      if (k === 0) s.className = 'first';
+      else if (k === 5) s.className = 'last';
+      s.style.left = (k === 5 ? 100 : b / max * 100) + '%';
+      axis.appendChild(s);
+    });
+  }
+  function convUpdate(fromPct) {
+    var C = S.conv;
+    renderThr($('#c-thr'), C.max);
+    rangeWarn(C.max);
+    renderStrip(C.max);
+    renderConvTable();
+    var pts = parseNum(C.pts), empty = String(C.pts).trim() === '';
+    if (!fromPct) $('#c-percent').value = (C.max > 0 && isFinite(pts)) ? fmt(pts / C.max * 100, 2) : '';
+    var bad = !empty && (!isFinite(pts) || pts < 0 || pts > C.max + EPS);
+    setInvalid($('#c-points'), bad);
+    var box = $('#c-grade'), pc = $('#c-respct'), note = $('#c-note');
+    if (!isFinite(pts) || bad) {
+      box.textContent = '–'; pc.textContent = '–';
+      note.textContent = empty ? 'Zadejte dosažené body.' : 'Body musí být mezi 0 a ' + fmt(C.max, 2) + '.';
+    } else {
+      var g = gradeOf(pts, C.max, S.t, S.floor);
+      box.textContent = g;
+      pc.textContent = fmtF(pts / C.max * 100) + ' %';
+      note.textContent = GN[g];
+    }
+    Array.prototype.forEach.call($('#c-table').children, function (tr) {
+      tr.classList.toggle('on', isFinite(pts) && Math.abs(Number(tr.getAttribute('data-v')) - pts) < 1e-6);
+    });
+  }
+  function bindConv() {
+    var C = S.conv;
+    $('#c-max').value = fmt(C.max, 2);
+    $('#c-points').value = C.pts;
+    $('#c-step').value = String(C.step);
+    $('#c-max').addEventListener('input', function (e) {
+      var v = parseNum(e.target.value);
+      var ok = v > 0 && v <= 200;
+      setInvalid(e.target, !ok);
+      if (!ok) return;
+      C.max = v; save(); convUpdate(false);
+    });
+    $('#c-points').addEventListener('input', function (e) { C.pts = e.target.value; save(); convUpdate(false); });
+    $('#c-percent').addEventListener('input', function (e) {
+      var p = parseNum(e.target.value);
+      setInvalid(e.target, e.target.value.trim() !== '' && !(p >= 0 && p <= 100));
+      if (isFinite(p) && C.max > 0) {
+        C.pts = String(Math.round(C.max * p) / 100).replace('.', ',');
+        $('#c-points').value = C.pts;
+      }
+      save(); convUpdate(true);
+    });
+    $('#c-step').addEventListener('change', function (e) { C.step = Number(e.target.value) === 0.5 ? 0.5 : 1; save(); convUpdate(false); });
+  }
+
+  /* Start */
+  var dbox = $('#dials');
+  for (var i = 0; i < 4; i++) { dials.push(makeDial(i)); dbox.appendChild(dials[i].el); refreshDial(i); }
+  $('#floor').checked = S.floor;
+  if (S.sel >= 0) $('#pr-name').value = S.presets[S.sel].n;
+  bindPresets();
+  bindConv();
+  presetUI();
+  convUpdate(false);
+})();
+</script>
+
+</body>
+</html>
