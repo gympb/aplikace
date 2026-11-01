@@ -205,10 +205,13 @@ footer p{margin:0;font-size:14px;line-height:1.55;color:var(--foot-muted);max-wi
 .seg-bar button:focus-visible{outline-color:#111111}
 .seg-mob{display:none}
 .chips.skryto{visibility:hidden}
-/* skrytý řádek předmětů se plynule sbalí a oranžový pruh se zmenší */
-.filters>.chips{max-height:140px;transition:max-height .3s ease,margin-bottom .3s ease,opacity .25s ease,visibility 0s}
-.filters>.chips.skryto{max-height:0;margin-bottom:-8px;opacity:0;overflow:hidden;transition:max-height .3s ease,margin-bottom .3s ease,opacity .2s ease,visibility 0s .3s}
-@media (prefers-reduced-motion:reduce){.filters>.chips,.filters>.chips.skryto{transition:none}}
+/* skrytý řádek předmětů se plynule sbalí: nejdřív se tlačítka postupně prolnou, pak se zmenší výška; rozbalení jde obráceně */
+.filters>.chips{--e:cubic-bezier(.45,.05,.2,1);max-height:140px;opacity:1;transition:max-height .55s var(--e),margin-bottom .55s var(--e),opacity .3s ease .2s,visibility 0s}
+.filters>.chips.skryto{max-height:0;margin-bottom:-8px;opacity:0;overflow:hidden;transition:max-height .55s var(--e) .12s,margin-bottom .55s var(--e) .12s,opacity .25s ease,visibility 0s .7s}
+.filters>.chips .chip{transition:opacity .35s ease,transform .45s var(--e),background .15s,border-color .15s,color .15s}
+.filters>.chips:not(.skryto) #f-subj .chip{transition-delay:calc(.22s + var(--i,0)*.035s),calc(.22s + var(--i,0)*.035s),0s,0s,0s}
+.filters>.chips.skryto #f-subj .chip{opacity:0;transform:translateY(-8px)}
+@media (prefers-reduced-motion:reduce){.filters>.chips,.filters>.chips.skryto,.filters>.chips .chip{transition:none!important}}
 @media (max-width:640px){.seg-bar{display:none}.seg-mob{display:inline-flex}}
 .backlink{font:600 14px var(--f-display);color:var(--ink);text-decoration:none;border-bottom:2px solid var(--brand);padding:6px 0}
 .backlink:hover{background:var(--accent-soft)}
@@ -425,6 +428,7 @@ function render(){
   const slozky=VIEW==='subj'&&f.s==='Vše'&&!q&&f.g==='Vše'&&!f.m;
   // v zobrazení podle předmětů (složky i obsah složky) je řádek s výběrem předmětů skrytý, ale drží své místo, aby se oranžový pruh nezmenšil; název otevřené složky je nad výpisem
   $('f-subj').parentElement.classList.toggle('skryto',VIEW==='subj');
+  $('f-subj').querySelectorAll('.chip').forEach((c,n)=>c.style.setProperty('--i',n));
   $('ftitle').textContent=VIEW==='subj'&&f.s!=='Vše'?f.s:'';
   if(slozky){
     const names=SUBJ.filter(x=>x!=='Vše');
