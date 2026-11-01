@@ -490,6 +490,8 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
 .tw{overflow-x:auto;max-width:100%}
 .hexd{overflow-x:auto;max-width:100%}.panel{min-width:0}
 
+html:not([data-lvl="pro"]) .hexonly{display:none!important}
+
 </style>
 </head>
 <body>
@@ -954,6 +956,10 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
     <div class="counts" id="counts"></div>
     <div id="flags"></div>
     <div class="graphs" id="graphs"></div>
+    <div class="striplbl hexonly"><span>Kódy · šestnáctkově</span></div>
+    <div class="strip hexonly" id="sX"></div>
+    <div class="striplbl hexonly"><span>Bajty · šestnáctkově (ASCII i UTF-8)</span></div>
+    <div class="strip hexonly" id="sHX"></div>
     <div class="striplbl"><span>Kódy · desítkově</span><b id="nD"></b></div>
     <div class="strip" id="sD"></div>
     <div class="striplbl n1"><span>Bajty · desítkově (ASCII i UTF-8)</span><b id="nH"></b></div>
@@ -1388,20 +1394,22 @@ $('#samples').innerHTML=SAMPLES.map((s,i)=>`<button class="chip" data-s="${i}">$
 $('#samples').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;$('#txt').value=SAMPLES[b.dataset.s][0];analyze();});
 function analyze(){
   const text=unesc($('#txt').value), chars=Array.from(text), LIMIT=200;
-  let tiles='',sD='',sH='',sB='',nA=0,nN=0,nC=0,bytes=0;
+  let tiles='',sD='',sX='',sH='',sHX='',sB='',nA=0,nN=0,nC=0,bytes=0;
   chars.forEach((ch,idx)=>{
     const cp=ch.codePointAt(0), b=u8(cp); bytes+=b.length;
     if(cp<128){nA++;if(isCtl(cp))nC++;}else nN++;
     if(idx>=LIMIT) return;
     const g=gcls(cp), a=cp<128;
-    tiles+=a?`<div class="g tile ${g}" data-i="${idx}" data-cp="${cp}" tabindex="0" role="button" style="cursor:pointer;min-width:62px"><div class="gg ${isCtl(cp)?'mono':''}" style="${isCtl(cp)?'font-size:1.05rem;font-weight:600':''}">${esc(disp(cp))}</div><b class="mono">${cp}</b><span class="bin mono" style="font-size:.7rem;color:var(--k2)">${bin7(cp)}</span></div>`
+    tiles+=a?`<div class="g tile ${g}" data-i="${idx}" data-cp="${cp}" tabindex="0" role="button" style="cursor:pointer;min-width:62px"><div class="gg ${isCtl(cp)?'mono':''}" style="${isCtl(cp)?'font-size:1.05rem;font-weight:600':''}">${esc(disp(cp))}</div><b class="mono">${cp}</b><span class="bin mono" style="font-size:.7rem;color:var(--k2)">${bin7(cp)}</span><span class="hexonly mono" style="font-size:.7rem;color:var(--muted)">0x${hx(cp)}</span></div>`
       :`<div class="g tile ${g}" data-i="${idx}" data-cp="${cp}" tabindex="0" role="button" style="cursor:pointer;min-width:62px" title="${U(cp)}: mimo ASCII"><div class="gg">${esc(ch)}</div><b class="mono">—</b><span class="hx" style="color:var(--k1)">mimo ASCII</span><span class="mono" style="font-size:.7rem;color:var(--muted)">${bytesDec(b)}</span></div>`;
     sD+=`<span class="by ${g}" data-i="${idx}">${a?cp:'—'}</span>`;
+    sX+=`<span class="by ${g}" data-i="${idx}">${a?hx(cp):'—'}</span>`;
+    sHX+=b.map(x=>`<span class="by ${g}" data-i="${idx}">${hx(x)}</span>`).join('');
     sH+=b.map(x=>`<span class="by ${g}" data-i="${idx}">${x}</span>`).join('');
     sB+=a?`<span class="by ${g}" data-i="${idx}">${bin7(cp)}</span>`:b.map(x=>`<span class="by ${g}" data-i="${idx}">${x.toString(2).padStart(8,'0')}</span>`).join('');
   });
   $('#graphs').innerHTML=tiles||'<p class="muted">Zadejte nějaký text.</p>';
-  $('#sD').innerHTML=sD;$('#sH').innerHTML=sH;$('#sB').innerHTML=sB;
+  $('#sX').innerHTML=sX;$('#sHX').innerHTML=sHX;$('#sD').innerHTML=sD;$('#sH').innerHTML=sH;$('#sB').innerHTML=sB;
   $('#nD').textContent=chars.length+' znaků';$('#nH').textContent=bytes+' B';
   $('#nB').textContent=nN?'celkem '+(nA*7+0)+' bitů ASCII + znaky mimo ASCII':(nA*7)+' bitů';
   $('#trunc').hidden=chars.length<=LIMIT;
@@ -1473,7 +1481,7 @@ function renderInspector(){
   const c=cur, g=$('#ig');
   if(c>127){
     const b=u8(c); g.className='bigglyph'; g.textContent=String.fromCodePoint(c); g.dataset.cp=U(c);
-    $('#facts').innerHTML=[['Skupina','mimo ASCII'],['Kód Unicode',U(c)],['Desítkově',String(c)],['UTF-8',bytesDec(b)]].map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
+    $('#facts').innerHTML=[['Skupina','mimo ASCII'],['Kód Unicode',U(c)],['Desítkově',String(c)],['UTF-8',bytesDec(b)],['UTF-8 šestnáctkově',b.map(x=>hx(x)).join(' '),'hexonly']].map(([k,v,cl])=>`<dt class="${cl||''}">${k}</dt><dd class="${cl||''}">${v}</dd>`).join('');
     $('#sizes').innerHTML=`<p class="note">Tento znak není v ASCII, protože ASCII má jen kódy 0 až 127 (7 bitů). V UTF-8 zabere ${b.length} ${b.length<5?'bajty':'bajtů'}. Rozbor znaků mimo ASCII najdete v aplikaci <a href="../unicode-pod-lupou/">Unicode pod lupou</a>.</p>`;
     $('#p1').innerHTML='<h3>Bity znaku</h3><p class="muted">Pro znaky mimo ASCII tento rozbor nedává smysl. Zkuste kód 0 až 127.</p>'; $('#p2').innerHTML='';
     return;
@@ -1485,6 +1493,7 @@ function renderInspector(){
     ['Znak',isCtl(c)?`${abbr(c)}: ${SHORT[c]}`:c===32?'mezera (SP)':esc(String.fromCharCode(c))],
     ['Skupina',GRPCZ[grp(c)]],
     ['Desítkově',String(c)],
+    ['Šestnáctkově',`${hx(c)} (zápis 0x${hx(c)})`,'hexonly'],
     ['Dvojkově (7 bitů)',b],
     ['Zóna a pozice',`zóna ${c>>5}, pozice ${c&31}`,'n1'],
     ['Řádek a sloupec',`řádek ${c&~15}, sloupec +${c&15}`,'adv'],
@@ -1492,6 +1501,8 @@ function renderInspector(){
     ['Ctrl',ctrlCombo(c)||'—','adv'],
     ['Sudá parita',`${n%2}${b}`,'adv'],
     ['HTML entita',`&amp;#${c};`,'adv'],
+    ['Zápis v řetězci (C, Python)',`\\x${hx(c)}`,'hexonly'],
+    ['Zápis v URL',`%${hx(c)}`,'hexonly'],
     ['JavaScript',esc(`String.fromCharCode(${c})`),'adv']
   ].map(([k,v,cl])=>`<dt class="${cl||''}">${k}</dt><dd class="${cl||''}">${v}</dd>`).join('');
   $('#sizes').innerHTML=[[7,'bitů v ASCII'],['1 B','jako bajt (osmý bit 0)','n1'],['1 B','v UTF-8, stejný bajt','n1'],[n,'jedniček v kódu','adv']].map(([n,l,cl])=>`<div class="${cl||''}"><b>${typeof n==='number'&&l==='bitů v ASCII'?n+' bitů':n}</b><span>${l}</span></div>`).join('');
