@@ -142,6 +142,7 @@ a{color:inherit}
 /* typy štítků na kartě: ročník (oranžový), autor (papírový), datum zveřejnění (jen obrys) */
 .tag.g{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
 .tag.a{background:var(--panel);border-color:var(--line);color:var(--ink)}
+.tag.plus{background:var(--night);border-color:var(--night);color:var(--bg);font-weight:700;letter-spacing:.06em}
 .tag.d{background:transparent;border:1px dashed var(--muted);color:var(--muted);font-weight:500}
 /* připnutá aplikace: bomba s doutnákem vpravo v řádku štítků, po najetí (nebo klepnutí) se rozvine vlaječka BOMBA! */
 .meta{align-items:center}
@@ -450,7 +451,7 @@ function render(){
       <div class="card-body">
         <h3><a href="${esc(url)}">${esc(a.nazev)}</a></h3>
         <p>${esc(a.popis)}</p>
-        <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag g" title="Ročník">${esc(t)}</span>`).join('')}${a.autor?`<span class="tag a" title="Autor">${esc(a.autor)}</span>`:''}${(a.zverejneno||a.aktualizace)?`<span class="tag d" title="Zveřejněno">${datum(a.zverejneno||a.aktualizace)}</span>`:''}${ZAR[a.zarizeni]||''}${PINNED.has(a.slug)?BOMBA:''}</div>
+        <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag g" title="Ročník">${esc(t)}</span>`).join('')}${a.plus?'<span class="tag plus" title="PLUS: obsah nad rámec učiva přiřazených ročníků">PLUS</span>':''}${a.autor?`<span class="tag a" title="Autor">${esc(a.autor)}</span>`:''}${(a.zverejneno||a.aktualizace)?`<span class="tag d" title="Zveřejněno">${datum(a.zverejneno||a.aktualizace)}</span>`:''}${ZAR[a.zarizeni]||''}${PINNED.has(a.slug)?BOMBA:''}</div>
       </div>
       <div class="card-foot">
         ${prep?'<span class="status prep">V přípravě</span>':jeNova(a)?'<span class="status new">Nové</span>':'<span></span>'}

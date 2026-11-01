@@ -35,6 +35,7 @@ Platí pro každého, kdo do repozitáře `gympb/aplikace` (web https://aplikace
 | `obrazek` | ano | `karta.svg`, viz bod 7 |
 | `odkaz` | ne | adresa aplikace, pokud není v tomto repozitáři |
 | `pripnuto` | ne | datum připnutí na začátek výpisu `RRRR-MM-DD`, viz bod 6a |
+| `plus` | ne | `true`, pokud je aplikace (nebo její podstatná část) nad rámec učiva přiřazených ročníků. Na kartě se ukáže tmavě modrý štítek PLUS. Označí se i příslušná část uvnitř aplikace a vysvětlí se, co PLUS znamená |
 
 Ukázka:
 
