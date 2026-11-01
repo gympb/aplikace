@@ -76,7 +76,7 @@ Používej **jen** tyto štítky. Nové nevytvářej.
 ## 5. Předměty: otevřený seznam
 
 - Aplikace má jeden nebo více předmětů, např. `["Fyzika", "GymTV"]`.
-- Používej existující předměty z `katalog.json` (Biologie, Chemie, Fyzika, GymTV, Informatika …).
+- Používej existující předměty z `katalog.json` (Biologie, Chemie, Fyzika, GymTV, Informatika, Nástroje …).
 - Nový předmět lze založit, když je potřeba:
   - celým českým názvem s velkým počátečním písmenem (`"Dějepis"`, ne `"dějepis"` ani `"D"`),
   - jen pokud už neexistuje v jiném zápisu.
