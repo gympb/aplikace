@@ -465,13 +465,12 @@ pre.bdump .nb{color:var(--k1);font-weight:700}
 pre.bdump .cc{color:var(--k3)}
 pre.bdump .of{color:var(--muted)}
 .ansi{background:#10201a;color:#d7e6dd;border-radius:10px;padding:10px 14px;font:500 1rem/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;min-height:2.6rem}
-footer .teacher-box{display:grid;gap:8px;margin-top:16px;color:var(--ink)}
-footer .teacher-box[hidden]{display:none}
-footer .mtiny{font-size:.7rem;opacity:.45;white-space:nowrap}
-footer .mtiny a{color:inherit;text-decoration:none}
-footer .mtiny a:hover,footer .mtiny a:focus-visible{text-decoration:underline;opacity:1}
-footer .teacher-box h3{font-size:1.05rem}
-footer details.teacher{font-size:.92rem}
+footer .teacher-box{display:grid;gap:4px;margin-bottom:18px;color:inherit;font:inherit}
+footer details.teacher{border:0;border-radius:0;padding:0;background:none;font:inherit;color:inherit}
+footer details.teacher summary{display:inline-block;cursor:pointer;font:inherit;font-weight:400;color:var(--accent);text-decoration:underline}
+footer details.teacher[open] summary{margin-bottom:4px}
+footer details.teacher ol{margin:4px 0 8px;padding-left:1.3em;display:grid;gap:4px;font:inherit}
+footer .teacher-box p.fn{margin:0;font:inherit}
 footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
 .fn{font-size:.85rem;color:var(--muted)}
 
@@ -1239,11 +1238,8 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <footer>
-  <p class="fn">Související aplikace: <a href="../ascii-kod/">Kód ASCII (simulátor přenosu)</a> · <a href="../unicode-pod-lupou/">Unicode pod lupou</a> · <a href="../baudotuv-kod/">Baudotův kód</a> · <a href="../morseova-abeceda/">Morseova abeceda</a></p>
-  ASCII kód pod lupou · výukový materiál. Standard: ANSI X3.4-1986, mezinárodně ISO/IEC 646. Historické údaje podle dostupných norem a literatury.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 1. 11. 2026 <span class="mtiny">· <a href="#ucitele" id="mlink" role="button" aria-expanded="false" aria-controls="ucitele">metodika</a></span>
-  <div class="teacher-box" id="ucitele" hidden>
-    <h3>Pro učitele: metodika</h3>
-    <details class="teacher"><summary>Začátečník: plán vyučovací hodiny (45 minut)</summary>
+  <div class="teacher-box" id="ucitele">
+    <details class="teacher"><summary>Metodika pro učitele: Začátečník, plán vyučovací hodiny (45 minut)</summary>
       <ol>
         <li><b>0–4 min</b> · Kapitola 1: promítněte řadu čísel z pásky, žáci hlasují, co znamenají. Odpověď nechte na kapitolu 3.</li>
         <li><b>4–11 min</b> · Kapitola 2: skládání znaku z bitů. Soutěž: kdo první poskládá první písmeno svého jména. Pak jméno jako čísla.</li>
@@ -1254,13 +1250,15 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
         <li><b>35–42 min</b> · Kapitola 7: hra Rozlušti pásku ve dvojicích.</li>
         <li><b>42–45 min</b> · Kapitola 8: test, společná kontrola.</li>
       </ol></details>
-    <details class="teacher"><summary>Pokročilý: plán na 2–3 vyučovací hodiny</summary>
+    <details class="teacher"><summary>Metodika pro učitele: Pokročilý, plán na 2–3 vyučovací hodiny</summary>
       <ol>
         <li><b>1. hodina</b> · Kapitoly 1–3: osmý bit, rozšířená tabulka a čeština v kódováních. Žáci si v záložce Tabulka znaků najdou „ř“ ve čtyřech kódováních a porovnají kódy.</li>
         <li><b>2. hodina</b> · Kapitoly 4–6: historie, krokodýlí texty a jejich záchrana. Žáci si ve dvojicích vymění poškozený text a zkusí ho opravit.</li>
         <li><b>3. hodina</b> · Kapitoly 7–8: procvičování (soutěž ve dvojicích) a test. Rozšiřující témata (parita, pasti, stavba tabulky) jsou v záložce Profesionál.</li>
       </ol></details>
+    <p class="fn">Související aplikace: <a href="../ascii-kod/">Kód ASCII (simulátor přenosu)</a> · <a href="../unicode-pod-lupou/">Unicode pod lupou</a> · <a href="../baudotuv-kod/">Baudotův kód</a> · <a href="../morseova-abeceda/">Morseova abeceda</a></p>
   </div>
+  ASCII kód pod lupou · výukový materiál. Standard: ANSI X3.4-1986, mezinárodně ISO/IEC 646. Historické údaje podle dostupných norem a literatury.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 1. 11. 2026
 </footer>
 </div>
 
@@ -2224,17 +2222,6 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
 chain(); where(); parNew(); pNew();
 renderGrid(); preview(65); analyze(); setCP(65);
 
-</script>
-<script>
-/* metodika pro učitele: schovaná za nenápadným slovem na posledním řádku patičky, otevře se také adresou #ucitele */
-(() => {
-  const box=document.getElementById('ucitele'), a=document.getElementById('mlink');
-  if (!box || !a) return;
-  const set=(open,scroll)=>{ box.hidden=!open; a.setAttribute('aria-expanded',String(open)); if (open && scroll) box.scrollIntoView({behavior:'smooth',block:'nearest'}); };
-  a.addEventListener('click',e=>{ e.preventDefault(); set(box.hidden,true); try{ history.replaceState(null,'',box.hidden?location.pathname+location.search:'#ucitele'); }catch(x){} });
-  addEventListener('hashchange',()=>{ if (location.hash==='#ucitele') set(true,true); });
-  if (location.hash==='#ucitele') set(true,true);
-})();
 </script>
 </body>
 </html>
