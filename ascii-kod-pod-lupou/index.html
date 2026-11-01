@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ASCII kód pod lupou</title>
-<meta name="description" content="ASCII kód ve třech úrovních: Začátečník s maskotem Páskem a hrou Rozlušti pásku, Pokročilý s procvičováním a testem, příručka pro IT profesionály. Laboratoř a tabulka znaků.">
+<meta name="description" content="ASCII kód ve třech úrovních: Začátečník s maskotem Páskem a hrou Rozlušti pásku, Pokročilý s rozšířenou tabulkou 256 znaků a českými kódováními, příručka pro IT profesionály. Laboratoř a tabulka znaků.">
 <meta name="author" content="Ivo Bešťák, Gymnázium Příbram">
 <meta property="og:title" content="ASCII kód pod lupou">
 <meta property="og:image" content="nahled.png">
@@ -478,6 +478,16 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
 [class*="gc-"].by{--k:var(--g)}
 .ascii button{border-top:3px solid var(--g,var(--line))}
 
+.gc-cz{--g:var(--k1)}.gc-box{--g:var(--muted)}.gc-hi{--g:var(--k3)}
+.cgrid.a .cell.gc-cz{background:color-mix(in srgb,var(--k1) 16%,var(--paper));font-weight:700}
+.cgrid.a .cell.gc-cz span{color:var(--k1)}
+.cgrid.a .cell.gc-box span{color:var(--muted)}
+.cgrid.a .cell.gc-ctl span{color:var(--k1)}
+.cgrid.a .cell.top8{border-top:3px solid var(--ink)}
+.czt td.diff{background:color-mix(in srgb,var(--k1) 16%,var(--paper));font-weight:700}
+.czt td,.czt th{text-align:center}
+.seg{flex-wrap:wrap}
+
 </style>
 </head>
 <body>
@@ -514,11 +524,11 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
   <p>Jak počítač ukládá písmena jako čísla, k čemu byly znaky, které se netisknou, a proč se velká a malá písmena liší právě o 32. Vyberte úroveň výkladu nebo nástroj:</p>
   <div class="levels">
     <button class="lv l1" data-go="r1"><span class="mini cj" data-s="s-ok"></span><small>1 vyučovací hodina</small><b>Začátečník</b><span>Základy: znaky jsou čísla, tabulka ASCII, znaky, které se netisknou, a trik s velkými písmeny. S maskotem Páskem a hrou.</span></button>
-    <button class="lv l4" data-go="r4"><small>2–3 vyučovací hodiny</small><b>Pokročilý</b><span>Bity, historie od dálnopisu, stavba tabulky, parita, pasti, procvičování a test.</span></button>
-    <button class="lv lp" data-go="pro"><small>příručka</small><b>Profesionál</b><span>Pro IT: bitové triky, řídicí znaky v praxi, výpis bajtů, MIME, URL, jazyky a regulární výrazy.</span></button>
+    <button class="lv l4" data-go="r4"><small>2–3 vyučovací hodiny</small><b>Pokročilý</b><span>Osmý bit a rozšířená tabulka 256 znaků, česká kódování (Kamenických, CP852, ISO 8859-2, Windows-1250), krokodýlí texty a jejich záchrana.</span></button>
+    <button class="lv lp" data-go="pro"><small>příručka</small><b>Profesionál</b><span>Rozšiřující kurz (stavba tabulky, historie, parita, pasti), šestnáctkový zápis, bitové triky, řídicí znaky v praxi, hexdump, MIME, URL, jazyky.</span></button>
     <div class="toolcol">
       <button class="lv tool" data-go="lab"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M7.5 10h5M10 7.5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><small>nástroj pro všechny úrovně</small><b>Laboratoř</b><span>Rozbor textu a znaku do bitů</span></button>
-      <button class="lv tool" data-go="tabulka"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke="currentColor" stroke-width="1.4"/></svg><small>nástroj pro všechny úrovně</small><b>Tabulka znaků</b><span>Všech 128 znaků, kopírování</span></button>
+      <button class="lv tool" data-go="tabulka"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke="currentColor" stroke-width="1.4"/></svg><small>nástroj pro všechny úrovně</small><b>Tabulka znaků</b><span>Základní (128) a rozšířená (256), kopírování</span></button>
     </div>
   </div>
 </header>
@@ -693,9 +703,240 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
 
 <!-- ================= POKROČILÝ ================= -->
 <div class="view v-r4">
+<div class="note" id="whyHex"><b>Proč se v IT často píše hexadecimálně?</b> Programátoři a dokumentace zapisují bajty šestnáctkově, protože jedna číslice odpovídá přesně čtyřem bitům, takže bajt jsou vždy dvě číslice. Zápis je kratší a přehlednější než dlouhé řady jedniček a nul a hranice bajtů je v něm vidět na první pohled. Samotnou soustavu tu vysvětlovat nebudeme, patří do samostatné aplikace. V této části stačí desítkové kódy. Šestnáctkový zápis najdeš v záložce <a href="#pro" data-go="pro">Profesionál</a>.</div>
 <div class="course" data-course="r4">
   <div class="course-head">
-    <ul class="goals"><li>rozlišit bit, bajt, znak, kód a kódovou tabulku,</li><li>najít kód znaku a zjistit jeho bity,</li><li>popsat vývoj od telegrafu přes ASCII po UTF-8,</li><li>vysvětlit stavbu tabulky ASCII a práci s paritním bitem,</li><li>poznat typické chyby: osmý bit, konce řádků, řazení, znak NUL.</li></ul>
+    <ul class="goals"><li>vysvětlit, proč osmý bit rozšířil ASCII na 256 znaků,</li><li>číst rozšířenou tabulku a vědět, že horní polovina se liší podle kódování,</li><li>najít česká písmena v kódování Kamenických, CP852, ISO 8859-2 a Windows-1250,</li><li>poznat „krokodýlí“ text a odhadnout, jak vznikl,</li><li>vysvětlit, proč dnes používáme UTF-8.</li></ul>
+    <ol class="prog" aria-label="Kapitoly"></ol>
+  </div>
+
+  <article class="ch" data-title="Osmý bit">
+    <div><span class="eyebrow">Kapitola 1</span><h2>Osm bitů místo sedmi</h2></div>
+    <p>ASCII má 128 kódů a stačí mu <b>7 bitů</b>. Počítače ale zpracovávají data po <b>bajtech</b>, tedy po osmicích bitů. Osmý bit tak zůstával nevyužitý (nebo sloužil jako paritní). Jakmile se ukázalo, že angličtina nestačí, přišel nápad: využít ho a získat dalších 128 míst.</p>
+    <div class="chain" aria-label="Sedm a osm bitů">
+      <div><small>ASCII</small><span class="big mono">7 bitů</span><small>2<sup>7</sup> = 128 kódů (0 až 127)</small></div>
+      <div><small>Osmibitová kódování</small><span class="big mono">8 bitů</span><small>2<sup>8</sup> = 256 kódů (0 až 255)</small></div>
+      <div><small>Co je nového</small><span class="big mono">+128</span><small>kódy 128 až 255, tzv. horní polovina</small></div>
+    </div>
+    <dl class="terms">
+      <div><dt>Dolní polovina</dt><dd>Kódy 0 až 127. Ve všech kódováních z této kapitoly jsou stejné jako v ASCII, takže anglický text čte každý počítač správně.</dd></div>
+      <div><dt>Horní polovina</dt><dd>Kódy 128 až 255. Tady si každý výrobce, stát a jazyk udělal po svém: znaky s diakritikou, čáry pro tabulky, řecká písmena.</dd></div>
+      <div><dt>Kódová stránka</dt><dd>Konkrétní obsazení horní poloviny. Číslo stránky nebo název kódování určuje, který znak je na kterém kódu.</dd></div>
+      <div><dt>„Rozšířené ASCII“</dt><dd>Hovorový název. Ve skutečnosti žádná jediná rozšířená tabulka neexistuje, je jich mnoho a navzájem nejsou slučitelné.</dd></div>
+    </dl>
+    <div class="kq" data-ok="b">
+      <p class="q">Kolik různých znaků lze zapsat osmi bity?</p>
+      <div class="opts"><button data-v="a">128</button><button data-v="b">256</button><button data-v="c">512</button></div>
+      <div class="why">Každý bit zdvojnásobí počet kombinací: 2<sup>8</sup> = 256. Sedm bitů dávalo 128, osmý bit přidal dalších 128.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Tabulka 256 znaků">
+    <div><span class="eyebrow">Kapitola 2</span><h2>Jeden kód, několik významů</h2></div>
+    <p>Kód 248 znamená v jednom kódování „ř“, v jiném „ø“ a v dalším zcela jiný znak. Zadej kód z horní poloviny (128 až 255) a podívej se, co je na něm v různých kódováních:</p>
+    <div class="panel">
+      <div class="walk"><div class="field" style="flex:0 1 11rem"><label for="xCode">Kód (128 až 255)</label><input type="text" id="xCode" value="248" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3"></div>
+      <button class="btn" id="xPrev" aria-label="Předchozí kód">‹ −1</button><button class="btn" id="xNext" aria-label="Následující kód">+1 ›</button></div>
+      <div class="tw"><table class="tpl" id="xTbl"></table></div>
+    </div>
+    <div class="box fun"><span class="lbl">Celá tabulka</span><p>Všech 256 znaků vybraného kódování si prohlédneš v záložce <b>Tabulka znaků</b>. Tam se přepíná mezi základní variantou (ASCII, 128 znaků) a rozšířenou (256 znaků).</p>
+      <div><button class="btn pri" id="goExt">Otevřít rozšířenou tabulku →</button></div></div>
+    <div class="kq" data-ok="c">
+      <p class="q">Co mají všechna kódování z této kapitoly společné?</p>
+      <div class="opts"><button data-v="a">Stejné kódy pro česká písmena.</button><button data-v="b">Stejnou horní polovinu.</button><button data-v="c">Dolní polovinu shodnou s ASCII.</button></div>
+      <div class="why">Kódy 0 až 127 jsou všude stejné jako v ASCII. Česká písmena a celá horní polovina se mezi kódováními liší.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Čeština v kódováních">
+    <div><span class="eyebrow">Kapitola 3</span><h2>Kde jsou česká písmena</h2></div>
+    <p>Čeština potřebuje 15 různých písmen s diakritikou (malých i velkých). V ASCII nejsou, a tak vzniklo několik kódování, která je v horní polovině mají. Tabulka ukazuje desítkový kód každého písmena. Políčko je zvýrazněné, pokud se kód liší od ISO 8859-2.</p>
+    <div class="panel">
+      <div class="seg" id="czCase"><button data-k="l" aria-pressed="true">malá písmena</button><button data-k="u" aria-pressed="false">velká písmena</button></div>
+      <div class="tw"><table class="tpl czt" id="czTbl"></table></div>
+      <p class="muted" style="font-size:.92rem" id="czNote"></p>
+    </div>
+    <ul class="check">
+      <li><b>Kamenických</b> (KEYBCS2) a <b>CP852</b> se používaly v DOSu. Každé má česká písmena jinde, a navíc obsahují znaky pro kreslení tabulek.</li>
+      <li><b>ISO 8859-2</b> (Latin 2) je mezinárodní norma pro střední a východní Evropu, používaná na Unixu a dlouho i na webu.</li>
+      <li><b>Windows-1250</b> je kód Windows. Většinu písmen má shodně s ISO 8859-2, ale <b>š, ť a ž</b> jsou jinde.</li>
+      <li><b>MacCE</b> je kód počítačů Macintosh pro střední Evropu.</li>
+    </ul>
+    <div class="kq" data-ok="a">
+      <p class="q">Písmeno „š“ má v ISO 8859-2 kód 185. Jaký kód má ve Windows-1250?</p>
+      <div class="opts"><button data-v="a">154</button><button data-v="b">185</button><button data-v="c">232</button></div>
+      <div class="why">Windows-1250 má „š“ na kódu 154. ISO 8859-2 ho má na 185. Právě tento rozdíl (a stejně i u „ť“ a „ž“) způsobuje, že se texty při záměně těchto dvou kódování poškodí jen částečně.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Historie">
+    <div><span class="eyebrow">Kapitola 4</span><h2>Jak vznikaly české kódy</h2></div>
+    <div class="timeline">
+      <div class="tl"><span class="yr">1963–1967</span><span class="kind">základ</span><b>ASCII</b><p>Sedm bitů, 128 kódů, jen angličtina. Žádná diakritika.</p></div>
+      <div class="tl"><span class="yr">1981</span><span class="kind">osm bitů</span><b>CP437 v IBM PC</b><p>Původní osmibitová tabulka počítačů IBM PC. Má západoevropská písmena, řecká písmena a čáry pro rámečky, ale ne češtinu.</p></div>
+      <div class="tl"><span class="yr">80. léta</span><span class="kind">česká verze</span><b>Kódování Kamenických</b><p>České vlastní řešení pro DOS (KEYBCS2). Rozšířilo se v československých programech a na PC s českými ovladači klávesnice a obrazovky.</p></div>
+      <div class="tl"><span class="yr">1987</span><span class="kind">norma</span><b>ISO 8859-2</b><p>Mezinárodní norma Latin 2 pro střední a východní Evropu. Hodí se pro češtinu, polštinu, maďarštinu a další jazyky.</p></div>
+      <div class="tl"><span class="yr">kolem 1990</span><span class="kind">DOS</span><b>CP852</b><p>Kódová stránka Latin 2 pro DOS. Uspořádání odpovídá potřebám střední Evropy, ale liší se od ISO 8859-2 i od Kamenických.</p></div>
+      <div class="tl"><span class="yr">1992</span><span class="kind">Windows</span><b>Windows-1250</b><p>Kód pro střední Evropu ve Windows 3.1. Podobný ISO 8859-2, ale s několika rozdíly.</p></div>
+      <div class="tl enc"><span class="yr">1992 a dál</span><span class="kind">dnes</span><b>Unicode a UTF-8</b><p>Jeden kód pro všechna písma světa. UTF-8 zachovává prvních 128 znaků jako v ASCII. Dnes se používá téměř všude. <a href="../unicode-pod-lupou/">Unicode pod lupou</a>.</p></div>
+    </div>
+    <div class="kq" data-ok="b">
+      <p class="q">Které kódování bylo vytvořené přímo v Československu?</p>
+      <div class="opts"><button data-v="a">CP852</button><button data-v="b">Kódování Kamenických</button><button data-v="c">Windows-1250</button></div>
+      <div class="why">Kódování Kamenických vzniklo u nás. CP852 a Windows-1250 vytvořily americké firmy IBM a Microsoft, ISO 8859-2 mezinárodní normalizační organizace.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Krokodýli">
+    <div><span class="eyebrow">Kapitola 5</span><h2>Krokodýlí texty</h2></div>
+    <p>Když je text uložený v jednom kódování a program ho přečte v jiném, vzniká změť znaků, které se přezdívá „krokodýli“ (anglicky <i>mojibake</i>). Pokaždé vypadá jinak podle toho, <b>jak byl text uložen</b> a <b>jak byl přečten</b>. Vyber obě kódování a uvidíš výsledek.</p>
+    <div class="panel">
+      <div class="field"><label for="mjIn">Text</label><input type="text" id="mjIn" value="Příliš žluťoučký kůň" autocomplete="off" spellcheck="false"></div>
+      <div class="walk">
+        <div class="field"><label for="mjFrom">Uloženo v kódování</label><select id="mjFrom"></select></div>
+        <div class="field"><label for="mjTo">Přečteno jako</label><select id="mjTo"></select></div>
+        <button class="btn" id="mjSwap" title="Prohodit">⇄</button>
+      </div>
+      <div class="chips" id="mjPre"></div>
+      <div class="msg"><small>Co vidí čtenář</small><span class="mono" id="mjOut" style="font-size:1.25rem"></span></div>
+      <p class="muted" id="mjNote" style="font-size:.92rem"></p>
+    </div>
+    <h3>Typické příznaky</h3>
+    <p class="muted">Takto se zobrazí slovo „Příbram“ v nejčastějších záměnách. Podle toho často poznáš, co se stalo.</p>
+    <div class="tw"><table class="tpl" id="symTbl"></table></div>
+    <div class="kq" data-ok="a">
+      <p class="q">Text v ISO 8859-2 se přečte jako ISO 8859-1 (západní Evropa). Jak se zobrazí „ř“?</p>
+      <div class="opts"><button data-v="a">ø</button><button data-v="b">Ĺ™</button><button data-v="c">?</button></div>
+      <div class="why">„ř“ má v ISO 8859-2 kód 248. Na kódu 248 je v ISO 8859-1 písmeno „ø“.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Záchrana textu">
+    <div><span class="eyebrow">Kapitola 6</span><h2>Jak krokodýla opravit</h2></div>
+    <p>Pokud se text jen špatně přečetl a nikde se neztratily znaky, jde ho obvykle zachránit: stačí zjistit, <b>jak byl uložen</b> a <b>jak byl přečten</b>, a postup obrátit. Vlož poškozený text a aplikace zkusí všechny dvojice:</p>
+    <div class="panel">
+      <div class="field"><label for="rsIn">Poškozený text</label><input type="text" id="rsIn" autocomplete="off" spellcheck="false"></div>
+      <div class="chips" id="rsPre"></div>
+      <div id="rsOut"></div>
+    </div>
+    <ul class="check">
+      <li><b>Webové stránky:</b> kódování určí hlavička serveru nebo značka <code>&lt;meta charset="utf-8"&gt;</code> na začátku stránky.</li>
+      <li><b>Soubor UTF-8 se značkou BOM</b> začíná třemi bajty 239 187 191. Pokud je program zobrazí jako „ï»¿“, čte soubor jako Windows-1252 nebo ISO 8859-1.</li>
+      <li><b>Pozor na ztráty:</b> pokud se při uložení znak nahradil otazníkem (?), původní informace je pryč a žádný program ji nevrátí.</li>
+      <li><b>Dnes:</b> všude, kde to jde, používej UTF-8, nejen v souborech, ale i v databázích, e-mailech a webu.</li>
+    </ul>
+    <div class="kq" data-ok="c">
+      <p class="q">V textu je místo „č“ otazník „?“. Jde to opravit změnou kódování při čtení?</p>
+      <div class="opts"><button data-v="a">Ano, vždy.</button><button data-v="b">Ano, ale jen ve Windows.</button><button data-v="c">Ne, informace se ztratila už při uložení.</button></div>
+      <div class="why">Otazník nahradil znak už při ukládání. Kód původního písmene v souboru nezůstal, takže ho nelze obnovit.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Procvičování">
+    <div><span class="eyebrow">Kapitola 7</span><h2>Procvičování</h2></div>
+    <p>Úlohy se generují náhodně. Když se spleteš, aplikace ukáže správné řešení.</p>
+    <div class="panel prac">
+      <div class="seg" id="xType"><button data-t="mix" aria-pressed="true">Mix</button><button data-t="code" aria-pressed="false">Kód písmene</button><button data-t="chr" aria-pressed="false">Znak z kódu</button><button data-t="mj" aria-pressed="false">Poznej krokodýla</button></div>
+      <div class="gstat"><span id="xStat">Vyřešeno 0 z 0</span><span id="xStreak"></span></div>
+      <div class="task" id="xTask"></div>
+      <div id="xAns"></div>
+      <div class="res" id="xRes"></div>
+      <div><button class="btn pri" id="xNext2">Další úloha</button></div>
+    </div>
+    <div class="cj-row"><span class="cj" id="xCj" data-s="s-ok"></span><p class="say" id="xSay"><b class="who">Pásek</b>Nejdřív zkus odhadnout, potom se podívej do tabulky v záložce Tabulka znaků.</p></div>
+  </article>
+
+  <article class="ch" data-title="Test">
+    <div><span class="eyebrow">Kapitola 8</span><h2>Test</h2></div>
+    <div class="quiz" id="quizR4">
+      <div class="kq" data-ok="b"><p class="q">Kolik kódů nabízí osmibitové kódování?</p>
+        <div class="opts"><button data-v="a">128</button><button data-v="b">256</button><button data-v="c">65 536</button></div>
+        <div class="why">2<sup>8</sup> = 256 kódů, od 0 do 255.</div></div>
+      <div class="kq" data-ok="a"><p class="q">Která část osmibitových tabulek je ve všech kódováních z této aplikace stejná?</p>
+        <div class="opts"><button data-v="a">Kódy 0 až 127 (ASCII).</button><button data-v="b">Kódy 128 až 255.</button><button data-v="c">Žádná.</button></div>
+        <div class="why">Dolní polovina je stejná jako ASCII. Horní polovina se liší.</div></div>
+      <div class="kq" data-ok="c"><p class="q">Které kódování má písmeno „ř“ na kódu 253?</p>
+        <div class="opts"><button data-v="a">ISO 8859-2</button><button data-v="b">Windows-1250</button><button data-v="c">CP852</button></div>
+        <div class="why">V CP852 je „ř“ na 253. V ISO 8859-2 i Windows-1250 je na 248, v kódování Kamenických na 169.</div></div>
+      <div class="kq" data-ok="b"><p class="q">V čem se Windows-1250 liší od ISO 8859-2?</p>
+        <div class="opts"><button data-v="a">Nemá „ř“.</button><button data-v="b">Má jinde například š, ť a ž.</button><button data-v="c">Je sedmibitové.</button></div>
+        <div class="why">Většina písmen má shodný kód. Rozdíl je třeba u „š“ (154 proti 185), „ť“ (157 proti 187) a „ž“ (158 proti 190).</div></div>
+      <div class="kq" data-ok="a"><p class="q">V textu se místo „ř“ objevuje „ø“. Co se pravděpodobně stalo?</p>
+        <div class="opts"><button data-v="a">ISO 8859-2 přečtené jako ISO 8859-1.</button><button data-v="b">UTF-8 přečtené jako Windows-1250.</button><button data-v="c">Zapomněl se paritní bit.</button></div>
+        <div class="why">Kód 248 je v ISO 8859-2 „ř“, v ISO 8859-1 „ø“.</div></div>
+      <div class="kq" data-ok="b"><p class="q">V textu se místo „ř“ objevuje „Ĺ™“. Co se pravděpodobně stalo?</p>
+        <div class="opts"><button data-v="a">Windows-1250 přečtené jako UTF-8.</button><button data-v="b">UTF-8 přečtené jako Windows-1250.</button><button data-v="c">CP852 přečtené jako ISO 8859-2.</button></div>
+        <div class="why">V UTF-8 zabírá „ř“ dva bajty. Windows-1250 je čte jako dva samostatné znaky, „Ĺ“ a „™“.</div></div>
+      <div class="kq" data-ok="c"><p class="q">Proč se pojem „rozšířené ASCII“ nedá brát doslova?</p>
+        <div class="opts"><button data-v="a">Protože ASCII nikdy nebylo rozšířeno.</button><button data-v="b">Protože má víc než 256 znaků.</button><button data-v="c">Protože existuje mnoho navzájem odlišných rozšíření.</button></div>
+        <div class="why">Každé kódování obsadilo horní polovinu po svém, žádná jediná „rozšířená tabulka“ neexistuje.</div></div>
+      <div class="kq" data-ok="a"><p class="q">Které kódování se dnes doporučuje pro všechny nové texty?</p>
+        <div class="opts"><button data-v="a">UTF-8</button><button data-v="b">CP852</button><button data-v="c">Kamenických</button></div>
+        <div class="why">UTF-8 zvládne všechna písma a zároveň zachovává kompatibilitu s ASCII.</div></div>
+      <div class="qres"><div class="cj-row"><span class="cj" data-s="s-sip"></span><div class="say"><b class="who">Pásek</b><span class="score"></span><p class="qsay"></p></div></div>
+        <div><button class="btn qreset">Zkusit test znovu</button></div></div>
+    </div>
+  </article>
+
+  <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
+</div>
+</div>
+
+<!-- ================= LABORATOŘ ================= -->
+<div class="view v-lab">
+<div class="lvlbar"><span>Podrobnost výkladu:</span><div class="seg" id="labLvl"><button data-l="r1" aria-pressed="false">Začátečník</button><button data-l="r4" aria-pressed="true">Pokročilý</button><button data-l="pro" aria-pressed="false">Profesionál</button></div></div>
+<section id="text">
+  <div><span class="eyebrow">Laboratoř</span><h2>Napište cokoli a podívejte se, z čeho se skládá</h2></div>
+  <p class="muted">Každý rámeček je jeden znak. Barva okraje ukazuje skupinu, pod znakem je jeho kód. Znaky mimo ASCII mají přerušovaný rámeček, protože v tabulce ASCII nejsou. Najetím myši zvýrazníte odpovídající údaje v pruzích, kliknutím znak rozložíte níže.</p>
+  <div class="panel">
+    <div class="field"><label for="txt">Text</label><input type="text" id="txt" autocomplete="off" spellcheck="false"></div>
+    <div class="chips" id="samples"></div>
+    <div class="legend" aria-hidden="true"><span class="gc-ctl"><i></i>řídicí znak</span><span class="gc-sp"><i></i>mezera a interpunkce</span><span class="gc-dig"><i></i>číslice</span><span class="gc-up"><i></i>velká písmena</span><span class="gc-low"><i></i>malá písmena</span><span class="gc-non"><i></i>mimo ASCII</span></div>
+    <div class="counts" id="counts"></div>
+    <div id="flags"></div>
+    <div class="graphs" id="graphs"></div>
+    <div class="striplbl"><span>Kódy · desítkově</span><b id="nD"></b></div>
+    <div class="strip" id="sD"></div>
+    <div class="striplbl n1"><span>Bajty · desítkově (ASCII i UTF-8)</span><b id="nH"></b></div>
+    <div class="strip n1" id="sH"></div>
+    <div class="striplbl adv"><span>Bity · 7 bitů na znak, mimo ASCII bajty UTF-8</span><b id="nB"></b></div>
+    <div class="strip adv" id="sB"></div>
+    <p class="muted" id="trunc" hidden>Zobrazeno prvních 200 znaků.</p>
+  </div>
+</section>
+<section>
+  <div><span class="eyebrow">Laboratoř</span><h2>Jeden znak pod lupou</h2></div>
+  <div id="slotLab">
+  <div id="lupa" style="display:grid;gap:18px;scroll-margin-top:60px">
+    <div class="panel">
+      <div class="walk">
+        <div class="field"><label for="cpIn">Znak, kód (65) nebo zkratka (LF, ESC)</label><input type="text" id="cpIn" autocomplete="off" spellcheck="false"></div>
+        <button class="btn" id="prev" aria-label="Předchozí kód">‹ −1</button>
+        <button class="btn" id="next" aria-label="Následující kód">+1 ›</button>
+      </div>
+      <div class="insp-head">
+        <div class="bigglyph" id="ig"></div>
+        <dl class="facts" id="facts"></dl>
+      </div>
+      <div class="sizes" id="sizes"></div>
+    </div>
+    <div class="cols n1">
+      <div class="panel" id="p1"></div>
+      <div class="panel" id="p2"></div>
+    </div>
+  </div>
+  </div>
+</section>
+</div>
+
+
+<!-- ================= PROFESIONÁL ================= -->
+<div class="view v-pro">
+<!-- ================= POKROČILÝ ================= -->
+<section id="p-kurz" style="scroll-margin-top:60px"><div><span class="eyebrow">Profesionál · rozšiřující kurz</span><h2>Základy ASCII do hloubky</h2></div>
+<div class="course" data-course="pro">
+  <div class="course-head">
+    <ul class="goals"><li>rozlišit bit, bajt, znak, kód a kódovou tabulku,</li><li>zapsat kód znaku desítkově, dvojkově i šestnáctkově,</li><li>popsat vývoj od telegrafu přes ASCII po UTF-8,</li><li>vysvětlit stavbu tabulky ASCII a práci s paritním bitem,</li><li>poznat typické chyby: osmý bit, konce řádků, řazení, znak NUL.</li></ul>
     <ol class="prog" aria-label="Kapitoly"></ol>
   </div>
 
@@ -703,10 +944,11 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
     <div><span class="eyebrow">Kapitola 1</span><h2>Bit, bajt, znak, kód</h2></div>
     <div class="chain" aria-label="Od znaku ke kódu a bitům">
       <div><small>1 · Znak</small><span class="big mono" id="hG">A</span><small id="hN">velké písmeno</small></div>
-      <div><small>2 · Kód (desítkově)</small><span class="big mono" id="hD">65</span><small id="hX">v tabulce ASCII</small></div>
+      <div><small>2 · Kód (desítkově)</small><span class="big mono" id="hD">65</span><small id="hX">šestnáctkově 41</small></div>
       <div><small>3 · Bity</small>
         <span class="enc">7 bitů&nbsp;&nbsp;<b id="h7" style="color:var(--k2)">1000001</b></span>
-        <span class="enc">8 bitů&nbsp;&nbsp;<b id="h8" style="color:var(--k1)">01000001</b></span></div>
+        <span class="enc">8 bitů&nbsp;&nbsp;<b id="h8" style="color:var(--k1)">01000001</b></span>
+        <span class="enc">hex&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id="hH" style="color:var(--k3)">41</b></span></div>
     </div>
     <div class="field" style="max-width:26rem"><label for="chIn">Zkus jiný znak</label><input type="text" id="chIn" value="A" autocomplete="off" spellcheck="false" maxlength="1" style="max-width:8rem"></div>
     <dl class="terms">
@@ -747,12 +989,12 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
     <div><span class="eyebrow">Kapitola 3</span><h2>Jak je tabulka ASCII uspořádaná</h2></div>
     <p>128 kódů se dělí na <b>4 zóny po 32 znacích</b>. Zónu určují dva nejvyšší bity, pozici v zóně pět nižších. Proto má velké „A“ v zóně pozici 1 (hned za znakem @) a řídicí povely tvoří celou zónu 0.</p>
     <div class="panel"><div class="tw"><table class="tpl">
-      <thead><tr><th>Zóna</th><th>Kódy</th><th>Bity 6 a 5</th><th>Co obsahuje</th></tr></thead>
+      <thead><tr><th>Zóna</th><th>Kódy</th><th>Hex</th><th>Bity 6 a 5</th><th>Co obsahuje</th></tr></thead>
       <tbody>
-        <tr><td><b class="hi">0</b></td><td>0–31</td><td><code>00</code></td><td>řídicí znaky (+ DEL na kódu 127)</td></tr>
-        <tr><td><b class="hi">1</b></td><td>32–63</td><td><code>01</code></td><td>mezera, interpunkce, číslice 0–9</td></tr>
-        <tr><td><b class="hi">2</b></td><td>64–95</td><td><code>10</code></td><td>@, velká písmena A–Z, [ \ ] ^ _</td></tr>
-        <tr><td><b class="hi">3</b></td><td>96–127</td><td><code>11</code></td><td>`, malá písmena a–z, { | } ~, DEL</td></tr>
+        <tr><td><b class="hi">0</b></td><td>0–31</td><td><code>00–1F</code></td><td><code>00</code></td><td>řídicí znaky (+ DEL na kódu 127)</td></tr>
+        <tr><td><b class="hi">1</b></td><td>32–63</td><td><code>20–3F</code></td><td><code>01</code></td><td>mezera, interpunkce, číslice 0–9</td></tr>
+        <tr><td><b class="hi">2</b></td><td>64–95</td><td><code>40–5F</code></td><td><code>10</code></td><td>@, velká písmena A–Z, [ \ ] ^ _</td></tr>
+        <tr><td><b class="hi">3</b></td><td>96–127</td><td><code>60–7F</code></td><td><code>11</code></td><td>`, malá písmena a–z, { | } ~, DEL</td></tr>
       </tbody></table></div></div>
     <p>Pro kód platí: <b>kód = zóna × 32 + pozice v zóně</b>. Například „a“ je v zóně 3 na pozici 1, tedy 3 × 32 + 1 = 97. Z toho vyplývají tři užitečné vlastnosti:</p>
     <ul class="check">
@@ -863,61 +1105,20 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
 
   <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
 </div>
-</div>
-
-<!-- ================= LABORATOŘ ================= -->
-<div class="view v-lab">
-<div class="lvlbar"><span>Podrobnost výkladu:</span><div class="seg" id="labLvl"><button data-l="r1" aria-pressed="false">Začátečník</button><button data-l="r4" aria-pressed="true">Pokročilý</button><button data-l="pro" aria-pressed="false">Profesionál</button></div></div>
-<section id="text">
-  <div><span class="eyebrow">Laboratoř</span><h2>Napište cokoli a podívejte se, z čeho se skládá</h2></div>
-  <p class="muted">Každý rámeček je jeden znak. Barva okraje ukazuje skupinu, pod znakem je jeho kód. Znaky mimo ASCII mají přerušovaný rámeček, protože v tabulce ASCII nejsou. Najetím myši zvýrazníte odpovídající údaje v pruzích, kliknutím znak rozložíte níže.</p>
-  <div class="panel">
-    <div class="field"><label for="txt">Text</label><input type="text" id="txt" autocomplete="off" spellcheck="false"></div>
-    <div class="chips" id="samples"></div>
-    <div class="legend" aria-hidden="true"><span class="gc-ctl"><i></i>řídicí znak</span><span class="gc-sp"><i></i>mezera a interpunkce</span><span class="gc-dig"><i></i>číslice</span><span class="gc-up"><i></i>velká písmena</span><span class="gc-low"><i></i>malá písmena</span><span class="gc-non"><i></i>mimo ASCII</span></div>
-    <div class="counts" id="counts"></div>
-    <div id="flags"></div>
-    <div class="graphs" id="graphs"></div>
-    <div class="striplbl"><span>Kódy · desítkově</span><b id="nD"></b></div>
-    <div class="strip" id="sD"></div>
-    <div class="striplbl n1"><span>Bajty · desítkově (ASCII i UTF-8)</span><b id="nH"></b></div>
-    <div class="strip n1" id="sH"></div>
-    <div class="striplbl adv"><span>Bity · 7 bitů na znak, mimo ASCII bajty UTF-8</span><b id="nB"></b></div>
-    <div class="strip adv" id="sB"></div>
-    <p class="muted" id="trunc" hidden>Zobrazeno prvních 200 znaků.</p>
-  </div>
 </section>
-<section>
-  <div><span class="eyebrow">Laboratoř</span><h2>Jeden znak pod lupou</h2></div>
-  <div id="slotLab">
-  <div id="lupa" style="display:grid;gap:18px;scroll-margin-top:60px">
-    <div class="panel">
-      <div class="walk">
-        <div class="field"><label for="cpIn">Znak, kód (65) nebo zkratka (LF, ESC)</label><input type="text" id="cpIn" autocomplete="off" spellcheck="false"></div>
-        <button class="btn" id="prev" aria-label="Předchozí kód">‹ −1</button>
-        <button class="btn" id="next" aria-label="Následující kód">+1 ›</button>
-      </div>
-      <div class="insp-head">
-        <div class="bigglyph" id="ig"></div>
-        <dl class="facts" id="facts"></dl>
-      </div>
-      <div class="sizes" id="sizes"></div>
-    </div>
-    <div class="cols n1">
-      <div class="panel" id="p1"></div>
-      <div class="panel" id="p2"></div>
-    </div>
-  </div>
-  </div>
-</section>
-</div>
 
-<!-- ================= PROFESIONÁL ================= -->
-<div class="view v-pro">
 <section id="pro">
   <div><span class="eyebrow">Profesionál · příručka</span><h2>ASCII v praxi IT</h2></div>
-  <div class="ptoc"><a class="chip" href="#p-bit">Bitové triky</a><a class="chip" href="#p-ctl">Řídicí znaky v praxi</a><a class="chip" href="#p-dump">Výpis a dekodér bajtů</a><a class="chip" href="#p-enc">Text v čistém ASCII</a><a class="chip" href="#p-lang">Jazyky a regulární výrazy</a><a class="chip" href="#p-check">Kontrolní seznam</a></div>
+  <div class="ptoc"><a class="chip" href="#p-kurz">Rozšiřující kurz</a><a class="chip" href="#p-t256">Tabulka 256 s hexadecimálně</a><a class="chip" href="#p-bit">Bitové triky</a><a class="chip" href="#p-ctl">Řídicí znaky v praxi</a><a class="chip" href="#p-hex">Hexdump a dekodér</a><a class="chip" href="#p-enc">Převod do čistého ASCII</a><a class="chip" href="#p-lang">Jazyky a regulární výrazy</a><a class="chip" href="#p-check">Kontrolní seznam</a></div>
   <p class="muted">Rozbor libovolného znaku včetně zápisů pro HTML, JavaScript a URL najdete v <a href="#lab" data-go="lab">Laboratoři</a>, která se v této úrovni přepne na plnou podrobnost.</p>
+
+  <div class="panel" id="p-t256" style="scroll-margin-top:60px">
+    <h3>Rozšířená tabulka s hexadecimálními kódy</h3>
+    <p class="muted">Stejné kódování jako v Pokročilém, ale se šestnáctkovým zápisem. Řádek je horní číslice kódu, sloupec dolní. Například „ř“ v ISO 8859-2 je v řádku F a sloupci 8, tedy <code>F8</code>. Kód je zároveň jeden bajt a dvě hexadecimální číslice.</p>
+    <div class="seg" id="hxEnc" style="flex-wrap:wrap"></div>
+    <div class="gridwrap"><div class="cgrid a" id="hxGrid"></div></div>
+    <div class="preview" id="hxPrev"></div>
+  </div>
 
   <div class="panel" id="p-bit" style="scroll-margin-top:60px">
     <h3>Bitová anatomie ASCII</h3>
@@ -946,24 +1147,24 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
         <tr><td><code>127</code></td><td>DEL</td><td><code>?</code></td><td>Klávesa Backspace v mnoha terminálech posílá právě DEL.</td></tr>
       </tbody></table></div>
     <h3>ANSI sekvence: barvy v terminálu</h3>
-    <p class="muted">Terminál po znaku ESC přečte sekvenci a podle ní mění styl. Napište ESC jako <code>\e</code> nebo <code>\033</code>. Podporováno: <code>0</code> reset, <code>1</code> tučně, <code>30–37</code> barva textu, <code>40–47</code> pozadí.</p>
+    <p class="muted">Terminál po znaku ESC přečte sekvenci a podle ní mění styl. Napište ESC jako <code>\e</code>, <code>\x1b</code> nebo <code>\033</code>. Podporováno: <code>0</code> reset, <code>1</code> tučně, <code>30–37</code> barva textu, <code>40–47</code> pozadí.</p>
     <div class="field"><label for="ansiIn">Text se sekvencemi</label><input type="text" id="ansiIn" value="\e[31mchyba\e[0m a \e[1;32mhotovo\e[0m" autocomplete="off" spellcheck="false"></div>
     <div class="ansi" id="ansiOut"></div>
     <p class="fn">Pozor na bezpečnost: nevěřte řídicím znakům ve vstupu uživatele. Znak CR LF v hodnotě HTTP hlavičky umožňuje vložit hlavičku navíc, ESC sekvence ve výpisu logu mohou měnit zobrazení terminálu.</p>
   </div>
 
-  <div class="cols" id="p-dump" style="scroll-margin-top:60px">
+  <div class="cols" id="p-hex" style="scroll-margin-top:60px">
     <div class="panel">
-      <h3>Výpis bajtů</h3>
-      <p class="muted">Výpis po řádcích: posun, 16 bajtů (desítkově) a vpravo znaky. Netisknutelné bajty se zobrazí tečkou. Bajty mimo ASCII (nad 127, tedy začátek UTF-8 sekvence) jsou červeně.</p>
+      <h3>Hexdump</h3>
+      <p class="muted">Výpis ve stylu <code>hexdump -C</code>: posun, šestnáct bajtů šestnáctkově a vpravo znaky. Netisknutelné bajty se zobrazí tečkou. Bajty mimo ASCII (nad 7F, tedy začátek UTF-8 sekvence) jsou červeně.</p>
       <div class="field"><label for="hdIn">Text</label><textarea id="hdIn" rows="3" spellcheck="false"></textarea></div>
       <div class="chips" id="hdSamples"></div>
-      <pre class="bdump" id="hdOut"></pre>
+      <pre class="hexd" id="hdOut"></pre>
     </div>
     <div class="panel">
       <h3>Dekodér bajtů</h3>
-      <p class="muted">Vložte bajty desítkově a porovnejte, jak je přečtou různá kódování. Přísné ASCII nahradí bajty nad 127 náhradním znakem &#65533;.</p>
-      <div class="field"><label for="byIn">Bajty (desítkově)</label><input type="text" id="byIn" value="80 248 237 108 105 185 32 65 83 67 73 73" autocomplete="off" spellcheck="false"></div>
+      <p class="muted">Vložte bajty šestnáctkově a porovnejte, jak je přečtou různá kódování. Přísné ASCII nahradí bajty nad 7F znakem U+FFFD &#xFFFD;.</p>
+      <div class="field"><label for="hexIn">Bajty (hex)</label><input type="text" id="hexIn" value="50 F8 ED 6C 69 B9 20 41 53 43 49 49" autocomplete="off" spellcheck="false"></div>
       <div class="radios" role="radiogroup" aria-label="Kódování">
         <label><input type="radio" name="decEnc" value="ascii" checked> ASCII (přísně)</label>
         <label><input type="radio" name="decEnc" value="utf-8"> UTF-8</label>
@@ -977,7 +1178,7 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
   </div>
 
   <div class="panel" id="p-enc" style="scroll-margin-top:60px">
-    <h3>Jak se cokoli zapíše čistým ASCII</h3>
+    <h3>Jak se cokoli převede do čistého ASCII</h3>
     <p class="muted">Mnoho protokolů je historicky 7bitových: e-mail, URL, DNS. Znaky mimo ASCII se proto před odesláním zakódují do podoby z tisknutelných znaků ASCII. Zadejte text a porovnejte metody:</p>
     <div class="field"><label for="encIn">Text</label><input type="text" id="encIn" value="Příliš žluťoučký kůň" autocomplete="off" spellcheck="false"></div>
     <div class="tw"><table id="encTbl"></table></div>
@@ -991,7 +1192,7 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
     <ul class="check">
       <li><b>JavaScript:</b> <code>\w</code> a <code>\d</code> jsou bez příznaku <code>u</code> jen ASCII (<code>[A-Za-z0-9_]</code>), „ř“ se nepovažuje za písmeno. Pro písmena všech jazyků použijte <code>\p{L}</code> s příznakem <code>u</code>.</li>
       <li><b>Python 3:</b> <code>\w</code> a <code>\d</code> jsou v řetězcích Unicode, ASCII si vynutíte příznakem <code>re.ASCII</code>.</li>
-      <li><b>Test, zda je text ASCII:</b> v Pythonu 3.7+ <code>s.isascii()</code>, v JavaScriptu <code>/^[ -~]*$/</code> pro tisknutelné znaky.</li>
+      <li><b>Test, zda je text ASCII:</b> <code>/^[\x00-\x7F]*$/</code>, v Pythonu 3.7+ <code>s.isascii()</code>.</li>
       <li><b>Pozor:</b> třída <code>[A-Z]</code> nezahrnuje české „Ř“ ani „Č“.</li>
     </ul>
   </div>
@@ -999,7 +1200,7 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
   <div class="panel" id="p-check" style="scroll-margin-top:60px">
     <h3>Kontrolní seznam: kde ASCII pořád potkáte</h3>
     <ul class="check">
-      <li><b>Zjištění, zda je soubor ASCII:</b> <code>file soubor.txt</code> nebo <code>grep -nP '[^[:ascii:]]' soubor.txt</code> vypíše řádky se znaky mimo ASCII.</li>
+      <li><b>Zjištění, zda je soubor ASCII:</b> <code>file soubor.txt</code> nebo <code>grep -nP '[^\x00-\x7F]' soubor.txt</code> vypíše řádky se znaky mimo ASCII.</li>
       <li><b>MIME e-mail:</b> přenosové kódování <code>7bit</code>, <code>8bit</code>, <code>quoted-printable</code> nebo <code>base64</code>. Base64 mění 3 bajty na 4 tisknutelné znaky ASCII, data tedy zvětší o třetinu. Hlavičky s češtinou se zapisují jako <code>=?UTF-8?B?…?=</code>.</li>
       <li><b>URL:</b> v adrese smí být jen vybrané znaky ASCII, zbytek se kóduje procentově (<code>%20</code> je mezera). Rezervované znaky: <code>: / ? # [ ] @ ! $ &amp; ' ( ) * + , ; =</code>.</li>
       <li><b>Domény:</b> v DNS jen písmena, číslice a pomlčka. České domény s diakritikou se převádějí na ASCII přes Punycode (<code>xn--</code>).</li>
@@ -1016,14 +1217,16 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
 <!-- ================= TABULKA ================= -->
 <div class="view v-tabulka">
 <section id="mapa">
-  <div><span class="eyebrow">Tabulka znaků</span><h2>Mapa ASCII: 128 znaků</h2></div>
-  <p>ASCII má <b>128 kódů</b>: 33 řídicích (0–31 a 127) a 95 tisknutelných (včetně mezery). Tabulka je rozdělená do osmi řádků po 16 znacích. Kód znaku získáš tak, že k číslu na začátku řádku přičteš číslo sloupce. Třeba „A“ je v řádku 64 a sloupci +1, tedy 65.</p>
+  <div class="lvlbar" style="padding-top:0"><span>Varianta tabulky:</span><div class="seg" id="tabMode"><button data-m="basic" aria-pressed="true">Základní (ASCII, 128 znaků)</button><button data-m="ext" aria-pressed="false">Rozšířená (256 znaků)</button></div></div>
+  <div><span class="eyebrow">Tabulka znaků</span><h2 id="mapaH2">Mapa ASCII: 128 znaků</h2></div>
+  <p id="mapaTxt">ASCII má <b>128 kódů</b>: 33 řídicích (0–31 a 127) a 95 tisknutelných (včetně mezery). Tabulka je rozdělená do osmi řádků po 16 znacích. Kód znaku získáš tak, že k číslu na začátku řádku přičteš číslo sloupce. Třeba „A“ je v řádku 64 a sloupci +1, tedy 65.</p>
   <p class="note"><b>Kliknutím na znak v tabulce ho zkopírujete do schránky</b> a můžete ho vložit kamkoli (Ctrl+V). U řídicích znaků se zkopíruje jejich obrázek (např. ␇).</p>
-  <h3>1 · Zóna <small class="muted" style="font:400 .9rem var(--body)">klepnutím zónu zvýrazníte</small></h3>
-  <div class="zones" id="zones"></div>
+  <div id="zoneBox"><h3>1 · Zóna <small class="muted" style="font:400 .9rem var(--body)">klepnutím zónu zvýrazníte</small></h3>
+  <div class="zones" id="zones"></div></div>
+  <div id="encBox" hidden><h3>Kódování <small class="muted" style="font:400 .9rem var(--body)">horní polovina (128 až 255) se liší, dolní je vždy ASCII</small></h3><div class="seg" id="encSeg" style="flex-wrap:wrap"></div></div>
   <div class="panel">
     <div class="blkbar">
-      <div class="field"><label for="grpSel">2 · Skupina znaků</label><select id="grpSel"></select></div>
+      <div class="field" id="grpBox"><label for="grpSel">2 · Skupina znaků</label><select id="grpSel"></select></div>
       
     </div>
     <p class="muted" id="blkInfo"></p>
@@ -1053,9 +1256,9 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
       </ol></details>
     <details class="teacher"><summary>Pokročilý: plán na 2–3 vyučovací hodiny</summary>
       <ol>
-        <li><b>1. hodina</b> · Kapitoly 1–3: pojmy, historie a stavba tabulky. Domácí úkol: najít v Tabulce po třech znacích z každé zóny a zapsat jejich kódy.</li>
-        <li><b>2. hodina</b> · Kapitoly 4–5: parita a pasti v praxi. Parita: žáci si ve dvojicích pošlou bajt se záměrnou chybou.</li>
-        <li><b>3. hodina</b> · Kapitoly 6–7: procvičování (soutěž ve dvojicích: kdo vyřeší víc úloh za 10 minut) a test.</li>
+        <li><b>1. hodina</b> · Kapitoly 1–3: osmý bit, rozšířená tabulka a čeština v kódováních. Žáci si v záložce Tabulka znaků najdou „ř“ ve čtyřech kódováních a porovnají kódy.</li>
+        <li><b>2. hodina</b> · Kapitoly 4–6: historie, krokodýlí texty a jejich záchrana. Žáci si ve dvojicích vymění poškozený text a zkusí ho opravit.</li>
+        <li><b>3. hodina</b> · Kapitoly 7–8: procvičování (soutěž ve dvojicích) a test. Rozšiřující témata (parita, pasti, stavba tabulky) jsou v záložce Profesionál.</li>
       </ol></details>
   </div>
 </footer>
@@ -1239,6 +1442,7 @@ const GROUPS=[['all','Všechny znaky',()=>true],['ctl','Řídicí znaky (0–31 
 $('#grpSel').innerHTML=GROUPS.map(g=>`<option value="${g[0]}">${g[1]}</option>`).join('');
 let selZone=-1,selGrp='all',base=10,selCell=65;
 function renderGrid(){
+  if(typeof tabExt!=='undefined'&&tabExt){renderExt();return;}
   const g=GROUPS.find(x=>x[0]===selGrp), inSel=c=>selZone>=0?(c>>5)===selZone:g[2](c);
   const active=selZone>=0||selGrp!=='all';
   let h='<div class="h"></div>'+[...Array(16)].map((_,i)=>`<div class="h">+${i}</div>`).join('');
@@ -1262,7 +1466,7 @@ function preview(c){
 }
 $('#zones').onclick=e=>{const b=e.target.closest('[data-z]');if(!b)return;const z=+b.dataset.z;selZone=selZone===z?-1:z;selGrp='all';$('#grpSel').value='all';renderGrid();};
 $('#grpSel').onchange=e=>{selGrp=e.target.value;selZone=-1;renderGrid();};
-$('#agrid').addEventListener('click',e=>{const b=e.target.closest('button.cell');if(!b)return;selCell=+b.dataset.c;
+$('#agrid').addEventListener('click',e=>{const b=e.target.closest('button.cell');if(!b)return;if(typeof tabExt!=='undefined'&&tabExt){extPick(+b.dataset.c);return;}selCell=+b.dataset.c;
   document.querySelectorAll('.cell.sel').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');preview(selCell);setCP(selCell,false);copyCode(selCell,b);});
 
 /* ---------- Pásek (maskot) ---------- */
@@ -1501,6 +1705,240 @@ function gEnd(){
 }
 gStart();
 
+/* ================= 8bitová kódování: data a pomocné funkce ================= */
+const hx=(n,w=2)=>n.toString(16).toUpperCase().padStart(w,'0'); // šestnáctkový zápis se zobrazuje jen v záložce Profesionál
+const ENC={"latin1": " ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ", "cp437": "ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ ", "cp852": "ÇüéâäůćçłëŐőîŹÄĆÉĹĺôöĽľŚśÖÜŤťŁ×čáíóúĄąŽžĘę¬źČş«»░▒▓│┤ÁÂĚŞ╣║╗╝Żż┐└┴┬├─┼Ăă╚╔╩╦╠═╬¤đĐĎËďŇÍÎě┘┌█▄ŢŮ▀ÓßÔŃńňŠšŔÚŕŰýÝţ´­˝˛ˇ˘§÷¸°¨˙űŘř■ ", "kam": "ČüéďäĎŤčěĚĹÍľĺÄÁÉžŽôöÓůÚýÖÜŠĽÝŘťáíóúňŇŮÔšřŕŔ¼§«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ ", "iso2": " Ą˘Ł¤ĽŚ§¨ŠŞŤŹ­ŽŻ°ą˛ł´ľśˇ¸šşťź˝žżŔÁÂĂÄĹĆÇČÉĘËĚÍÎĎĐŃŇÓÔŐÖ×ŘŮÚŰÜÝŢßŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙", "w1250": "€\u0000‚\u0000„…†‡\u0000‰Š‹ŚŤŽŹ\u0000‘’“”•–—\u0000™š›śťžź ˇ˘Ł¤Ą¦§¨©Ş«¬­®Ż°±˛ł´µ¶·¸ąş»Ľ˝ľżŔÁÂĂÄĹĆÇČÉĘËĚÍÎĎĐŃŇÓÔŐÖ×ŘŮÚŰÜÝŢßŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙", "macce": "ÄĀāÉĄÖÜáąČäčĆćéŹźĎíďĒēĖóėôöõúĚěü†°Ę£§•¶ß®©™ę¨≠ģĮįĪ≤≥īĶ∂∑łĻļĽľĹĺŅņŃ¬√ńŇ∆«»… ňŐÕőŌ–—“”‘’÷◊ōŔŕŘ‹›řŖŗŠ‚„šŚśÁŤťÍŽžŪÓÔūŮÚůŰűŲųÝýķŻŁżĢˇ"};
+const ENCN={kam:'Kamenický',cp852:'CP852',iso2:'ISO 8859-2',w1250:'Windows-1250',macce:'MacCE',latin1:'ISO 8859-1',cp437:'CP437',utf8:'UTF-8'};
+const ENCLONG={kam:'Kamenických (KEYBCS2)',cp852:'CP852 (Latin 2 pro DOS)',iso2:'ISO 8859-2 (Latin 2)',w1250:'Windows-1250',macce:'MacCE (Macintosh, střední Evropa)',latin1:'ISO 8859-1 (Latin 1, západní Evropa)',cp437:'CP437 (původní IBM PC)',utf8:'UTF-8'};
+const TABENC=['kam','cp852','iso2','w1250','macce','latin1','cp437'];
+const ALLENC=[...TABENC,'utf8'];
+const CZL='áčďéěíňóřšťúůýž', CZU='ÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ', CZSET=new Set((CZL+CZU).split(''));
+const REV={};
+TABENC.forEach(k=>{const m=new Map();for(let i=0;i<128;i++){const ch=ENC[k][i];if(ch!=='\0'&&!m.has(ch))m.set(ch,128+i);}REV[k]=m;});
+const showHi=ch=>{if(ch==='\0')return '—';const n=ch.codePointAt(0);if(n===0xA0)return 'NBSP';if(n===0xAD)return 'SHY';if(n>=0x80&&n<=0x9F)return '▯';return ch;};
+function classHi(ch){
+  if(ch==='\0') return 'cn';
+  const n=ch.codePointAt(0);
+  if(n>=0x80&&n<=0x9F) return 'gc-ctl';
+  if(CZSET.has(ch)) return 'gc-cz';
+  if(n>=0x2500&&n<=0x259F) return 'gc-box';
+  if(/\p{L}/u.test(ch)) return 'gc-hi';
+  return 'gc-sym';
+}
+function encBytes(text,e){
+  if(e==='utf8') return Array.from(new TextEncoder().encode(text));
+  return Array.from(text).map(ch=>{const c=ch.codePointAt(0);if(c<128)return c;const v=REV[e].get(ch);return v==null?63:v;});
+}
+function decBytes(by,e){
+  if(e==='utf8') return new TextDecoder('utf-8').decode(new Uint8Array(by));
+  return by.map(b=>{if(b<128)return String.fromCharCode(b);const ch=ENC[e][b-128];return ch==='\0'?'�':(showHi(ch)==='▯'?'▯':ch);}).join('');
+}
+const lostChars=(text,e)=>e==='utf8'?[]:Array.from(new Set(Array.from(text).filter(ch=>ch.codePointAt(0)>127&&!REV[e].has(ch))));
+
+/* ================= mřížka 256 znaků ================= */
+function grid256(e,sel,fmtCol,fmtRow,fmtNum){
+  let h='<div class="h"></div>'+[...Array(16)].map((_,i)=>`<div class="h">${fmtCol(i)}</div>`).join('');
+  for(let r=0;r<16;r++){
+    h+=`<div class="h">${fmtRow(r)}</div>`;
+    for(let k=0;k<16;k++){
+      const c=r*16+k; let cls,txt,ab,title;
+      if(c<128){const ctl=isCtl(c);cls=gcls(c);txt=disp(c);ab=ctl||c===32;title=`${c}: ${ctl?abbr(c)+', '+SHORT[c]:c===32?'mezera':String.fromCharCode(c)}`;}
+      else{const ch=ENC[e][c-128];cls=classHi(ch);txt=showHi(ch);ab=txt.length>1||ch==='\0';title=ch==='\0'?`${c}: nepoužito`:`${c}: ${txt}`;}
+      h+=`<button class="cell ${cls}${c===sel?' sel':''}${r%2?' rowsep':''}${r===8?' top8':''}" data-c="${c}" title="${esc(title)}"><span class="${ab?'ab':''}">${esc(txt)}</span><small>${fmtNum(c)}</small></button>`;
+    }
+  }
+  return h;
+}
+const czCount=e=>new Set(Array.from(ENC[e]).filter(ch=>CZSET.has(ch))).size;
+
+/* ================= záložka Tabulka znaků: základní a rozšířená varianta ================= */
+let tabExt=lsGet('asciiplExt')==='1', tabEnc=TABENC.includes(lsGet('asciiplEnc'))?lsGet('asciiplEnc'):'iso2';
+const MAPA_BASIC={h2:$('#mapaH2').textContent,txt:$('#mapaTxt').innerHTML};
+$('#encSeg').innerHTML=TABENC.map(k=>`<button data-e="${k}" aria-pressed="${k===tabEnc}">${ENCN[k]}</button>`).join('');
+function renderExt(){
+  $('#agrid').innerHTML=grid256(tabEnc,selCell,i=>'+'+i,r=>r*16,c=>c);
+  const nc=czCount(tabEnc);
+  $('#blkInfo').innerHTML=`Kódování <b>${esc(ENCLONG[tabEnc])}</b>. Dolní polovina (kódy 0 až 127) je ASCII, pod silnou čarou začíná horní polovina. `+(nc?`Česká písmena (zvýrazněná) jsou zde ${nc} z 30 možných (malá i velká).`:'Toto kódování nemá česká písmena s diakritikou, zvýrazněných políček tu proto není.');
+  document.querySelectorAll('#encSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.e===tabEnc));
+}
+function applyTabMode(){
+  document.querySelectorAll('#tabMode button').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.m==='ext')===tabExt));
+  $('#zoneBox').hidden=tabExt;$('#grpBox').hidden=tabExt;$('#encBox').hidden=!tabExt;
+  $('#mapaH2').textContent=tabExt?'Rozšířená tabulka: 256 znaků':MAPA_BASIC.h2;
+  $('#mapaTxt').innerHTML=tabExt?'Osm bitů dává <b>256 kódů</b>. Dolní polovina (0 až 127) je ASCII a je ve všech kódováních stejná. V horní polovině (128 až 255) si každé kódování obsazuje místa po svém. Vyber kódování. <b>Kliknutím na znak ho zkopíruješ</b> a uvidíš, co je na stejném kódu v ostatních kódováních.':MAPA_BASIC.txt;
+  renderGrid();
+  if(selCell>=128&&!tabExt) selCell=65;
+  preview(selCell);
+}
+function previewExt(c){
+  const ch=ENC[tabEnc][c-128];
+  const others=TABENC.map(k=>`<span class="chip" style="cursor:default${k===tabEnc?';border-color:var(--accent)':''}">${ENCN[k]}: <b class="mono">${esc(showHi(ENC[k][c-128]))}</b></span>`).join('');
+  $('#prev2').innerHTML=`<span class="pg" style="${showHi(ch).length>1?'font:700 1.2rem var(--mono)':''}">${esc(showHi(ch))}</span><span>kód <code>${c}</code> · bity <code>${c.toString(2).padStart(8,'0')}</code></span><span>${ch==='\0'?'v tomto kódování nepoužito':CZSET.has(ch)?'české písmeno':'horní polovina, '+ENCN[tabEnc]}</span>
+   <div style="flex-basis:100%"><small class="muted">Na stejném kódu je v jiných kódováních:</small><div class="chips" style="margin-top:6px">${others}</div></div>`;
+}
+function extPick(c){
+  selCell=c; renderGrid();
+  const nb=document.querySelector(`#agrid [data-c="${c}"]`);
+  if(c<128){preview(c);setCP(c,false);copyCode(c,nb);return;}
+  previewExt(c);
+  const ch=ENC[tabEnc][c-128];
+  if(ch!=='\0'&&showHi(ch).length===1) copyText(ch,`<span class="tg">${esc(ch)}</span>kód ${c}: ${esc(ch)} zkopírováno`,nb);
+}
+$('#tabMode').onclick=e=>{const b=e.target.closest('[data-m]');if(!b)return;tabExt=b.dataset.m==='ext';lsSet('asciiplExt',tabExt?'1':'0');applyTabMode();};
+$('#encSeg').onclick=e=>{const b=e.target.closest('[data-e]');if(!b)return;tabEnc=b.dataset.e;lsSet('asciiplEnc',tabEnc);renderGrid();preview(selCell);};
+
+/* ================= Pokročilý ================= */
+// kap. 2: jeden kód, několik významů
+let xc=248;
+function xRender(){
+  const v=$('#xCode').value.trim();
+  if(/^\d{1,3}$/.test(v)&&+v<256) xc=+v;
+  const c=xc;
+  if(c<128){
+    $('#xTbl').innerHTML=`<tbody><tr><td>Kód ${c} je v dolní polovině, tedy v ASCII: ve všech kódováních je to znak <b class="mono" style="font-size:1.3rem">${esc(disp(c))}</b>. Zkus kód od 128 výš.</td></tr></tbody>`;return;
+  }
+  $('#xTbl').innerHTML='<thead><tr><th>Kódování</th><th>Znak na kódu '+c+'</th><th></th></tr></thead><tbody>'+
+    TABENC.map(k=>{const ch=ENC[k][c-128];return `<tr><td>${ENCLONG[k]}</td><td class="mono" style="font-size:1.4rem">${esc(showHi(ch))}</td><td class="muted">${CZSET.has(ch)?'české písmeno':ch==='\0'?'nepoužito':''}</td></tr>`;}).join('')+
+    `<tr><td>UTF-8</td><td class="muted" colspan="2">samotný bajt ${c} znak neurčuje, je jen součástí vícebajtové sekvence</td></tr></tbody>`;
+}
+$('#xCode').addEventListener('input',xRender);
+$('#xPrev').onclick=()=>{xc=Math.max(128,xc-1);$('#xCode').value=xc;xRender();};
+$('#xNext').onclick=()=>{xc=Math.min(255,xc+1);$('#xCode').value=xc;xRender();};
+$('#goExt').onclick=()=>{tabExt=true;lsSet('asciiplExt','1');selCell=xc>=128?xc:248;applyTabMode();if(selCell>=128)previewExt(selCell);goTab('tabulka');};
+
+// kap. 3: česká písmena v kódováních
+let czCaseSel='l';
+const CZCOLS=['kam','cp852','iso2','w1250','macce'];
+function czRender2(){
+  const L=czCaseSel==='l'?CZL:CZU;
+  const diffs={};
+  let h='<thead><tr><th>Písmeno</th>'+CZCOLS.map(k=>`<th>${ENCN[k]}</th>`).join('')+'</tr></thead><tbody>';
+  Array.from(L).forEach(ch=>{
+    const base=REV.iso2.get(ch);
+    h+=`<tr><td class="mono" style="font-size:1.3rem"><b>${ch}</b></td>`+CZCOLS.map(k=>{const v=REV[k].get(ch);const d=k!=='iso2'&&v!==base;if(d)(diffs[k]=diffs[k]||[]).push(ch);return `<td class="mono${d?' diff':''}">${v==null?'—':v}</td>`;}).join('')+'</tr>';
+  });
+  $('#czTbl').innerHTML=h+'</tbody>';
+  const w=diffs.w1250||[];
+  $('#czNote').textContent=`Windows-1250 má s ISO 8859-2 shodný kód u ${15-w.length} z 15 písmen, liší se u: ${w.join(', ')||'žádného'}. Ostatní tři kódování (Kamenický, CP852, MacCE) mají všechna česká písmena jinde.`;
+  document.querySelectorAll('#czCase button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===czCaseSel));
+}
+$('#czCase').onclick=e=>{const b=e.target.closest('[data-k]');if(b){czCaseSel=b.dataset.k;czRender2();}};
+
+// kap. 5: krokodýli
+function fillEncSel(sel,val){sel.innerHTML=ALLENC.map(k=>`<option value="${k}"${k===val?' selected':''}>${ENCLONG[k]}</option>`).join('');}
+fillEncSel($('#mjFrom'),'iso2');fillEncSel($('#mjTo'),'latin1');
+const MJPRE=[['ISO 8859-2 → ISO 8859-1','iso2','latin1'],['Windows-1250 → CP852','w1250','cp852'],['CP852 → Windows-1250','cp852','w1250'],['UTF-8 → Windows-1250','utf8','w1250'],['Windows-1250 → UTF-8','w1250','utf8'],['ISO 8859-2 → Windows-1250','iso2','w1250'],['Kamenický → CP852','kam','cp852']];
+$('#mjPre').innerHTML=MJPRE.map((p,i)=>`<button class="chip" data-i="${i}">${p[0]}</button>`).join('');
+$('#mjPre').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;const p=MJPRE[b.dataset.i];$('#mjFrom').value=p[1];$('#mjTo').value=p[2];mjRender();};
+function garble(text,s,r){return decBytes(encBytes(text,s),r);}
+function mjRender(){
+  const t=$('#mjIn').value.slice(0,120), s=$('#mjFrom').value, r=$('#mjTo').value;
+  const by=encBytes(t,s);
+  $('#mjOut').textContent=decBytes(by,r)||' ';
+  const lost=lostChars(t,s);
+  let note=s===r?'Uloženo i přečteno stejným kódováním, text zůstane správně.':`Text se uložil jako ${by.length} bajtů v kódování ${ENCN[s]} a čtečka je přečetla jako ${ENCN[r]}.`;
+  if(lost.length) note+=` Znaky, které ${ENCN[s]} nemá (${lost.join(' ')}), se při ukládání změnily na „?“. To už nelze vrátit.`;
+  $('#mjNote').textContent=note;
+}
+['#mjIn','#mjFrom','#mjTo'].forEach(id=>$(id).addEventListener('input',mjRender));
+$('#mjSwap').onclick=()=>{const a=$('#mjFrom').value;$('#mjFrom').value=$('#mjTo').value;$('#mjTo').value=a;mjRender();};
+const SYMP=[['iso2','latin1'],['w1250','latin1'],['iso2','w1250'],['w1250','iso2'],['cp852','w1250'],['w1250','cp852'],['kam','cp852'],['utf8','w1250'],['utf8','latin1'],['w1250','utf8']];
+function symRender(){
+  $('#symTbl').innerHTML='<thead><tr><th>Uloženo v</th><th>Přečteno jako</th><th>Příbram</th><th>žluťoučký</th></tr></thead><tbody>'+
+    SYMP.map(([s,r])=>`<tr><td>${ENCN[s]}</td><td>${ENCN[r]}</td><td class="mono">${esc(garble('Příbram',s,r))}</td><td class="mono">${esc(garble('žluťoučký',s,r))}</td></tr>`).join('')+'</tbody>';
+}
+
+// kap. 6: záchrana textu
+const RSPRE=[['ISO 8859-2 → ISO 8859-1','iso2','latin1'],['UTF-8 → Windows-1250','utf8','w1250'],['CP852 → Windows-1250','cp852','w1250']];
+$('#rsPre').innerHTML=RSPRE.map((p,i)=>`<button class="chip" data-i="${i}">Příklad: ${p[0]}</button>`).join('');
+$('#rsPre').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;const p=RSPRE[b.dataset.i];$('#rsIn').value=garble('Příliš žluťoučký úl',p[1],p[2]);rsRender();};
+function rsScore(txt){
+  let good=0,bad=0,cz=0;
+  for(const ch of txt){
+    if(CZSET.has(ch)){cz++;good++;}
+    else if(/[A-Za-z0-9 .,;:!?'"()\-]/.test(ch)) good++;
+    else bad++;
+  }
+  return good-3*bad+4*cz;
+}
+function rsRender(){
+  const g=$('#rsIn').value.slice(0,200), out=$('#rsOut');
+  if(!g.trim()){out.innerHTML='<p class="muted">Vlož poškozený text nebo klepni na příklad.</p>';return;}
+  const cand=[];
+  ALLENC.forEach(s=>ALLENC.forEach(r=>{
+    if(s===r) return;
+    if(r!=='utf8'&&lostChars(g,r).length) return;
+    const txt=decBytes(encBytes(g,r),s);
+    if(txt===g||txt.includes('�')||txt.includes('▯')) return;
+    cand.push({s,r,txt,sc:rsScore(txt)});
+  }));
+  cand.sort((a,b)=>b.sc-a.sc);
+  const top=cand.filter(c=>c.sc>0).slice(0,3);
+  out.innerHTML=top.length?top.map((c,i)=>`<div class="msg"><small>${i===0?'Nejpravděpodobnější oprava':'Další možnost'}: uloženo v ${ENCN[c.s]}, přečteno jako ${ENCN[c.r]}</small><span class="mono" style="font-size:1.15rem">${esc(c.txt)}</span></div>`).join(''):'<p class="muted">Nenašel jsem žádnou rozumnou opravu. Znaky se mohly při ukládání ztratit (například nahrazením otazníkem).</p>';
+}
+$('#rsIn').addEventListener('input',rsRender);
+
+// kap. 7: procvičování
+let xType='mix',xCur=null,xDone=0,xTot=0,xStreak=0,xAns=false;
+const PRENC=['kam','cp852','iso2','w1250','macce'];
+const MJWORDS=['Příbram','žluťoučký','kůň','Čeština','Český Těšín','Šťastný den','Ředitelna','Žák'];
+function xNew(){
+  xAns=false;
+  const t=xType==='mix'?pick(['code','chr','mj']):xType;
+  const e=pick(PRENC), L=pick(Array.from(CZL+CZU)), c=REV[e].get(L);
+  if(t==='code'){xCur={t,ans:c,how:`V kódování ${ENCN[e]} je „${L}“ na kódu ${c}.`,q:`Jaký kód má písmeno <b class="mono big">${L}</b> v kódování <b>${ENCLONG[e]}</b>?`};}
+  else if(t==='chr'){xCur={t,ans:L,how:`V kódování ${ENCN[e]} je na kódu ${c} písmeno „${L}“.`,q:`Který znak je na kódu <b class="mono big">${c}</b> v kódování <b>${ENCLONG[e]}</b>? Napiš ho.`};}
+  else{
+    let w,pr,g,tries=0;
+    do{w=pick(MJWORDS);pr=pick(SYMP);g=garble(w,pr[0],pr[1]);tries++;}while((g.includes('▯')||g.includes('\uFFFD')||g===w)&&tries<60);
+    const opts=[pr];
+    shuffle(SYMP.slice()).forEach(p=>{if(opts.length<3&&!(p[0]===pr[0]&&p[1]===pr[1])&&garble(w,p[0],p[1])!==g)opts.push(p);});
+    xCur={t:'mj',ans:pr,opts:shuffle(opts),how:`Uloženo v ${ENCN[pr[0]]}, přečteno jako ${ENCN[pr[1]]}: „${w}“ se zobrazí jako „${g}“.`,q:`Text „${esc(w)}“ se zobrazil jako <b class="mono big">${esc(g)}</b>. Jak vznikl?`};
+  }
+  $('#xTask').innerHTML=xCur.q;
+  $('#xAns').innerHTML=xCur.t==='mj'?`<div class="opts">${xCur.opts.map((p,i)=>`<button data-i="${i}">uloženo v ${ENCN[p[0]]}, přečteno jako ${ENCN[p[1]]}</button>`).join('')}</div>`
+    :`<div class="walk"><div class="field" style="flex:0 1 14rem"><label for="xIn">Odpověď</label><input type="text" id="xIn" autocomplete="off" spellcheck="false"></div><button class="btn pri" id="xCheck">Zkontrolovat</button></div>`;
+  $('#xRes').innerHTML='';
+  const inp=$('#xIn');if(inp){inp.focus({preventScroll:true});inp.onkeydown=ev=>{if(ev.key==='Enter')xCheck();};$('#xCheck').onclick=xCheck;}
+  xStat();
+}
+function xStat(){$('#xStat').textContent=`Vyřešeno ${xDone} z ${xTot}`;$('#xStreak').textContent=xStreak>1?`Série: ${xStreak}`:'';}
+function xFinish(right){
+  if(xAns)return;xAns=true;xTot++;if(right){xDone++;xStreak++;}else xStreak=0;xStat();
+  $('#xRes').innerHTML=`<p><span class="v ${right?'ok':'bad'}" style="font-weight:700">${right?'Správně!':'Tohle ne.'}</span> ${esc(xCur.how)}</p>`;
+  cjDraw($('#xCj'),right?(xStreak>=3?'s-sip':'s-ok'):'s-boo');
+  $('#xSay').innerHTML='<b class="who">Pásek</b>'+(right?(xStreak>=5?'Pět v řadě! Zazvoním na zvonek.':xStreak>=3?'Tři v řadě, páska běží.':'Sedí.'):'Nevadí. Prohlédni si řešení a zkus další úlohu.');
+}
+function xCheck(){
+  if(xAns)return;const v=$('#xIn').value.trim();
+  if(!v){return;}
+  if(xCur.t==='code'){if(!/^\d+$/.test(v)){$('#xRes').innerHTML='<p class="muted">Zadej číslo.</p>';return;}xFinish(+v===xCur.ans);}
+  else xFinish(Array.from(v)[0]===xCur.ans);
+}
+$('#xAns').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b||xAns)return;const p=xCur.opts[+b.dataset.i];
+  const right=p[0]===xCur.ans[0]&&p[1]===xCur.ans[1];xFinish(right);
+  $('#xAns').querySelectorAll('button').forEach(x=>{x.disabled=true;const q=xCur.opts[+x.dataset.i];if(q[0]===xCur.ans[0]&&q[1]===xCur.ans[1])x.classList.add('right');else if(x===b)x.classList.add('wrong');});});
+$('#xType').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;xType=b.dataset.t;document.querySelectorAll('#xType button').forEach(x=>x.setAttribute('aria-pressed',x===b));xNew();};
+$('#xNext2').onclick=xNew;
+
+/* ================= Profesionál: tabulka 256 s hexadecimálními kódy ================= */
+let hxE='iso2',hxSel=248;
+$('#hxEnc').innerHTML=TABENC.map(k=>`<button data-e="${k}" aria-pressed="${k===hxE}">${ENCN[k]}</button>`).join('');
+function renderHx(){
+  const H=n=>n.toString(16).toUpperCase();
+  $('#hxGrid').innerHTML=grid256(hxE,hxSel,i=>'+'+H(i),r=>H(r)+'0',c=>hx(c));
+  document.querySelectorAll('#hxEnc button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.e===hxE));
+  const c=hxSel;let ch=c<128?String.fromCharCode(c):ENC[hxE][c-128];
+  const lab=c<128?disp(c):showHi(ch);
+  const others=c<128?'':TABENC.map(k=>`<span class="chip" style="cursor:default">${ENCN[k]}: <b class="mono">${esc(showHi(ENC[k][c-128]))}</b></span>`).join('');
+  $('#hxPrev').innerHTML=`<span class="pg" style="${lab.length>1?'font:700 1.2rem var(--mono)':''}">${esc(lab)}</span><span>hex <code>${hx(c)}</code> · desítkově <code>${c}</code> · bity <code>${c.toString(2).padStart(8,'0')}</code></span>${others?`<div style="flex-basis:100%"><small class="muted">Stejný bajt v jiných kódováních:</small><div class="chips" style="margin-top:6px">${others}</div></div>`:''}`;
+}
+$('#hxEnc').onclick=e=>{const b=e.target.closest('[data-e]');if(b){hxE=b.dataset.e;renderHx();}};
+$('#hxGrid').addEventListener('click',e=>{const b=e.target.closest('button.cell');if(b){hxSel=+b.dataset.c;renderHx();}});
+
+/* ---------- start ---------- */
+applyTabMode();xRender();czRender2();mjRender();symRender();rsRender();xNew();renderHx();
+
 /* ---------- Pokročilý: pojmy ---------- */
 function chain(){
   const v=$('#chIn').value, ch=Array.from(v)[0]; if(!ch) return;
@@ -1508,7 +1946,8 @@ function chain(){
   $('#hG').textContent=isCtl(c)?abbr(c):ch;
   $('#hN').textContent=a?(isCtl(c)?'řídicí znak':GRPCZ[grp(c)]):'mimo ASCII';
   $('#hD').textContent=c;
-  $('#hX').textContent=a?'v tabulce ASCII':'mimo ASCII';
+  $('#hX').textContent=a?`šestnáctkově ${hx(c)}`:'mimo ASCII';
+  $('#hH').textContent=a?hx(c):u8(c).map(x=>hx(x)).join(' ');
   $('#h7').textContent=a?bin7(c):'— (nelze)';
   $('#h8').textContent=a?'0'+bin7(c):u8(c).map(x=>x.toString(2).padStart(8,'0')).join(' ');
 }
@@ -1666,12 +2105,12 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
     ${r('c | 32','na malé písmeno (jen pro A–Z a a–z)',L?f(c|32):'nemá smysl, není písmeno')}
     ${r('c & ~32','na velké písmeno',L?f(c&~32):'nemá smysl, není písmeno')}
     ${r('c ^ 32','převrátí velikost písmene',L?f(c^32):'nemá smysl, není písmeno')}
-    ${r('c & 31','Ctrl+znak: vynuluje bity 6 a 5',f(c&31))}
-    ${r('c ^ 64','řídicí znak ↔ znak o zónu výš (a opačně)',f(c^64))}
+    ${r('c & 0x1F','Ctrl+znak: vynuluje bity 6 a 5',f(c&31))}
+    ${r('c ^ 0x40','řídicí znak ↔ znak o zónu výš (a opačně)',f(c^64))}
     ${r('c - 48','hodnota číslice',D?String(c-48):'nemá smysl, není číslice')}
-    ${r('c & 15','spodní čtyři bity (u číslic jejich hodnota)',String(c&15))}
-    ${r('c | 128','nastaví osmý bit (mimo ASCII!)',(c|128)+' (už není ASCII)')}
-    ${r('c & 127','vynuluje osmý bit',String(c&127))}
+    ${r('c & 0x0F','spodní čtyři bity (u číslic jejich hodnota)',String(c&15))}
+    ${r('c | 0x80','nastaví osmý bit (mimo ASCII!)',hx(c|128)+' (už není ASCII)')}
+    ${r('c & 0x7F','vynuluje osmý bit',hx(c&127))}
     ${r('popcount(c)','počet jedniček (parita)',ones(c)+(ones(c)%2?' (lichý)':' (sudý)'))}
     </tbody>`;
   }
@@ -1683,7 +2122,7 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
     let st={b:0,fg:null,bg:null}, out='', i=0, buf='';
     const flush=()=>{if(!buf)return;out+=`<span style="${st.b?'font-weight:700;':''}${st.fg!=null?'color:'+cols[st.fg]+';':''}${st.bg!=null?'background:'+cols[st.bg]+';':''}">${esc(buf)}</span>`;buf='';};
     while(i<s.length){
-      if(s[i]==='\u001b'&&s[i+1]==='['){
+      if(s[i]==='\x1b'&&s[i+1]==='['){
         const m=s.slice(i+2).match(/^([0-9;]*)([A-Za-z])/);
         if(m){flush();if(m[2]==='m')(m[1]||'0').split(';').forEach(p=>{p=+p;if(p===0)st={b:0,fg:null,bg:null};else if(p===1)st.b=1;else if(p>=30&&p<=37)st.fg=p-30;else if(p>=40&&p<=47)st.bg=p-40;});i+=2+m[0].length;continue;}
       }
@@ -1693,9 +2132,9 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
   }
   $('#ansiIn').addEventListener('input',ansi); ansi();
 
-  // výpis bajtů
+  // hexdump
   const te=new TextEncoder();
-  const HDS=[['Ahoj světe!\n','Ahoj světe!\n'],['řádek CR LF','Windows\r\nUnix\n'],['ESC sekvence','\u001b[31mred\u001b[0m'],['NUL v textu','abc\0def']];
+  const HDS=[['Ahoj světe!\n','Ahoj světe!\n'],['řádek CR LF','Windows\r\nUnix\n'],['ESC sekvence','\x1b[31mred\x1b[0m'],['NUL v textu','abc\0def']];
   $('#hdIn').value=HDS[0][0];
   $('#hdSamples').innerHTML=HDS.map((s,i)=>`<button class="chip" data-i="${i}">${esc(s[0])}</button>`).join('');
   $('#hdSamples').onclick=e=>{const b=e.target.closest('[data-i]');if(b){$('#hdIn').value=HDS[b.dataset.i][1];hd();}};
@@ -1703,9 +2142,9 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
     const by=Array.from(te.encode($('#hdIn').value)).slice(0,256); let o='';
     for(let p=0;p<by.length;p+=16){
       const row=by.slice(p,p+16);
-      const h=row.map((b,k)=>(k===8?' ':'')+`<span${b>127?' style="color:var(--k1)"':''}>${String(b).padStart(3,' ')}</span>`).join(' ');
-      const hl=h+' '.repeat(Math.max(0,(16-row.length)*4+(row.length<=8?1:0)));
-      o+=`${String(p).padStart(5,'0')}  ${hl} |${row.map(b=>b>=32&&b<127?esc(String.fromCharCode(b)):b>127?'<span style="color:var(--k1)">.</span>':'.').join('')}|\n`;
+      const h=row.map((b,k)=>(k===8?' ':'')+`<span${b>127?' style="color:var(--k1)"':''}>${hx(b)}</span>`).join(' ');
+      const hl=h+' '.repeat(Math.max(0,(16-row.length)*3+(row.length<=8?1:0)));
+      o+=`${hx(p,8)}  ${hl} |${row.map(b=>b>=32&&b<127?esc(String.fromCharCode(b)):b>127?'<span style="color:var(--k1)">.</span>':'.').join('')}|\n`;
     }
     $('#hdOut').innerHTML=o||'(prázdné)';
   }
@@ -1713,17 +2152,17 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
 
   // dekodér
   function dec(){
-    const raw=$('#byIn').value.replace(/[^0-9]/g,' ').trim().split(/\s+/).filter(Boolean);
-    const by=raw.map(x=>parseInt(x,10)).filter(n=>!isNaN(n)&&n<256);
+    const raw=$('#hexIn').value.replace(/0x/gi,'').replace(/[^0-9a-fA-F]/g,' ').trim().split(/\s+/).filter(Boolean);
+    const by=raw.map(x=>parseInt(x,16)).filter(n=>!isNaN(n)&&n<256);
     const e=(document.querySelector('input[name=decEnc]:checked')||{}).value||'ascii';
     let s,bad=0;
     if(e==='ascii'){s=by.map(b=>b<128?String.fromCharCode(b):(bad++,'\uFFFD')).join('');}
     else s=new TextDecoder(e).decode(new Uint8Array(by));
     $('#decOut').textContent=visCtl(s)||' ';
     const hi=by.filter(b=>b>127).length;
-    $('#decInfo').innerHTML=`<p class="muted" style="font-size:.92rem">${by.length} bajtů, z toho ${hi} nad 127 (mimo ASCII).${e==='ascii'&&bad?` ${bad}× nahrazeno náhradním znakem „�“.`:''}${e==='utf-8'&&s.includes('\uFFFD')?' Posloupnost není platné UTF-8, objevil se náhradní znak „�“.':''}</p>`;
+    $('#decInfo').innerHTML=`<p class="muted" style="font-size:.92rem">${by.length} bajtů, z toho ${hi} nad 7F (mimo ASCII).${e==='ascii'&&bad?` ${bad}× nahrazeno znakem U+FFFD.`:''}${e==='utf-8'&&s.includes('\uFFFD')?' Posloupnost není platné UTF-8, objevil se znak U+FFFD.':''}</p>`;
   }
-  $('#byIn').addEventListener('input',dec);
+  $('#hexIn').addEventListener('input',dec);
   document.querySelectorAll('input[name=decEnc]').forEach(r=>r.addEventListener('change',dec)); dec();
 
   // převod do čistého ASCII
@@ -1747,14 +2186,19 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
   }
   function enc(){
     const s=$('#encIn').value, by=Array.from(te.encode(s));
-        let b64='';try{b64=btoa(String.fromCharCode(...by));}catch(e){}
+    const url=encodeURIComponent(s), qp=by.map(b=>b>32&&b<127&&b!==61||b===32?String.fromCharCode(b):'='+hx(b)).join('').replace(/ /g,'_');
+    let b64='';try{b64=btoa(String.fromCharCode(...by));}catch(e){}
     const html=Array.from(s).map(c=>c.codePointAt(0)>127?`&#${c.codePointAt(0)};`:c==='<'?'&lt;':c==='&'?'&amp;':c).join('');
+    const json=Array.from(s).map(c=>{const n=c.codePointAt(0);return n>127?(n>0xFFFF?c.split('').map(x=>'\\u'+hx(x.charCodeAt(0),4).toLowerCase()).join(''):'\\u'+hx(n,4).toLowerCase()):c;}).join('');
     const w=s.trim().split(/\s+/)[0]||'', pw=/[^\x00-\x7F]/.test(w)?'xn--'+punyEnc(w.toLowerCase()):w.toLowerCase();
     const r=(n,v,note)=>`<tr><td>${n}</td><td><code style="word-break:break-all">${esc(v)}</code></td><td class="muted">${note}</td></tr>`;
     $('#encTbl').innerHTML=`<thead><tr><th>Metoda</th><th>Výsledek</th><th>Kde se používá</th></tr></thead><tbody>
+    ${r('Procentové kódování',url,'URL, formuláře (UTF-8 bajty jako %XX)')}
+    ${r('Quoted-printable',qp.replace(/_/g,'_'),'e-mail (mezera zde jako _ v hlavičkách)')}
     ${r('Base64',b64,'e-mail, data v URL, +33 % velikosti')}
     ${r('MIME encoded-word',`=?UTF-8?B?${b64}?=`,'předmět e-mailu s češtinou')}
     ${r('HTML entity',html,'webové stránky v 7bitovém zdroji')}
+    ${r('JSON \\uXXXX',json,'JSON posílaný jako čisté ASCII')}
     ${r('Punycode (první slovo)',pw,'doménová jména (IDN)')}
     </tbody>`;
   }
@@ -1763,14 +2207,14 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
   // jazyky
   function lg(){
     const ch=Array.from($('#lgIn').value)[0]; const t=$('#lgTbl'); if(!ch){t.innerHTML='';return;}
-    const c=ch.codePointAt(0), q=c===39?"'\\''":c===92?"'\\\\'":"'"+String.fromCharCode(c)+"'";
+    const c=ch.codePointAt(0), q=c===39?"'\\''":c===92?"'\\\\'":"'"+(c<32||c===127?'\\x'+hx(c):String.fromCharCode(c))+"'";
     const r=(l,a,b)=>`<tr><td>${l}</td><td><code>${esc(a)}</code></td><td><code>${esc(b)}</code></td></tr>`;
     t.innerHTML=`<thead><tr><th>Jazyk</th><th>Znak → kód</th><th>Kód → znak</th></tr></thead><tbody>
     ${r('Python',`ord(${JSON.stringify(ch)})`,`chr(${c})`)}
     ${r('JavaScript',`${JSON.stringify(ch)}.charCodeAt(0)`,`String.fromCharCode(${c})`)}
     ${r('C',`(int) ${q}`,`(char) ${c}`)}
     ${r('Java',`(int) ${q}`,`(char) ${c}`)}
-    ${r('Bash',`printf '%d' "'${ch.replace(/'/g,"'\\''")}"`,'—')}
+    ${r('Bash',`printf '%d' "'${ch.replace(/'/g,"'\\''")}"`,`printf "\\x${hx(c)}"`)}
     </tbody>`;
   }
   $('#lgIn').addEventListener('input',lg); lg();
