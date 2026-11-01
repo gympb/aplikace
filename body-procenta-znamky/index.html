@@ -245,7 +245,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
 <main class="inner main">
   <section id="v-nastaveni" class="card" aria-labelledby="h-hr" hidden>
     <h2 id="h-hr">Hranice známek</h2>
-    <p class="hint">Otáčejte kotouči myší nebo prstem, nebo je dolaďte tlačítky či šipkami na klávesnici. Každé cvaknutí je jedno procento. Rozsah každého kotouče vychází z klasifikačního řádu školy (čl. 7). Známka platí od zvolené hranice včetně. Uložené předvolby potom vyberete na záložce Přepočet.</p>
+    <p class="hint">Otáčejte kotouči myší nebo prstem. Po klepnutí na kotouč ho lze otáčet i kolečkem myši. Dolaďte ho tlačítky nebo šipkami na klávesnici. Každé cvaknutí je jedno procento. Rozsah každého kotouče vychází z klasifikačního řádu školy (čl. 7). Známka platí od zvolené hranice včetně. Uložené předvolby potom vyberete na záložce Přepočet.</p>
     <div class="hr-grid">
       <div>
         <div class="dials" id="dials"></div>
@@ -543,6 +543,21 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
       else return;
       e.preventDefault(); setT(i, S.t[i] + d);
     });
+    var acc = 0;
+    svg.addEventListener('wheel', function (e) {
+      if (document.activeElement !== svg) return;
+      e.preventDefault();
+      var d = e.deltaY * (e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? 400 : 1);
+      if (acc * d < 0) acc = 0;
+      acc += d;
+      var steps = Math.trunc(Math.abs(acc) / 100);
+      if (steps) {
+        var dir = acc < 0 ? 1 : -1;
+        acc -= (acc < 0 ? -1 : 1) * steps * 100;
+        setT(i, S.t[i] + dir * steps);
+      }
+    }, { passive: false });
+    svg.addEventListener('blur', function () { acc = 0; });
     minus.addEventListener('click', function () { setT(i, S.t[i] - 1); });
     plus.addEventListener('click', function () { setT(i, S.t[i] + 1); });
 
