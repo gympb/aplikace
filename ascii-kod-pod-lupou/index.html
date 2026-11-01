@@ -702,10 +702,9 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
 
 <!-- ================= POKROČILÝ ================= -->
 <div class="view v-r4">
-<div class="note" id="whyHex"><b>Proč se v IT často píše hexadecimálně?</b> Programátoři a dokumentace zapisují bajty šestnáctkově, protože jedna číslice odpovídá přesně čtyřem bitům, takže bajt jsou vždy dvě číslice. Zápis je kratší a přehlednější než dlouhé řady jedniček a nul a hranice bajtů je v něm vidět na první pohled. Samotnou soustavu tu vysvětlovat nebudeme, patří do samostatné aplikace. V této části stačí desítkové kódy. Šestnáctkový zápis najdeš v záložce <a href="#pro" data-go="pro">Profesionál</a>.</div>
 <div class="course" data-course="r4">
   <div class="course-head">
-    <ul class="goals"><li>vysvětlit, proč osmý bit rozšířil ASCII na 256 znaků,</li><li>číst rozšířenou tabulku a vědět, že horní polovina se liší podle kódování,</li><li>najít česká písmena v kódování Kamenických, CP852, ISO 8859-2 a Windows-1250,</li><li>poznat „krokodýlí“ text a odhadnout, jak vznikl,</li><li>vysvětlit, proč dnes používáme UTF-8.</li></ul>
+    <ul class="goals"><li>vysvětlit, proč americké ASCII stačilo jen pro angličtinu a proč vznikly národní varianty,</li><li>popsat, proč osmý bit rozšířil ASCII na 256 znaků a proč je kódování tolik,</li><li>číst rozšířenou tabulku a vědět, že horní polovina se liší podle kódování,</li><li>najít česká písmena v kódování Kamenických, CP852, ISO 8859-2 a Windows-1250,</li><li>poznat „krokodýlí“ text a odhadnout, jak vznikl,</li><li>vysvětlit, proč dnes používáme UTF-8.</li></ul>
     <ol class="prog" aria-label="Kapitoly"></ol>
   </div>
 
@@ -730,8 +729,50 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
     </div>
   </article>
 
+  <article class="ch" data-title="Proč tolik verzí">
+    <div><span class="eyebrow">Kapitola 2</span><h2>Proč americké ASCII nestačilo</h2></div>
+    <h3>Proč mu stačilo sedm bitů</h3>
+    <p>ASCII vzniklo v USA v 60. letech (první norma 1963) pro americké dálnopisy a počítače. Mělo přenášet <b>anglický text</b> a ten vystačí s 26 písmeny (velkými a malými), číslicemi a pár znaky interpunkce. Dohromady je to něco přes sto znaků a na ně se vešlo <b>128 kódů, tedy sedm bitů</b>. Sedm bitů navíc nebylo náhodné: každý bit něco stál (paměť, děrná páska, přenosová linka), a tak se šetřilo. Osmý bit v bajtu se často používal jako paritní kontrola přenosu. Na jiné jazyky se při návrhu nemyslelo, protože počítače tehdy používali hlavně Američané.</p>
+    <h3>Co ostatní jazyky potřebovaly navíc</h3>
+    <p>Jakmile se počítače rozšířily do Evropy a dál, bylo jasné, že 26 písmen anglické abecedy nestačí. Podívej se, kolik <b>zvláštních písmen</b> potřebuje několik jazyků (malých i velkých) a jestli se vejdou do 12 volných míst, která později nabídla norma ISO 646:</p>
+    <div class="panel"><div class="tw"><table class="tpl" id="langTbl"></table></div></div>
+    <p class="muted">Jiná písma (azbuka, řečtina, hebrejština, arabština) potřebují úplně jinou sadu znaků. Čínština a japonština mají tisíce znaků, a ty se do jednoho bajtu nevejdou vůbec.</p>
+    <h3>Krok 1: národní varianty (ISO 646)</h3>
+    <p>První řešení přišlo koncem 60. a začátkem 70. let: mezinárodní norma <b>ISO 646</b> nechala <b>12 míst</b> v tabulce ASCII volných: <code># $ @ [ \ ] ^ ` { | } ~</code>. Každý stát je směl obsadit svými písmeny. Němci tak na místa závorek <code>[ \ ]</code> dali Ä Ö Ü, Švédové Ä Ö Å a podobně. Pro němčinu nebo švédštinu to stačilo, protože potřebují málo zvláštních písmen. Pro češtinu (30 písmen) ne. Vyzkoušej si, jak by vypadal tentýž text v několika variantách:</p>
+    <div class="panel">
+      <div class="field"><label for="isoIn">Text (zdrojový kód)</label><input type="text" id="isoIn" value="if (a[i] == '\0') { x = ~y; }" autocomplete="off" spellcheck="false"></div>
+      <div class="seg" id="isoSeg"></div>
+      <div class="msg"><small id="isoLbl"></small><span class="mono" id="isoOut" style="font-size:1.15rem"></span></div>
+      <div class="tw"><table class="tpl" id="isoTbl"></table></div>
+    </div>
+    <p>Problém měli <b>programátoři</b>: znaky <code>{ } [ ] \ | ~</code> jsou v jazyce C a dalších jazycích nezbytné, a na německém nebo švédském počítači se místo nich zobrazovala písmena. Kód vypadal nesrozumitelně a na jiném počítači se zobrazil jinak. Jazyk C proto zavedl náhradní trojice znaků (trigrafy): <code>??&lt;</code> místo <code>{</code>, <code>??&gt;</code> místo <code>}</code>, <code>??(</code> místo <code>[</code>, <code>??)</code> místo <code>]</code>, <code>??/</code> místo <code>\</code>, <code>??!</code> místo <code>|</code>, <code>??-</code> místo <code>~</code>, <code>??'</code> místo <code>^</code> a <code>??=</code> místo <code>#</code>.</p>
+    <h3>Krok 2: osm bitů a kódové stránky</h3>
+    <p>Když počítače začaly běžně pracovat s osmibitovými bajty, uvolnilo se 128 nových míst. Nikdo ale nenařídil, kdo je jak obsadí. Vzniklo mnoho navzájem nekompatibilních tabulek. Hlavní důvody:</p>
+    <ul class="check">
+      <li><b>128 míst nestačilo pro všechny.</b> Každý jazyk nebo skupina podobných jazyků potřebovala jiný výběr písmen. Západoevropské jazyky si vybraly jiná písmena než střední Evropa, a ta zase jiná než azbuka nebo řečtina. Do jedné tabulky by se všechna najednou nevešla.</li>
+      <li><b>Nad tabulkou nikdo nestál.</b> Kódování vytvářely firmy (IBM, Microsoft, Apple) i normalizační organizace (ISO). Každý myslel na své zákazníky, své počítače a své staré programy.</li>
+      <li><b>Hardware počítačů měl znaky pevně zapsané.</b> Původní grafické karty IBM PC měly písmena uložená v paměti, kterou nešlo snadno změnit. Abychom v DOSu zobrazili češtinu, museli si programátoři zavést vlastní písmo. Právě proto u nás vznikla vlastní kódování, například Kamenických.</li>
+      <li><b>Dolní polovina se měnit nesměla.</b> Programy, e-mailové a síťové protokoly i klávesy počítaly s ASCII. Měnit se mohla jen horní polovina (kódy 128 až 255), a právě ta je od kódování ke kódování jiná.</li>
+      <li><b>Každá platforma šla svou cestou.</b> DOS, Windows, Macintosh a Unix vznikaly zvlášť, každý si vytvořil svou kódovou stránku pro střední Evropu: CP852, Windows-1250, MacCE a norma ISO 8859-2.</li>
+      <li><b>Normalizace vznikla až dodatečně.</b> Řada norem ISO 8859 má 15 částí (například 1 pro západní Evropu, 2 pro střední Evropu, 5 pro azbuku, 7 pro řečtinu), ale firmy si už prosadily vlastní řešení. Výsledkem je pro češtinu několik kódování, která se liší jen v detailech.</li>
+    </ul>
+    <h3>Proč to nakonec vyřešil Unicode</h3>
+    <p>V jednom souboru nešlo smíchat například češtinu a řečtinu a každý dokument musel „vědět“, v jakém je kódování. Když se to nepovedlo, vznikly krokodýlí texty (viz kapitola 6). Proto od roku 1991 vzniká <b>Unicode</b>: každý znak světa má jedno vlastní číslo a <b>UTF-8</b> je zapisuje tak, že prvních 128 zůstává shodných s ASCII. Víc najdeš v aplikaci <a href="../unicode-pod-lupou/">Unicode pod lupou</a>.</p>
+    <p class="note"><b>Pozor:</b> kódování znaků a <b>rozložení klávesnice</b> (například QWERTZ u nás a QWERTY v USA) jsou dvě různé věci. Klávesnice určuje, který klávesou se znak napíše, kódování určuje, jaké číslo se pro něj uloží.</p>
+    <div class="kq" data-ok="c">
+      <p class="q">Proč pro češtinu nestačily národní varianty ISO 646?</p>
+      <div class="opts"><button data-v="a">Čeština nepoužívá velká písmena.</button><button data-v="b">Bylo by to příliš drahé.</button><button data-v="c">Volných míst bylo jen 12, čeština potřebuje 30 písmen s diakritikou.</button></div>
+      <div class="why">ISO 646 uvolnila jen 12 míst. Čeština má 15 písmen s diakritikou malých a 15 velkých, tedy 30. Proto se musel využít osmý bit.</div>
+    </div>
+    <div class="kq" data-ok="b">
+      <p class="q">Proč se v osmibitových kódováních měnila jen horní polovina tabulky?</p>
+      <div class="opts"><button data-v="a">Dolní polovina byla chráněná zákonem.</button><button data-v="b">Programy a protokoly počítaly s tím, že kódy 0 až 127 jsou ASCII.</button><button data-v="c">Do dolní poloviny se nová písmena nevešla.</button></div>
+      <div class="why">Změna dolní poloviny by rozbila stávající programy, e-maily i síťová spojení. Proto zůstala jako ASCII a nová místa se hledala jen mezi kódy 128 až 255.</div>
+    </div>
+  </article>
+
   <article class="ch" data-title="Tabulka 256 znaků">
-    <div><span class="eyebrow">Kapitola 2</span><h2>Jeden kód, několik významů</h2></div>
+    <div><span class="eyebrow">Kapitola 3</span><h2>Jeden kód, několik významů</h2></div>
     <p>Kód 248 znamená v jednom kódování „ř“, v jiném „ø“ a v dalším zcela jiný znak. Zadej kód z horní poloviny (128 až 255) a podívej se, co je na něm v různých kódováních:</p>
     <div class="panel">
       <div class="walk"><div class="field" style="flex:0 1 11rem"><label for="xCode">Kód (128 až 255)</label><input type="text" id="xCode" value="248" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3"></div>
@@ -748,7 +789,7 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
   </article>
 
   <article class="ch" data-title="Čeština v kódováních">
-    <div><span class="eyebrow">Kapitola 3</span><h2>Kde jsou česká písmena</h2></div>
+    <div><span class="eyebrow">Kapitola 4</span><h2>Kde jsou česká písmena</h2></div>
     <p>Čeština potřebuje 15 různých písmen s diakritikou (malých i velkých). V ASCII nejsou, a tak vzniklo několik kódování, která je v horní polovině mají. Tabulka ukazuje desítkový kód každého písmena. Políčko je zvýrazněné, pokud se kód liší od ISO 8859-2.</p>
     <div class="panel">
       <div class="seg" id="czCase"><button data-k="l" aria-pressed="true">malá písmena</button><button data-k="u" aria-pressed="false">velká písmena</button></div>
@@ -769,9 +810,10 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
   </article>
 
   <article class="ch" data-title="Historie">
-    <div><span class="eyebrow">Kapitola 4</span><h2>Jak vznikaly české kódy</h2></div>
+    <div><span class="eyebrow">Kapitola 5</span><h2>Jak vznikaly české kódy</h2></div>
     <div class="timeline">
       <div class="tl"><span class="yr">1963–1967</span><span class="kind">základ</span><b>ASCII</b><p>Sedm bitů, 128 kódů, jen angličtina. Žádná diakritika.</p></div>
+      <div class="tl"><span class="yr">1967–1972</span><span class="kind">národní varianty</span><b>ISO 646</b><p>Mezinárodní verze ASCII: 12 míst smělo každý stát obsadit vlastními písmeny. Němci, Švédové a další tak přepsali závorky a svislítko.</p></div>
       <div class="tl"><span class="yr">1981</span><span class="kind">osm bitů</span><b>CP437 v IBM PC</b><p>Původní osmibitová tabulka počítačů IBM PC. Má západoevropská písmena, řecká písmena a čáry pro rámečky, ale ne češtinu.</p></div>
       <div class="tl"><span class="yr">80. léta</span><span class="kind">česká verze</span><b>Kódování Kamenických</b><p>České vlastní řešení pro DOS (KEYBCS2). Rozšířilo se v československých programech a na PC s českými ovladači klávesnice a obrazovky.</p></div>
       <div class="tl"><span class="yr">1987</span><span class="kind">norma</span><b>ISO 8859-2</b><p>Mezinárodní norma Latin 2 pro střední a východní Evropu. Hodí se pro češtinu, polštinu, maďarštinu a další jazyky.</p></div>
@@ -787,7 +829,7 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
   </article>
 
   <article class="ch" data-title="Krokodýli">
-    <div><span class="eyebrow">Kapitola 5</span><h2>Krokodýlí texty</h2></div>
+    <div><span class="eyebrow">Kapitola 6</span><h2>Krokodýlí texty</h2></div>
     <p>Když je text uložený v jednom kódování a program ho přečte v jiném, vzniká změť znaků, které se přezdívá „krokodýli“ (anglicky <i>mojibake</i>). Pokaždé vypadá jinak podle toho, <b>jak byl text uložen</b> a <b>jak byl přečten</b>. Vyber obě kódování a uvidíš výsledek.</p>
     <div class="panel">
       <div class="field"><label for="mjIn">Text</label><input type="text" id="mjIn" value="Příliš žluťoučký kůň" autocomplete="off" spellcheck="false"></div>
@@ -811,7 +853,7 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
   </article>
 
   <article class="ch" data-title="Záchrana textu">
-    <div><span class="eyebrow">Kapitola 6</span><h2>Jak krokodýla opravit</h2></div>
+    <div><span class="eyebrow">Kapitola 7</span><h2>Jak krokodýla opravit</h2></div>
     <p>Pokud se text jen špatně přečetl a nikde se neztratily znaky, jde ho obvykle zachránit: stačí zjistit, <b>jak byl uložen</b> a <b>jak byl přečten</b>, a postup obrátit. Vlož poškozený text a aplikace zkusí všechny dvojice:</p>
     <div class="panel">
       <div class="field"><label for="rsIn">Poškozený text</label><input type="text" id="rsIn" autocomplete="off" spellcheck="false"></div>
@@ -832,7 +874,7 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
   </article>
 
   <article class="ch" data-title="Procvičování">
-    <div><span class="eyebrow">Kapitola 7</span><h2>Procvičování</h2></div>
+    <div><span class="eyebrow">Kapitola 8</span><h2>Procvičování</h2></div>
     <p>Úlohy se generují náhodně. Když se spleteš, aplikace ukáže správné řešení.</p>
     <div class="panel prac">
       <div class="seg" id="xType"><button data-t="mix" aria-pressed="true">Mix</button><button data-t="code" aria-pressed="false">Kód písmene</button><button data-t="chr" aria-pressed="false">Znak z kódu</button><button data-t="mj" aria-pressed="false">Poznej krokodýla</button></div>
@@ -846,7 +888,7 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
   </article>
 
   <article class="ch" data-title="Test">
-    <div><span class="eyebrow">Kapitola 8</span><h2>Test</h2></div>
+    <div><span class="eyebrow">Kapitola 9</span><h2>Test</h2></div>
     <div class="quiz" id="quizR4">
       <div class="kq" data-ok="b"><p class="q">Kolik kódů nabízí osmibitové kódování?</p>
         <div class="opts"><button data-v="a">128</button><button data-v="b">256</button><button data-v="c">65 536</button></div>
@@ -931,6 +973,7 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
 
 <!-- ================= PROFESIONÁL ================= -->
 <div class="view v-pro">
+<div class="note" id="whyHex"><b>Proč se v IT často píše hexadecimálně?</b> Programátoři a dokumentace zapisují bajty šestnáctkově, protože jedna číslice odpovídá přesně čtyřem bitům, takže bajt jsou vždy dvě číslice. Zápis je kratší a přehlednější než dlouhé řady jedniček a nul a hranice bajtů je v něm vidět na první pohled. Samotnou soustavu tu vysvětlovat nebudeme, patří do samostatné aplikace. V této záložce ji používáme pro kódy bajtů.</div>
 <!-- ================= POKROČILÝ ================= -->
 <section id="p-kurz" style="scroll-margin-top:60px"><div><span class="eyebrow">Profesionál · rozšiřující kurz</span><h2>Základy ASCII do hloubky</h2></div>
 <div class="course" data-course="pro">
@@ -1252,9 +1295,9 @@ footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
       </ol></details>
     <details class="teacher"><summary>Metodika pro učitele: Pokročilý, plán na 2–3 vyučovací hodiny</summary>
       <ol>
-        <li><b>1. hodina</b> · Kapitoly 1–3: osmý bit, rozšířená tabulka a čeština v kódováních. Žáci si v záložce Tabulka znaků najdou „ř“ ve čtyřech kódováních a porovnají kódy.</li>
-        <li><b>2. hodina</b> · Kapitoly 4–6: historie, krokodýlí texty a jejich záchrana. Žáci si ve dvojicích vymění poškozený text a zkusí ho opravit.</li>
-        <li><b>3. hodina</b> · Kapitoly 7–8: procvičování (soutěž ve dvojicích) a test. Rozšiřující témata (parita, pasti, stavba tabulky) jsou v záložce Profesionál.</li>
+        <li><b>1. hodina</b> · Kapitoly 1–4: osmý bit, proč americké ASCII nestačilo, rozšířená tabulka a čeština v kódováních. Žáci si v záložce Tabulka znaků najdou „ř“ ve čtyřech kódováních a porovnají kódy.</li>
+        <li><b>2. hodina</b> · Kapitoly 5–7: historie, krokodýlí texty a jejich záchrana. Žáci si ve dvojicích vymění poškozený text a zkusí ho opravit.</li>
+        <li><b>3. hodina</b> · Kapitoly 8–9: procvičování (soutěž ve dvojicích) a test. Rozšiřující témata (parita, pasti, stavba tabulky) jsou v záložce Profesionál.</li>
       </ol></details>
     <p class="fn">Související aplikace: <a href="../ascii-kod/">Kód ASCII (simulátor přenosu)</a> · <a href="../unicode-pod-lupou/">Unicode pod lupou</a> · <a href="../baudotuv-kod/">Baudotův kód</a> · <a href="../morseova-abeceda/">Morseova abeceda</a></p>
   </div>
@@ -1933,6 +1976,33 @@ function renderHx(){
 }
 $('#hxEnc').onclick=e=>{const b=e.target.closest('[data-e]');if(b){hxE=b.dataset.e;renderHx();}};
 $('#hxGrid').addEventListener('click',e=>{const b=e.target.closest('button.cell');if(b){hxSel=+b.dataset.c;renderHx();}});
+
+
+/* ---------- kap. 2: proč tolik verzí ---------- */
+(function why(){
+  const langs=[['Čeština',CZL+CZU],['Polština','ąćęłńóśźżĄĆĘŁŃÓŚŹŻ'],['Maďarština','áéíóöőúüűÁÉÍÓÖŐÚÜŰ'],['Němčina','äöüßÄÖÜ'],['Švédština','åäöÅÄÖ']];
+  $('#langTbl').innerHTML='<thead><tr><th>Jazyk</th><th>Zvláštní písmena</th><th>Počet</th><th>Vejde se do 12 míst ISO 646?</th></tr></thead><tbody>'+
+    langs.map(([n,l])=>{const u=Array.from(new Set(l.split('')));return `<tr><td>${n}</td><td class="mono">${u.join(' ')}</td><td>${u.length}</td><td>${u.length<=12?'<b style="color:var(--k4)">ano</b>':'<b style="color:var(--k1)">ne</b>'}</td></tr>`;}).join('')+'</tbody>';
+  // národní varianty ISO 646 (místa: 35 # 36 $ 64 @ 91 [ 92 \ 93 ] 94 ^ 96 ` 123 { 124 | 125 } 126 ~)
+  const POS=[35,36,64,91,92,93,94,96,123,124,125,126];
+  const V={us:['USA (ASCII)',{}],gb:['Velká Británie',{35:'£'}],de:['Německo',{64:'§',91:'Ä',92:'Ö',93:'Ü',123:'ä',124:'ö',125:'ü',126:'ß'}],
+    se:['Švédsko',{64:'É',91:'Ä',92:'Ö',93:'Å',94:'Ü',96:'é',123:'ä',124:'ö',125:'å',126:'ü'}],
+    fr:['Francie',{35:'£',64:'à',91:'°',92:'ç',93:'§',96:'µ',123:'é',124:'ù',125:'è',126:'¨'}]};
+  let cur='de';
+  $('#isoSeg').innerHTML=Object.keys(V).map(k=>`<button data-v="${k}" aria-pressed="${k===cur}">${V[k][0]}</button>`).join('');
+  function map(txt,k){return Array.from(txt).map(ch=>{const c=ch.codePointAt(0);return V[k][1][c]||ch;}).join('');}
+  function draw(){
+    const t=$('#isoIn').value.slice(0,120);
+    $('#isoLbl').textContent=`Co vidí čtenář na počítači s variantou: ${V[cur][0]}`;
+    $('#isoOut').textContent=map(t,cur)||' ';
+    $('#isoTbl').innerHTML='<thead><tr><th>Kód</th>'+POS.map(p=>`<th class="mono">${p}</th>`).join('')+'</tr></thead><tbody>'+
+      Object.keys(V).map(k=>`<tr${k===cur?' style="font-weight:700"':''}><td>${V[k][0]}</td>`+POS.map(p=>`<td class="mono${V[k][1][p]?' diff':''}">${esc(V[k][1][p]||String.fromCharCode(p))}</td>`).join('')+'</tr>').join('')+'</tbody>';
+    document.querySelectorAll('#isoSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===cur));
+  }
+  $('#isoSeg').onclick=e=>{const b=e.target.closest('[data-v]');if(b){cur=b.dataset.v;draw();}};
+  $('#isoIn').addEventListener('input',draw);
+  draw();
+})();
 
 /* ---------- start ---------- */
 applyTabMode();xRender();czRender2();mjRender();symRender();rsRender();xNew();renderHx();
