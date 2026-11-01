@@ -1,0 +1,1825 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ASCII kód pod lupou</title>
+<meta name="description" content="ASCII kód ve třech úrovních: Začátečník s maskotem Páskem a hrou Rozlušti pásku, Pokročilý s procvičováním a testem, příručka pro IT profesionály. Laboratoř a tabulka znaků.">
+<meta name="author" content="Ivo Bešťák, Gymnázium Příbram">
+<meta property="og:title" content="ASCII kód pod lupou">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+.back{font-size:14px;color:var(--accent);text-decoration:none;justify-self:start}
+.back:hover{text-decoration:underline}
+/* Layout: kódová tabulka Unicode – mřížky buněk, štítky U+XXXX, barvy = jednotlivé bajty */
+:root{
+  --bg:#f2f6f4; --paper:#ffffff; --ink:#121f1a; --muted:#586b62; --line:#cfdad4;
+  --accent:#0b6e5b; --accent-soft:#def0e8;
+  --k1:#c2461b; --k2:#1e71b5; --k3:#7d40b3; --k4:#2a8740;
+  --display:"Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+  --body:"IBM Plex Sans", system-ui, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --glyph:"IBM Plex Sans", system-ui, "Segoe UI", "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1613; --paper:#16211d; --ink:#e0eae5; --muted:#90a69c; --line:#2a3a33;
+  --accent:#5fd0b0; --accent-soft:#14302a;
+  --k1:#f08b5f; --k2:#69aeea; --k3:#bb8ce8; --k4:#6ec880; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1613; --paper:#16211d; --ink:#e0eae5; --muted:#90a69c; --line:#2a3a33;
+  --accent:#5fd0b0; --accent-soft:#14302a;
+  --k1:#f08b5f; --k2:#69aeea; --k3:#bb8ce8; --k4:#6ec880; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1100px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2.3rem,6vw,3.8rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.6rem,3.4vw,2.2rem);font-weight:800}
+h3{font-size:1.25rem;font-weight:600}
+p{margin:0;max-width:68ch}
+code,.mono{font-family:var(--mono)}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted)}
+.eyebrow{font:600 .75rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+
+/* hero */
+.hero{padding-block:44px 28px;display:grid;gap:18px}
+.chain{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:14px;
+  border:1px solid var(--line);border-radius:12px;background:var(--paper);overflow:hidden}
+.chain>div{padding:18px 20px;display:grid;gap:6px;align-content:start;min-width:0}
+.chain>div+div{border-left:1px solid var(--line)}
+.chain .big{font:600 clamp(1.8rem,5vw,3rem)/1.1 var(--glyph)}
+.chain .big.mono{font-family:var(--mono);font-weight:500}
+.chain small{color:var(--muted);font-size:.85rem}
+.chain .enc{font:500 1.05rem/1.4 var(--mono)}
+@media (max-width:640px){.chain{grid-template-columns:1fr}.chain>div+div{border-left:0;border-top:1px solid var(--line)}}
+
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);
+  border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:4px 18px;padding-block:10px}
+nav.toc a{text-decoration:none;color:var(--muted);font-weight:500;font-size:.95rem}
+nav.toc a:hover{color:var(--accent)}
+
+section{padding-block:44px;border-top:1px solid var(--line);display:grid;gap:18px;scroll-margin-top:52px}
+section:first-of-type{border-top:0}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:14px;min-width:0;align-content:start}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:14px 28px;align-items:start}
+.split>div{display:grid;gap:10px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:18px}
+
+/* inputs */
+.field{display:grid;gap:6px}
+.field label{font-size:.85rem;font-weight:600;color:var(--muted)}
+input[type=text],select{font:500 1.15rem/1.3 var(--glyph);padding:10px 12px;border:1px solid var(--line);
+  border-radius:8px;background:var(--bg);color:var(--ink);width:100%;min-width:0}
+select{font:500 1rem var(--body)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:.92rem}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.btn{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+
+/* counts */
+.counts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.counts div{background:var(--paper);padding:10px 14px;display:grid;gap:2px}
+.counts b{font:600 1.6rem/1.1 var(--mono);font-variant-numeric:tabular-nums}
+.counts span{font-size:.8rem;color:var(--muted)}
+
+/* graphemes */
+.graphs{display:flex;flex-wrap:wrap;gap:8px}
+.g{border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:8px;display:grid;gap:6px;justify-items:center;min-width:64px}
+.gg{font:500 1.8rem/1.2 var(--glyph);min-height:2.2rem}
+.cps{display:flex;flex-direction:column;gap:3px;width:100%}
+.cp{border:0;border-left:3px solid var(--k);background:var(--paper);border-radius:4px;padding:2px 6px;
+  font:500 .78rem/1.3 var(--mono);cursor:pointer;text-align:left;white-space:nowrap}
+.cp em{font-style:normal;color:var(--muted)}
+.k1{--k:var(--k1)}.k2{--k:var(--k2)}.k3{--k:var(--k3)}.k4{--k:var(--k4)}
+.hl.cp,.hl.by{outline:2px solid var(--k);outline-offset:1px}
+
+.strip{display:flex;flex-wrap:wrap;gap:3px}
+.by{font:500 .82rem/1 var(--mono);padding:6px 5px;border-radius:4px;color:var(--ink);
+  background:color-mix(in srgb,var(--k) 20%,var(--paper));border-bottom:2px solid var(--k)}
+.striplbl{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:.9rem}
+.striplbl b{font-family:var(--mono)}
+
+/* inspector */
+.insp-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:start}
+.bigglyph{width:132px;height:132px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;
+  background:var(--bg);font:500 4.6rem/1 var(--glyph);position:relative}
+.bigglyph::after{content:attr(data-cp);position:absolute;bottom:6px;font:500 .7rem var(--mono);color:var(--muted)}
+.facts{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 16px;font-size:.95rem}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0;font-family:var(--mono);overflow-wrap:anywhere}
+@media (max-width:560px){.insp-head{grid-template-columns:1fr}}
+.walk{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.walk .field{flex:1 1 220px}
+
+.bits{font:500 1.05rem/1.6 var(--mono);letter-spacing:.06em;overflow-wrap:anywhere}
+.bits .c{color:var(--k);font-weight:600}
+.bits .sep{display:inline-block;width:.5em}
+.pre{color:var(--muted);opacity:.75}
+.bytes{display:flex;flex-wrap:wrap;gap:8px}
+.byte{border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:grid;gap:4px;justify-items:center;background:var(--bg)}
+.byte code{font:500 1rem var(--mono);letter-spacing:.05em}
+.byte .hx{font:600 1.15rem var(--mono);color:var(--ink)}
+.byte small{font-size:.72rem;color:var(--muted)}
+.step{display:grid;gap:6px;padding-left:14px;border-left:2px solid var(--line)}
+.step p{font-size:.95rem}
+.result{font:600 1.1rem var(--mono);padding:8px 12px;border-radius:8px;background:var(--accent-soft);justify-self:start}
+.note{font-size:.92rem;padding:10px 12px;border-radius:8px;background:var(--accent-soft)}
+.sizes{display:flex;flex-wrap:wrap;gap:10px}
+.sizes div{border:1px solid var(--line);border-radius:8px;padding:8px 12px;display:grid;gap:2px;min-width:120px;background:var(--paper)}
+.sizes b{font:600 1.3rem var(--mono)}
+.sizes span{font-size:.8rem;color:var(--muted)}
+
+/* planes */
+.planes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.plane{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--paper);display:grid;gap:3px;align-content:start;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.plane:hover{border-color:var(--accent)}
+.plane .pn{font:600 .75rem var(--mono);color:var(--muted)}
+.plane b{font-family:var(--display);font-size:1.05rem}
+.plane small{font-size:.8rem;color:var(--muted);line-height:1.35}
+.plane code{font-size:.75rem;color:var(--muted)}
+.plane.empty{background:transparent;border-style:dashed}
+.plane.pua{background:color-mix(in srgb,var(--k3) 8%,var(--paper))}
+.plane.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+
+/* block grid */
+.gridwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+.cgrid{display:grid;grid-template-columns:4.2rem repeat(16,minmax(2.5rem,1fr));min-width:720px}
+.cgrid .h{font:600 .72rem var(--mono);color:var(--muted);display:grid;place-items:center;padding:6px 2px;background:var(--bg)}
+.cell{border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--paper);
+  display:grid;grid-template-rows:1fr auto;justify-items:center;padding:4px 0 2px;cursor:pointer;min-height:3.2rem}
+.cell span{font:1.3rem/1.3 var(--glyph)}
+.cell small{font:.6rem var(--mono);color:var(--muted)}
+.cell:hover{background:var(--accent-soft)}
+.cell.cn{background:repeating-linear-gradient(135deg,var(--bg) 0 4px,var(--paper) 4px 8px);cursor:default}
+.cell.sel{box-shadow:inset 0 0 0 2px var(--accent)}
+.blkbar{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.blkbar .field{flex:1 1 280px}
+.preview{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;font-size:.95rem}
+.preview .pg{font:1.8rem var(--glyph);min-width:2.5rem;text-align:center}
+.preview code{font-size:.9rem}
+
+/* tables */
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+td code{font-size:.88rem;white-space:nowrap}
+tr.act td{background:var(--accent-soft)}
+.tpl .x{color:var(--k2);font-weight:600}
+
+.trap{display:grid;gap:10px}
+.trap .demo{font-family:var(--mono);font-size:.9rem;display:grid;gap:4px;overflow-wrap:anywhere}
+.ok{color:var(--k4);font-weight:600}.bad{color:var(--k1);font-weight:600}
+nav.toc{align-items:center}
+.tabs{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--paper)}
+.tabs button{border:0;background:transparent;padding:8px 18px;cursor:pointer;font:600 1rem var(--display);color:var(--muted)}
+.tabs button+button{border-left:1px solid var(--line)}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--paper)}
+.tabs button:hover:not([aria-selected="true"]){color:var(--accent)}
+.links{display:flex;flex-wrap:wrap;gap:4px 16px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;
+  background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;pointer-events:none;
+  transition:opacity .2s,transform .2s;z-index:20;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast .tg{font-family:var(--glyph);font-size:1.2rem;margin-right:6px}
+.cell.copied{background:var(--accent-soft)}
+textarea{font:500 .95rem/1.4 var(--mono);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;min-width:0;resize:vertical}
+.flag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.78rem;font-weight:600;margin:2px 4px 2px 0}
+.flag.w{background:color-mix(in srgb,var(--k1) 18%,var(--paper));color:var(--k1)}
+.flag.i{background:color-mix(in srgb,var(--k2) 18%,var(--paper));color:var(--k2)}
+.flag.g{background:color-mix(in srgb,var(--k4) 18%,var(--paper));color:var(--k4)}
+.out{font:500 .92rem/1.5 var(--mono);padding:10px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line);overflow-wrap:anywhere;min-height:2.6rem}
+ul.check{margin:0;padding-left:1.2em;display:grid;gap:6px;font-size:.94rem}
+.radios{display:flex;flex-wrap:wrap;gap:12px;font-size:.92rem}
+.timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
+.tl{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--paper);display:grid;gap:6px;align-content:start}
+.tl .yr{font:600 .8rem var(--mono);color:var(--accent)}
+.tl b{font-family:var(--display);font-size:1.15rem}
+.tl p{font-size:.92rem}
+.tl .kind{justify-self:start;font:600 .68rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  padding:4px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.tl.enc{background:var(--accent-soft);border:1.5px dashed var(--accent);position:relative}
+.tl.enc .kind{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.tl.enc::before{content:"↳ zapisuje Unicode";position:absolute;top:-10px;right:12px;font:600 .7rem var(--mono);
+  padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--accent)}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.terms div{border-left:3px solid var(--accent);padding:4px 12px}
+.terms dt{font-weight:600}.terms dd{margin:0;font-size:.93rem;color:var(--muted)}
+.ascii{display:grid;grid-template-columns:repeat(auto-fill,minmax(3.4rem,1fr));gap:4px}
+.ascii button{border:1px solid var(--line);border-radius:6px;background:var(--paper);padding:4px 0;cursor:pointer;display:grid;justify-items:center}
+.ascii button span{font:600 1.15rem var(--mono)}
+.ascii button small{font:.7rem var(--mono);color:var(--muted)}
+.ascii button:hover{border-color:var(--accent);background:var(--accent-soft)}
+footer{padding-block:28px 48px;border-top:1px solid var(--line);font-size:.88rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+/* ---------- úrovně a pohledy ---------- */
+/* pohled = karta v navigaci (r1, r4, pro, lab, tabulka); úroveň podrobnosti = data-lvl (r1, r4, pro) */
+.view{display:none}
+:root[data-tab="r1"] .v-r1,:root[data-tab="r4"] .v-r4,:root[data-tab="pro"] .v-pro,
+:root[data-tab="lab"] .v-lab,:root[data-tab="tabulka"] .v-tabulka{display:block}
+.view>section:first-child{border-top:0}
+:root[data-lvl="pro"] .bas{display:none!important}
+:root:not([data-lvl="pro"]) .adv{display:none!important}
+:root[data-lvl="r1"] .n1{display:none!important}
+
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,.9fr);gap:12px;margin-top:6px}
+.toolcol{display:grid;gap:12px}
+/* nástroje: odlišené od úrovní – bez barevného pruhu, čárkovaný rámeček, ikona, menší */
+.lv.tool{--lc:var(--accent);border:1.5px dashed var(--line);background:transparent;min-height:0;padding:10px 12px 10px 52px;gap:1px}
+.lv.tool .ico{position:absolute;left:14px;top:50%;width:26px;height:26px;margin-top:-13px;color:var(--accent)}
+.lv.tool b{font-size:1.05rem}
+.lv.tool span{font-size:.84rem}
+.lv.tool small{order:-1;margin-top:0;font-size:.64rem;color:var(--muted)}
+.lv.tool:hover{border-color:var(--accent);background:var(--paper)}
+.lv.tool[aria-pressed="true"]{border-style:solid;background:var(--accent-soft)}
+@media (max-width:1000px){.levels{grid-template-columns:repeat(3,minmax(0,1fr))}.toolcol{grid-column:1/-1;grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.levels{grid-template-columns:1fr;gap:8px}.levels .lv{min-height:0;padding-block:10px}.levels .lv.tool small{display:none}.lv:not(.tool)>span:not(.mini){display:none}
+  .lv .mini,.lv .mini .pasek{width:44px}.lv.l1{padding-right:60px}.lv.tool span{display:none}.lv.tool{padding-left:46px}.levels .lv.tool{align-content:center}.lv .mini{top:50%;transform:translateY(-50%)}.lv.tool .ico{left:12px}}
+.lv{position:relative;text-align:left;border:1px solid var(--line);border-left:5px solid var(--lc);border-radius:12px;background:var(--paper);
+  padding:14px 16px 14px 18px;cursor:pointer;display:grid;gap:4px;align-content:start;min-height:120px}
+.lv b{font:800 1.35rem/1.15 var(--display)}
+.lv span{font-size:.93rem;color:var(--muted)}
+.lv small{font:600 .72rem/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--lc);margin-top:auto}
+.lv:hover{border-color:var(--lc)}
+.lv[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--lc);border-color:var(--lc)}
+.lv .mini{position:absolute;right:10px;top:10px;width:62px}
+.lv.l1{padding-right:82px}
+.lv .mini .pasek{width:62px}
+.lv.l1{--lc:var(--k1)}.lv.l4{--lc:var(--k2)}.lv.lp{--lc:var(--k3)}
+.tools{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.95rem;color:var(--muted);align-items:center}
+.tools button{border:0;background:none;padding:0;color:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+nav.toc{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
+.tabs{flex:none}
+.tabs button{white-space:nowrap}
+.tabs .sep{width:1px;background:var(--line);margin:6px 2px}
+.tabs .sep+button{border-left:0}
+@media (max-width:640px){.tabs button{padding:8px 11px;font-size:.92rem}}
+
+/* ---------- kurz: kapitoly ---------- */
+.course{display:grid;gap:18px;padding-block:28px 48px}
+.course-head{display:grid;gap:10px}
+.goals{margin:0;padding:12px 16px 12px 34px;border-radius:10px;background:var(--accent-soft);display:grid;gap:3px;font-size:.95rem}
+.goals::before{content:"Po této lekci umíš:";font-weight:700;margin-left:-18px}
+details.teacher{border:1px dashed var(--muted);border-radius:10px;padding:10px 14px;background:var(--paper);font-size:.94rem}
+details.teacher summary{cursor:pointer;font-weight:600}
+details.teacher ol{margin:8px 0 2px;padding-left:1.3em;display:grid;gap:4px}
+.prog{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}
+.prog button{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 12px;font-size:.88rem;cursor:pointer;color:var(--muted)}
+.prog button:hover{border-color:var(--accent);color:var(--accent)}
+.prog button.done::before{content:"✓ ";color:var(--k4);font-weight:700}
+.prog button[aria-current="step"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.prog button[aria-current="step"].done::before{color:var(--paper)}
+.ch{display:none;gap:18px;scroll-margin-top:70px}
+.ch.on{display:grid}
+.ch>p{font-size:1.05rem}
+.chnav{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:16px;flex-wrap:wrap}
+.chnav span{color:var(--muted);font-size:.9rem}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.btn.pri:hover{filter:brightness(1.1)}
+.btn:disabled{opacity:.45;cursor:default}
+.box{border-left:4px solid var(--bc,var(--accent));background:var(--paper);border-radius:0 10px 10px 0;padding:12px 16px;display:grid;gap:8px}
+.box>.lbl{font:700 .72rem/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--bc,var(--accent))}
+.box.ask{--bc:var(--k2)}.box.try{--bc:var(--k4)}.box.fun{--bc:var(--k1)}.box.tip{--bc:var(--k3)}
+.links2{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.95rem}
+
+/* kontrolní otázky a testy */
+.kq{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--paper);display:grid;gap:10px}
+.kq .q{font-weight:600;font-size:1.02rem}
+.kq .q::before{content:"Kontrolní otázka";font:700 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--k2);display:block;margin-bottom:4px}
+.quiz .kq .q::before{content:"Otázka " attr(data-n);}
+.kq.poll .q::before{content:"Hlasování";}
+.opts{display:grid;gap:6px}
+.opts button{text-align:left;border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:var(--bg);cursor:pointer;font-size:.98rem}
+.opts button:hover:not(:disabled){border-color:var(--accent)}
+.opts button:disabled{cursor:default;color:var(--ink)}
+.opts button.right{border-color:var(--k4);background:color-mix(in srgb,var(--k4) 16%,var(--paper))}
+.opts button.wrong{border-color:var(--k1);background:color-mix(in srgb,var(--k1) 14%,var(--paper))}
+.opts button.picked{border-color:var(--k2);background:color-mix(in srgb,var(--k2) 14%,var(--paper))}
+.why{display:none;font-size:.95rem}
+.kq.done .why{display:block}
+.why .v{font-weight:700;margin-right:4px}
+.why .v.ok{color:var(--k4)}.why .v.bad{color:var(--k1)}
+.quiz{display:grid;gap:12px}
+.qres{border-radius:12px;padding:16px;background:var(--accent-soft);display:none;gap:12px}
+.qres.on{display:grid}
+.qres .score{font:800 2rem/1 var(--display)}
+
+/* Pásek */
+.cj-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.pasek{width:118px;height:auto;flex:none;overflow:visible}
+.pasek .v{display:none}
+.pasek.s-ok .s-ok,.pasek.s-boo .s-boo,.pasek.s-sip .s-sip{display:inline}
+.say{position:relative;background:var(--paper);border:1.5px solid var(--ink);border-radius:14px;padding:10px 14px;font-weight:500;max-width:52ch;margin-bottom:34px;flex:1 1 200px}
+.say::before{content:"";position:absolute;left:-9px;bottom:14px;width:14px;height:14px;background:var(--paper);border-left:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(45deg)}
+.say b.who{display:block;font:700 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--k1);margin-bottom:2px}
+
+/* zprávy, dlaždice znaků, váha */
+.msg{background:var(--paper);border:1px solid var(--line);border-radius:18px 18px 18px 4px;padding:12px 16px;font:500 1.12rem/1.45 var(--glyph);max-width:560px;overflow-wrap:anywhere;display:grid;gap:4px}
+.msg small{font:600 .75rem var(--body);color:var(--muted)}
+.tiles{display:flex;flex-wrap:wrap;gap:8px}
+.tile{border:1px solid var(--line);border-radius:10px;background:var(--paper);padding:8px 10px;display:grid;gap:3px;justify-items:center;min-width:68px}
+.tile .tg{font:500 1.9rem/1.2 var(--glyph);min-height:2.3rem}
+.tile code{font-size:.8rem}
+.tile small{font-size:.74rem;color:var(--muted);text-align:center;max-width:16ch;line-height:1.3}
+.tile .bin{font:500 .72rem var(--mono);color:var(--k2);letter-spacing:.04em}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.gal .tile{justify-items:start;min-width:0}
+.wt{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.wc{display:grid;gap:4px;justify-items:center;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--paper)}
+.wc .tg{font:500 1.5rem/1.2 var(--glyph)}
+.wc .sq{display:flex;gap:2px}
+.wc .sq i{width:11px;height:11px;border-radius:2px;background:var(--k)}
+.wc small{font:600 .7rem var(--mono);color:var(--muted)}
+.total{font:700 1.15rem var(--mono)}
+.sms{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.sms div{background:var(--paper);padding:10px 14px;display:grid;gap:2px}
+.sms b{font:600 1.35rem/1.15 var(--mono)}
+.sms span{font-size:.8rem;color:var(--muted)}
+.seg{justify-self:start;display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--paper);flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:7px 14px;cursor:pointer;font-weight:600;font-size:.92rem;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--paper)}
+.game{display:grid;gap:12px}
+.game .opts button{font-family:var(--glyph)}
+.gstat{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font:600 .9rem var(--mono);color:var(--muted)}
+.font-demo{display:flex;flex-wrap:wrap;gap:10px}
+.font-demo span{border:1px solid var(--line);border-radius:8px;background:var(--paper);width:78px;height:78px;display:grid;place-items:center;font-size:3rem;line-height:1}
+.font-demo small{display:block;text-align:center;font-size:.72rem;color:var(--muted);margin-top:2px}
+.tofu{display:inline-block;width:.62em;height:.9em;border:2px solid currentColor;border-radius:2px;vertical-align:-.1em}
+.prac{display:grid;gap:12px}
+.prac .task{font-size:1.1rem}
+.prac .task .big{font:500 2.2rem/1.2 var(--glyph);margin-right:10px;vertical-align:middle}
+.prac .row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.prac .row input{flex:1 1 200px;font-family:var(--mono)}
+.prac .res{display:grid;gap:10px}
+.lvlbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding-top:22px;font-size:.93rem;color:var(--muted)}
+.ptoc{display:flex;flex-wrap:wrap;gap:6px}
+.ptoc .chip{text-decoration:none;color:var(--ink)}
+@media (max-width:560px){.cj-row{flex-wrap:nowrap;align-items:center}.cj-row .pasek{width:70px}.cj-row .say{margin-bottom:0;min-width:0}}
+
+
+/* ---------- ASCII: skupiny znaků, maskot Pásek, nové prvky ---------- */
+.gc-ctl{--g:var(--k1)}.gc-dig{--g:var(--k2)}.gc-up{--g:var(--k3)}.gc-low{--g:var(--k4)}.gc-sym{--g:var(--muted)}.gc-sp{--g:var(--muted)}.gc-non{--g:var(--k1)}
+.tile{border-top:3px solid var(--g,var(--line))}
+.tile.gc-non{border-style:dashed;border-top-style:solid;background:repeating-linear-gradient(135deg,var(--bg) 0 4px,var(--paper) 4px 8px)}
+.tile .tg.ab{font:600 1.05rem/1.2 var(--mono);min-height:2.3rem;display:grid;place-items:center}
+.tile .hx{font:500 .78rem var(--mono);color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:.9em;height:.9em;border-radius:3px;background:var(--g);vertical-align:-.12em;margin-right:5px}
+
+.pasek{width:118px;height:auto;flex:none;overflow:visible}
+.pasek .v{display:none}
+.pasek.s-ok .s-ok,.pasek.s-boo .s-boo,.pasek.s-sip .s-sip{display:inline}
+.pasek .body{transform-origin:80px 150px;transition:transform .3s}
+.pasek.s-boo .body{transform:rotate(-4deg)}
+.pasek .bell{transform-origin:24px 22px;animation:ring .45s ease-in-out infinite alternate}
+@keyframes ring{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
+.pasek.s-boo .spill{animation:spill .6s ease-out}
+@keyframes spill{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.pasek .bell,.pasek.s-boo .spill{animation:none}.pasek .body{transition:none}}
+.lv .mini .pasek{width:62px}
+@media (max-width:640px){.lv .mini .pasek{width:44px}}
+@media (max-width:560px){.cj-row .pasek{width:70px}}
+
+/* skládačka z bitů */
+.bitbox{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.bb{border:1px solid var(--line);background:var(--paper);border-radius:10px;min-width:3.4rem;padding:8px 6px;display:grid;gap:2px;justify-items:center;cursor:pointer}
+.bb small{font:600 .72rem var(--mono);color:var(--muted)}
+.bb b{font:700 1.7rem/1.1 var(--mono)}
+.bb[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.bb[aria-pressed="true"] small{color:var(--paper);opacity:.85}
+.bb.fix{cursor:default;opacity:.55}
+.bitres{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center}
+.bitres .big{font:600 3rem/1.1 var(--mono);min-width:4rem}
+.bitres .big.ab{font-size:2rem}
+.bitres p{font:500 1rem var(--mono)}
+
+/* dálnopis */
+.tty{background:#10201a;color:#b9f2cf;font:500 1.05rem/1.35 var(--mono);border-radius:10px;padding:12px 14px;min-height:7.4rem;overflow-x:auto;white-space:pre;margin:0;border:1px solid var(--line)}
+.tty .cur{background:#b9f2cf;color:#10201a}
+.tty.ring{animation:ringbox .5s}
+@keyframes ringbox{0%,100%{box-shadow:none}30%{box-shadow:0 0 0 4px var(--k1)}}
+.ttybtn{display:flex;flex-wrap:wrap;gap:6px}
+.ttybtn .btn{font:600 .9rem var(--mono)}
+.ttylog{font:500 .85rem var(--mono);color:var(--muted);overflow-wrap:anywhere;min-height:1.4rem}
+
+/* ASCII art */
+pre.art{margin:0;font:600 .85rem/1 var(--mono);overflow-x:auto;padding:12px 14px;background:var(--bg);border:1px solid var(--line);border-radius:10px;letter-spacing:0}
+
+/* tabulka ASCII 16 x 8 */
+.cgrid.a{grid-template-columns:3.6rem repeat(16,minmax(2.7rem,1fr));min-width:780px}
+.cgrid.a .cell{min-height:3.5rem}
+.cgrid.a .cell span.ab{font:600 .72rem var(--mono)}
+.cgrid.a .cell.dim{opacity:.22}
+.cgrid.a .cell.gc-ctl span{color:var(--k1)}
+.cgrid.a .cell small.b{font-size:.56rem}
+.cgrid.a .cell.rowsep{border-bottom-color:var(--muted)}
+.cell.on{box-shadow:inset 0 0 0 2px var(--g,var(--accent))}
+.zones{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.zone{border:1px solid var(--line);border-top:4px solid var(--g);border-radius:8px;padding:10px 12px;background:var(--paper);display:grid;gap:3px;align-content:start;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.zone:hover{border-color:var(--g)}
+.zone .pn{font:600 .75rem var(--mono);color:var(--muted)}
+.zone b{font-family:var(--display);font-size:1.05rem}
+.zone small{font-size:.8rem;color:var(--muted);line-height:1.35}
+.zone code{font-size:.75rem;color:var(--muted)}
+.zone.on{box-shadow:inset 0 0 0 1px var(--g);border-color:var(--g)}
+
+/* lupa: bitové váhy */
+table.wt2{table-layout:fixed;text-align:center}
+table.wt2 th,table.wt2 td{text-align:center;padding:6px 2px;font-family:var(--mono)}
+table.wt2 td.one{background:var(--accent-soft);font-weight:700;color:var(--accent)}
+table.wt2 tr.sum td{border-bottom:0;font-size:.85rem;color:var(--muted)}
+.bits .c.g1{color:var(--k2)}.bits .c.g2{color:var(--k3)}
+.digitrow{display:flex;flex-wrap:wrap;gap:6px}
+.digitrow button{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 8px;cursor:pointer;display:grid;gap:2px;justify-items:center;min-width:3.4rem}
+.digitrow button b{font:700 1.2rem var(--mono)}
+.digitrow button small{font:500 .7rem var(--mono);color:var(--muted)}
+.digitrow button:hover{border-color:var(--accent)}
+.hi{color:var(--k1);font-weight:700}
+.lo{color:var(--k2);font-weight:700}
+.pbyte{display:flex;flex-wrap:wrap;gap:6px}
+.pbyte .bb{min-width:2.9rem;padding:6px 4px}
+.pbyte .bb b{font-size:1.4rem}
+.pbyte .bb.par{border-style:dashed}
+.pbyte .bb.err{outline:2px solid var(--k1)}
+.verdict{padding:10px 14px;border-radius:10px;font-weight:600}
+.verdict.good{background:color-mix(in srgb,var(--k4) 16%,var(--paper));color:var(--k4)}
+.verdict.warn{background:color-mix(in srgb,var(--k1) 14%,var(--paper));color:var(--k1)}
+.verdict.info{background:var(--accent-soft);color:var(--accent)}
+pre.hexd{margin:0;font:500 .85rem/1.5 var(--mono);overflow-x:auto;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;white-space:pre}
+pre.hexd .nb{color:var(--k1);font-weight:700}
+pre.hexd .cc{color:var(--k3)}
+pre.hexd .of{color:var(--muted)}
+.ansi{background:#10201a;color:#d7e6dd;border-radius:10px;padding:10px 14px;font:500 1rem/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;min-height:2.6rem}
+footer .teacher-box{display:grid;gap:8px;margin-bottom:18px;color:var(--ink)}
+footer .teacher-box h3{font-size:1.05rem}
+footer details.teacher{font-size:.92rem}
+footer .tlinks{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.92rem}
+.fn{font-size:.85rem;color:var(--muted)}
+
+[class*="gc-"].by{--k:var(--g)}
+.ascii button{border-top:3px solid var(--g,var(--line))}
+
+</style>
+</head>
+<body>
+
+<template id="psT"><svg class="pasek s-ok" viewBox="0 0 160 160" role="img" aria-label="Pásek, kousek děrné pásky">
+  <g class="body">
+    <path d="M40 12h80v116H40z" fill="#fffdf8" stroke="#132029" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M40 128c0 14-16 12-18 22l44 0c-4-8 8-12 8-22z" fill="#f3e3bd" stroke="#132029" stroke-width="3" stroke-linejoin="round"/>
+    <g fill="#132029"><circle cx="54" cy="24" r="3.4"/><circle cx="78" cy="24" r="3.4"/><circle cx="102" cy="24" r="3.4"/><circle cx="66" cy="34" r="3.4"/><circle cx="90" cy="34" r="3.4"/></g>
+    <g class="v s-ok s-sip"><ellipse cx="54" cy="96" rx="7" ry="4.5" fill="#f4a6a0" opacity=".85"/><ellipse cx="106" cy="96" rx="7" ry="4.5" fill="#f4a6a0" opacity=".85"/></g>
+    <g class="v s-ok"><circle cx="64" cy="76" r="7" fill="#132029"/><circle cx="96" cy="76" r="7" fill="#132029"/><circle cx="66.5" cy="73.5" r="2.4" fill="#fff"/><circle cx="98.5" cy="73.5" r="2.4" fill="#fff"/>
+      <path d="M68 96q12 12 24 0" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/>
+      <path d="M40 80c-12-2-20-12-20-24" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="53" r="5.5" fill="#fffdf8" stroke="#132029" stroke-width="3"/>
+      <path d="M120 84c10 2 16 10 18 20" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/><circle cx="138" cy="107" r="5.5" fill="#fffdf8" stroke="#132029" stroke-width="3"/></g>
+    <g class="v s-sip"><path d="M56 78q8-9 16 0M88 78q8-9 16 0" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/>
+      <path d="M72 94q8 8 16 0" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/>
+      <path d="M40 78c-12-6-18-16-16-28" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="47" r="5.5" fill="#fffdf8" stroke="#132029" stroke-width="3"/>
+      <g class="bell"><path d="M16 22c0-9 16-9 16 0v7h-16z" fill="#e0a82e" stroke="#132029" stroke-width="2.5" stroke-linejoin="round"/><path d="M13 29h22" stroke="#132029" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="35" r="2.6" fill="#132029"/><path d="M6 14q-4 6 0 12M42 14q4 6 0 12" fill="none" stroke="#132029" stroke-width="2.2" stroke-linecap="round"/></g>
+      <path d="M120 84c10 2 16 10 18 20" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/><circle cx="138" cy="107" r="5.5" fill="#fffdf8" stroke="#132029" stroke-width="3"/></g>
+    <g class="v s-boo"><circle cx="64" cy="76" r="10" fill="#fff" stroke="#132029" stroke-width="3"/><circle cx="96" cy="76" r="10" fill="#fff" stroke="#132029" stroke-width="3"/>
+      <circle cx="64" cy="78" r="3.5" fill="#132029"/><circle cx="96" cy="78" r="3.5" fill="#132029"/>
+      <path d="M52 63l15-5M108 63l-15-5" stroke="#132029" stroke-width="3" stroke-linecap="round"/>
+      <ellipse cx="80" cy="102" rx="6" ry="8" fill="#132029"/>
+      <path d="M40 74c-12-6-16-18-12-30M120 100c10-2 18 2 22 10" fill="none" stroke="#132029" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="28" cy="41" r="5.5" fill="#fffdf8" stroke="#132029" stroke-width="3"/>
+      <g class="spill" font-family="IBM Plex Mono, monospace" font-weight="700" fill="#a8622a"><text x="124" y="40" font-size="17">§</text><text x="136" y="62" font-size="15">¤</text><text x="12" y="108" font-size="15">?</text><text x="126" y="22" font-size="14">#</text></g></g>
+  </g></svg></template>
+
+<div class="wrap">
+<header class="hero">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <span class="eyebrow">Výukový průvodce · ASCII, bity, řídicí znaky</span>
+  <h1>ASCII kód pod lupou</h1>
+  <p>Jak počítač ukládá písmena jako čísla, k čemu byly znaky, které se netisknou, a proč se velká a malá písmena liší právě o 32. Vyberte úroveň výkladu nebo nástroj:</p>
+  <div class="levels">
+    <button class="lv l1" data-go="r1"><span class="mini cj" data-s="s-ok"></span><small>1 vyučovací hodina</small><b>Začátečník</b><span>Základy: znaky jsou čísla, tabulka ASCII, znaky, které se netisknou, a trik s velkými písmeny. S maskotem Páskem a hrou.</span></button>
+    <button class="lv l4" data-go="r4"><small>2–3 vyučovací hodiny</small><b>Pokročilý</b><span>Bity a soustavy, historie od dálnopisu, stavba tabulky, parita, pasti, procvičování a test.</span></button>
+    <button class="lv lp" data-go="pro"><small>příručka</small><b>Profesionál</b><span>Pro IT: bitové triky, řídicí znaky v praxi, hexdump, MIME, URL, jazyky a regulární výrazy.</span></button>
+    <div class="toolcol">
+      <button class="lv tool" data-go="lab"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M7.5 10h5M10 7.5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><small>nástroj pro všechny úrovně</small><b>Laboratoř</b><span>Rozbor textu a znaku do bitů</span></button>
+      <button class="lv tool" data-go="tabulka"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke="currentColor" stroke-width="1.4"/></svg><small>nástroj pro všechny úrovně</small><b>Tabulka znaků</b><span>Všech 128 znaků, kopírování</span></button>
+    </div>
+  </div>
+</header>
+
+<div id="obsah" style="scroll-margin-top:12px"></div>
+
+<!-- ================= ZAČÁTEČNÍK ================= -->
+<div class="view v-r1">
+<div class="course" data-course="r1">
+  <div class="course-head">
+    <ul class="goals"><li>vysvětlit, že počítač ukládá místo písmen čísla,</li><li>najít v tabulce ASCII kód znaku a přečíst ho dvojkově,</li><li>říct, co jsou řídicí znaky a k čemu sloužil zvonek,</li><li>využít trik, kterým se mění velká a malá písmena,</li><li>vysvětlit, proč ASCII nezvládne češtinu.</li></ul>
+    <ol class="prog" aria-label="Kapitoly"></ol>
+  </div>
+
+  <article class="ch" data-title="Záhada z pásky">
+    <div><span class="eyebrow">Kapitola 1</span><h2>Záhada z děrné pásky</h2></div>
+    <p>Na půdě školy někdo našel starou děrnou pásku. Když ji přečetl čtecí stroj, vypsal jen řadu čísel:</p>
+    <div class="msg"><small>Výpis čtecího stroje</small><span class="mono" id="tapeNums"></span></div>
+    <div class="cj-row"><span class="cj" data-s="s-boo"></span><p class="say"><b class="who">Pásek</b>Hmm, samá čísla. Telefonní číslo to není, na to je moc dlouhé. Jenže někdo ta čísla na pásku kdysi dal schválně…</p></div>
+    <div class="kq poll" data-ok="*">
+      <p class="q">Co myslíš, že čísla znamenají?</p>
+      <div class="opts"><button data-v="a">Je to velmi dlouhé telefonní číslo.</button><button data-v="b">Každé číslo je jedno písmeno nebo jiný znak, dohromady vznikne text.</button><button data-v="c">Jsou to souřadnice pokladu.</button></div>
+      <div class="why">Tvůj tip si zapamatuj. Pásku rozluštíš v kapitole 3. Napovíme: pokladu bohužel nenajdeš, zato něco o naší škole.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Čísla místo písmen">
+    <div><span class="eyebrow">Kapitola 2</span><h2>Počítač zná jen čísla</h2></div>
+    <p>Počítač neumí uložit písmeno. Umí uložit jen čísla, přesněji jedničky a nuly. Proto existuje dohoda: <b>každý znak má své číslo</b>. Takové dohodě se říká <b>kódová tabulka</b>, číslu znaku <b>kód</b> a jedničce nebo nule <b>bit</b>.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: poskládej znak z bitů</span>
+      <p>Klepáním přepínáš bity mezi 0 a 1. Každý bit má svou váhu a čísla se sčítají. Co se objeví, když dáš dohromady 65?</p>
+      <div class="bitbox" id="bitBox"></div>
+      <div class="bitres"><span class="big" id="bitCh"></span><div><p id="bitNum"></p><p class="muted" id="bitSum" style="font-size:.9rem"></p></div></div>
+    </div>
+    <div class="box try"><span class="lbl">Vyzkoušej: tvoje jméno jako čísla</span>
+      <div class="field"><label for="nameIn">Napiš své jméno nebo slovo</label><input type="text" id="nameIn" value="Ahoj!" autocomplete="off" spellcheck="false" maxlength="30"></div>
+      <div class="tiles" id="nameOut"></div>
+      <p class="muted" style="font-size:.92rem">Nahoře je znak, uprostřed jeho číslo, dole totéž číslo ve dvojkové soustavě na 7 bitů. Znak s čárkou nebo háčkem dostane přerušovaný rámeček, protože ASCII pro něj číslo nemá.</p>
+    </div>
+    <div class="kq" data-ok="b">
+      <p class="q">Které číslo má v ASCII velké písmeno „A“?</p>
+      <div class="opts"><button data-v="a">1</button><button data-v="b">65</button><button data-v="c">100</button></div>
+      <div class="why">„A“ má číslo 65, ve dvojkové soustavě 1000001. To je 64 + 1, tedy zapnutý první a poslední bit.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Tabulka ASCII">
+    <div><span class="eyebrow">Kapitola 3</span><h2>ASCII: tabulka pro 128 znaků</h2></div>
+    <p>Nejznámější kódovou tabulku vymysleli v USA a poprvé ji vydali v roce 1963. Jmenuje se <b>ASCII</b>, česky „americký standardní kód pro výměnu informací“. Má <b>128 znaků</b>: anglickou abecedu, číslice, interpunkci a řídicí znaky. Každý kód se vejde do <b>7 bitů</b>, protože 2<sup>7</sup> = 128.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej</span>
+      <p>Tisknutelné znaky ASCII. Klepni na znak a uvidíš jeho číslo. <b>Najdeš tu „ř“?</b></p>
+      <div class="ascii" id="ascii"></div>
+      <p class="out" id="asciiOut">Klepni na nějaký znak.</p>
+      <div class="legend" aria-hidden="true"><span class="gc-sp"><i></i>mezera a interpunkce</span><span class="gc-dig"><i></i>číslice</span><span class="gc-up"><i></i>velká písmena</span><span class="gc-low"><i></i>malá písmena</span></div>
+    </div>
+    <div class="box fun"><span class="lbl">Rozluštění pásky z kapitoly 1</span>
+      <p>Najdi v tabulce, které znaky mají čísla z pásky. Nebo nech pásku přečíst:</p>
+      <div><button class="btn pri" id="decodeTape">Přečíst pásku</button></div>
+      <div class="msg" id="tapeOutBox" hidden><small>Text na pásce</small><span id="tapeOut"></span></div>
+    </div>
+    <div class="cj-row"><span class="cj" data-s="s-ok"></span><p class="say"><b class="who">Pásek</b>Neboj, „ř“ tam opravdu není. Ani „č“, „ž“ nebo „ů“. ASCII vymysleli Američané pro angličtinu, takže na češtinu nezbylo místo.</p></div>
+    <div class="links2"><a href="../ascii-kod/">Aplikace Kód ASCII: přenos po bitech →</a><a href="../baudotuv-kod/">Baudotův kód: předchůdce z dálnopisů →</a></div>
+    <div class="kq" data-ok="a">
+      <p class="q">Co znamená zkratka ASCII?</p>
+      <div class="opts"><button data-v="a">Americký standardní kód pro výměnu informací.</button><button data-v="b">Automatický systém počítačového zápisu čísel.</button><button data-v="c">Abeceda standardních znaků pro Evropu.</button></div>
+      <div class="why">American Standard Code for Information Interchange. Vznikl pro přenos textu mezi dálnopisy a počítači.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Znaky, které se netisknou">
+    <div><span class="eyebrow">Kapitola 4</span><h2>Znaky, které se netisknou</h2></div>
+    <p>Kódy <b>0 až 31</b> a kód <b>127</b> nejsou písmena ani číslice. Jsou to <b>řídicí znaky</b>: povely pro dálnopis. „Zazvoň zvonkem“, „posuň papír o řádek“, „vrať vozík na začátek“. Dnes je hlavně neviditelně uvidíš v textových souborech.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: nejznámější řídicí znaky</span>
+      <div class="chips" id="ctlChips"></div>
+      <div class="out" id="ctlOut">Klepni na zkratku.</div>
+    </div>
+    <div class="box fun"><span class="lbl">Dálnopis na zkoušku</span>
+      <p>Pošli na dálnopis text a pak povely. Všimni si, co udělá <b>LF</b> (posun papíru) a co <b>CR</b> (návrat vozíku). Zkus tlačítka v řádku „Předvolby“.</p>
+      <pre class="tty" id="tty" aria-live="polite"></pre>
+      <div class="ttylog" id="ttyLog"></div>
+      <div class="field"><label for="ttyIn">Text k odeslání</label><div class="row" style="display:flex;gap:8px"><input type="text" id="ttyIn" value="Ahoj" autocomplete="off" spellcheck="false" maxlength="30"><button class="btn pri" id="ttySend">Odeslat</button></div></div>
+      <div class="ttybtn" id="ttyBtns"><button class="btn" data-c="CR">CR · návrat vozíku</button><button class="btn" data-c="LF">LF · nový řádek</button><button class="btn" data-c="BS">BS · zpět</button><button class="btn" data-c="BEL">BEL · zvonek</button><button class="btn" data-c="CLR">Nový papír</button></div>
+      <div class="ttybtn"><span class="muted" style="font-size:.9rem;align-self:center">Předvolby:</span><button class="btn" data-pre="stairs">Jen LF (schody)</button><button class="btn" data-pre="over">Jen CR (přepsání)</button><button class="btn" data-pre="both">CR + LF (správně)</button></div>
+    </div>
+    <div class="cj-row"><span class="cj" data-s="s-sip"></span><p class="say"><b class="who">Pásek</b>Proto Windows ukončují řádek dvojicí <b>CR LF</b> (vrať vozík, posuň papír). Unix si vystačí s jediným <b>LF</b>.</p></div>
+    <div class="kq" data-ok="b">
+      <p class="q">Co udělá dálnopis, když přijde jen LF bez CR?</p>
+      <div class="opts"><button data-v="a">Zazvoní.</button><button data-v="b">Posune papír o řádek, ale vozík zůstane na místě, takže další text začne dál od kraje.</button><button data-v="c">Smaže celý řádek.</button></div>
+      <div class="why">LF jen posune papír. Bez CR vozík zůstane tam, kde byl, a vzniknou „schody“.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Trik s velkými písmeny">
+    <div><span class="eyebrow">Kapitola 5</span><h2>Velká a malá písmena: trik s jedním bitem</h2></div>
+    <p>Tabulka ASCII je uspořádaná chytře. Velké „A“ má číslo 65 a malé „a“ číslo 97. Rozdíl je vždy přesně <b>32</b>. To je váha jediného bitu. Stačí ho zapnout a z velkého písmena je malé.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: převrať jediný bit</span>
+      <div class="field"><label for="caseIn">Napiš jedno písmeno anglické abecedy</label><input type="text" id="caseIn" value="A" autocomplete="off" spellcheck="false" maxlength="1" style="max-width:8rem"></div>
+      <div id="caseOut" style="display:grid;gap:8px"></div>
+    </div>
+    <div class="box try"><span class="lbl">Číslice a jejich kódy</span>
+      <p>Číslice 0 až 9 mají kódy 48 až 57. Klepni na číslici a všimni si <b>posledních čtyř bitů</b>:</p>
+      <div class="digitrow" id="digRow"></div>
+      <p class="out" id="digOut">Klepni na číslici.</p>
+    </div>
+    <div class="kq" data-ok="a">
+      <p class="q">O kolik se v ASCII liší kód velkého a malého písmena (třeba A a a)?</p>
+      <div class="opts"><button data-v="a">O 32.</button><button data-v="b">O 26.</button><button data-v="c">O 1.</button></div>
+      <div class="why">Rozdíl je 32, váha jednoho bitu (100000). Proto stačí jeden bit přepnout.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Co ASCII neumí">
+    <div><span class="eyebrow">Kapitola 6</span><h2>Co ASCII neumí a co s ním jde nakreslit</h2></div>
+    <p>ASCII nemá žádná písmena s háčky a čárkami. Počítače, které umějí jen ASCII, si proto s češtinou poradí po svém. Vyber, jak s textem naloží:</p>
+    <div class="box try"><span class="lbl">Čeština v ASCII</span>
+      <div class="field"><label for="czIn">Napiš českou větu</label><input type="text" id="czIn" value="Příliš žluťoučký kůň úpěl ďábelské ódy" autocomplete="off" spellcheck="false" maxlength="60"></div>
+      <div class="seg" id="czSeg"><button data-m="q" aria-pressed="true">Otazníky</button><button data-m="n" aria-pressed="false">Bez háčků a čárek</button><button data-m="d" aria-pressed="false">Zahodit</button></div>
+      <p class="out" id="czOut"></p>
+      <div class="cj-row"><span class="cj" id="czCj" data-s="s-boo"></span><p class="say" id="czSay"></p></div>
+    </div>
+    <div class="box fun"><span class="lbl">Obrázky z písmen: ASCII art</span>
+      <p>Když ASCII neumí obrázky, kreslilo se znaky. Napiš krátké slovo a nech ho nakreslit velkými písmeny z jiných znaků.</p>
+      <div class="field"><label for="artIn">Slovo (písmena, číslice, mezera, ! ? . -)</label><input type="text" id="artIn" value="ASCII" autocomplete="off" spellcheck="false" maxlength="10"></div>
+      <div class="seg" id="artSeg"><button data-f="#" aria-pressed="true">#</button><button data-f="@" aria-pressed="false">@</button><button data-f="*" aria-pressed="false">*</button><button data-f="%" aria-pressed="false">%</button></div>
+      <pre class="art" id="artOut"></pre>
+      <p class="muted" style="font-size:.92rem">Smajlík <code>:-)</code> je také ASCII art. Navrhl ho 19. září 1982 informatik Scott Fahlman na univerzitě Carnegie Mellon, aby se v diskuzích poznaly vtipy od vážných zpráv.</p>
+    </div>
+    <div class="links2"><a href="../unicode-pod-lupou/">Jak se s češtinou vypořádal Unicode: Unicode pod lupou →</a></div>
+    <div class="kq" data-ok="c">
+      <p class="q">Proč se text s písmenem „ř“ nedá v čistém ASCII zapsat?</p>
+      <div class="opts"><button data-v="a">„ř“ je moc složité písmeno.</button><button data-v="b">ASCII neumí malá písmena.</button><button data-v="c">Všech 128 míst v tabulce je zabraných jinými znaky.</button></div>
+      <div class="why">ASCII má jen 128 míst a obsadila je angličtina, číslice, interpunkce a řídicí znaky. Na „ř“ nezbylo číslo.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Hra: Rozlušti pásku">
+    <div><span class="eyebrow">Kapitola 7</span><h2>Hra: rozlušti pásku</h2></div>
+    <p>Čtecí stroj vypsal čísla. Poznáš, jaké slovo je na pásce? Pomůže ti tabulka: <b>A = 65</b>, <b>a = 97</b>, <b>0 = 48</b>.</p>
+    <div class="box fun game" id="game"><span class="lbl">Hra: Rozlušti pásku</span>
+      <div class="gstat"><span id="gRound"></span><span id="gScore"></span></div>
+      <div id="gBody"></div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Test">
+    <div><span class="eyebrow">Kapitola 8</span><h2>Test: co jsi zjistil</h2></div>
+    <div class="quiz" id="quizR1">
+      <div class="kq" data-ok="b"><p class="q">Kolik různých znaků zapíše 7 bitů?</p>
+        <div class="opts"><button data-v="a">64</button><button data-v="b">128</button><button data-v="c">256</button></div>
+        <div class="why">2<sup>7</sup> = 128. Proto má ASCII kódy 0 až 127.</div></div>
+      <div class="kq" data-ok="c"><p class="q">Co jsou řídicí znaky?</p>
+        <div class="opts"><button data-v="a">Znaky, kterými se píšou matematické vzorce.</button><button data-v="b">Písmena, která se řídí gramatikou.</button><button data-v="c">Kódy 0 až 31 a 127, které se netisknou a ovládají zařízení.</button></div>
+        <div class="why">Řídicí znaky jsou povely pro dálnopis nebo tiskárnu: zvonek, nový řádek, návrat vozíku, konec přenosu.</div></div>
+      <div class="kq" data-ok="a"><p class="q">Který znak zazvoní zvonkem na dálnopisu?</p>
+        <div class="opts"><button data-v="a">BEL, kód 7.</button><button data-v="b">LF, kód 10.</button><button data-v="c">ESC, kód 27.</button></div>
+        <div class="why">BEL (bell) je kód 7. Na dálnopisu rozezvonil zvonek.</div></div>
+      <div class="kq" data-ok="b"><p class="q">Velké „M“ má kód 77. Jaký kód má malé „m“?</p>
+        <div class="opts"><button data-v="a">78</button><button data-v="b">109</button><button data-v="c">45</button></div>
+        <div class="why">Malé písmeno má kód o 32 vyšší: 77 + 32 = 109.</div></div>
+      <div class="kq" data-ok="c"><p class="q">Proč ASCII nezvládne písmeno „ř“?</p>
+        <div class="opts"><button data-v="a">Je v něm příliš složité.</button><button data-v="b">Neumí malá písmena.</button><button data-v="c">Má jen 128 míst a žádné nezbylo.</button></div>
+        <div class="why">Všech 128 míst zabraly anglické znaky, číslice, interpunkce a řídicí znaky.</div></div>
+      <div class="qres"><div class="cj-row"><span class="cj" data-s="s-sip"></span><div class="say"><b class="who">Pásek</b><span class="score"></span><p class="qsay"></p></div></div>
+        <div class="box tip"><span class="lbl">Co si odnášíš</span><ul class="check" style="list-style:disc"><li>Počítač ukládá místo znaků čísla zapsaná jedničkami a nulami.</li><li>ASCII má 128 znaků po 7 bitech: tisknutelné i řídicí.</li><li>Řídicí znaky (0–31 a 127) ovládaly dálnopis: zvonek, nový řádek, návrat vozíku.</li><li>Velké a malé písmeno se liší o 32, tedy o jediný bit.</li><li>Na češtinu ASCII nestačí, proto vznikly další tabulky a nakonec Unicode.</li></ul></div>
+        <div><button class="btn qreset">Zkusit test znovu</button></div></div>
+    </div>
+  </article>
+
+  <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
+</div>
+</div>
+
+<!-- ================= POKROČILÝ ================= -->
+<div class="view v-r4">
+<div class="course" data-course="r4">
+  <div class="course-head">
+    <ul class="goals"><li>rozlišit bit, bajt, znak, kód a kódovou tabulku,</li><li>převádět kód znaku mezi desítkovou, dvojkovou a šestnáctkovou soustavou,</li><li>popsat vývoj od telegrafu přes ASCII po UTF-8,</li><li>vysvětlit stavbu tabulky ASCII a práci s paritním bitem,</li><li>poznat typické chyby: osmý bit, konce řádků, řazení, znak NUL.</li></ul>
+    <ol class="prog" aria-label="Kapitoly"></ol>
+  </div>
+
+  <article class="ch" data-title="Pojmy">
+    <div><span class="eyebrow">Kapitola 1</span><h2>Bit, bajt, znak, kód</h2></div>
+    <div class="chain" aria-label="Od znaku ke kódu a bitům">
+      <div><small>1 · Znak</small><span class="big mono" id="hG">A</span><small id="hN">velké písmeno</small></div>
+      <div><small>2 · Kód (desítkově)</small><span class="big mono" id="hD">65</span><small id="hX">šestnáctkově 41, osmičkově 101</small></div>
+      <div><small>3 · Bity</small>
+        <span class="enc">7 bitů&nbsp;&nbsp;<b id="h7" style="color:var(--k2)">1000001</b></span>
+        <span class="enc">8 bitů&nbsp;&nbsp;<b id="h8" style="color:var(--k1)">01000001</b></span>
+        <span class="enc">hex&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b id="hH" style="color:var(--k3)">41</b></span></div>
+    </div>
+    <div class="field" style="max-width:26rem"><label for="chIn">Zkus jiný znak</label><input type="text" id="chIn" value="A" autocomplete="off" spellcheck="false" maxlength="1" style="max-width:8rem"></div>
+    <dl class="terms">
+      <div><dt>Bit</dt><dd>Nejmenší jednotka informace: 0 nebo 1. Sedm bitů dává 2<sup>7</sup> = 128 kombinací.</dd></div>
+      <div><dt>Bajt</dt><dd>Osm bitů. ASCII potřebuje sedm, osmý bit zůstává volný (nula nebo parita).</dd></div>
+      <div><dt>Znak</dt><dd>Písmeno, číslice, interpunkce nebo řídicí povel.</dd></div>
+      <div><dt>Kód znaku</dt><dd>Číslo, které tabulka znaku přidělila. V ASCII 0 až 127.</dd></div>
+      <div><dt>Kódová tabulka</dt><dd>Dohoda, který znak má které číslo. Jiné názvy: znaková sada, kódová stránka.</dd></div>
+      <div><dt>Řídicí znak</dt><dd>Kód, který se netiskne, ale něco ovládá (zvonek, konec řádku). V ASCII jich je 33.</dd></div>
+    </dl>
+    <div class="kq" data-ok="b">
+      <p class="q">Bity 0100 0001 dávají desítkově…</p>
+      <div class="opts"><button data-v="a">64</button><button data-v="b">65</button><button data-v="c">66</button></div>
+      <div class="why">Zapnuté jsou bity s váhou 64 a 1: 64 + 1 = 65, tedy znak „A“.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Historie">
+    <div><span class="eyebrow">Kapitola 2</span><h2>Od telegrafu k ASCII a UTF-8</h2></div>
+    <div class="timeline">
+      <div class="tl"><span class="yr">1844</span><span class="kind">telegraf</span><b>Morseův kód</b><p>Tečky a čárky různé délky, znaky různě dlouhé. <a href="../morseova-abeceda/">Aplikace Morseova abeceda</a>.</p></div>
+      <div class="tl"><span class="yr">1870–1930</span><span class="kind">dálnopis</span><b>Baudotův kód</b><p>Pět bitů na znak, tedy jen 32 kombinací. Aby se vešly písmena i číslice, přepínalo se mezi nimi. <a href="../baudotuv-kod/">Aplikace Baudotův kód</a>.</p></div>
+      <div class="tl"><span class="yr">1963</span><span class="kind">kódová tabulka</span><b>ASCII</b><p>Sedm bitů, 128 míst. Americký standard pro výměnu textu mezi stroji různých výrobců. Ještě bez malých písmen.</p></div>
+      <div class="tl"><span class="yr">1964</span><span class="kind">konkurence</span><b>EBCDIC</b><p>Osmibitový kód IBM pro počítače System/360. Úplně jiné uspořádání než ASCII. Na sálových počítačích IBM žije dodnes.</p></div>
+      <div class="tl"><span class="yr">1967–1968</span><span class="kind">revize</span><b>Malá písmena a nařízení vlády</b><p>Revize přidala malá písmena a nahradila šipky ↑ ← znaky ^ a _. V roce 1968 nařídil prezident Johnson, aby nové počítače federální vlády ASCII podporovaly.</p></div>
+      <div class="tl"><span class="yr">1972</span><span class="kind">mezinárodní norma</span><b>ISO 646</b><p>Mezinárodní verze ASCII. Dvanáct míst smělo každá země přepsat vlastními písmeny. Ve švédské variantě se místo { | } objevovalo ä ö å.</p></div>
+      <div class="tl"><span class="yr">80. léta</span><span class="kind">osm bitů</span><b>Kódové stránky</b><p>Osmý bit uvolnil dalších 128 míst. Každý jazyk si je obsadil po svém: pro češtinu Kamenických, CP852, ISO 8859-2, Windows-1250. <a href="../ascii-kod/">Aplikace Kód ASCII</a>.</p></div>
+      <div class="tl enc"><span class="yr">1991–1992</span><span class="kind">dnes</span><b>Unicode a UTF-8</b><p>Prvních 128 míst zůstalo stejných jako v ASCII. Každý text v ASCII je proto zároveň platný text v UTF-8. <a href="../unicode-pod-lupou/">Unicode pod lupou</a>.</p></div>
+    </div>
+    <div class="kq" data-ok="a">
+      <p class="q">Co ještě neměla první verze ASCII z roku 1963?</p>
+      <div class="opts"><button data-v="a">Malá písmena.</button><button data-v="b">Číslice.</button><button data-v="c">Řídicí znaky.</button></div>
+      <div class="why">Malá písmena přibyla až při revizi v roce 1967. Číslice a řídicí znaky ASCII mělo od začátku.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Stavba tabulky">
+    <div><span class="eyebrow">Kapitola 3</span><h2>Jak je tabulka ASCII uspořádaná</h2></div>
+    <p>128 kódů se dělí na <b>4 zóny po 32 znacích</b>. Zónu určují dva nejvyšší bity, pozici v zóně pět nižších. Proto má velké „A“ v zóně pozici 1 (hned za znakem @) a řídicí povely tvoří celou zónu 0.</p>
+    <div class="panel"><div class="tw"><table class="tpl">
+      <thead><tr><th>Zóna</th><th>Kódy</th><th>Hex</th><th>Bity 6 a 5</th><th>Co obsahuje</th></tr></thead>
+      <tbody>
+        <tr><td><b class="hi">0</b></td><td>0–31</td><td><code>00–1F</code></td><td><code>00</code></td><td>řídicí znaky (+ DEL na kódu 127)</td></tr>
+        <tr><td><b class="hi">1</b></td><td>32–63</td><td><code>20–3F</code></td><td><code>01</code></td><td>mezera, interpunkce, číslice 0–9</td></tr>
+        <tr><td><b class="hi">2</b></td><td>64–95</td><td><code>40–5F</code></td><td><code>10</code></td><td>@, velká písmena A–Z, [ \ ] ^ _</td></tr>
+        <tr><td><b class="hi">3</b></td><td>96–127</td><td><code>60–7F</code></td><td><code>11</code></td><td>`, malá písmena a–z, { | } ~, DEL</td></tr>
+      </tbody></table></div></div>
+    <p>Pro kód platí: <b>kód = zóna × 32 + pozice v zóně</b>. Například „a“ je v zóně 3 na pozici 1, tedy 3 × 32 + 1 = 97. Z toho vyplývají tři užitečné vlastnosti:</p>
+    <ul class="check">
+      <li><b>Velké a malé písmeno</b> se liší jen bitem 5 (hodnota 32), takže mají stejnou pozici ve dvou sousedních zónách.</li>
+      <li><b>Číslice</b> 0–9 mají kódy 48–57. Spodní čtyři bity jsou přímo hodnota číslice.</li>
+      <li><b>Řazení podle kódu</b> dává velká písmena před malými (Z = 90 je před a = 97). Česká abeceda to takto neřadí.</li>
+    </ul>
+    <div class="box try"><span class="lbl">Kde bydlí znak?</span>
+      <div class="field"><label for="whereIn">Vlož znak</label><input type="text" id="whereIn" value="a" autocomplete="off" spellcheck="false" maxlength="1" style="max-width:8rem"></div>
+      <p class="out" id="whereOut"></p>
+    </div>
+    <div class="kq" data-ok="c">
+      <p class="q">Znak „k“ má kód 107. V které zóně leží?</p>
+      <div class="opts"><button data-v="a">V zóně 1.</button><button data-v="b">V zóně 2.</button><button data-v="c">V zóně 3.</button></div>
+      <div class="why">96–127 je zóna 3, malá písmena. Pozice v zóně je 107 − 96 = 11.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Soustavy a převody">
+    <div><span class="eyebrow">Kapitola 4</span><h2>Od čísla k bitům</h2></div>
+    <p>Kód znaku se píše třemi způsoby: <b>desítkově</b> (65), <b>šestnáctkově</b> (41) a <b>dvojkově</b> (1000001). Dvojkově zapisuje počítač, šestnáctkově je zápis kratší, protože <b>jedna šestnáctková číslice nahrazuje čtyři bity</b>.</p>
+    <div class="panel"><div class="tw"><table class="wt2">
+      <thead><tr><th>Váha</th><th>64</th><th>32</th><th>16</th><th>8</th><th>4</th><th>2</th><th>1</th></tr></thead>
+      <tbody><tr><td>Mocnina</td><td>2<sup>6</sup></td><td>2<sup>5</sup></td><td>2<sup>4</sup></td><td>2<sup>3</sup></td><td>2<sup>2</sup></td><td>2<sup>1</sup></td><td>2<sup>0</sup></td></tr></tbody>
+    </table></div>
+    <p class="muted">Číslo rozložíš na součet vah: 65 = 64 + 1, tedy bity 1000001. Šestnáctkové číslice: 0–9 a A–F (A = 10, … F = 15).</p></div>
+    <div class="box try"><span class="lbl">Vyzkoušej: znak krok za krokem</span><p>Zadej znak nebo kód a sleduj převod. Můžeš i listovat o jedničku dál.</p></div>
+    <div id="slotR4"></div>
+    <div class="cj-row"><span class="cj" data-s="s-ok"></span><p class="say"><b class="who">Tip od Páska</b>Čtyři bity dávají číslici 0–F. Znak rozdělíš na dvě poloviny po čtyřech bitech: třeba 0100 0001 je <b>4</b> a <b>1</b>, tedy hex <b>41</b>.</p></div>
+    <div class="kq" data-ok="b">
+      <p class="q">Šestnáctkově 4B je desítkově…</p>
+      <div class="opts"><button data-v="a">43</button><button data-v="b">75</button><button data-v="c">411</button></div>
+      <div class="why">4 × 16 + 11 = 75. B znamená 11. Znak s kódem 75 je „K“.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Parita a přenos">
+    <div><span class="eyebrow">Kapitola 5</span><h2>Osmý bit: parita a chyby při přenosu</h2></div>
+    <p>ASCII má sedm bitů, ale přenáší se po osmicích. Osmý bit se proto často využíval jako <b>paritní</b>. U <b>sudé parity</b> se doplní tak, aby celkový počet jedniček v bajtu byl sudý. Přijímač jedničky spočítá. Kdyby přišel lichý počet, ví, že se po cestě nějaký bit překlopil.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: pošli znak a poruš ho</span>
+      <div class="walk">
+        <div class="field" style="flex:0 0 8rem"><label for="parIn">Znak</label><input type="text" id="parIn" value="C" maxlength="1" autocomplete="off" spellcheck="false"></div>
+        <div class="seg" id="parMode"><button data-m="e" aria-pressed="true">Sudá parita</button><button data-m="o" aria-pressed="false">Lichá parita</button><button data-m="n" aria-pressed="false">Bez parity</button></div>
+      </div>
+      <p class="muted" style="font-size:.92rem">Klepnutím na bit ho překlopíš, jako by se pokazil na lince. Šedý bit vlevo je paritní.</p>
+      <div class="pbyte" id="pbyte"></div>
+      <div class="verdict info" id="parOut"></div>
+      <div><button class="btn" id="parReset">Obnovit odeslaný bajt</button></div>
+    </div>
+    <div class="links2"><a href="../ascii-kod/">Simulátor přenosu s paritou na děrné pásce: aplikace Kód ASCII →</a></div>
+    <div class="kq" data-ok="c">
+      <p class="q">Při přenosu se překlopí dva bity v jednom bajtu. Odhalí to kontrola parity?</p>
+      <div class="opts"><button data-v="a">Ano, vždy.</button><button data-v="b">Ano, ale jen u sudé parity.</button><button data-v="c">Ne, počet jedniček zůstane stejně sudý nebo lichý.</button></div>
+      <div class="why">Dva překlopené bity změní počet jedniček o dvě nebo vůbec, parita zůstane správná. Parita odhalí jen lichý počet chyb.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Pasti">
+    <div><span class="eyebrow">Kapitola 6</span><h2>Pasti v praxi</h2></div>
+    <div class="cols">
+      <div class="panel trap"><h3>Osmý bit zmizí</h3>
+        <p>Starší e-mailové systémy přenášely jen 7 bitů. Český text v ISO 8859-2 prošel linkou, která osmý bit každého bajtu vynulovala. Z písmen s háčky se staly jiné znaky.</p>
+        <div class="demo" id="dBit"></div></div>
+      <div class="panel trap"><h3>Konec řádku není všude stejný</h3>
+        <p>Windows ukončují řádek dvojicí CR LF, Unix a web jen LF. Staré Macintoshe používaly jen CR. Stejný text je proto v souboru různě dlouhý.</p>
+        <div class="demo" id="dEol"></div></div>
+      <div class="panel trap"><h3>Řazení podle kódů</h3>
+        <p>Počítač řadí řetězce podle kódů znaků. Velká písmena mají nižší kód než malá a číslice se porovnávají po jedné.</p>
+        <div class="demo" id="dSort"></div></div>
+      <div class="panel trap"><h3>Znak NUL ukončí řetězec</h3>
+        <p>V jazyce C řetězec končí prvním znakem s kódem 0. Co je za ním, funkce pro práci s textem „nevidí“.</p>
+        <div class="demo" id="dNul"></div></div>
+    </div>
+    <div class="kq" data-ok="a">
+      <p class="q">Soubor „Ahoj“ s koncem řádku z Windows má kolik bajtů v ASCII?</p>
+      <div class="opts"><button data-v="a">6: čtyři písmena a CR LF.</button><button data-v="b">4: konec řádku se nepočítá.</button><button data-v="c">5: jen LF.</button></div>
+      <div class="why">Každý znak ASCII zabere 1 bajt. Konec řádku ve Windows jsou dva znaky, CR (13) a LF (10).</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Procvičování">
+    <div><span class="eyebrow">Kapitola 7</span><h2>Procvičování</h2></div>
+    <p>Úlohy se generují náhodně, takže každý dostane jiné. Když se spleteš, aplikace ukáže celý postup.</p>
+    <div class="panel prac">
+      <div class="seg" id="pType"><button data-t="mix" aria-pressed="true">Mix</button><button data-t="dec" aria-pressed="false">Kód znaku</button><button data-t="bin" aria-pressed="false">Dvojkově</button><button data-t="chr" aria-pressed="false">Znak z kódu</button><button data-t="par" aria-pressed="false">Parita</button></div>
+      <div class="gstat"><span id="pStat">Vyřešeno 0 z 0</span><span id="pStreak"></span></div>
+      <div class="task" id="pTask"></div>
+      <div id="pAns"></div>
+      <div class="res" id="pRes"></div>
+      <div><button class="btn pri" id="pNext">Další úloha</button></div>
+    </div>
+    <div class="cj-row"><span class="cj" id="pCj" data-s="s-ok"></span><p class="say" id="pSay"><b class="who">Pásek</b>Pamatuj si pár opěrných bodů: A = 65, a = 97, 0 = 48. Zbytek dopočítáš.</p></div>
+  </article>
+
+  <article class="ch" data-title="Test">
+    <div><span class="eyebrow">Kapitola 8</span><h2>Test</h2></div>
+    <div class="quiz" id="quizR4">
+      <div class="kq" data-ok="a"><p class="q">Bajt 0100 0001 je v ASCII znak…</p>
+        <div class="opts"><button data-v="a">A</button><button data-v="b">a</button><button data-v="c">1</button></div>
+        <div class="why">0100 0001 = 41 hex = 65 desítkově, a to je velké „A“.</div></div>
+      <div class="kq" data-ok="b"><p class="q">Kolik řídicích znaků má ASCII?</p>
+        <div class="opts"><button data-v="a">32</button><button data-v="b">33</button><button data-v="c">95</button></div>
+        <div class="why">Kódy 0–31 jsou řídicí a k nim DEL (127): dohromady 33. Zbylých 95 znaků se tiskne, včetně mezery.</div></div>
+      <div class="kq" data-ok="a"><p class="q">Jak z kódu velkého písmene ASCII získáš kód malého?</p>
+        <div class="opts"><button data-v="a">Přičteš 32, tedy zapneš bit 5.</button><button data-v="b">Přičteš 10.</button><button data-v="c">Odečteš 1.</button></div>
+        <div class="why">Rozdíl je 32 = 100000 dvojkově. Je to jediný bit.</div></div>
+      <div class="kq" data-ok="a"><p class="q">Sedm bitů 1011001 obsahuje čtyři jedničky. Jaký bit sudé parity připojíš?</p>
+        <div class="opts"><button data-v="a">0, jedniček je už sudý počet.</button><button data-v="b">1</button><button data-v="c">Parita se z jedniček nepočítá.</button></div>
+        <div class="why">Sudá parita doplňuje bit tak, aby bylo jedniček sudý počet. Čtyři jsou sudý počet, proto 0.</div></div>
+      <div class="kq" data-ok="c"><p class="q">Soubor „Ahoj“ + CR LF má v ASCII kolik bajtů?</p>
+        <div class="opts"><button data-v="a">4</button><button data-v="b">5</button><button data-v="c">6</button></div>
+        <div class="why">Čtyři písmena a dva řídicí znaky, každý 1 bajt.</div></div>
+      <div class="kq" data-ok="b"><p class="q">V čem se liší bajty znaků 0–127 v ASCII a v UTF-8?</p>
+        <div class="opts"><button data-v="a">UTF-8 používá dva bajty.</button><button data-v="b">V ničem, jsou stejné.</button><button data-v="c">UTF-8 přidává paritní bit.</button></div>
+        <div class="why">UTF-8 je s ASCII zpětně kompatibilní. Znaky 0–127 mají v UTF-8 stejný jediný bajt.</div></div>
+      <div class="kq" data-ok="a"><p class="q">Kombinace Ctrl+G v terminálu pošle znak…</p>
+        <div class="opts"><button data-v="a">BEL (kód 7).</button><button data-v="b">ESC (kód 27).</button><button data-v="c">LF (kód 10).</button></div>
+        <div class="why">Ctrl vynuluje horní bity: G = 71 = 1000111, po vynulování dvou horních zbyde 00111, tedy 7.</div></div>
+      <div class="kq" data-ok="b"><p class="q">Seřadíš-li slova podle kódů ASCII, které je první: „Zebra“, nebo „apple“?</p>
+        <div class="opts"><button data-v="a">„apple“, začíná písmenem A.</button><button data-v="b">„Zebra“, velké Z má kód 90 a malé a kód 97.</button><button data-v="c">Záleží na délce slova.</button></div>
+        <div class="why">Řazení podle kódů porovnává kódy znaků. Velká písmena mají nižší kódy než malá.</div></div>
+      <div class="qres"><div class="cj-row"><span class="cj" data-s="s-sip"></span><div class="say"><b class="who">Pásek</b><span class="score"></span><p class="qsay"></p></div></div>
+        <div><button class="btn qreset">Zkusit test znovu</button></div></div>
+    </div>
+  </article>
+
+  <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
+</div>
+</div>
+
+<!-- ================= LABORATOŘ ================= -->
+<div class="view v-lab">
+<div class="lvlbar"><span>Podrobnost výkladu:</span><div class="seg" id="labLvl"><button data-l="r1" aria-pressed="false">Začátečník</button><button data-l="r4" aria-pressed="true">Pokročilý</button><button data-l="pro" aria-pressed="false">Profesionál</button></div></div>
+<section id="text">
+  <div><span class="eyebrow">Laboratoř</span><h2>Napište cokoli a podívejte se, z čeho se skládá</h2></div>
+  <p class="muted">Každý rámeček je jeden znak. Barva okraje ukazuje skupinu, pod znakem je jeho kód. Znaky mimo ASCII mají přerušovaný rámeček, protože v tabulce ASCII nejsou. Najetím myši zvýrazníte odpovídající údaje v pruzích, kliknutím znak rozložíte níže.</p>
+  <div class="panel">
+    <div class="field"><label for="txt">Text</label><input type="text" id="txt" autocomplete="off" spellcheck="false"></div>
+    <div class="chips" id="samples"></div>
+    <div class="legend" aria-hidden="true"><span class="gc-ctl"><i></i>řídicí znak</span><span class="gc-sp"><i></i>mezera a interpunkce</span><span class="gc-dig"><i></i>číslice</span><span class="gc-up"><i></i>velká písmena</span><span class="gc-low"><i></i>malá písmena</span><span class="gc-non"><i></i>mimo ASCII</span></div>
+    <div class="counts" id="counts"></div>
+    <div id="flags"></div>
+    <div class="graphs" id="graphs"></div>
+    <div class="striplbl"><span>Kódy · desítkově</span><b id="nD"></b></div>
+    <div class="strip" id="sD"></div>
+    <div class="striplbl n1"><span>Bajty · šestnáctkově (ASCII i UTF-8)</span><b id="nH"></b></div>
+    <div class="strip n1" id="sH"></div>
+    <div class="striplbl adv"><span>Bity · 7 bitů na znak, mimo ASCII bajty UTF-8</span><b id="nB"></b></div>
+    <div class="strip adv" id="sB"></div>
+    <p class="muted" id="trunc" hidden>Zobrazeno prvních 200 znaků.</p>
+  </div>
+</section>
+<section>
+  <div><span class="eyebrow">Laboratoř</span><h2>Jeden znak pod lupou</h2></div>
+  <div id="slotLab">
+  <div id="lupa" style="display:grid;gap:18px;scroll-margin-top:60px">
+    <div class="panel">
+      <div class="walk">
+        <div class="field"><label for="cpIn">Znak, kód (65), 0x41, 0b1000001 nebo zkratka (LF, ESC)</label><input type="text" id="cpIn" autocomplete="off" spellcheck="false"></div>
+        <button class="btn" id="prev" aria-label="Předchozí kód">‹ −1</button>
+        <button class="btn" id="next" aria-label="Následující kód">+1 ›</button>
+      </div>
+      <div class="insp-head">
+        <div class="bigglyph" id="ig"></div>
+        <dl class="facts" id="facts"></dl>
+      </div>
+      <div class="sizes" id="sizes"></div>
+    </div>
+    <div class="cols n1">
+      <div class="panel" id="p1"></div>
+      <div class="panel" id="p2"></div>
+    </div>
+  </div>
+  </div>
+</section>
+</div>
+
+<!-- ================= PROFESIONÁL ================= -->
+<div class="view v-pro">
+<section id="pro">
+  <div><span class="eyebrow">Profesionál · příručka</span><h2>ASCII v praxi IT</h2></div>
+  <div class="ptoc"><a class="chip" href="#p-bit">Bitové triky</a><a class="chip" href="#p-ctl">Řídicí znaky v praxi</a><a class="chip" href="#p-hex">Hexdump a dekodér</a><a class="chip" href="#p-enc">Převod do čistého ASCII</a><a class="chip" href="#p-lang">Jazyky a regulární výrazy</a><a class="chip" href="#p-check">Kontrolní seznam</a></div>
+  <p class="muted">Rozbor libovolného znaku včetně zápisů pro HTML, JavaScript a URL najdete v <a href="#lab" data-go="lab">Laboratoři</a>, která se v této úrovni přepne na plnou podrobnost.</p>
+
+  <div class="panel" id="p-bit" style="scroll-margin-top:60px">
+    <h3>Bitová anatomie ASCII</h3>
+    <p class="muted">Rozložení tabulky (zóna v bitech 6 a 5, pozice v bitech 4 až 0) umožňuje řadu triků bez tabulek a podmínek. Platí jen pro znaky v ASCII a písmena anglické abecedy: u jiných znaků vracejí nesmysly.</p>
+    <div class="field" style="max-width:14rem"><label for="btIn">Znak</label><input type="text" id="btIn" value="a" maxlength="1" autocomplete="off" spellcheck="false"></div>
+    <div class="tw"><table id="btTbl"></table></div>
+  </div>
+
+  <div class="panel" id="p-ctl" style="scroll-margin-top:60px">
+    <h3>Řídicí znaky v dnešní praxi</h3>
+    <div class="tw"><table>
+      <thead><tr><th>Kód</th><th>Znak</th><th>Ctrl+</th><th>Použití dnes</th></tr></thead>
+      <tbody>
+        <tr><td><code>0</code></td><td>NUL</td><td><code>@</code></td><td>Konec řetězce v jazyce C (nulový ukončovač). Soubory plné NUL bývají binární.</td></tr>
+        <tr><td><code>3</code></td><td>ETX</td><td><code>C</code></td><td>V terminálu přeruší běžící program (signál SIGINT).</td></tr>
+        <tr><td><code>4</code></td><td>EOT</td><td><code>D</code></td><td>V Unixu konec vstupu (EOF).</td></tr>
+        <tr><td><code>7</code></td><td>BEL</td><td><code>G</code></td><td>Pípnutí terminálu.</td></tr>
+        <tr><td><code>8</code></td><td>BS</td><td><code>H</code></td><td>Posun o znak zpět.</td></tr>
+        <tr><td><code>9</code></td><td>HT</td><td><code>I</code></td><td>Tabulátor (<code>\t</code>).</td></tr>
+        <tr><td><code>10</code></td><td>LF</td><td><code>J</code></td><td>Konec řádku v Unixu, Linuxu, macOS a na webu (<code>\n</code>).</td></tr>
+        <tr><td><code>13</code></td><td>CR</td><td><code>M</code></td><td>Návrat vozíku (<code>\r</code>). Windows: CR LF. Klasické Mac OS: jen CR.</td></tr>
+        <tr><td><code>17, 19</code></td><td>DC1, DC3</td><td><code>Q</code>, <code>S</code></td><td>XON a XOFF: softwarové řízení toku. Ctrl+S „zamrzne“ terminál, Ctrl+Q ho uvolní.</td></tr>
+        <tr><td><code>26</code></td><td>SUB</td><td><code>Z</code></td><td>V DOSu konec textového souboru. V Unixu pozastaví program.</td></tr>
+        <tr><td><code>27</code></td><td>ESC</td><td><code>[</code></td><td>Začátek ovládacích sekvencí terminálu (ANSI), např. barvy.</td></tr>
+        <tr><td><code>28–31</code></td><td>FS GS RS US</td><td><code>\ ] ^ _</code></td><td>Oddělovače souborů, skupin, záznamů a položek. Teoreticky ideální oddělovače dat bez nutnosti uvozovek, v praxi se skoro nepoužívají.</td></tr>
+        <tr><td><code>127</code></td><td>DEL</td><td><code>?</code></td><td>Klávesa Backspace v mnoha terminálech posílá právě DEL.</td></tr>
+      </tbody></table></div>
+    <h3>ANSI sekvence: barvy v terminálu</h3>
+    <p class="muted">Terminál po znaku ESC přečte sekvenci a podle ní mění styl. Napište ESC jako <code>\e</code>, <code>\x1b</code> nebo <code>\033</code>. Podporováno: <code>0</code> reset, <code>1</code> tučně, <code>30–37</code> barva textu, <code>40–47</code> pozadí.</p>
+    <div class="field"><label for="ansiIn">Text se sekvencemi</label><input type="text" id="ansiIn" value="\e[31mchyba\e[0m a \e[1;32mhotovo\e[0m" autocomplete="off" spellcheck="false"></div>
+    <div class="ansi" id="ansiOut"></div>
+    <p class="fn">Pozor na bezpečnost: nevěřte řídicím znakům ve vstupu uživatele. Znak CR LF v hodnotě HTTP hlavičky umožňuje vložit hlavičku navíc, ESC sekvence ve výpisu logu mohou měnit zobrazení terminálu.</p>
+  </div>
+
+  <div class="cols" id="p-hex" style="scroll-margin-top:60px">
+    <div class="panel">
+      <h3>Hexdump</h3>
+      <p class="muted">Výpis ve stylu <code>hexdump -C</code>: posun, šestnáct bajtů šestnáctkově a vpravo znaky. Netisknutelné bajty se zobrazí tečkou. Bajty mimo ASCII (nad 7F, tedy začátek UTF-8 sekvence) jsou červeně.</p>
+      <div class="field"><label for="hdIn">Text</label><textarea id="hdIn" rows="3" spellcheck="false"></textarea></div>
+      <div class="chips" id="hdSamples"></div>
+      <pre class="hexd" id="hdOut"></pre>
+    </div>
+    <div class="panel">
+      <h3>Dekodér bajtů</h3>
+      <p class="muted">Vložte bajty šestnáctkově a porovnejte, jak je přečtou různá kódování. Přísné ASCII nahradí bajty nad 7F znakem U+FFFD &#xFFFD;.</p>
+      <div class="field"><label for="hexIn">Bajty (hex)</label><input type="text" id="hexIn" value="50 F8 ED 6C 69 B9 20 41 53 43 49 49" autocomplete="off" spellcheck="false"></div>
+      <div class="radios" role="radiogroup" aria-label="Kódování">
+        <label><input type="radio" name="decEnc" value="ascii" checked> ASCII (přísně)</label>
+        <label><input type="radio" name="decEnc" value="utf-8"> UTF-8</label>
+        <label><input type="radio" name="decEnc" value="iso-8859-2"> ISO 8859-2</label>
+        <label><input type="radio" name="decEnc" value="windows-1250"> Windows-1250</label>
+        <label><input type="radio" name="decEnc" value="windows-1252"> Windows-1252</label>
+      </div>
+      <div class="out" id="decOut"></div>
+      <div id="decInfo"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="p-enc" style="scroll-margin-top:60px">
+    <h3>Jak se cokoli převede do čistého ASCII</h3>
+    <p class="muted">Mnoho protokolů je historicky 7bitových: e-mail, URL, DNS. Znaky mimo ASCII se proto před odesláním zakódují do podoby z tisknutelných znaků ASCII. Zadejte text a porovnejte metody:</p>
+    <div class="field"><label for="encIn">Text</label><input type="text" id="encIn" value="Příliš žluťoučký kůň" autocomplete="off" spellcheck="false"></div>
+    <div class="tw"><table id="encTbl"></table></div>
+  </div>
+
+  <div class="panel" id="p-lang" style="scroll-margin-top:60px">
+    <h3>Kód znaku v programovacích jazycích</h3>
+    <div class="field" style="max-width:14rem"><label for="lgIn">Znak</label><input type="text" id="lgIn" value="A" maxlength="1" autocomplete="off" spellcheck="false"></div>
+    <div class="tw"><table id="lgTbl"></table></div>
+    <h3>Regulární výrazy a ASCII</h3>
+    <ul class="check">
+      <li><b>JavaScript:</b> <code>\w</code> a <code>\d</code> jsou bez příznaku <code>u</code> jen ASCII (<code>[A-Za-z0-9_]</code>), „ř“ se nepovažuje za písmeno. Pro písmena všech jazyků použijte <code>\p{L}</code> s příznakem <code>u</code>.</li>
+      <li><b>Python 3:</b> <code>\w</code> a <code>\d</code> jsou v řetězcích Unicode, ASCII si vynutíte příznakem <code>re.ASCII</code>.</li>
+      <li><b>Test, zda je text ASCII:</b> <code>/^[\x00-\x7F]*$/</code>, v Pythonu 3.7+ <code>s.isascii()</code>.</li>
+      <li><b>Pozor:</b> třída <code>[A-Z]</code> nezahrnuje české „Ř“ ani „Č“.</li>
+    </ul>
+  </div>
+
+  <div class="panel" id="p-check" style="scroll-margin-top:60px">
+    <h3>Kontrolní seznam: kde ASCII pořád potkáte</h3>
+    <ul class="check">
+      <li><b>Zjištění, zda je soubor ASCII:</b> <code>file soubor.txt</code> nebo <code>grep -nP '[^\x00-\x7F]' soubor.txt</code> vypíše řádky se znaky mimo ASCII.</li>
+      <li><b>MIME e-mail:</b> přenosové kódování <code>7bit</code>, <code>8bit</code>, <code>quoted-printable</code> nebo <code>base64</code>. Base64 mění 3 bajty na 4 tisknutelné znaky ASCII, data tedy zvětší o třetinu. Hlavičky s češtinou se zapisují jako <code>=?UTF-8?B?…?=</code>.</li>
+      <li><b>URL:</b> v adrese smí být jen vybrané znaky ASCII, zbytek se kóduje procentově (<code>%20</code> je mezera). Rezervované znaky: <code>: / ? # [ ] @ ! $ &amp; ' ( ) * + , ; =</code>.</li>
+      <li><b>Domény:</b> v DNS jen písmena, číslice a pomlčka. České domény s diakritikou se převádějí na ASCII přes Punycode (<code>xn--</code>).</li>
+      <li><b>HTTP hlavičky:</b> názvy jsou ASCII, hodnoty by měly být také. Bajty nad 7F v hodnotách berte jako neprůhledná data a nespoléhejte na jejich kódování.</li>
+      <li><b>Názvy souborů ve Windows:</b> zakázány jsou znaky <code>&lt; &gt; : " / \ | ? *</code> a řídicí znaky 0–31.</li>
+      <li><b>Hesla:</b> doporučení NIST (SP 800-63B) počítá s tím, že systém přijme všechny tisknutelné znaky ASCII včetně mezery, a také Unicode. Zakazovat hesla jen kvůli „divným“ znakům je chyba.</li>
+      <li><b>Vstup od uživatele:</b> odstraňte nebo escapujte řídicí znaky (CR, LF, ESC, NUL) před zápisem do logu, hlavičky, příkazové řádky nebo názvu souboru.</li>
+      <li><b>Řazení:</b> řazení podle kódů ASCII není abecední ani česky správné (velká před malými, <code>10</code> před <code>9</code>). Pro uživatele používejte kolaci jazyka.</li>
+    </ul>
+  </div>
+</section>
+</div>
+
+<!-- ================= TABULKA ================= -->
+<div class="view v-tabulka">
+<section id="mapa">
+  <div><span class="eyebrow">Tabulka znaků</span><h2>Mapa ASCII: 128 znaků</h2></div>
+  <p>ASCII má <b>128 kódů</b>: 33 řídicích (0–31 a 127) a 95 tisknutelných (včetně mezery). Tabulka je rozdělená do osmi řádků po šestnácti. Řádek určuje první šestnáctková číslice kódu, sloupec druhou. Třeba „A“ je v řádku 4 a sloupci 1, tedy <code>41</code>.</p>
+  <p class="note"><b>Kliknutím na znak v tabulce ho zkopírujete do schránky</b> a můžete ho vložit kamkoli (Ctrl+V). U řídicích znaků se zkopíruje jejich obrázek (např. ␇).</p>
+  <h3>1 · Zóna <small class="muted" style="font:400 .9rem var(--body)">klepnutím zónu zvýrazníte</small></h3>
+  <div class="zones" id="zones"></div>
+  <div class="panel">
+    <div class="blkbar">
+      <div class="field"><label for="grpSel">2 · Skupina znaků</label><select id="grpSel"></select></div>
+      <div class="field" style="flex:0 1 auto"><label>3 · Číslo v buňce</label><div class="seg" id="baseSeg"><button data-b="10" aria-pressed="true">Desítkově</button><button data-b="16" aria-pressed="false">Hex</button><button data-b="2" aria-pressed="false">Dvojkově</button><button data-b="8" aria-pressed="false">Osmičkově</button></div></div>
+    </div>
+    <p class="muted" id="blkInfo"></p>
+    <div class="gridwrap"><div class="cgrid a" id="agrid"></div></div>
+    <div class="preview" id="prev2"></div>
+  </div>
+</section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer>
+  <div class="teacher-box" id="ucitele">
+    <h3>Pro učitele: metodika</h3>
+    <details class="teacher"><summary>Začátečník: plán vyučovací hodiny (45 minut)</summary>
+      <ol>
+        <li><b>0–4 min</b> · Kapitola 1: promítněte řadu čísel z pásky, žáci hlasují, co znamenají. Odpověď nechte na kapitolu 3.</li>
+        <li><b>4–11 min</b> · Kapitola 2: skládání znaku z bitů. Soutěž: kdo první poskládá první písmeno svého jména. Pak jméno jako čísla.</li>
+        <li><b>11–17 min</b> · Kapitola 3: tabulka ASCII, rozluštění pásky, hledání „ř“. Kdo chce víc, má aplikaci Kód ASCII.</li>
+        <li><b>17–25 min</b> · Kapitola 4: řídicí znaky. Dálnopis: žáci zkusí předvolby „schody“ a „přepsání“ a vysvětlí, proč Windows potřebují CR i LF.</li>
+        <li><b>25–31 min</b> · Kapitola 5: trik s bitem 32. Žáci převrátí písmena svého jména.</li>
+        <li><b>31–35 min</b> · Kapitola 6 (lze vynechat): čeština v ASCII a ASCII art.</li>
+        <li><b>35–42 min</b> · Kapitola 7: hra Rozlušti pásku ve dvojicích.</li>
+        <li><b>42–45 min</b> · Kapitola 8: test, společná kontrola.</li>
+      </ol></details>
+    <details class="teacher"><summary>Pokročilý: plán na 2–3 vyučovací hodiny</summary>
+      <ol>
+        <li><b>1. hodina</b> · Kapitoly 1–3: pojmy, historie a stavba tabulky. Domácí úkol: najít v Tabulce po třech znacích z každé zóny a zapsat jejich kódy dvojkově.</li>
+        <li><b>2. hodina</b> · Kapitoly 4–5: převody soustav. Žáci nejprve počítají na papír a pak se kontrolují v aplikaci. Parita: žáci si ve dvojicích pošlou bajt se záměrnou chybou.</li>
+        <li><b>3. hodina</b> · Kapitoly 6–8: pasti, procvičování (soutěž ve dvojicích: kdo vyřeší víc úloh za 10 minut) a test.</li>
+      </ol></details>
+    <p class="fn">Související aplikace: <a href="../ascii-kod/">Kód ASCII (simulátor přenosu)</a> · <a href="../unicode-pod-lupou/">Unicode pod lupou</a> · <a href="../baudotuv-kod/">Baudotův kód</a> · <a href="../morseova-abeceda/">Morseova abeceda</a></p>
+  </div>
+  ASCII kód pod lupou · výukový materiál. Standard: ANSI X3.4-1986, mezinárodně ISO/IEC 646. Historické údaje podle dostupných norem a literatury.<br>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 1. 11. 2026
+</footer>
+</div>
+
+
+<script>
+const $=s=>document.querySelector(s);
+const hx=(n,w=2)=>n.toString(16).toUpperCase().padStart(w,'0');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+/* ---------- data o znacích ASCII ---------- */
+const CTRL=['NUL','SOH','STX','ETX','EOT','ENQ','ACK','BEL','BS','HT','LF','VT','FF','CR','SO','SI','DLE','DC1','DC2','DC3','DC4','NAK','SYN','ETB','CAN','EM','SUB','ESC','FS','GS','RS','US'];
+const SHORT={0:'prázdný znak',1:'začátek záhlaví',2:'začátek textu',3:'konec textu',4:'konec přenosu',5:'dotaz',6:'potvrzení',7:'zvonek',8:'krok zpět',9:'tabulátor',10:'nový řádek',11:'svislý tabulátor',12:'nová stránka',13:'návrat vozíku',14:'přepnutí ven',15:'přepnutí zpět',16:'únik datového spoje',17:'řízení zařízení 1 (XON)',18:'řízení zařízení 2',19:'řízení zařízení 3 (XOFF)',20:'řízení zařízení 4',21:'záporné potvrzení',22:'synchronizace',23:'konec bloku',24:'zrušit',25:'konec média',26:'náhrada',27:'escape',28:'oddělovač souborů',29:'oddělovač skupin',30:'oddělovač záznamů',31:'oddělovač položek',127:'smazat'};
+const CTRLINFO={"0": "NUL – Null: prázdný znak. Na děrné pásce sloupec bez děr, sloužil jako výplň a zaváděcí úsek pásky.", "1": "SOH – Start of Heading: začátek záhlaví zprávy (adresa, priorita).", "2": "STX – Start of Text: konec záhlaví, začíná vlastní text zprávy.", "3": "ETX – End of Text: konec textu zprávy. Dnes Ctrl+C přerušuje program.", "4": "EOT – End of Transmission: konec přenosu, linku lze uvolnit. V Unixu Ctrl+D ukončí vstup.", "5": "ENQ – Enquiry: dotaz „kdo jsi?“. Protistanice odpoví svou volačkou (u dálnopisů Teletype WRU).", "6": "ACK – Acknowledge: potvrzení, že data dorazila v pořádku.", "7": "BEL – Bell: zazvoní zvonek přijímacího dálnopisu (v této aplikaci také).", "8": "BS – Backspace: posun o jeden znak zpět, na tiskárně třeba k přetištění znaku.", "9": "HT – Horizontal Tab: vodorovný tabulátor, skok na další zarážku v řádku.", "10": "LF – Line Feed: posun papíru o řádek. V Unixu a na webu znamená nový řádek.", "11": "VT – Vertical Tab: svislý tabulátor, posun o několik řádků dolů.", "12": "FF – Form Feed: posun na začátek nové stránky.", "13": "CR – Carriage Return: návrat vozíku na začátek řádku. Windows ukončují řádek dvojicí CR LF.", "14": "SO – Shift Out: přepnutí na jinou sadu znaků, například na azbuku.", "15": "SI – Shift In: návrat k základní sadě znaků.", "16": "DLE – Data Link Escape: následující znaky jsou řídicí údaje spoje, ne text.", "17": "DC1 – Device Control 1: zapne zařízení, např. čtečku pásky. Dnes XON: pokračuj ve vysílání.", "18": "DC2 – Device Control 2: zapne děrovačku pásky.", "19": "DC3 – Device Control 3: vypne čtečku pásky. Dnes XOFF: zastav vysílání.", "20": "DC4 – Device Control 4: vypne děrovačku pásky.", "21": "NAK – Negative Acknowledge: data dorazila s chybou, pošli je znovu.", "22": "SYN – Synchronous Idle: výplň, která drží synchronizaci, když se nic neposílá.", "23": "ETB – End of Transmission Block: konec bloku dat.", "24": "CAN – Cancel: zrušení, předchozí data jsou chybná a mají se zahodit.", "25": "EM – End of Medium: konec média (pásky, karty).", "26": "SUB – Substitute: náhrada za poškozený nebo neplatný znak. V DOSu Ctrl+Z ukončoval textový soubor.", "27": "ESC – Escape: následující znaky mají zvláštní význam (řídicí sekvence tiskáren a terminálů). Dnes klávesa Esc.", "28": "FS – File Separator: oddělovač souborů.", "29": "GS – Group Separator: oddělovač skupin.", "30": "RS – Record Separator: oddělovač záznamů.", "31": "US – Unit Separator: oddělovač jednotlivých položek, nejnižší úroveň.", "32": "SP – Space: mezera. Je to tisknutelný znak, ale nic nevytiskne, jen posune vozík.", "127": "DEL – Delete: smazat. Na pásce všech 7 děr: chybný znak šlo předěrovat a čtečka ho přeskočila."};
+const isCtl=c=>c<32||c===127;
+const abbr=c=>c===127?'DEL':c<32?CTRL[c]:c===32?'SP':String.fromCharCode(c);
+const pic=c=>c===127?'␡':c===32?'␣':c<32?String.fromCodePoint(0x2400+c):String.fromCharCode(c);
+const disp=c=>c>127?String.fromCodePoint(c):isCtl(c)?abbr(c):c===32?'␣':String.fromCharCode(c);
+const grp=c=>c<32||c===127?'ctl':c===32?'sp':c>=48&&c<=57?'dig':c>=65&&c<=90?'up':c>=97&&c<=122?'low':'sym';
+const GRPCZ={ctl:'řídicí znak',sp:'mezera',dig:'číslice',up:'velké písmeno',low:'malé písmeno',sym:'interpunkce nebo symbol'};
+const gcls=c=>c>127?'gc-non':'gc-'+(grp(c)==='sym'?'sym':grp(c));
+const bin7=c=>c.toString(2).padStart(7,'0');
+const ones=c=>c.toString(2).split('').filter(x=>x==='1').length;
+const u8=cp=>{if(cp<0x80)return [cp];if(cp<0x800)return [0xC0|cp>>6,0x80|cp&63];if(cp<0x10000)return [0xE0|cp>>12,0x80|(cp>>6)&63,0x80|cp&63];return [0xF0|cp>>18,0x80|(cp>>12)&63,0x80|(cp>>6)&63,0x80|cp&63];};
+const bytesHex=a=>a.map(b=>hx(b)).join(' ');
+const U=cp=>'U+'+hx(cp,4);
+function unesc(s){return s.replace(/\\(x[0-9a-fA-F]{2}|033|[rnt0eabfv\\])/g,(m,k)=>{
+  if(k==='033')return '\x1b';
+  if(k[0]==='x')return String.fromCharCode(parseInt(k.slice(1),16));
+  return {r:'\r',n:'\n',t:'\t','0':'\0',e:'\x1b',a:'\x07',b:'\b',f:'\f',v:'\v','\\':'\\'}[k];});}
+const visCtl=s=>Array.from(s).map(ch=>{const c=ch.codePointAt(0);return (c<32||c===127)?pic(c):ch;}).join('');
+
+let toastT;
+function toast(html){const t=$('#toast');t.innerHTML=html;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1900);}
+function fallbackCopy(text){
+  const ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy');}catch(e){}ta.remove();return ok;
+}
+function copyText(text,okHtml,cell){
+  const done=ok=>{
+    if(ok){toast(okHtml);if(cell){cell.classList.add('copied');setTimeout(()=>cell.classList.remove('copied'),600);}}
+    else toast('Kopírování se nepodařilo.');
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(()=>done(true),()=>done(fallbackCopy(text)));
+  else done(fallbackCopy(text));
+}
+function copyCode(c,cell){
+  const t=pic(c);
+  const sp=c===32?'mezera':isCtl(c)?`řídicí znak ${abbr(c)} (zkopírován obrázek ${t})`:t;
+  copyText(t,`<span class="tg">${esc(t)}</span>kód ${c}: ${esc(sp)} zkopírováno`,cell);
+}
+let AC;
+function beep(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(.15,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.5);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.5);}catch(e){}}
+
+/* ---------- Laboratoř 1: rozbor textu ---------- */
+const SAMPLES=[['Ahoj světe! 123 :-)','běžný text'],['HELLO','velká písmena'],['hello','malá písmena'],['Příliš žluťoučký kůň','čeština'],
+ ['The quick brown fox jumps over the lazy dog','pangram v ASCII'],['{"a": [1, 2]}','JSON'],['<b>Ahoj</b>','HTML'],['Ahoj\\r\\nsvět\\t(tab)\\a','řídicí znaky'],['\\e[31mchyba\\e[0m','ESC sekvence']];
+$('#txt').value=SAMPLES[0][0];
+$('#samples').innerHTML=SAMPLES.map((s,i)=>`<button class="chip" data-s="${i}">${esc(s[1])}</button>`).join('');
+$('#samples').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;$('#txt').value=SAMPLES[b.dataset.s][0];analyze();});
+function analyze(){
+  const text=unesc($('#txt').value), chars=Array.from(text), LIMIT=200;
+  let tiles='',sD='',sH='',sB='',nA=0,nN=0,nC=0,bytes=0;
+  chars.forEach((ch,idx)=>{
+    const cp=ch.codePointAt(0), b=u8(cp); bytes+=b.length;
+    if(cp<128){nA++;if(isCtl(cp))nC++;}else nN++;
+    if(idx>=LIMIT) return;
+    const g=gcls(cp), a=cp<128;
+    tiles+=a?`<div class="g tile ${g}" data-i="${idx}" data-cp="${cp}" tabindex="0" role="button" style="cursor:pointer;min-width:62px"><div class="gg ${isCtl(cp)?'mono':''}" style="${isCtl(cp)?'font-size:1.05rem;font-weight:600':''}">${esc(disp(cp))}</div><b class="mono">${cp}</b><span class="hx n1">0x${hx(cp)}</span><span class="bin mono" style="font-size:.7rem;color:var(--k2)">${bin7(cp)}</span></div>`
+      :`<div class="g tile ${g}" data-i="${idx}" data-cp="${cp}" tabindex="0" role="button" style="cursor:pointer;min-width:62px" title="${U(cp)}: mimo ASCII"><div class="gg">${esc(ch)}</div><b class="mono">—</b><span class="hx" style="color:var(--k1)">mimo ASCII</span><span class="mono" style="font-size:.7rem;color:var(--muted)">${bytesHex(b)}</span></div>`;
+    sD+=`<span class="by ${g}" data-i="${idx}">${a?cp:'—'}</span>`;
+    sH+=b.map(x=>`<span class="by ${g}" data-i="${idx}">${hx(x)}</span>`).join('');
+    sB+=a?`<span class="by ${g}" data-i="${idx}">${bin7(cp)}</span>`:b.map(x=>`<span class="by ${g}" data-i="${idx}">${x.toString(2).padStart(8,'0')}</span>`).join('');
+  });
+  $('#graphs').innerHTML=tiles||'<p class="muted">Zadejte nějaký text.</p>';
+  $('#sD').innerHTML=sD;$('#sH').innerHTML=sH;$('#sB').innerHTML=sB;
+  $('#nD').textContent=chars.length+' znaků';$('#nH').textContent=bytes+' B';
+  $('#nB').textContent=nN?'celkem '+(nA*7+0)+' bitů ASCII + znaky mimo ASCII':(nA*7)+' bitů';
+  $('#trunc').hidden=chars.length<=LIMIT;
+  $('#flags').innerHTML=!chars.length?'':nN?`<span class="flag w">Mimo ASCII: ${nN} ${nN===1?'znak':nN<5?'znaky':'znaků'}. Čistý ASCII kód by je neuměl zapsat.</span>`:'<span class="flag g">Čisté ASCII: všechny znaky mají kód 0–127</span>';
+  $('#counts').innerHTML=[[chars.length,'znaků celkem'],[nA,'znaků v ASCII'],[nN,'znaků mimo ASCII'],[nC,'řídicích znaků','n1'],[bytes,'bajtů v UTF-8'],[nA*7,'bitů v 7bitovém kódu','adv']]
+    .map(([v,l,c])=>`<div class="${c||''}"><b>${v}</b><span>${l}</span></div>`).join('');
+}
+$('#txt').addEventListener('input',analyze);
+const tx=$('#text');
+tx.addEventListener('mouseover',e=>{const t=e.target.closest('[data-i]');tx.querySelectorAll('.hl').forEach(x=>x.classList.remove('hl'));
+  if(t) tx.querySelectorAll(`[data-i="${t.dataset.i}"]`).forEach(x=>x.classList.add('hl'));});
+tx.addEventListener('mouseleave',()=>tx.querySelectorAll('.hl').forEach(x=>x.classList.remove('hl')));
+tx.addEventListener('click',e=>{const t=e.target.closest('.tile[data-cp]');if(t) setCP(+t.dataset.cp,true);});
+tx.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const t=e.target.closest('.tile[data-cp]');if(t){e.preventDefault();setCP(+t.dataset.cp,true);}}});
+
+/* ---------- Laboratoř 2: lupa ---------- */
+let cur=65;
+function parseCP(v){
+  v=v.trim(); if(!v) return null;
+  const chars=Array.from(v);
+  if(chars.length===1) return chars[0].codePointAt(0);
+  const up=v.toUpperCase(), ni=CTRL.indexOf(up);
+  if(ni>=0) return ni;
+  if(up==='DEL') return 127;
+  if(up==='SP'||up==='SPACE'||up==='MEZERA') return 32;
+  let m=v.match(/^(?:U\+|0x|\\x|\\u)\{?([0-9a-f]{1,6})\}?$/i); if(m) return parseInt(m[1],16);
+  m=v.match(/^0b([01]+)$/i); if(m) return parseInt(m[1],2);
+  m=v.match(/^([0-9a-f]{1,2})h$/i); if(m) return parseInt(m[1],16);
+  if(/^[01]{7,8}$/.test(v)) return parseInt(v,2);
+  if(/^\d{1,7}$/.test(v)) return parseInt(v,10);
+  return chars[0].codePointAt(0);
+}
+function setCP(cp,scroll){
+  if(cp==null||cp<0||cp>0x10FFFF) return;
+  cur=cp; $('#cpIn').value=cp<128?String(cp):U(cp); renderInspector();
+  if(scroll) $('#lupa').scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});
+}
+const lupaGo=()=>{const cp=parseCP($('#cpIn').value);if(cp!=null&&cp<=0x10FFFF){cur=cp;renderInspector();}};
+$('#cpIn').addEventListener('change',lupaGo);
+$('#cpIn').addEventListener('keydown',e=>{if(e.key==='Enter')setCP(parseCP(e.target.value));});
+$('#prev').onclick=()=>setCP(Math.max(0,cur-1));
+$('#next').onclick=()=>setCP(Math.min(cur<128?127:0x10FFFF,cur+1));
+
+const URLSAFE=/[A-Za-z0-9\-._~]/;
+function ctrlCombo(c){
+  if(c<32) return `Ctrl+${c===0?'@':String.fromCharCode(c+64)}`;
+  if(c===127) return 'Ctrl+?';
+  if(c>=64&&c<=95) return `Ctrl+${String.fromCharCode(c)} vyrobí kód ${c&31} (${CTRL[c&31]})`;
+  if(c>=97&&c<=122) return `Ctrl+${String.fromCharCode(c)} vyrobí kód ${c&31} (${CTRL[c&31]})`;
+  return '';
+}
+function explainBin(c){
+  const b=bin7(c), W=[64,32,16,8,4,2,1];
+  const sum=c===0?'0':W.filter((w,i)=>b[i]==='1').join(' + ');
+  const hi='0'+b.slice(0,3), lo=b.slice(3), hiN=parseInt(hi,2), loN=parseInt(lo,2);
+  return `<h3>Převod na bity</h3>
+  <div class="step"><p><b>1.</b> Kód znaku <b>${esc(disp(c))}</b> je <b>${c}</b> desítkově.</p></div>
+  <div class="step"><p><b>2.</b> Rozložíme ho na součet vah 64, 32, 16, 8, 4, 2, 1: <b>${c} = ${sum}</b>. Použité váhy jsou jedničky:</p>
+    <div class="tw"><table class="wt2"><tbody><tr><th>Váha</th>${W.map(w=>`<th>${w}</th>`).join('')}</tr><tr><td>Bit</td>${[...b].map(x=>`<td class="${x==='1'?'one':''}">${x}</td>`).join('')}</tr></tbody></table></div></div>
+  <div class="step"><p><b>3.</b> Bity rozdělíme na čtveřice (zleva doplníme nulu) a každou čtveřici přepíšeme šestnáctkovou číslicí:</p>
+    <div class="bits"><span class="hi">${hi}</span><span class="sep"></span><span class="lo">${lo}</span> → <span class="hi">${hiN.toString(16).toUpperCase()}</span><span class="lo">${loN.toString(16).toUpperCase()}</span></div></div>
+  <div class="result">${c} = 0x${hx(c)} = ${b}</div>`;
+}
+function explainCtx(c){
+  const n=ones(c), pe=n%2, po=1-pe, b=bin7(c);
+  let h=`<h3>Parita a souvislosti</h3>
+  <div class="step"><p><b>Parita.</b> Kód ${b} obsahuje <b>${n}</b> jedniček. Sudá parita přidá bit <b>${pe}</b> (bajt <code>${pe}${b}</code>), lichá parita bit <b>${po}</b> (bajt <code>${po}${b}</code>).</p></div>`;
+  if(isCtl(c)) h+=`<div class="step"><p><b>Řídicí znak.</b> ${esc(CTRLINFO[c]||'')}</p><p class="muted">Z klávesnice: <b>${esc(ctrlCombo(c))}</b>. V textu ho zobrazuje obrázek <b>${esc(pic(c))}</b>.</p></div>`;
+  else if(grp(c)==='up'||grp(c)==='low'){const o=c^32;h+=`<div class="step"><p><b>Velikost písmene.</b> Protějšek <b>${esc(String.fromCharCode(o))}</b> má kód ${o} = ${bin7(o)}. Liší se jen bit 5 (váha 32): ${esc(String.fromCharCode(c))} ${grp(c)==='up'?'+':'−'} 32.</p></div>`;}
+  else if(grp(c)==='dig') h+=`<div class="step"><p><b>Číslice.</b> Spodní čtyři bity <span class="lo">${b.slice(3)}</span> jsou přímo hodnota číslice: <b>${c&15}</b>. Proto stačí od kódu odečíst 48.</p></div>`;
+  else if(c===32) h+=`<div class="step"><p><b>Mezera</b> je první tisknutelný znak a začíná zónu 1. Na dálnopisu se vozík posunul, ale nic se nevytisklo.</p></div>`;
+  else h+=`<div class="step"><p><b>Zóna ${c>>5}</b>, pozice ${c&31} v zóně. V tabulce řádek ${hx(c>>4,1)}, sloupec ${hx(c&15,1)}.</p></div>`;
+  return h;
+}
+function renderInspector(){
+  const c=cur, g=$('#ig');
+  if(c>127){
+    const b=u8(c); g.className='bigglyph'; g.textContent=String.fromCodePoint(c); g.dataset.cp=U(c);
+    $('#facts').innerHTML=[['Skupina','mimo ASCII'],['Kód Unicode',U(c)],['Desítkově',String(c)],['UTF-8',bytesHex(b)]].map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
+    $('#sizes').innerHTML=`<p class="note">Tento znak není v ASCII, protože ASCII má jen kódy 0 až 127 (7 bitů). V UTF-8 zabere ${b.length} ${b.length<5?'bajty':'bajtů'}. Rozbor znaků mimo ASCII najdete v aplikaci <a href="../unicode-pod-lupou/">Unicode pod lupou</a>.</p>`;
+    $('#p1').innerHTML='<h3>Převod na bity</h3><p class="muted">Pro znaky mimo ASCII tento rozbor nedává smysl. Zkuste kód 0 až 127.</p>'; $('#p2').innerHTML='';
+    return;
+  }
+  g.className='bigglyph'; g.dataset.cp='kód '+c;
+  g.innerHTML=isCtl(c)?`<span style="font:700 2rem var(--mono);color:var(--k1)">${abbr(c)}</span>`:c===32?'<span style="font:600 1.6rem var(--mono);color:var(--muted)">␣</span>':esc(String.fromCharCode(c));
+  const n=ones(c), b=bin7(c), pr=grp(c)==='up'||grp(c)==='low'?String.fromCharCode(c^32):null;
+  const urlv=URLSAFE.test(String.fromCharCode(c))?String.fromCharCode(c):'%'+hx(c);
+  const js=isCtl(c)||c===39||c===92?`"\\x${hx(c)}"`:`"${String.fromCharCode(c)==='"'?'\\"':String.fromCharCode(c)}"`;
+  $('#facts').innerHTML=[
+    ['Znak',isCtl(c)?`${abbr(c)}: ${SHORT[c]}`:c===32?'mezera (SP)':esc(String.fromCharCode(c))],
+    ['Skupina',GRPCZ[grp(c)]],
+    ['Desítkově',String(c)],
+    ['Dvojkově (7 bitů)',b],
+    ['Šestnáctkově',hx(c),'n1'],
+    ['Osmičkově',c.toString(8),'adv'],
+    ['Zóna a pozice',`zóna ${c>>5}, pozice ${c&31}`,'n1'],
+    ['Řádek a sloupec',`řádek ${hx(c>>4,1)}, sloupec ${hx(c&15,1)}`,'adv'],
+    ['Protějšek velikosti',pr?`${pr} (${pr.charCodeAt(0)})`:'—','adv'],
+    ['Ctrl',ctrlCombo(c)||'—','adv'],
+    ['Sudá parita',`${n%2}${b}`,'adv'],
+    ['HTML entita',`&amp;#${c};`,'adv'],
+    ['Zápis v kódu',`\\x${hx(c)}`,'adv'],
+    ['V adrese URL',esc(urlv),'adv'],
+    ['JavaScript',esc(`String.fromCharCode(${c})`),'adv']
+  ].map(([k,v,cl])=>`<dt class="${cl||''}">${k}</dt><dd class="${cl||''}">${v}</dd>`).join('');
+  $('#sizes').innerHTML=[[7,'bitů v ASCII'],['1 B','jako bajt (osmý bit 0)','n1'],['1 B','v UTF-8, stejný bajt','n1'],[n,'jedniček v kódu','adv']].map(([n,l,cl])=>`<div class="${cl||''}"><b>${typeof n==='number'&&l==='bitů v ASCII'?n+' bitů':n}</b><span>${l}</span></div>`).join('');
+  $('#p1').innerHTML=explainBin(c); $('#p2').innerHTML=explainCtx(c);
+}
+
+/* ---------- Tabulka ASCII ---------- */
+const ZONES=[['0','0–31','Řídicí znaky','Povely pro dálnopis a terminál','ctl'],['1','32–63','Mezera, interpunkce, číslice','Nejnižší tisknutelné znaky','dig'],['2','64–95','Velká písmena a symboly','@, A–Z, [ \\ ] ^ _','up'],['3','96–127','Malá písmena a symboly','`, a–z, { | } ~ a DEL','low']];
+$('#zones').innerHTML=ZONES.map((z,i)=>`<button class="zone gc-${z[4]}" data-z="${i}" aria-pressed="false"><span class="pn">Zóna ${z[0]} · bity 6 a 5 = ${i.toString(2).padStart(2,'0')}</span><b>${z[2]}</b><small>${z[3]}</small><code>kódy ${z[1]}</code></button>`).join('');
+const GROUPS=[['all','Všechny znaky',()=>true],['ctl','Řídicí znaky (0–31 a 127)',c=>isCtl(c)],['sp','Mezera (32)',c=>c===32],['sym','Interpunkce a symboly',c=>grp(c)==='sym'],['dig','Číslice 0–9',c=>grp(c)==='dig'],['up','Velká písmena A–Z',c=>grp(c)==='up'],['low','Malá písmena a–z',c=>grp(c)==='low']];
+$('#grpSel').innerHTML=GROUPS.map(g=>`<option value="${g[0]}">${g[1]}</option>`).join('');
+let selZone=-1,selGrp='all',base=+(lsGet('asciiplBase')||10),selCell=65;
+const numIn=(c,b)=>b===10?String(c):b===16?hx(c):b===2?bin7(c):c.toString(8).padStart(3,'0');
+function renderGrid(){
+  const g=GROUPS.find(x=>x[0]===selGrp), inSel=c=>selZone>=0?(c>>5)===selZone:g[2](c);
+  const active=selZone>=0||selGrp!=='all';
+  let h='<div class="h"></div>'+[...Array(16)].map((_,i)=>`<div class="h">${hx(i,1)}</div>`).join('');
+  for(let r=0;r<8;r++){
+    h+=`<div class="h">${r}x</div>`;
+    for(let k=0;k<16;k++){
+      const c=r*16+k, ctl=isCtl(c), on=!active||inSel(c);
+      h+=`<button class="cell ${gcls(c)}${on?'':' dim'}${c===selCell?' sel':''}${r%2?' rowsep':''}" data-c="${c}" title="${c}: ${esc(ctl?abbr(c)+', '+SHORT[c]:c===32?'mezera':String.fromCharCode(c))}"><span class="${ctl||c===32?'ab':''}">${esc(disp(c))}</span><small class="${base===2?'b':''}">${numIn(c,base)}</small></button>`;
+    }
+  }
+  $('#agrid').innerHTML=h;
+  document.querySelectorAll('#zones .zone').forEach(z=>{const on=+z.dataset.z===selZone;z.classList.toggle('on',on);z.setAttribute('aria-pressed',on);});
+  const cnt=active?[...Array(128).keys()].filter(inSel).length:128;
+  $('#blkInfo').textContent=active?`Zvýrazněno ${cnt} znaků z 128. Ostatní jsou zeslabené.`:'Všech 128 znaků ASCII. Barva označuje skupinu: červeně řídicí, modře číslice, fialově velká a zeleně malá písmena.';
+  document.querySelectorAll('#baseSeg button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.b===base));
+}
+function preview(c){
+  const ctl=isCtl(c);
+  $('#prev2').innerHTML=`<span class="pg" style="${ctl?'font:700 1.2rem var(--mono);color:var(--k1)':''}">${esc(disp(c))}</span><span>kód <code>${c}</code> · hex <code>${hx(c)}</code> · bity <code>${bin7(c)}</code></span><span>${GRPCZ[grp(c)]}${ctl?': '+SHORT[c]:''}</span>
+   <button class="btn" id="goLupa">Rozložit na bity →</button>${ctl?`<p class="muted" style="flex-basis:100%;font-size:.9rem">${esc(CTRLINFO[c]||'')}</p>`:''}`;
+  $('#goLupa').onclick=()=>{setTab('lab',true);setCP(c,true);};
+}
+$('#zones').onclick=e=>{const b=e.target.closest('[data-z]');if(!b)return;const z=+b.dataset.z;selZone=selZone===z?-1:z;selGrp='all';$('#grpSel').value='all';renderGrid();};
+$('#grpSel').onchange=e=>{selGrp=e.target.value;selZone=-1;renderGrid();};
+$('#baseSeg').onclick=e=>{const b=e.target.closest('[data-b]');if(!b)return;base=+b.dataset.b;lsSet('asciiplBase',base);renderGrid();};
+$('#agrid').addEventListener('click',e=>{const b=e.target.closest('button.cell');if(!b)return;selCell=+b.dataset.c;
+  document.querySelectorAll('.cell.sel').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');preview(selCell);setCP(selCell,false);copyCode(selCell,b);});
+
+/* ---------- Pásek (maskot) ---------- */
+function cjDraw(el,state){
+  if(!el) return;
+  if(!el.firstElementChild) el.appendChild($('#psT').content.firstElementChild.cloneNode(true));
+  const svg=el.firstElementChild; svg.classList.remove('s-ok','s-boo','s-sip'); svg.classList.add(state||el.dataset.s||'s-ok');
+}
+document.querySelectorAll('.cj').forEach(el=>cjDraw(el));
+
+/* ---------- kontrolní otázky a testy ---------- */
+const OKW=['Správně!','Přesně tak.','Výborně!','Ano!'], BADW=['Tohle ne.','Vedle, ale nevadí.','Skoro, ale ne.'];
+function initKq(kq,onAnswer){
+  const ok=kq.dataset.ok, why=kq.querySelector('.why'), whyHtml=why.innerHTML;
+  kq.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{
+    if(kq.classList.contains('done')) return;
+    kq.classList.add('done');
+    const right=ok==='*'||b.dataset.v===ok;
+    kq.querySelectorAll('.opts button').forEach(x=>{x.disabled=true;
+      if(ok==='*'){if(x===b)x.classList.add('picked');}
+      else if(x.dataset.v===ok)x.classList.add('right'); else if(x===b)x.classList.add('wrong');});
+    if(ok!=='*') why.innerHTML=`<span class="v ${right?'ok':'bad'}">${pick(right?OKW:BADW)}</span>`+whyHtml;
+    if(onAnswer) onAnswer(right);
+  });
+  kq.reset=()=>{kq.classList.remove('done');why.innerHTML=whyHtml;kq.querySelectorAll('.opts button').forEach(x=>{x.disabled=false;x.className='';});};
+}
+document.querySelectorAll('.kq').forEach(kq=>{if(!kq.closest('.quiz')) initKq(kq);});
+document.querySelectorAll('.quiz').forEach(qz=>{
+  const items=[...qz.querySelectorAll('.kq')], res=qz.querySelector('.qres');
+  let answered=0, score=0;
+  items.forEach((kq,i)=>{kq.querySelector('.q').dataset.n=`${i+1} z ${items.length}`;
+    initKq(kq,right=>{answered++; if(right) score++; if(answered===items.length) finish();});});
+  function finish(){
+    const r=score/items.length;
+    res.querySelector('.score').textContent=`${score} z ${items.length}`;
+    res.querySelector('.qsay').textContent=r===1?'Plný počet! Na tvou počest zazvoním zvonkem.':r>=.75?'Výborně, skoro všechno sedí.':r>=.5?'Slušné. Projdi si ještě kapitoly, kde ses spletl.':'Páska se trochu zamotala. Vrať se ke kapitolám a zkus to znovu.';
+    cjDraw(res.querySelector('.cj'),r>=.5?'s-sip':'s-boo');
+    res.classList.add('on'); res.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'nearest'});
+  }
+  res.querySelector('.qreset').onclick=()=>{answered=0;score=0;items.forEach(k=>k.reset());res.classList.remove('on');items[0].scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'center'});};
+});
+
+/* ---------- kurzy: kapitoly s ukazatelem postupu ---------- */
+document.querySelectorAll('.course').forEach(co=>{
+  const id=co.dataset.course, chs=[...co.querySelectorAll('.ch')], prog=co.querySelector('.prog');
+  const nav=co.querySelector('.chnav'), done=new Set((lsGet('asciipl-done-'+id)||'').split(',').filter(Boolean).map(Number));
+  prog.innerHTML=chs.map((c,i)=>`<li><button data-i="${i}">${i+1}. ${esc(c.dataset.title)}</button></li>`).join('');
+  let cur=Math.min(+(lsGet('asciipl-ch-'+id)||0)||0,chs.length-1);
+  function show(i,scroll){
+    cur=i; chs.forEach((c,k)=>c.classList.toggle('on',k===i));
+    done.add(i); lsSet('asciipl-done-'+id,[...done].join(',')); lsSet('asciipl-ch-'+id,i);
+    prog.querySelectorAll('button').forEach((b,k)=>{b.classList.toggle('done',done.has(k)&&k!==i);if(k===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
+    nav.querySelector('.prev').disabled=i===0;
+    const nx=nav.querySelector('.next'); nx.disabled=i===chs.length-1; nx.textContent=i===chs.length-2?'Na test ›':'Další kapitola ›';
+    nav.querySelector('.pos').textContent=`Kapitola ${i+1} z ${chs.length}`;
+    if(id==='r4'&&chs[i].querySelector('#slotR4')) placeLupa();
+    if(scroll) co.querySelector('.course-head').scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});
+  }
+  prog.onclick=e=>{const b=e.target.closest('[data-i]');if(b)show(+b.dataset.i,false);};
+  nav.querySelector('.prev').onclick=()=>show(Math.max(0,cur-1),true);
+  nav.querySelector('.next').onclick=()=>show(Math.min(chs.length-1,cur+1),true);
+  show(cur,false);
+});
+
+/* ---------- Začátečník ---------- */
+const TAPE='GYMNAZIUM PRIBRAM';
+$('#tapeNums').textContent=Array.from(TAPE).map(c=>c.charCodeAt(0)).join(' ');
+$('#decodeTape').onclick=()=>{$('#tapeOut').textContent=TAPE;$('#tapeOutBox').hidden=false;};
+
+/* skládačka z bitů */
+let bv=0;
+(function bitBuilder(){
+  const W=[64,32,16,8,4,2,1];
+  $('#bitBox').innerHTML=W.map(w=>`<button class="bb" data-w="${w}" aria-pressed="false" aria-label="Bit s váhou ${w}"><small>${w}</small><b>0</b></button>`).join('')+
+    '<button class="btn" id="bitClear" style="align-self:center">Vynulovat</button><button class="btn" id="bitRnd" style="align-self:center">Náhodný znak</button>';
+  function draw(){
+    document.querySelectorAll('#bitBox .bb').forEach(b=>{const on=!!(bv&+b.dataset.w);b.setAttribute('aria-pressed',on);b.querySelector('b').textContent=on?'1':'0';});
+    const c=bv, ch=$('#bitCh'); ch.textContent=disp(c); ch.className='big'+(isCtl(c)||c===32?' ab':'');
+    $('#bitNum').innerHTML=`Číslo <b>${c}</b>, dvojkově <b>${bin7(c)}</b>`;
+    const parts=W.filter(w=>bv&w);
+    $('#bitSum').textContent=(parts.length?`${parts.join(' + ')} = ${c}`:'Žádný bit není zapnutý: 0')+(isCtl(c)?`. Řídicí znak ${abbr(c)}: ${SHORT[c]}.`:c===32?'. Mezera.':'');
+  }
+  $('#bitBox').addEventListener('click',e=>{
+    const b=e.target.closest('.bb');if(b){bv^=+b.dataset.w;draw();return;}
+    if(e.target.id==='bitClear'){bv=0;draw();}
+    if(e.target.id==='bitRnd'){bv=33+Math.floor(Math.random()*94);draw();}
+  });
+  bv=0; draw();
+})();
+
+function nameTiles(){
+  const t=Array.from($('#nameIn').value).slice(0,30);
+  $('#nameOut').innerHTML=t.length?t.map(c=>{const cp=c.codePointAt(0), a=cp<128;
+    return `<div class="tile ${gcls(cp)}"><span class="tg">${c===' '?'␣':esc(c)}</span><b class="mono">${a?cp:'—'}</b><span class="bin">${a?bin7(cp):'mimo ASCII'}</span></div>`;}).join('')
+    +(t.some(c=>c.codePointAt(0)>127)?'<p class="muted" style="flex-basis:100%;font-size:.92rem">Znaky s přerušovaným rámečkem nemají v ASCII číslo. Počítač by pro ně potřeboval jinou tabulku, třeba z kapitoly 6.</p>':'')
+    :'<p class="muted">Napiš něco.</p>';
+}
+$('#nameIn').addEventListener('input',nameTiles); nameTiles();
+
+(function asciiGrid(){
+  let h='';for(let c=32;c<127;c++)h+=`<button class="${gcls(c)}" data-cp="${c}" title="kód ${c}"><span>${c===32?'␣':esc(String.fromCharCode(c))}</span><small>${c}</small></button>`;
+  $('#ascii').innerHTML=h;
+  $('#ascii').addEventListener('click',e=>{const b=e.target.closest('[data-cp]');if(!b)return;const c=+b.dataset.cp;
+    $('#asciiOut').innerHTML=`<b>${c===32?'mezera':esc(String.fromCharCode(c))}</b> = ${c} desítkově = <b>${bin7(c)}</b> dvojkově (7 bitů)`;});
+})();
+
+/* řídicí znaky */
+(function ctlChips(){
+  const L=[7,8,9,10,13,27,127,0,4,3,26];
+  $('#ctlChips').innerHTML=L.map(c=>`<button class="chip" data-c="${c}"><b class="mono">${abbr(c)}</b> · ${c}</button>`).join('');
+  $('#ctlChips').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(!b)return;const c=+b.dataset.c;
+    $('#ctlOut').innerHTML=`<b>${abbr(c)}</b> · kód ${c} · ${esc(SHORT[c])}<br><span style="font-weight:400">${esc((CTRLINFO[c]||'').replace(/^[A-Z]+ [^:]*: /,''))}</span>`;
+    if(c===7){beep();ttyBell();}});
+})();
+
+/* dálnopis */
+const TTY={lines:[[]],row:0,col:0,log:''};
+const TTYW=34;
+function ttyRender(){
+  let out='';
+  TTY.lines.forEach((L,r)=>{
+    const w=Math.max(L.length,r===TTY.row?TTY.col+1:0);
+    for(let k=0;k<w;k++){const ch=L[k]||' ';out+=(r===TTY.row&&k===TTY.col)?`<span class="cur">${esc(ch)}</span>`:esc(ch);}
+    if(r<TTY.lines.length-1) out+='\n';
+  });
+  $('#tty').innerHTML=out; $('#ttyLog').textContent=TTY.log?'Odesláno: '+TTY.log:'Papír je prázdný.';
+}
+function ttyReset(){TTY.lines=[[]];TTY.row=0;TTY.col=0;TTY.log='';ttyRender();}
+function ttyPut(ch){const L=TTY.lines[TTY.row];if(TTY.col>=TTYW){return;}while(L.length<TTY.col)L.push(' ');L[TTY.col]=ch;TTY.col++;TTY.log+=ch;}
+function ttyCmd(c){
+  if(c==='CR'){TTY.col=0;TTY.log+='‹CR›';}
+  else if(c==='LF'){if(TTY.row<9){TTY.row++;if(!TTY.lines[TTY.row])TTY.lines[TTY.row]=[];}TTY.log+='‹LF›';}
+  else if(c==='BS'){TTY.col=Math.max(0,TTY.col-1);TTY.log+='‹BS›';}
+  else if(c==='BEL'){TTY.log+='‹BEL›';beep();ttyBell();}
+}
+function ttyBell(){const t=$('#tty');t.classList.remove('ring');void t.offsetWidth;t.classList.add('ring');setTimeout(()=>t.classList.remove('ring'),520);}
+function ttyText(s){for(const ch of Array.from(s).slice(0,30)){const c=ch.codePointAt(0);ttyPut(c>31&&c<127?ch:'?');}}
+$('#ttySend').onclick=()=>{ttyText($('#ttyIn').value);ttyRender();};
+$('#ttyIn').addEventListener('keydown',e=>{if(e.key==='Enter'){ttyText($('#ttyIn').value);ttyRender();}});
+$('#ttyBtns').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;if(b.dataset.c==='CLR'){ttyReset();return;}ttyCmd(b.dataset.c);ttyRender();};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pre]');if(!b)return;ttyReset();
+  const seq={stairs:['Ahoj','LF','svete','LF','!'],over:['Ahoj','CR','XX'],both:['Ahoj','CR','LF','svete','CR','LF','!']}[b.dataset.pre];
+  seq.forEach(x=>{if(x==='CR'||x==='LF')ttyCmd(x);else ttyText(x);});ttyRender();});
+ttyReset();
+
+/* velká a malá písmena */
+function caseWidget(){
+  const v=$('#caseIn').value, out=$('#caseOut');
+  if(!/^[A-Za-z]$/.test(v)){out.innerHTML='<p class="muted">Napiš jedno písmeno anglické abecedy (bez háčků a čárek).</p>';return;}
+  const U1=v.toUpperCase().charCodeAt(0), L1=U1+32;
+  const row=(c,lab)=>{const b=bin7(c);return `<div class="bitres" style="gap:10px 20px"><span class="big" style="font-size:2.2rem;min-width:3rem">${String.fromCharCode(c)}</span><div><p>${lab}: <b>${c}</b></p><p class="bits">${b[0]}<span class="hi">${b[1]}</span>${b.slice(2)}</p></div></div>`;};
+  out.innerHTML=row(U1,'velké')+row(L1,'malé')+`<p>Jediný rozdíl je <span class="hi">druhý bit zleva</span> (váha 32): ${L1} − ${U1} = 32.</p><div><button class="btn" id="caseFlip">Převrátit písmeno</button></div>`;
+}
+$('#caseIn').addEventListener('input',caseWidget);
+$('#caseOut').addEventListener('click',e=>{if(e.target.id==='caseFlip'){const v=$('#caseIn').value;$('#caseIn').value=String.fromCharCode(v.charCodeAt(0)^32);caseWidget();}});
+caseWidget();
+(function digits(){
+  $('#digRow').innerHTML=[...Array(10).keys()].map(d=>`<button data-d="${d}"><b>${d}</b><small>${48+d}</small></button>`).join('');
+  $('#digRow').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(!b)return;const d=+b.dataset.d,c=48+d,s=bin7(c);
+    $('#digOut').innerHTML=`Znak <b>${d}</b> má kód <b>${c}</b> = ${s.slice(0,3)} <span class="lo">${s.slice(3)}</span>. Poslední čtyři bity jsou číslo <b>${d}</b>.`;});
+})();
+
+/* čeština v ASCII a ASCII art */
+let czMode='q';
+function czRender(){
+  const t=$('#czIn').value;
+  let o;
+  if(czMode==='q') o=Array.from(t).map(c=>c.codePointAt(0)<128?c:'?').join('');
+  else if(czMode==='n') o=t.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\x00-\x7F]/g,'?');
+  else o=Array.from(t).filter(c=>c.codePointAt(0)<128).join('');
+  $('#czOut').textContent=o||' ';
+  document.querySelectorAll('#czSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===czMode));
+  const say={q:'Otazníky: počítač neví, co tam bylo. Informace je nenávratně pryč.',n:'Bez háčků se to přečíst dá, jen se ztrácí rozdíly. „byl“ a „bil“ nebo „sůl“ a „sul“ vypadají stejně.',d:'Zahozená písmena: věta se rozpadla. Tak by dopadl text na stroji, který o jiných znacích nic neví.'}[czMode];
+  $('#czSay').innerHTML='<b class="who">Pásek</b>'+say; cjDraw($('#czCj'),czMode==='n'?'s-ok':'s-boo');
+}
+$('#czIn').addEventListener('input',czRender);
+$('#czSeg').onclick=e=>{const b=e.target.closest('[data-m]');if(b){czMode=b.dataset.m;czRender();}};
+czRender();
+
+const FONT={A:[' ### ','#   #','#####','#   #','#   #'],B:['#### ','#   #','#### ','#   #','#### '],C:[' ####','#    ','#    ','#    ',' ####'],D:['#### ','#   #','#   #','#   #','#### '],E:['#####','#    ','#### ','#    ','#####'],F:['#####','#    ','#### ','#    ','#    '],G:[' ####','#    ','#  ##','#   #',' ####'],H:['#   #','#   #','#####','#   #','#   #'],I:['###',' # ',' # ',' # ','###'],J:['  ###','   # ','   # ','#  # ',' ##  '],K:['#   #','#  # ','###  ','#  # ','#   #'],L:['#    ','#    ','#    ','#    ','#####'],M:['#   #','## ##','# # #','#   #','#   #'],N:['#   #','##  #','# # #','#  ##','#   #'],O:[' ### ','#   #','#   #','#   #',' ### '],P:['#### ','#   #','#### ','#    ','#    '],Q:[' ### ','#   #','# # #','#  # ',' ## #'],R:['#### ','#   #','#### ','#  # ','#   #'],S:[' ####','#    ',' ### ','    #','#### '],T:['#####','  #  ','  #  ','  #  ','  #  '],U:['#   #','#   #','#   #','#   #',' ### '],V:['#   #','#   #','#   #',' # # ','  #  '],W:['#   #','#   #','# # #','## ##','#   #'],X:['#   #',' # # ','  #  ',' # # ','#   #'],Y:['#   #',' # # ','  #  ','  #  ','  #  '],Z:['#####','   # ','  #  ',' #   ','#####'],
+ '0':[' ### ','#  ##','# # #','##  #',' ### '],'1':[' # ','## ',' # ',' # ','###'],'2':[' ### ','#   #','  ## ',' #   ','#####'],'3':['#### ','    #',' ### ','    #','#### '],'4':['#  # ','#  # ','#####','   # ','   # '],'5':['#####','#    ','#### ','    #','#### '],'6':[' ### ','#    ','#### ','#   #',' ### '],'7':['#####','   # ','  #  ',' #   ',' #   '],'8':[' ### ','#   #',' ### ','#   #',' ### '],'9':[' ### ','#   #',' ####','    #',' ### '],
+ ' ':['   ','   ','   ','   ','   '],'!':['#','#','#',' ','#'],'?':[' ### ','#   #','  ## ','     ','  #  '],'.':[' ',' ',' ',' ','#'],'-':['    ','    ','####','    ','    ']};
+let artFill='#';
+function artRender(){
+  const t=Array.from($('#artIn').value.toUpperCase()).filter(c=>FONT[c]).slice(0,10);
+  let rows=['','','','',''];
+  t.forEach((c,i)=>FONT[c].forEach((r,k)=>{rows[k]+=(i?' ':'')+r;}));
+  $('#artOut').textContent=t.length?rows.map(r=>r.replace(/#/g,artFill)).join('\n'):'Napiš písmena nebo číslice.';
+  document.querySelectorAll('#artSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.f===artFill));
+}
+$('#artIn').addEventListener('input',artRender);
+$('#artSeg').onclick=e=>{const b=e.target.closest('[data-f]');if(b){artFill=b.dataset.f;artRender();}};
+artRender();
+
+/* hra Rozlušti pásku */
+const WORDS=['AHOJ','ZIMA','LETO','KODY','BITY','PRAHA','SKOLA','PLES','NULA','ASCII','Brno','Cau','kava','sir','Mesto','bajt','Znak','kod'];
+const isL=n=>(n>=65&&n<=90)||(n>=97&&n<=122);
+function mutate(w,avoid){
+  for(let t=0;t<30;t++){
+    const i=Math.floor(Math.random()*w.length), c=w.charCodeAt(i), d=Math.random()<.5?-1:1;
+    let n=c+d; if(!isL(n)) n=c-d; if(!isL(n)) continue;
+    const r=w.slice(0,i)+String.fromCharCode(n)+w.slice(i+1);
+    if(!avoid.includes(r)) return r;
+  }
+  return w+'X';
+}
+function swapCase(w,avoid){
+  for(let t=0;t<20;t++){const i=Math.floor(Math.random()*w.length), ch=w[i];const s=ch===ch.toUpperCase()?ch.toLowerCase():ch.toUpperCase();
+    const r=w.slice(0,i)+s+w.slice(i+1);if(!avoid.includes(r)&&r!==w) return r;}
+  return mutate(w,avoid);
+}
+const GROUNDS=6;
+let gOrder=[],gI=0,gScore=0;
+function gStart(){gOrder=shuffle([...WORDS]).slice(0,GROUNDS);gI=0;gScore=0;gRound();}
+function gRound(){
+  $('#gRound').textContent=`Páska ${gI+1} z ${GROUNDS}`; $('#gScore').textContent=`Rozluštěno: ${gScore}`;
+  const w=gOrder[gI], a=mutate(w,[w]), b=swapCase(w,[w,a]), opts=shuffle([w,a,b]);
+  $('#gBody').innerHTML=`<div class="msg"><small>Výpis čtecího stroje</small><span class="mono">${Array.from(w).map(c=>c.charCodeAt(0)).join(' ')}</span></div>
+    <p><b>Jaké slovo je na pásce?</b></p><div class="opts">${opts.map((o,i)=>`<button data-i="${i}" class="mono">${esc(o)}</button>`).join('')}</div><div class="gfb"></div>`;
+  $('#gBody').querySelector('.opts').onclick=e=>{const bt=e.target.closest('button');if(!bt||bt.disabled)return;
+    const right=opts[+bt.dataset.i]===w; if(right)gScore++;
+    $('#gBody').querySelectorAll('.opts button').forEach(x=>{x.disabled=true;if(opts[+x.dataset.i]===w)x.classList.add('right');else if(x===bt)x.classList.add('wrong');});
+    $('#gScore').textContent=`Rozluštěno: ${gScore}`;
+    const last=gI===GROUNDS-1, tab=Array.from(w).map(c=>`${c}=${c.charCodeAt(0)}`).join(', ');
+    $('#gBody').querySelector('.gfb').innerHTML=`<div class="cj-row"><span class="cj"></span><p class="say"><b class="who">Pásek</b>${right?'Rozluštěno!':'To nebylo ono.'} ${esc(tab)}.</p></div><button class="btn pri">${last?'Výsledek hry':'Další páska ›'}</button>`;
+    cjDraw($('#gBody').querySelector('.gfb .cj'),right?'s-sip':'s-boo');
+    $('#gBody').querySelector('.gfb .btn').onclick=()=>{if(last)gEnd();else{gI++;gRound();}};
+  };
+}
+function gEnd(){
+  $('#gRound').textContent='Konec hry';
+  const all=gScore===GROUNDS;
+  $('#gBody').innerHTML=`<div class="cj-row"><span class="cj"></span><p class="say"><b class="who">Pásek</b>Rozluštil jsi <b>${gScore} z ${GROUNDS}</b> pásek. ${all?'Jsi mistr děrné pásky!':gScore>=4?'Pěkná práce, ASCII ti jde.':'Chce to cvik. Pomůže si zapamatovat A = 65, a = 97 a 0 = 48 a ostatní dopočítat.'}</p></div><button class="btn">Hrát znovu</button>`;
+  cjDraw($('#gBody').querySelector('.cj'),gScore>=4?'s-sip':'s-boo');
+  $('#gBody').querySelector('.btn').onclick=gStart;
+}
+gStart();
+
+/* ---------- Pokročilý: pojmy ---------- */
+function chain(){
+  const v=$('#chIn').value, ch=Array.from(v)[0]; if(!ch) return;
+  const c=ch.codePointAt(0), a=c<128;
+  $('#hG').textContent=isCtl(c)?abbr(c):ch;
+  $('#hN').textContent=a?(isCtl(c)?'řídicí znak':GRPCZ[grp(c)]):'mimo ASCII';
+  $('#hD').textContent=c;
+  $('#hX').textContent=`šestnáctkově ${hx(c)}, osmičkově ${c.toString(8)}`;
+  $('#h7').textContent=a?bin7(c):'— (nelze)';
+  $('#h8').textContent=a?'0'+bin7(c):u8(c).map(x=>x.toString(2).padStart(8,'0')).join(' ');
+  $('#hH').textContent=a?hx(c):bytesHex(u8(c));
+}
+$('#chIn').addEventListener('input',chain);
+
+function where(){
+  const ch=Array.from($('#whereIn').value)[0], o=$('#whereOut'); if(!ch){o.textContent='';return;}
+  const c=ch.codePointAt(0);
+  if(c>127){o.innerHTML=`Znak <b>${esc(ch)}</b> v ASCII není (má kód ${c}). Tabulka končí na 127.`;return;}
+  const z=c>>5,p=c&31;
+  o.innerHTML=`<b>${esc(disp(c))}</b> má kód ${c} = ${z} × 32 + ${p}: zóna <b>${z}</b>, pozice <b>${p}</b>. Bity zóny <b>${z.toString(2).padStart(2,'0')}</b>, bity pozice <b>${p.toString(2).padStart(5,'0')}</b>.`;
+}
+$('#whereIn').addEventListener('input',where);
+
+/* ---------- parita ---------- */
+let parMode='e', parSent=0, parByte=0;
+function parBits(c){const n=ones(c);return parMode==='n'?0:parMode==='e'?n%2:(n+1)%2;}
+function parNew(){
+  const ch=Array.from($('#parIn').value)[0]; let c=ch?ch.codePointAt(0):65; if(c>127)c=63;
+  parSent=((parMode==='n'?0:parBits(c))<<7)|c; parByte=parSent; parDraw();
+}
+function parDraw(){
+  const s=parByte.toString(2).padStart(8,'0');
+  $('#pbyte').innerHTML=Array.from(s).map((b,i)=>`<button class="${i===0?'par':''}${((parByte^parSent)>>(7-i))&1?' flip':''}" data-i="${i}" aria-label="Bit ${7-i}: ${b}">${b}</button>`).join('');
+  const n=ones(parByte), diff=ones(parByte^parSent), c=parByte&127;
+  let msg,cls='info';
+  if(parMode==='n'){msg=`Bez parity: bajt se přečte jako znak <b>${esc(disp(c))}</b> (kód ${c}). ${diff?'Přijímač chybu nepozná.':'Zatím bez chyby.'}`;if(diff)cls='bad';}
+  else{
+    const okp=parMode==='e'?n%2===0:n%2===1, name=parMode==='e'?'sudý':'lichý';
+    if(okp&&diff===0){msg=`Jedniček je ${n} (${name} počet), parita sedí. Přijat znak <b>${esc(disp(c))}</b>.`;cls='ok';}
+    else if(okp){msg=`Jedniček je ${n} (${name} počet), parita <b>sedí</b>, a přitom je bajt poškozený (překlopeno bitů: ${diff}). Přijat znak <b>${esc(disp(c))}</b> místo původního. Sudý počet chyb parita neodhalí.`;cls='bad';}
+    else{msg=`Jedniček je ${n}, ale má jich být ${name} počet. Přijímač pozná, že je chyba, ale neví, který bit se překlopil.`;cls='warn';}
+  }
+  const o=$('#parOut'); o.className='verdict '+cls; o.innerHTML=msg;
+}
+$('#pbyte').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;parByte^=1<<(7-+b.dataset.i);parDraw();};
+$('#parReset').onclick=()=>{parByte=parSent;parDraw();};
+$('#parIn').addEventListener('input',parNew);
+$('#parMode').onclick=e=>{const b=e.target.closest('[data-m]');if(!b)return;parMode=b.dataset.m;
+  document.querySelectorAll('#parMode button').forEach(x=>x.setAttribute('aria-pressed',x===b));parNew();};
+
+/* ---------- pasti ---------- */
+(function traps(){
+  const cs='Příliš žluťoučký', enc=new TextDecoder('iso-8859-2');
+  // reverzní tabulka ISO 8859-2
+  const rev={};for(let b=128;b<256;b++){const ch=new TextDecoder('iso-8859-2').decode(new Uint8Array([b]));rev[ch]=b;}
+  const orig=Array.from(cs).map(ch=>ch.codePointAt(0)<128?ch.codePointAt(0):(rev[ch]!=null?rev[ch]:63));
+  const cut=orig.map(b=>b&127);
+  const after=cut.map(b=>String.fromCharCode(b));
+  $('#dBit').innerHTML=`<div class="msg"><small>Odesláno (ISO 8859-2, hex)</small><span class="mono">${bytesHex(orig)}</span></div>
+    <div class="msg"><small>Přijato po vynulování osmého bitu</small><span class="mono">${bytesHex(cut)}</span></div>
+    <div class="msg"><small>Co je na obrazovce</small><span class="mono"><b>${esc(visCtl(after.join('')))}</b></span></div>
+    <p class="muted" style="font-size:.9rem">Z „${esc(cs)}“ vzniklo něco jiného. Např. „ř“ (F8) se po vynulování osmého bitu změnilo na „x“ (78).</p>`;
+
+  const t='Ahoj\nsvět';
+  const row=(n,e)=>`<tr><td>${n}</td><td><code>${e.replace(/\r/g,'\\r').replace(/\n/g,'\\n')}</code></td><td>${new TextEncoder().encode(t.replace(/\n/g,e)).length} B</td></tr>`;
+  $('#dEol').innerHTML=`<div class="tw"><table><thead><tr><th>Systém</th><th>Konec řádku</th><th>Soubor „Ahoj“ + řádek + „svět“</th></tr></thead><tbody>${row('Unix, Linux, macOS, web','\n')}${row('Windows','\r\n')}${row('klasické Mac OS (do 2001)','\r')}</tbody></table></div><p class="muted" style="font-size:.9rem">„ě“ zabere v UTF-8 dva bajty, proto jsou délky o jedna vyšší než počet znaků.</p>`;
+
+  const words=['banán','Zebra','apple','10','9','Čtvrtek','Zima'];
+  const sorted=[...words].sort((a,b)=>a<b?-1:a>b?1:0), czs=[...words].sort((a,b)=>a.localeCompare(b,'cs'));
+  $('#dSort').innerHTML=`<p class="muted" style="font-size:.9rem">Slova: ${words.map(w=>`<code>${esc(w)}</code>`).join(', ')}</p>
+    <div class="msg"><small>Podle kódů znaků</small><span class="mono">${sorted.map(esc).join(' · ')}</span></div>
+    <div class="msg"><small>Česká abeceda</small><span class="mono">${czs.map(esc).join(' · ')}</span></div>`;
+
+  const nul='Ahoj\0svět', shown=nul.split('\0')[0];
+  $('#dNul').innerHTML=`<div class="msg"><small>Data (bajty hex)</small><span class="mono">${bytesHex(Array.from(new TextEncoder().encode(nul)))}</span></div>
+    <div class="msg"><small>Program v C vidí jen</small><span class="mono"><b>${esc(shown)}</b> (${shown.length} znaky)</span></div>
+    <p class="muted" style="font-size:.9rem">Za bajtem <code>00</code> text pro funkce jako <code>strlen</code> nebo <code>printf</code> končí. Z toho plynou chyby i bezpečnostní díry.</p>`;
+})();
+
+/* ---------- procvičování ---------- */
+let pType='mix', pCur=null, pDone=0, pTot=0, pStreak=0, pAnswered=false;
+const rnd=n=>Math.floor(Math.random()*n);
+const PRINT=()=>33+rnd(94);
+function parseNum(s){s=s.trim().toLowerCase().replace(/\s+/g,'');if(!s)return null;
+  let m=s.match(/^0x([0-9a-f]+)$/)||s.match(/^([0-9a-f]+)h$/);if(m)return parseInt(m[1],16);
+  m=s.match(/^0b([01]+)$/);if(m)return parseInt(m[1],2);
+  if(/^\d+$/.test(s))return parseInt(s,10);return null;}
+function pNew(){
+  pAnswered=false;
+  const t=pType==='mix'?pick(['dec','bin','chr','par']):pType;
+  const c=PRINT();
+  if(t==='dec'){const ch=String.fromCharCode(c);pCur={t,c,ans:c,q:`Jaký je desítkový kód znaku <b class="mono big">${esc(ch)}</b>?`,how:`${esc(ch)} je v zóně ${c>>5}, pozice ${c&31}: ${c>>5} × 32 + ${c&31} = ${c}.`};}
+  else if(t==='bin'){pCur={t,c,ans:c,q:`Zapiš dvojkově sedmibitový kód znaku <b class="mono big">${esc(String.fromCharCode(c))}</b>. Můžeš zadat i desítkově, převod se zkontroluje.`,how:`Kód ${c} = ${bin7(c)}.`};}
+  else if(t==='chr'){pCur={t,c,ans:c,q:`Který znak má desítkový kód <b class="mono big">${c}</b>? Napiš ho.`,how:`Kód ${c} je znak „${esc(String.fromCharCode(c))}“ (hex ${hx(c)}).`};}
+  else{const n=ones(c),even=Math.random()<.5;pCur={t,c,even,q:`Znak <b class="mono">${esc(String.fromCharCode(c))}</b> se pošle jako ${bin7(c)} (jedniček: ${n}). Jaký bit ${even?'sudé':'liché'} parity připojíš?`,ans:even?n%2:(n+1)%2,how:`Jedniček je ${n}. Pro ${even?'sudou':'lichou'} paritu je výsledný počet ${even?'sudý':'lichý'}, takže paritní bit je ${even?n%2:(n+1)%2}.`};}
+  $('#pTask').innerHTML=pCur.q;
+  $('#pAns').innerHTML=pCur.t==='par'
+    ?'<div class="opts"><button data-a="0">0</button><button data-a="1">1</button></div>'
+    :`<div class="walk"><div class="field" style="flex:0 1 14rem"><label for="pIn">Odpověď</label><input type="text" id="pIn" autocomplete="off" spellcheck="false"></div><button class="btn pri" id="pCheck">Zkontrolovat</button></div>`;
+  $('#pRes').innerHTML='';
+  const inp=$('#pIn'); if(inp){inp.focus({preventScroll:true});inp.onkeydown=e=>{if(e.key==='Enter')pCheck();};$('#pCheck').onclick=pCheck;}
+  pStat();
+}
+function pStat(){$('#pStat').textContent=`Vyřešeno ${pDone} z ${pTot}`;$('#pStreak').textContent=pStreak>1?`Série: ${pStreak}`:'';}
+function pFinish(right){
+  if(pAnswered) return; pAnswered=true; pTot++; if(right){pDone++;pStreak++;}else pStreak=0; pStat();
+  $('#pRes').innerHTML=`<p><span class="v ${right?'ok':'bad'}" style="font-weight:700">${right?'Správně!':'Tohle ne.'}</span> ${pCur.how}</p>`;
+  cjDraw($('#pCj'),right?(pStreak>=3?'s-sip':'s-ok'):'s-boo');
+  $('#pSay').innerHTML='<b class="who">Pásek</b>'+(right?(pStreak>=5?'Pět v řadě! Zazvoním na zvonek.':pStreak>=3?'Tři v řadě, páska běží.':'Sedí.'):'Nevadí. Projdi postup a zkus další úlohu.');
+}
+function pCheck(){
+  if(pAnswered) return;
+  const v=$('#pIn').value; let right=false;
+  if(pCur.t==='chr'){const ch=Array.from(v)[0];right=ch&&ch.codePointAt(0)===pCur.c;}
+  else{const n=parseNum(v);if(n==null){$('#pRes').innerHTML='<p class="muted">Zadej číslo (desítkově, 0x… hex nebo 0b… dvojkově).</p>';return;}right=n===pCur.ans;}
+  pFinish(!!right);
+}
+$('#pAns').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||pAnswered)return;
+  pFinish(+b.dataset.a===pCur.ans);
+  $('#pAns').querySelectorAll('button').forEach(x=>{x.disabled=true;if(+x.dataset.a===pCur.ans)x.classList.add('right');else if(x===b)x.classList.add('wrong');});});
+$('#pType').onclick=e=>{const b=e.target.closest('[data-t]');if(!b)return;pType=b.dataset.t;
+  $('#pType').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));pNew();};
+$('#pNext').onclick=pNew;
+
+/* ---------- úrovně a karty ---------- */
+const TABS=['r1','r4','pro','lab','tabulka'], LVLS=['r1','r4','pro'];
+const OLD={};
+let labLvl=LVLS.includes(lsGet('asciiplLabLvl'))?lsGet('asciiplLabLvl'):'r4';
+function placeLupa(){
+  const t=document.documentElement.dataset.tab, slot=t==='r4'?$('#slotR4'):$('#slotLab');
+  if(slot&&$('#lupa').parentNode!==slot) slot.appendChild($('#lupa'));
+}
+function setLvl(l){
+  document.documentElement.dataset.lvl=l;
+  document.querySelectorAll('#labLvl button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===labLvl));
+}
+function setTab(t,push){
+  t=OLD[t]||t; if(!TABS.includes(t)) t='r1';
+  document.documentElement.dataset.tab=t;
+  setLvl(LVLS.includes(t)?t:labLvl);
+  document.querySelectorAll('.lv').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===t));
+  placeLupa();
+  lsSet('asciiplTab',t);
+  if(push){try{history.replaceState(null,'','#'+t);}catch(e){}}
+}
+function goTab(t){setTab(t,true);const r=$('#obsah').getBoundingClientRect();if(r.top<0||r.top>innerHeight*.6)$('#obsah').scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;e.preventDefault();goTab(b.dataset.go);});
+$('#labLvl').onclick=e=>{const b=e.target.closest('[data-l]');if(!b)return;labLvl=b.dataset.l;lsSet('asciiplLabLvl',labLvl);setLvl(labLvl);};
+let startTab=(location.hash||'').slice(1);
+if(!TABS.includes(startTab)) startTab=lsGet('asciiplTab')||'r1';
+setTab(startTab);
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS.includes(h))setTab(h);});
+
+/* ---------- Profesionál ---------- */
+(function pro(){
+  // bitové triky
+  function bt(){
+    const ch=Array.from($('#btIn').value)[0]; const t=$('#btTbl');
+    if(!ch){t.innerHTML='';return;}
+    const c=ch.codePointAt(0); if(c>127){t.innerHTML='<tbody><tr><td>Znak je mimo ASCII, triky nelze použít.</td></tr></tbody>';return;}
+    const L=/[A-Za-z]/.test(ch), D=/[0-9]/.test(ch);
+    const r=(a,b,cc)=>`<tr><td><code>${a}</code></td><td>${b}</td><td><code>${cc}</code></td></tr>`;
+    const f=n=>n>=32&&n<127?`${n} „${esc(String.fromCharCode(n))}“`:`${n} ${isCtl(n)?abbr(n):''}`;
+    t.innerHTML=`<thead><tr><th>Výraz</th><th>Význam</th><th>Výsledek</th></tr></thead><tbody>
+    ${r('c | 32','na malé písmeno (jen pro A–Z a a–z)',L?f(c|32):'nemá smysl, není písmeno')}
+    ${r('c & ~32','na velké písmeno',L?f(c&~32):'nemá smysl, není písmeno')}
+    ${r('c ^ 32','převrátí velikost písmene',L?f(c^32):'nemá smysl, není písmeno')}
+    ${r('c & 0x1F','Ctrl+znak: vynuluje bity 6 a 5',f(c&31))}
+    ${r('c ^ 0x40','řídicí znak ↔ znak o zónu výš (a opačně)',f(c^64))}
+    ${r('c - 48','hodnota číslice',D?String(c-48):'nemá smysl, není číslice')}
+    ${r('c & 0x0F','spodní čtyři bity (u číslic jejich hodnota)',String(c&15))}
+    ${r('c | 0x80','nastaví osmý bit (mimo ASCII!)',hx(c|128)+' (už není ASCII)')}
+    ${r('c & 0x7F','vynuluje osmý bit',hx(c&127))}
+    ${r('popcount(c)','počet jedniček (parita)',ones(c)+(ones(c)%2?' (lichý)':' (sudý)'))}
+    </tbody>`;
+  }
+  $('#btIn').addEventListener('input',bt); bt();
+
+  // ANSI
+  function ansi(){
+    const s=unesc($('#ansiIn').value), cols=['#000','#c0392b','#2e8b57','#b8860b','#2c5fb3','#8e44ad','#16898a','#ccc'];
+    let st={b:0,fg:null,bg:null}, out='', i=0, buf='';
+    const flush=()=>{if(!buf)return;out+=`<span style="${st.b?'font-weight:700;':''}${st.fg!=null?'color:'+cols[st.fg]+';':''}${st.bg!=null?'background:'+cols[st.bg]+';':''}">${esc(buf)}</span>`;buf='';};
+    while(i<s.length){
+      if(s[i]==='\x1b'&&s[i+1]==='['){
+        const m=s.slice(i+2).match(/^([0-9;]*)([A-Za-z])/);
+        if(m){flush();if(m[2]==='m')(m[1]||'0').split(';').forEach(p=>{p=+p;if(p===0)st={b:0,fg:null,bg:null};else if(p===1)st.b=1;else if(p>=30&&p<=37)st.fg=p-30;else if(p>=40&&p<=47)st.bg=p-40;});i+=2+m[0].length;continue;}
+      }
+      const c=s.charCodeAt(i); if(c<32&&c!==10&&c!==9){flush();out+=`<span class="mono" style="opacity:.6">${pic(c)}</span>`;} else buf+=s[i]; i++;
+    }
+    flush(); $('#ansiOut').innerHTML=out||'&nbsp;';
+  }
+  $('#ansiIn').addEventListener('input',ansi); ansi();
+
+  // hexdump
+  const te=new TextEncoder();
+  const HDS=[['Ahoj světe!\n','Ahoj světe!\n'],['řádek CR LF','Windows\r\nUnix\n'],['ESC sekvence','\x1b[31mred\x1b[0m'],['NUL v textu','abc\0def']];
+  $('#hdIn').value=HDS[0][0];
+  $('#hdSamples').innerHTML=HDS.map((s,i)=>`<button class="chip" data-i="${i}">${esc(s[0])}</button>`).join('');
+  $('#hdSamples').onclick=e=>{const b=e.target.closest('[data-i]');if(b){$('#hdIn').value=HDS[b.dataset.i][1];hd();}};
+  function hd(){
+    const by=Array.from(te.encode($('#hdIn').value)).slice(0,256); let o='';
+    for(let p=0;p<by.length;p+=16){
+      const row=by.slice(p,p+16);
+      const h=row.map((b,k)=>(k===8?' ':'')+`<span${b>127?' style="color:var(--k1)"':''}>${hx(b)}</span>`).join(' ');
+      const hl=h+' '.repeat(Math.max(0,(16-row.length)*3+(row.length<=8?1:0)));
+      o+=`${hx(p,8)}  ${hl} |${row.map(b=>b>=32&&b<127?esc(String.fromCharCode(b)):b>127?'<span style="color:var(--k1)">.</span>':'.').join('')}|\n`;
+    }
+    $('#hdOut').innerHTML=o||'(prázdné)';
+  }
+  $('#hdIn').addEventListener('input',hd); hd();
+
+  // dekodér
+  function dec(){
+    const raw=$('#hexIn').value.replace(/0x/gi,'').replace(/[^0-9a-fA-F]/g,' ').trim().split(/\s+/).filter(Boolean);
+    const by=raw.map(x=>parseInt(x,16)).filter(n=>!isNaN(n)&&n<256);
+    const e=(document.querySelector('input[name=decEnc]:checked')||{}).value||'ascii';
+    let s,bad=0;
+    if(e==='ascii'){s=by.map(b=>b<128?String.fromCharCode(b):(bad++,'\uFFFD')).join('');}
+    else s=new TextDecoder(e).decode(new Uint8Array(by));
+    $('#decOut').textContent=visCtl(s)||' ';
+    const hi=by.filter(b=>b>127).length;
+    $('#decInfo').innerHTML=`<p class="muted" style="font-size:.92rem">${by.length} bajtů, z toho ${hi} nad 7F (mimo ASCII).${e==='ascii'&&bad?` ${bad}× nahrazeno znakem U+FFFD.`:''}${e==='utf-8'&&s.includes('\uFFFD')?' Posloupnost není platné UTF-8, objevil se znak U+FFFD.':''}</p>`;
+  }
+  $('#hexIn').addEventListener('input',dec);
+  document.querySelectorAll('input[name=decEnc]').forEach(r=>r.addEventListener('change',dec)); dec();
+
+  // převod do čistého ASCII
+  function punyEnc(inp){
+    const base=36,tmin=1,tmax=26,skew=38,damp=700; let n=128,delta=0,bias=72;
+    const cps=Array.from(inp).map(c=>c.codePointAt(0));
+    let out=cps.filter(c=>c<128).map(c=>String.fromCharCode(c)).join(''); const b=out.length; let h=b; if(b)out+='-';
+    const adapt=(d,np,first)=>{d=first?Math.floor(d/damp):d>>1;d+=Math.floor(d/np);let k=0;while(d>((base-tmin)*tmax)>>1){d=Math.floor(d/(base-tmin));k+=base;}return k+Math.floor((base-tmin+1)*d/(d+skew));};
+    const dig=d=>String.fromCharCode(d<26?d+97:d+22);
+    while(h<cps.length){
+      let m=Infinity;cps.forEach(c=>{if(c>=n&&c<m)m=c;});
+      delta+=(m-n)*(h+1);n=m;
+      for(const c of cps){
+        if(c<n)delta++;
+        if(c===n){let q=delta;for(let k=base;;k+=base){const t=k<=bias?tmin:k>=bias+tmax?tmax:k-bias;if(q<t)break;out+=dig(t+(q-t)%(base-t));q=Math.floor((q-t)/(base-t));}
+          out+=dig(q);bias=adapt(delta,h+1,h===b);delta=0;h++;}
+      }
+      delta++;n++;
+    }
+    return out;
+  }
+  function enc(){
+    const s=$('#encIn').value, by=Array.from(te.encode(s));
+    const url=encodeURIComponent(s), qp=by.map(b=>b>32&&b<127&&b!==61||b===32?String.fromCharCode(b):'='+hx(b)).join('').replace(/ /g,'_');
+    let b64='';try{b64=btoa(String.fromCharCode(...by));}catch(e){}
+    const html=Array.from(s).map(c=>c.codePointAt(0)>127?`&#${c.codePointAt(0)};`:c==='<'?'&lt;':c==='&'?'&amp;':c).join('');
+    const json=Array.from(s).map(c=>{const n=c.codePointAt(0);return n>127?(n>0xFFFF?c.split('').map(x=>'\\u'+hx(x.charCodeAt(0),4).toLowerCase()).join(''):'\\u'+hx(n,4).toLowerCase()):c;}).join('');
+    const w=s.trim().split(/\s+/)[0]||'', pw=/[^\x00-\x7F]/.test(w)?'xn--'+punyEnc(w.toLowerCase()):w.toLowerCase();
+    const r=(n,v,note)=>`<tr><td>${n}</td><td><code style="word-break:break-all">${esc(v)}</code></td><td class="muted">${note}</td></tr>`;
+    $('#encTbl').innerHTML=`<thead><tr><th>Metoda</th><th>Výsledek</th><th>Kde se používá</th></tr></thead><tbody>
+    ${r('Procentové kódování',url,'URL, formuláře (UTF-8 bajty jako %XX)')}
+    ${r('Quoted-printable',qp.replace(/_/g,'_'),'e-mail (mezera zde jako _ v hlavičkách)')}
+    ${r('Base64',b64,'e-mail, data v URL, +33 % velikosti')}
+    ${r('MIME encoded-word',`=?UTF-8?B?${b64}?=`,'předmět e-mailu s češtinou')}
+    ${r('HTML entity',html,'webové stránky v 7bitovém zdroji')}
+    ${r('JSON \\uXXXX',json,'JSON posílaný jako čisté ASCII')}
+    ${r('Punycode (první slovo)',pw,'doménová jména (IDN)')}
+    </tbody>`;
+  }
+  $('#encIn').addEventListener('input',enc); enc();
+
+  // jazyky
+  function lg(){
+    const ch=Array.from($('#lgIn').value)[0]; const t=$('#lgTbl'); if(!ch){t.innerHTML='';return;}
+    const c=ch.codePointAt(0), q=c===39?"'\\''":c===92?"'\\\\'":"'"+(c<32||c===127?'\\x'+hx(c):String.fromCharCode(c))+"'";
+    const r=(l,a,b)=>`<tr><td>${l}</td><td><code>${esc(a)}</code></td><td><code>${esc(b)}</code></td></tr>`;
+    t.innerHTML=`<thead><tr><th>Jazyk</th><th>Znak → kód</th><th>Kód → znak</th></tr></thead><tbody>
+    ${r('Python',`ord(${JSON.stringify(ch)})`,`chr(${c})`)}
+    ${r('JavaScript',`${JSON.stringify(ch)}.charCodeAt(0)`,`String.fromCharCode(${c})`)}
+    ${r('C',`(int) ${q}`,`(char) ${c}`)}
+    ${r('Java',`(int) ${q}`,`(char) ${c}`)}
+    ${r('Bash',`printf '%d' "'${ch.replace(/'/g,"'\\''")}"`,`printf "\\x${hx(c)}"`)}
+    </tbody>`;
+  }
+  $('#lgIn').addEventListener('input',lg); lg();
+})();
+
+/* ---------- start ---------- */
+chain(); where(); parNew(); pNew();
+renderGrid(); preview(65); analyze(); setCP(65);
+
+</script>
+</body>
+</html>
