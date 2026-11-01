@@ -110,7 +110,12 @@ body {
 .tab:hover { background: rgba(255,255,255,.1); }
 .tab[aria-current="page"] { background: var(--bg); color: var(--ink); }
 .tab:focus-visible { outline-color: var(--accent); outline-offset: -2px; }
-.pick { max-width: 560px; }
+.pbtns { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; padding-bottom: 3px; }
+.pbtn { font: inherit; text-align: left; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--muted); background: var(--surface); color: var(--ink); cursor: pointer; display: grid; gap: 1px; min-width: 0; box-shadow: 0 3px 0 var(--line); }
+.pbtn:hover:not(:disabled):not([aria-pressed="true"]) { background: var(--surface-2); }
+.pbtn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: inset 0 3px 5px rgba(0,0,0,.3); transform: translateY(3px); }
+.pbtn[aria-pressed="true"] .pv { color: var(--accent-ink); }
+.pbtn:disabled { background: transparent; border: 1px dashed var(--line); color: var(--muted); box-shadow: none; cursor: default; }
 .pick-note { margin: 10px 0 0; font-size: .85rem; color: var(--muted); }
 .pick-note a { color: var(--accent-text); font-weight: 600; }
 .back { margin: 0 0 18px; }
@@ -272,9 +277,9 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
   <section id="v-prepocet" class="stack" aria-label="Přepočet">
     <div class="card">
       <h2>Hranice známek</h2>
-      <div class="pick field">
-        <label class="lbl" for="c-preset">Předvolba hranic</label>
-        <select id="c-preset"></select>
+      <div class="field">
+        <span class="lbl" id="c-preset-lbl">Předvolba hranic</span>
+        <div class="pbtns" id="c-presets" role="group" aria-labelledby="c-preset-lbl"></div>
       </div>
       <p class="pick-note" id="c-pnote"></p>
     </div>
@@ -596,31 +601,38 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
     if (S.presets.length >= MAXP) $('#pr-msg').textContent = 'Je uloženo deset předvoleb. Jednu přepište nebo smažte.';
     syncPresetSelect();
   }
+  function pickPreset(i) {
+    var p = S.presets[i];
+    if (!p) return;
+    S.sel = i; S.t = clampT(p.p);
+    $('#pr-name').value = p.n;
+    dials.forEach(function (d, k) { refreshDial(k); });
+    $('#pr-msg').textContent = '';
+    onThresholds();
+  }
   function syncPresetSelect() {
-    var sel = $('#c-preset'), cur = S.sel >= 0 ? S.presets[S.sel] : null;
+    var box = $('#c-presets'), cur = S.sel >= 0 ? S.presets[S.sel] : null;
     var custom = !cur || !samePct(cur.p, S.t);
-    sel.textContent = '';
-    if (custom) sel.appendChild(mk('option', { value: '-1', text: 'Vlastní hranice: ' + S.t.join(' · ') + ' %' }));
-    S.presets.forEach(function (p, i) {
-      sel.appendChild(mk('option', { value: String(i), text: p.n + ': ' + p.p.join(' · ') + ' %' }));
-    });
-    sel.value = custom ? '-1' : String(S.sel);
+    var ae = document.activeElement, focusIdx = (ae && ae.parentNode === box) ? Array.prototype.indexOf.call(box.children, ae) : -1;
+    box.textContent = '';
+    for (var i = 0; i < MAXP; i++) {
+      var p = S.presets[i];
+      var b = mk('button', { type: 'button', cls: 'pbtn', 'aria-pressed': (p && !custom && S.sel === i) ? 'true' : 'false' },
+        p ? [mk('span', { cls: 'pn', text: p.n }), mk('span', { cls: 'pv', text: p.p.join(' · ') + ' %' })]
+          : [mk('span', { cls: 'pn', text: 'Volná' }), mk('span', { cls: 'pv', text: 'nepoužito' })]);
+      if (!p) b.disabled = true;
+      else (function (k) { b.addEventListener('click', function () { pickPreset(k); }); })(i);
+      box.appendChild(b);
+    }
+    if (focusIdx >= 0 && box.children[focusIdx] && !box.children[focusIdx].disabled) box.children[focusIdx].focus();
     var note = $('#c-pnote'); note.textContent = '';
-    var msg = S.presets.length ? 'Hranice a předvolby upravíte na záložce ' : 'Zatím nemáte uloženou žádnou předvolbu. Uložíte ji na záložce ';
+    var msg = custom ? 'Vlastní hranice: ' + S.t.join(' · ') + ' %. ' : '';
+    msg += S.presets.length ? 'Hranice a předvolby upravíte na záložce ' : 'Zatím nemáte uloženou žádnou předvolbu. Uložíte ji na záložce ';
     note.appendChild(document.createTextNode(msg));
     note.appendChild(mk('a', { href: '#nastaveni', text: 'Nastavení' }));
     note.appendChild(document.createTextNode('.' + (S.floor ? ' Hranice bodů se zaokrouhlují dolů.' : '')));
   }
   function bindPresets() {
-    $('#c-preset').addEventListener('change', function (e) {
-      var i = Number(e.target.value), p = S.presets[i];
-      if (!p) return;
-      S.sel = i; S.t = clampT(p.p);
-      $('#pr-name').value = p.n;
-      dials.forEach(function (d, k) { refreshDial(k); });
-      $('#pr-msg').textContent = '';
-      onThresholds();
-    });
     $('#pr-new').addEventListener('click', function () {
       if (S.presets.length >= MAXP) return;
       var n = $('#pr-name').value.trim() || 'Předvolba ' + (S.presets.length + 1);
