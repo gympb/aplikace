@@ -403,6 +403,12 @@ function setView(v){
   VIEW=v;try{localStorage.setItem('gymplikace-pohled',v);}catch(e){}
   // po přepnutí na Hromadu se výběr předmětu (otevřená složka) zruší, včetně adresy s #
   if(v==='all'&&f.s!=='Vše'){f.s='Vše';try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}chips('f-subj',SUBJ.filter(x=>x!=='Vše'),'s');}
+  // Podle předmětů = výchozí pohled se složkami: zruší se i otevřená složka, ročník, filtr mobilu a hledání (i když je tlačítko už aktivní)
+  if(v==='subj'){
+    f.s='Vše';f.g='Vše';f.m=false;f.q='';$('q').value='';$('f-mob').setAttribute('aria-pressed','false');
+    try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+    chips('f-subj',SUBJ.filter(x=>x!=='Vše'),'s');chips('f-grade',GRADES,'g');
+  }
   render();toResults();
 }
 
