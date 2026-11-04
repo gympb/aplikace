@@ -138,6 +138,7 @@ h2 { margin: 0 0 4px; font-size: 1.1rem; font-weight: 700; letter-spacing: -.005
 .lbl { display: block; margin: 0 0 6px; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .eff-off { color: var(--bad); font-weight: 700; }
 .warn { margin: 8px 0 0; min-height: 1.2em; font-size: .85rem; font-weight: 600; color: var(--bad); }
+.url-mode .tabs, .url-mode #v-nastaveni, .url-mode #v-prepocet > .card:first-child { display: none; }
 .note { margin: 8px 0 0; font-size: .85rem; color: var(--muted); }
 
 input[type="text"], select, textarea {
@@ -475,6 +476,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
       if (d === '1' || d === '0') { S.floor = d === '1'; used.push(S.floor ? 'zaokrouhlení dolů' : 'bez zaokrouhlení dolů'); } else bad.push('dolu (1 nebo 0)');
     }
     URLMODE = used.length > 0;
+    if (URLMODE) document.documentElement.classList.add('url-mode');
     var n = $('#url-note');
     n.textContent = (used.length ? 'Načteno z odkazu: ' + used.join('; ') + '. Změny se neukládají do prohlížeče. ' : '') + (bad.length ? 'Neplatné parametry byly ignorovány: ' + bad.join('; ') + '.' : '');
     n.hidden = false;
@@ -833,7 +835,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
   presetUI();
   convUpdate(false);
   function route() {
-    var tab = location.hash.replace('#', '') === 'nastaveni' ? 'nastaveni' : 'prepocet';
+    var tab = !URLMODE && location.hash.replace('#', '') === 'nastaveni' ? 'nastaveni' : 'prepocet';
     Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (a) {
       if (a.getAttribute('data-tab') === tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
