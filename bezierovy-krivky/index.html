@@ -591,7 +591,7 @@ const game={free:2,target:[],user:[],revealed:false,solved:false,streak:0,score:
 
 const PRESETS=[
  {id:"s",name:"S-křivka",p:[[150,470],[390,70],[610,550],[850,150]],note:"Klasická kubická křivka. Koncové tečny míří k sousedním bodům."},
- {id:"arc",name:"Oblouk",p:[[180,500],[500,60],[820,500]],note:"Tři body dávají kvadratickou křivku, část paraboly. Takové křivky používá TrueType."},
+ {id:"arc",name:"Oblouk",p:[[125,490],[500,100],[895,490]],note:"Tři body dávají kvadratickou křivku, část paraboly. Takové křivky používá TrueType."},
  {id:"loop",name:"Smyčka",p:[[300,520],[850,100],[150,100],[700,520]],note:"Když se strany polygonu kříží, křivka může protnout sama sebe."},
  {id:"cusp",name:"Hrot",p:[[200,500],[800,130],[200,130],[800,500]],note:"Pro t = 0,5 je rychlost nulová a na křivce vzniká hrot. Zapni vektor rychlosti a sleduj, jak se zkracuje.",show:{tan:true}},
  {id:"line",name:"Úsečka",p:[[120,500],[690,215],[234,443],[880,120]],note:"Všechny body leží na přímce, takže křivka je úsečka. Značky ale ukazují, že se po ní bod pohybuje nerovnoměrně.",show:{ticks:true}},
@@ -970,7 +970,7 @@ $$("[role=tab]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 new ResizeObserver(()=>{layout();if(state.mode==="build")drawBern();draw();}).observe(sheet);
 
 /* Start */
-layout();loadPreset(PRESETS[0]);loadChain(CHAINS[0]);loadD(SVGP[0].d,SVGP[0].note);
+layout();loadPreset(PRESETS.find(p=>p.id==="arc"));loadChain(CHAINS[0]);loadD(SVGP[0].d,SVGP[0].note);
 {let l="basic";try{l=localStorage.getItem("bezier-uroven")==="adv"?"adv":"basic";}catch{}setLevel(l);}
 let touched=false;for(const ev of["pointerdown","keydown"])addEventListener(ev,()=>touched=true,{capture:true});
 function intro(){if(reduced){setT(.5);return;}const t0=performance.now(),D=1800;(function f(n){if(touched||state.playing)return;const u=Math.min(1,(n-t0)/D),e=1-Math.pow(1-u,3);setT(.5*e);if(u<1)requestAnimationFrame(f);})(t0);}
