@@ -135,6 +135,8 @@ select{font-size:14px;border:1px solid var(--line);background:var(--surface);bor
 .row.on .why{display:block}
 .cmdt{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin-top:8px;font-size:13.5px;align-items:baseline}
 .cmdt code{font-size:12px;white-space:nowrap}
+.panel .lvl-l{margin:10px 0 5px;font-size:13.5px}
+.panel .lvl-l:first-child{margin-top:0}
 .score{font-family:var(--sans);font-weight:700;font-size:52px;line-height:1;font-variant-numeric:tabular-nums}
 .score.ok{color:var(--ok)}
 .meter{height:10px;border-radius:5px;background:var(--bg);overflow:hidden;margin-top:8px}
@@ -419,14 +421,23 @@ stroke();</pre>
     <div data-for="game" hidden>
       <section>
         <h2>Trefíš křivku?</h2>
-        <p>Posouvej červené řídicí body, dokud tvoje křivka nepřekryje zelený pruh. Krajní body jsou pevné.</p>
+        <p>Posouvej červené body, dokud tvoje křivka nepřekryje zelený pruh. Krajní body jsou pevné. V zadání s ostrými vrcholy jsou čtverečky uzly, ve kterých se křivka láme.</p>
       </section>
       <section>
-        <h2>Volné body</h2>
-        <div class="btns" id="gameLevels">
-          <button class="btn" data-free="1">1 bod</button>
-          <button class="btn" data-free="2">2 body</button>
-          <button class="btn" data-free="3">3 body</button>
+        <h2>Zadání</h2>
+        <div id="gameLevels">
+          <p class="lvl-l">Plynulá křivka</p>
+          <div class="btns">
+            <button class="btn" data-free="1">1 bod</button>
+            <button class="btn" data-free="2">2 body</button>
+            <button class="btn" data-free="3">3 body</button>
+          </div>
+          <p class="lvl-l">Křivka s ostrými vrcholy</p>
+          <div class="btns">
+            <button class="btn" data-sharp="1">1 vrchol</button>
+            <button class="btn" data-sharp="2">2 vrcholy</button>
+            <button class="btn" data-sharp="3">3 vrcholy</button>
+          </div>
         </div>
       </section>
       <section aria-live="polite">
@@ -587,7 +598,7 @@ const build={pts:[],reveal:3,preset:null,show:{poly:true,cons:true,hull:false,ta
 const render_={step:"samples",n:8,px:16,aa:true,adaptive:false};
 const NS=[1,2,3,4,6,8,12,16,24,32,48,64];
 const chain={nodes:[],closed:false,fill:false,sel:null,preset:null};
-const game={free:2,target:[],user:[],revealed:false,solved:false,streak:0,score:0};
+const game={sharp:0,free:2,target:[],user:[],revealed:false,solved:false,streak:0,score:0};
 
 const PRESETS=[
  {id:"s",name:"S-křivka",p:[[150,470],[390,70],[610,550],[850,150]],note:"Klasická kubická křivka. Koncové tečny míří k sousedním bodům."},
@@ -799,11 +810,15 @@ function drawChain(){const N=chain.nodes,S=segments();
     if(n.type==="sym"){ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();ctx.stroke();}else{ctx.fillRect(-r,-r,2*r,2*r);ctx.strokeRect(-r,-r,2*r,2*r);}ctx.restore();});
   if(!N.length){ctx.font=`500 ${px(20)}px ${SANS}`;ctx.fillStyle=TH.muted;ctx.textAlign="center";ctx.fillText("Klepnutím na papír přidej první uzel",W/2,H/2);}
 }
-function drawGame(){const T=game.target,U=game.user,ok=game.solved;
-  curvePath(T);line(TH.okA,18);curvePath(T);line(TH.ok,1.6,[8,7]);
+function gsegs(L){if(!game.sharp)return [L];const r=[];for(let i=0;i+2<L.length;i+=2)r.push(L.slice(i,i+3));return r;}
+function drawGame(){const T=game.target,U=game.user,ok=game.solved,each=(L,f)=>gsegs(L).forEach(g=>{curvePath(g);f();});
+  each(T,()=>line(TH.okA,18));each(T,()=>line(TH.ok,1.6,[8,7]));
   if(game.revealed){polyline(T,TH.ok,1.5,[4,6]);T.slice(1,-1).forEach(q=>dot(q,8,TH.paper,TH.ok,3));}
-  polyline(U,TH.soft,1.6,[7,6]);curvePath(U);line(ok?TH.ok:PEN,4.5);
-  U.forEach((q,i)=>{const end=i===0||i===U.length-1;dot(q,end?7:11,end?INK:PEN);if(state.sel===i){ctx.beginPath();ctx.arc(q.x,q.y,px(16),0,7);line(PEN,2);}});
+  polyline(U,TH.soft,1.6,[7,6]);each(U,()=>line(ok?TH.ok:PEN,4.5));
+  U.forEach((q,i)=>{const end=i===0||i===U.length-1,node=game.sharp&&!end&&i%2===0;
+    if(node){const r=px(10);ctx.fillStyle=PEN;ctx.fillRect(q.x-r,q.y-r,2*r,2*r);ctx.strokeStyle=TH.ring;ctx.lineWidth=px(2);ctx.strokeRect(q.x-r,q.y-r,2*r,2*r);}
+    else dot(q,end?7:11,end?INK:PEN);
+    if(state.sel===i){ctx.beginPath();ctx.arc(q.x,q.y,px(node?19:16),0,7);line(PEN,2);}});
 }
 
 /* Bernsteinův graf a výpisy */
@@ -859,17 +874,25 @@ function updateChain(){const N=chain.nodes,s=chain.sel,S=segments();
   if(!chain.preset)$("#chainNote").textContent="";render();}
 
 /* Výzva */
+function sharpTarget(k){const n=k+1;let T,ok=false,tries=0;
+  while(!ok&&tries++<400){const up=Math.random()<.5,nodes=[P(130,rand(170,450))];
+    for(let i=1;i<=k;i++)nodes.push(P(130+740*i/n+rand(-40,40),(i%2===1)===up?rand(80,210):rand(400,530)));
+    nodes.push(P(870,rand(170,450)));T=[nodes[0]];
+    for(let i=0;i<n;i++){const a=nodes[i],b=nodes[i+1],m=lerp(a,b,.5),dx=b.x-a.x,dy=b.y-a.y,s=(Math.random()<.5?-1:1)*rand(55,115)/Math.hypot(dx,dy);T.push(P(clamp(m.x-dy*s,60,940),clamp(m.y+dx*s,60,560)),b);}
+    ok=true;for(let j=2;j<T.length-1;j+=2){const a=T[j-1],v=T[j],b=T[j+1],ux=v.x-a.x,uy=v.y-a.y,wx=b.x-v.x,wy=b.y-v.y;if(Math.acos(clamp((ux*wx+uy*wy)/(Math.hypot(ux,uy)*Math.hypot(wx,wy)),-1,1))<1.15)ok=false;}}
+  return T;}
 function newGame(){const k=game.free;let T;
-  do{const a=P(130,rand(170,450)),b=P(870,rand(170,450));T=[a];for(let i=1;i<=k;i++)T.push(P(130+740*i/(k+1)+rand(-70,70),rand(70,550)));T.push(b);
+  if(game.sharp)T=sharpTarget(game.sharp);
+  else do{const a=P(130,rand(170,450)),b=P(870,rand(170,450));T=[a];for(let i=1;i<=k;i++)T.push(P(130+740*i/(k+1)+rand(-70,70),rand(70,550)));T.push(b);
   }while(Math.max(...T.slice(1,-1).map(q=>Math.abs(q.y-(T[0].y+T[k+1].y)/2)))<130);
-  game.target=T;game.user=T.map((_,i)=>lerp(T[0],T[k+1],i/(k+1)));game.revealed=false;game.solved=false;state.sel=null;scoreGame();}
+  const n=T.length-1;game.target=T;game.user=T.map((_,i)=>lerp(T[0],T[n],i/n));game.revealed=false;game.solved=false;state.sel=null;scoreGame();}
 function chamfer(A,B){const S=(f,g)=>{let s=0;for(const a of f){let m=1e9;for(const b of g){const d=(a.x-b.x)**2+(a.y-b.y)**2;if(d<m)m=d;}s+=Math.sqrt(m);}return s/f.length;};return (S(A,B)+S(B,A))/2;}
-function scoreGame(){const samp=p=>Array.from({length:81},(_,i)=>bez(p,i/80)),d=chamfer(samp(game.target),samp(game.user)),sc=Math.round(clamp(100*(1-d/80),0,100));game.score=sc;
+function scoreGame(){const samp=L=>{const g=gsegs(L),c=Math.ceil(80/g.length),o=[];for(const p of g)for(let i=0;i<=c;i++)o.push(bez(p,i/c));return o;},d=chamfer(samp(game.target),samp(game.user)),sc=Math.round(clamp(100*(1-d/80),0,100));game.score=sc;
   const ok=sc>=92;if(ok&&!game.solved&&!game.revealed){game.solved=true;game.streak++;}else if(!ok)game.solved=false;
   $("#score").textContent=sc+" %";$("#score").classList.toggle("ok",ok);$("#meter").classList.toggle("ok",ok);$("#meter span").style.width=sc+"%";
   $("#gameMsg").textContent=game.revealed?"Řešení je zobrazené jako prázdné kroužky.":ok?"Trefa! Křivky se překrývají.":"Pro úspěch potřebuješ aspoň 92 %.";
   $("#reveal").disabled=game.revealed;$("#streak").textContent=game.streak?`Trefených křivek: ${game.streak}`:"";
-  $$("#gameLevels button").forEach(b=>b.classList.toggle("on",+b.dataset.free===game.free));render();}
+  $$("#gameLevels button").forEach(b=>b.classList.toggle("on",game.sharp?+b.dataset.sharp===game.sharp:+b.dataset.free===game.free));render();}
 
 /* Ovládání ukazatelem */
 function hitList(){if(state.mode==="svg"){const r=[];svgS.cmds.forEach((c,ci)=>c.pts.forEach((p,pi)=>r.push({q:p.q,kind:"s",ci,pi})));return r;}
@@ -928,7 +951,7 @@ $("#delNode").onclick=()=>{if(chain.sel===null)return;chain.nodes.splice(chain.s
 $("#closed").onchange=e=>{chain.closed=e.target.checked;chain.preset=null;updateChain();};
 $("#fill").onchange=e=>{chain.fill=e.target.checked;updateChain();};
 $("#copySvg").onclick=async e=>{const o=$("#svgOut"),b=e.target;try{await navigator.clipboard.writeText(o.value);}catch{o.select();document.execCommand("copy");}b.textContent="Zkopírováno";setTimeout(()=>b.textContent="Kopírovat",1400);};
-$("#gameLevels").onclick=e=>{const f=+e.target.dataset.free;if(f){game.free=f;newGame();}};
+$("#gameLevels").onclick=e=>{const f=+e.target.dataset.free,v=+e.target.dataset.sharp;if(f){game.free=f;game.sharp=0;newGame();}else if(v){game.sharp=v;newGame();}};
 $("#newGame").onclick=newGame;
 $("#reveal").onclick=()=>{game.revealed=true;scoreGame();};
 $("#rSteps").onclick=e=>{const s=e.target.dataset.step;if(s){render_.step=s;updateRender();render();}};
