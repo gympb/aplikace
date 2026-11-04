@@ -273,7 +273,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
         </div>
         <div>
           <span class="lbl">Odkaz s předvyplněnými hodnotami</span>
-          <p class="note">Stránku lze otevřít i s hodnotami v adrese, například <code>?h=85,70,50,25&amp;max=40&amp;body=31</code>. Parametr <code>h</code> jsou hranice známek 1 až 4 v procentech (v rozsahu řádu), <code>max</code> nejvyšší dosažitelný počet bodů, volitelně <code>body</code> dosažené body a <code>dolu=1</code> zapne zaokrouhlení hranic dolů. Takto otevřená stránka nic neukládá do prohlížeče.</p>
+          <p class="note">Stránku lze otevřít i s hodnotami v adrese, například <code>?h=85,70,50,25&amp;max=40</code>. Parametr <code>h</code> jsou hranice známek 1 až 4 v procentech (v rozsahu řádu), <code>max</code> nejvyšší dosažitelný počet bodů, volitelně <code>dolu=1</code> zapne zaokrouhlení hranic dolů. Takto otevřená stránka nic neukládá do prohlížeče.</p>
         </div>
       </div>
     </div>
@@ -454,26 +454,21 @@ input[type="checkbox"] { accent-color: var(--accent); width: 18px; height: 18px;
     } catch (e) { return d; }
   }
   var S = load();
-  /* Předvyplnění z adresy: ?h=85,70,50,25&max=40&body=31&dolu=1 (jen pro toto otevření, uložené nastavení se nemění) */
+  /* Předvyplnění z adresy: ?h=85,70,50,25&max=40&dolu=1 (jen pro toto otevření, uložené nastavení se nemění) */
   var URLMODE = false;
   (function () {
     var q;
     try { q = new URLSearchParams(location.search); } catch (e) { return; }
-    if (!q.has('h') && !q.has('max') && !q.has('body') && !q.has('dolu')) return;
+    if (!q.has('h') && !q.has('max') && !q.has('dolu')) return;
     var bad = [], used = [];
     if (q.has('h')) {
       var p = q.get('h').split(/[,;\s]+/).filter(Boolean).map(parseNum);
       var ok = p.length === 4 && p.every(function (v, i) { return isFinite(v) && v === Math.round(v) && v >= RANGES[i][0] && v <= RANGES[i][1]; });
       if (ok) { S.t = p; S.sel = -1; used.push('hranice ' + p.join(', ') + ' %'); } else bad.push('h (čtyři celá čísla v rozsahu řádu: ' + RANGES.map(function (r) { return r[0] + '–' + r[1]; }).join(', ') + ' %)');
     }
-    var mx = S.conv.max;
     if (q.has('max')) {
       var m = parseNum(q.get('max'));
-      if (m > 0 && m <= 200) { S.conv.max = mx = m; used.push('maximum ' + fmt(m, 2) + ' bodů'); } else bad.push('max (číslo větší než 0 a nejvýše 200)');
-    }
-    if (q.has('body')) {
-      var b = parseNum(q.get('body'));
-      if (b >= 0 && b <= mx + EPS) { S.conv.pts = String(b).replace('.', ','); used.push('body ' + fmt(b, 2)); } else bad.push('body (od 0 do maxima)');
+      if (m > 0 && m <= 200) { S.conv.max = m; used.push('maximum ' + fmt(m, 2) + ' bodů'); } else bad.push('max (číslo větší než 0 a nejvýše 200)');
     }
     if (q.has('dolu')) {
       var d = q.get('dolu');
