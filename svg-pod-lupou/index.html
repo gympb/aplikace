@@ -137,7 +137,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .yes{color:var(--good);font-weight:700}.no{color:var(--muted)}
 .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:18px}
 .two ul{margin:6px 0 0;padding-left:1.1em}
-canvas.pix{width:100%;height:auto;display:block;image-rendering:pixelated;border:1px solid var(--line);border-radius:3px;background:var(--artboard)}
+canvas.pix{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:3px;background:var(--artboard)}
 
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{font:500 .875rem var(--f-mono);min-height:36px;padding:3px 9px;background:var(--panel);border:1px solid var(--line);border-radius:3px;color:var(--muted)}
@@ -237,10 +237,10 @@ footer{margin-top:18px;font-size:.875rem;color:var(--muted)}
   </div>
   <div class="block">
     <h2>Zvětšení: pixely proti popisu</h2>
-    <p>Vlevo je stejný obrázek uložený jako rastr 64 × 64 pixelů. Vpravo je SVG. Při zvětšení rastr jen roztahuje své pixely, protože jiné informace nemá. SVG se přepočítá.</p>
+    <p>Vlevo je obrázek uložený jako rastr 480 × 480 pixelů, vpravo je SVG. Při běžné velikosti je nerozeznáš. Zvětšuj a sleduj špičku střechy: rastr jen roztahuje své pixely, protože jiné informace nemá. SVG se přepočítá a zůstane ostré.</p>
     <div class="ctls" id="z-ctl" style="max-width:420px"></div>
     <div class="stage" style="grid-template-columns:repeat(2,minmax(0,1fr));max-width:680px">
-      <div class="col"><div class="cap">Rastr 64 × 64 px</div><canvas class="pix" id="z-ras" width="480" height="480"></canvas></div>
+      <div class="col"><div class="cap">Rastr 480 × 480 px</div><canvas class="pix" id="z-ras" width="960" height="960"></canvas></div>
       <div class="col"><div class="cap">SVG</div><div id="z-vec"></div></div>
     </div>
   </div>
@@ -674,22 +674,22 @@ function initUvod(){
   xs.forEach(([t,c])=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{xc.value=c;xchk()};$('#x-pre').append(b)});
   xc.addEventListener('input',xchk);xc.value=xs[0][1];xchk();
   // zoom
-  const off=document.createElement('canvas');off.width=off.height=64;
+  const off=document.createElement('canvas');off.width=off.height=480;
   const img=new Image(),c=$('#z-ras').getContext('2d');
   const vec=parseSvg(scene(24)).node;vec.classList.add('board');vec.setAttribute('role','img');vec.setAttribute('aria-label','Vektorová verze obrázku');$('#z-vec').append(vec);
   let z=1;
   function zoom(){
-    const w=200/z,x=clamp(150-w/2,0,200-w),y=clamp(50-w/2,0,200-w);
+    const w=200/z,x=clamp(75-w/2,0,200-w),y=clamp(82-w/2,0,200-w);
     vec.setAttribute('viewBox',`${x} ${y} ${w} ${w}`);
     c.imageSmoothingEnabled=false;
-    const k=64/200;c.clearRect(0,0,480,480);c.drawImage(off,x*k,y*k,w*k,w*k,0,0,480,480);
+    const k=480/200;c.clearRect(0,0,960,960);c.drawImage(off,x*k,y*k,w*k,w*k,0,0,960,960);
   }
-  img.onload=()=>{off.getContext('2d').drawImage(img,0,0,64,64);zoom()};
+  img.onload=()=>{off.getContext('2d').drawImage(img,0,0,480,480);zoom()};
   img.src=toData(scene(24).replace('<svg ','<svg width="200" height="200" '));
-  ctl($('#z-ctl'),{id:'z-z',label:'zvětšení',min:1,max:12,step:.5,val:1,unit:'×',on(v){z=v;zoom()}});
+  ctl($('#z-ctl'),{id:'z-z',label:'zvětšení',min:1,max:24,step:1,val:1,unit:'×',on(v){z=v;zoom()}});
   const bytes=new TextEncoder().encode(scene(24)).length;
   const fmt=b=>b<1024?b+' B':b<1048576?czN(rnd(b/1024,1))+' kB':czN(rnd(b/1048576,1))+' MB';
-  $('#z-tb').innerHTML=[64,512,1920,4096].map(n=>`<tr><td>${n} × ${n} px</td><td class="num">${fmt(n*n*3)}</td><td class="num">${fmt(bytes)}</td></tr>`).join('');
+  $('#z-tb').innerHTML=[480,1024,1920,4096].map(n=>`<tr><td>${n} × ${n} px</td><td class="num">${fmt(n*n*3)}</td><td class="num">${fmt(bytes)}</td></tr>`).join('');
 }
 
 /* ---------- 2 viewBox ---------- */
