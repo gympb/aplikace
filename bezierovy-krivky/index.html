@@ -51,7 +51,7 @@ code,pre{font-family:var(--math)}
 body[data-level=basic] .adv{display:none!important}
 body[data-level=adv] .bas{display:none!important}
 
-.wrap{max-width:1180px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));display:grid;gap:16px}
+.wrap{max-width:1180px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
 .back{font-size:14px;color:var(--accent);text-decoration:none;justify-self:start}
 .back:hover{text-decoration:underline}
 footer{font-size:13px;color:var(--muted);max-width:75ch}
@@ -174,6 +174,12 @@ select{font-size:14px;border:1px solid var(--line);background:var(--surface);bor
 .plus{display:inline-block;vertical-align:middle;margin-left:.6em;padding:.15em .5em;border-radius:4px;background:#1b2a4a;color:#fff;font:700 10px/1.3 var(--text);letter-spacing:.06em}
 .plus-note{font-size:13.5px;color:var(--muted);margin:0 0 8px}
 @media (prefers-color-scheme: dark){.plus{background:#9db0d8;color:#0f161b}}
+.prose h3{font-family:var(--sans);font-size:20px;margin:22px 0 4px}
+.tbl{overflow-x:auto}
+.terms.cmp{font-size:14px;min-width:560px}
+.terms.cmp th{font-size:11px;letter-spacing:.03em}
+.terms.cmp td,.terms.cmp th{padding:6px 8px;vertical-align:top}
+.terms.cmp td:first-child{font-family:var(--sans);font-weight:600;font-size:15px}
 .show-f{font-family:var(--math);font-size:16px;line-height:1.7;background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 16px;margin:14px 0;overflow-x:auto}
 .show-f i{font-style:italic}
 .stack{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-size:.74em;line-height:1.05;margin:0 1px}
@@ -398,6 +404,7 @@ stroke();</pre>
           <button class="btn" data-kind="cr">Catmull-Rom</button>
         </div>
         <p id="spNote"></p>
+        <div class="btns" style="margin-top:8px"><button class="btn" id="spReset">Vrátit automatické tečny</button></div>
       </section>
       <section>
         <h2>Řídicí body</h2>
@@ -418,7 +425,7 @@ stroke();</pre>
       </section>
       <section>
         <h2>Vztah k Bézierově křivce</h2>
-        <p>Každý úsek kubické spline je kubická Bézierova křivka. Čtverečky a modrá kolečka jsou její body Q<sub>0</sub> až Q<sub>3</sub>. Úsek B-spline z bodů A, B, C, D má:</p>
+        <p id="spFormT"></p>
         <div class="formula" id="spForm"></div>
         <div class="btns" style="margin-top:9px"><button class="btn" id="spToSvg">Rozebrat zápis</button></div>
       </section>
@@ -540,13 +547,35 @@ stroke();</pre>
         <li><b>Rasterizace.</b> Obrazovka je mřížka pixelů. Pro každý pixel v okolí čáry se spočítá, jak velkou jeho část čára překrývá, a podle toho dostane barvu. Tomu se říká vyhlazování.</li>
       </ol>
       <p>Programátor to obvykle nepíše sám. V prohlížeči stačí zavolat <code>bezierCurveTo()</code> a předat mu řídicí body. Ostatní zařídí grafická knihovna.</p>
-      <h2>Spline a její vztah k Bézierově křivce<span class="plus" title="Tato část může obsahovat učivo nad rámec přiřazených ročníků">PLUS</span></h2>
-      <p>Spline je křivka složená z krátkých polynomiálních úseků, které na sebe plynule navazují. Slovo pochází z loďařství a technického kreslení: spline byla ohebná lišta, kterou kreslíř přidržel závažími a podle ní narýsoval hladkou křivku. Matematický pojem zavedl v roce 1946 Isaac Schoenberg.</p>
-      <p>Hlavní výhoda je místní řízení. U jedné Bézierovy křivky ovlivňuje každý bod celý tvar a s počtem bodů roste stupeň polynomu. U kubické spline zůstává stupeň 3 při libovolném počtu bodů a jeden bod mění jen několik sousedních úseků.</p>
-      <p>Spline a Bézierova křivka nejsou soupeři. Každý úsek kubické spline lze přesně zapsat jako kubickou Bézierovu křivku. Rozdíl je v tom, co zadáváš. U řetězu Bézierových úseků zadáváš všechny body sám a o hladké napojení se musíš postarat. U spline zadáš jen řídicí body a Bézierovy body se z nich dopočítají:</p>
+      <h2>Spline a Bézierova křivka<span class="plus" title="Tato část může obsahovat učivo nad rámec přiřazených ročníků">PLUS</span></h2>
+      <p>Tyto dva pojmy se často stavějí proti sobě, ale nejsou to dvě věci stejného druhu. <b>Bézierova křivka</b> je způsob, jak zapsat jeden kus křivky pomocí řídicích bodů. <b>Spline</b> je pravidlo, jak z mnoha krátkých kusů složit dlouhou křivku, aby na sebe plynule navazovaly. Bézierova křivka je tedy cihla a spline je návod na stavbu zdi.</p>
+      <p>Slovo spline pochází z loďařství a technického kreslení. Byla to ohebná lišta, kterou kreslíř přidržel závažími a podle ní narýsoval hladkou křivku. Lišta se mezi závažími sama prohnula co nejplynuleji a přesně toto chování se matematika snaží napodobit. Matematický pojem zavedl v roce 1946 Isaac Schoenberg.</p>
+      <h3>Proč nestačí jedna Bézierova křivka</h3>
+      <p>Jedna Bézierova křivka má dva problémy. S každým dalším bodem jí roste stupeň, takže 10 bodů znamená polynom 9. stupně. A každý bod ovlivňuje celý tvar, takže oprava na jednom konci změní i druhý konec. Přepni si v záložce Spline porovnání a vyzkoušej to.</p>
+      <p>Řešením je složit křivku z krátkých úseků nízkého stupně, nejčastěji 3. Tím ale vznikne nová otázka: jak zajistit, aby se úseky v místě spojení nelámaly. Právě na to odpovídá spline.</p>
+      <h3>Tři způsoby, jak zadat dlouhou křivku</h3>
+      <div class="tbl"><table class="terms cmp">
+        <thead><tr><th></th><th>Jedna Bézierova křivka</th><th>Řetěz Bézierových úseků</th><th>B-spline</th><th>Catmull-Rom</th></tr></thead>
+        <tbody>
+          <tr><td>Co zadáváš</td><td>všechny řídicí body</td><td>uzly a úchyty</td><td>řadu řídicích bodů</td><td>řadu bodů na křivce</td></tr>
+          <tr><td>Stupeň</td><td>počet bodů − 1</td><td>obvykle 3</td><td>3</td><td>3</td></tr>
+          <tr><td>Prochází body</td><td>jen prvním a posledním</td><td>uzly ano, úchyty ne</td><td>obvykle ne</td><td>všemi</td></tr>
+          <tr><td>Napojení</td><td>není potřeba</td><td>hlídáš sám</td><td>směr, rychlost i křivost</td><td>směr a rychlost</td></tr>
+          <tr><td>Vliv bodu</td><td>celá křivka</td><td>1 až 2 úseky</td><td>4 úseky</td><td>4 úseky</td></tr>
+          <tr><td>Použití</td><td>krátký oblouk, animace</td><td>nástroj pero, písma, SVG</td><td>modelování tvarů</td><td>proložení bodů, dráha pohybu</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Stejná křivka, dva zápisy</h3>
+      <p>Každý úsek kubické spline je obyčejný polynom 3. stupně, a každý takový polynom lze přesně zapsat jako kubickou Bézierovu křivku. Liší se jen to, co zadáváš. Úsek B-spline určují čtyři po sobě jdoucí řídicí body <i>A</i>, <i>B</i>, <i>C</i>, <i>D</i>, a Bézierovy body se z nich dopočítají:</p>
       <div class="show-f"><i>Q</i><sub>0</sub> = (<i>A</i> + 4<i>B</i> + <i>C</i>)/6,&ensp; <i>Q</i><sub>1</sub> = (2<i>B</i> + <i>C</i>)/3,&ensp; <i>Q</i><sub>2</sub> = (<i>B</i> + 2<i>C</i>)/3,&ensp; <i>Q</i><sub>3</sub> = (<i>B</i> + 4<i>C</i> + <i>D</i>)/6</div>
-      <p>Tady <i>A</i>, <i>B</i>, <i>C</i>, <i>D</i> jsou čtyři po sobě jdoucí řídicí body kubické B-spline. Díky tomu navazují úseky nejen směrem a rychlostí, ale i křivostí. Catmull-Romova spline se počítá jinak: prochází přímo zadanými body, zato křivost v uzlech skáče.</p>
-      <p>Převod se používá běžně. SVG žádný příkaz pro spline nemá, takže kreslicí programy spline ukládají jako řadu příkazů C. Vztah platí i opačně: Bézierova křivka je zvláštní případ B-spline. Zobecněním obou jsou křivky NURBS, se kterými pracují programy pro konstrukci.</p>
+      <p>Příklad pro souřadnice <i>x</i> bodů 100, 230, 370, 500: vyjde <i>Q</i><sub>0</sub> ≈ 231,7, <i>Q</i><sub>1</sub> ≈ 276,7, <i>Q</i><sub>2</sub> ≈ 323,3 a <i>Q</i><sub>3</sub> ≈ 368,3. Další úsek vznikne posunem o jeden bod, tedy z <i>B</i>, <i>C</i>, <i>D</i>, <i>E</i>. Jeho začátek je (<i>B</i> + 4<i>C</i> + <i>D</i>)/6, což je přesně konec předchozího úseku. Hladké napojení proto není nic, co bys musel hlídat, plyne ze samotného vzorce.</p>
+      <p>U Catmull-Romovy spline je to podobné, jen vzorec zaručí, že křivka projde zadanými body. Tečna v bodě se spočítá ze sousedů a Bézierovy body jsou:</p>
+      <div class="show-f"><i>Q</i><sub>0</sub> = <i>B</i>,&ensp; <i>Q</i><sub>1</sub> = <i>B</i> + (<i>C</i> − <i>A</i>)/6,&ensp; <i>Q</i><sub>2</sub> = <i>C</i> − (<i>D</i> − <i>B</i>)/6,&ensp; <i>Q</i><sub>3</sub> = <i>C</i></div>
+      <p>Když tečny nepočítáš ze sousedů, ale zadáš si je sám, vznikne Hermitova spline. To si můžeš vyzkoušet v záložce Spline, kde lze v režimu Catmull-Rom tečny táhnout.</p>
+      <h3>Nejde mít všechno</h3>
+      <p>Kubická křivka nemůže zároveň procházet všemi body, mít spojitou křivost a nechat každý bod působit jen na blízké okolí. Vždy se jedné vlastnosti vzdáme. B-spline obětuje průchod body, Catmull-Rom spojitou křivost a přirozená kubická spline, která zvládne obojí, místní řízení: pohyb jednoho bodu ovlivní celou křivku.</p>
+      <h3>Jak se to potkává v praxi</h3>
+      <p>Spline a Bézierova křivka se v programech doplňují. Člověk pracuje s body spline a program ji pro kreslení převede na Bézierovy úseky. SVG žádný příkaz pro spline nemá, takže se spline ukládá jako řada příkazů C. Vztah platí i opačně: Bézierova křivka je zvláštní případ B-spline. Zobecněním obou jsou křivky NURBS, se kterými pracují programy pro konstrukci.</p>
       </div>
       <h2>Co platí pro každou Bézierovu křivku</h2>
       <ul>
@@ -644,7 +673,7 @@ const state={level:"basic",mode:"build",t:0,playing:false,sel:null,drag:null};
 const build={pts:[],reveal:3,preset:null,show:{poly:true,cons:true,hull:false,tan:false,ticks:false,comb:false}};
 const render_={step:"samples",n:8,px:16,aa:true,adaptive:false};
 const NS=[1,2,3,4,6,8,12,16,24,32,48,64];
-const spline={pts:pts([[100,430],[230,150],[370,470],[500,130],[640,480],[770,170],[900,410]]),kind:"b",bez:true,poly:true,cmp:false};
+const spline={pts:pts([[100,430],[230,150],[370,470],[500,130],[640,480],[770,170],[900,410]]),kind:"b",bez:true,poly:true,cmp:false,tan:[]};
 const SPMAX=10;
 const chain={nodes:[],closed:false,fill:false,sel:null,preset:null};
 const game={sharp:0,free:2,target:[],user:[],revealed:false,solved:false,streak:0,score:0};
@@ -735,24 +764,33 @@ function drawComb(p){const d1=deriv(p),d2=d1.length>1?deriv(d1):null;if(!d2)retu
   line("rgba(111,59,176,.35)",1);polyline(tips,"rgba(111,59,176,.8)",1.5);}
 
 /* Spline: každý úsek se počítá a kreslí jako kubická Bézierova křivka */
-function splineSegs(){const p=spline.pts,n=p.length,bs=spline.kind==="b",k=bs?2:1,idx=[...Array(k).fill(0),...p.map((_,i)=>i),...Array(k).fill(n-1)],S=[],mix=(w,D,...q)=>P(q.reduce((v,c,i)=>v+w[i]*c.x,0)/D,q.reduce((v,c,i)=>v+w[i]*c.y,0)/D);
-  for(let i=0;i+3<idx.length;i++){const ids=idx.slice(i,i+4),[a,b,c,d]=ids.map(j=>p[j]);
-    S.push({ids,q:bs?[mix([1,4,1],6,a,b,c),mix([2,1],3,b,c),mix([1,2],3,b,c),mix([1,4,1],6,b,c,d)]:[clone(b),P(b.x+(c.x-a.x)/6,b.y+(c.y-a.y)/6),P(c.x-(d.x-b.x)/6,c.y-(d.y-b.y)/6),clone(c)]});}
+function spTan(i){const p=spline.pts,n=p.length,a=p[Math.max(0,i-1)],b=p[Math.min(n-1,i+1)];return spline.tan[i]||P((b.x-a.x)/2,(b.y-a.y)/2);}
+function splineSegs(){const p=spline.pts,n=p.length,S=[],mix=(w,D,...q)=>P(q.reduce((v,c,i)=>v+w[i]*c.x,0)/D,q.reduce((v,c,i)=>v+w[i]*c.y,0)/D);
+  if(spline.kind==="cr"){for(let j=0;j+1<n;j++){const b=p[j],c=p[j+1],mb=spTan(j),mc=spTan(j+1),ids=[j,j+1];if(!spline.tan[j]&&j>0)ids.push(j-1);if(!spline.tan[j+1]&&j+2<n)ids.push(j+2);
+      S.push({ids,q:[clone(b),P(b.x+mb.x/3,b.y+mb.y/3),P(c.x-mc.x/3,c.y-mc.y/3),clone(c)]});}
+    return S;}
+  const idx=[0,0,...p.map((_,i)=>i),n-1,n-1];
+  for(let i=0;i+3<idx.length;i++){const ids=idx.slice(i,i+4),[a,b,c,d]=ids.map(j=>p[j]);S.push({ids,q:[mix([1,4,1],6,a,b,c),mix([2,1],3,b,c),mix([1,2],3,b,c),mix([1,4,1],6,b,c,d)]});}
   return S;}
+function crHandles(){const p=spline.pts,n=p.length,r=[];p.forEach((q,i)=>{const m=spTan(i);if(i<n-1)r.push({q:P(q.x+m.x/3,q.y+m.y/3),i,sign:1});if(i>0)r.push({q:P(q.x-m.x/3,q.y-m.y/3),i,sign:-1});});return r;}
 function drawSpline(){const p=spline.pts,S=splineSegs(),sel=state.sel;
   if(spline.poly)polyline(p,TH.soft,1.4,[7,6]);
   if(spline.cmp){curvePath(p);line(TH.ok,2.4,[9,7]);}
   if(sel!==null)S.forEach(s=>{if(s.ids.includes(sel)){curvePath(s.q);line(TH.hl,13);}});
   S.forEach(s=>{curvePath(s.q);line(PEN,4);});
-  if(spline.bez){S.forEach(s=>{polyline([s.q[0],s.q[1]],TH.softA,1.3);polyline([s.q[3],s.q[2]],TH.softA,1.3);dot(s.q[1],4,PC[0]);dot(s.q[2],4,PC[0]);});
+  if(spline.bez&&spline.kind==="cr"){const H=crHandles();H.forEach(h=>polyline([spline.pts[h.i],h.q],PC[h.i%PC.length],1.8));H.forEach(h=>dot(h.q,7,spline.tan[h.i]?PC[h.i%PC.length]:TH.paper,PC[h.i%PC.length],2.5));}
+  else if(spline.bez){S.forEach(s=>{polyline([s.q[0],s.q[1]],TH.softA,1.3);polyline([s.q[3],s.q[2]],TH.softA,1.3);dot(s.q[1],4,PC[0]);dot(s.q[2],4,PC[0]);});
     S.forEach((s,i)=>[...(i?[]:[s.q[0]]),s.q[3]].forEach(q=>{const r=px(4.5);ctx.fillStyle=INK;ctx.fillRect(q.x-r,q.y-r,2*r,2*r);}));}
   p.forEach((q,i)=>{dot(q,9,PC[i%PC.length]);if(sel===i){ctx.beginPath();ctx.arc(q.x,q.y,px(14),0,7);line(PC[i%PC.length],2);}label("P"+SUB[i],q,PC[i%PC.length]);});}
 function updateSpline(){const n=spline.pts.length,S=splineSegs(),sel=state.sel!==null&&state.sel<n?state.sel:null,w=(k,a,b,c)=>k===1?a:k<5?b:c;state.sel=sel;
   $$("#spKinds button").forEach(b=>b.classList.toggle("on",b.dataset.kind===spline.kind));
-  $("#spNote").textContent=spline.kind==="b"?"Křivka zadanými body obvykle neprochází, jen se k nim přimyká. Úseky navazují směrem, rychlostí i křivostí.":"Křivka prochází všemi zadanými body. Navazuje směrem a rychlostí, křivost v uzlech skáče.";
+  const cr=spline.kind==="cr",ed=spline.tan.filter(Boolean).length;
+  $("#spNote").textContent=cr?(spline.bez?"Křivka prochází všemi body. Táhni kolečka na tečně a změň její směr i délku. Oba konce tečny se pohybují souměrně, takže křivka zůstane v bodě hladká.":"Křivka prochází všemi body. Pro úpravu tečen zapni Bézierovy úseky."):"Křivka zadanými body obvykle neprochází, jen se k nim přimyká. Úseky navazují směrem, rychlostí i křivostí.";
+  $("#spReset").hidden=!cr;$("#spReset").disabled=!ed;
   const hit=sel===null?0:S.filter(s=>s.ids.includes(sel)).length;
-  $("#spInfo").innerHTML=`${n} ${w(n,"bod","body","bodů")}, ${S.length} ${w(S.length,"úsek","úseky","úseků")}, stupeň stále 3.`+(sel===null?"":` Bod P<sub>${sel}</sub> ovlivňuje ${hit} z ${S.length} úseků.`);
-  $("#spForm").innerHTML="Q<sub>0</sub> = (A + 4B + C)/6<br>Q<sub>1</sub> = (2B + C)/3<br>Q<sub>2</sub> = (B + 2C)/3<br>Q<sub>3</sub> = (B + 4C + D)/6";
+  $("#spInfo").innerHTML=`${n} ${w(n,"bod","body","bodů")}, ${S.length} ${w(S.length,"úsek","úseky","úseků")}, stupeň stále 3.`+(sel===null?"":` Bod P<sub>${sel}</sub> ovlivňuje ${hit} z ${S.length} úseků.`)+(cr&&ed?` Upravených tečen: ${ed}. Tím se z Catmull-Rom stala Hermitova spline.`:"");
+  $("#spFormT").innerHTML=cr?"Každý úsek je kubická Bézierova křivka. Úsek z bodu B do bodu C s tečnami m<sub>B</sub> a m<sub>C</sub> má:":"Každý úsek je kubická Bézierova křivka. Čtverečky a modrá kolečka jsou její body Q<sub>0</sub> až Q<sub>3</sub>. Úsek z bodů A, B, C, D má:";
+  $("#spForm").innerHTML=cr?"Q<sub>0</sub> = B<br>Q<sub>1</sub> = B + m<sub>B</sub>/3<br>Q<sub>2</sub> = C − m<sub>C</sub>/3<br>Q<sub>3</sub> = C<br>automaticky m<sub>B</sub> = (C − A)/2":"Q<sub>0</sub> = (A + 4B + C)/6<br>Q<sub>1</sub> = (2B + C)/3<br>Q<sub>2</sub> = (B + 2C)/3<br>Q<sub>3</sub> = (B + 4C + D)/6";
   $("#spAdd").disabled=n>=SPMAX;$("#spDel").disabled=n<=4;render();}
 function splineD(){const S=splineSegs(),r=v=>Math.round(v),q=S[0].q;return `M${r(q[0].x)} ${r(q[0].y)} `+S.map(s=>`C${r(s.q[1].x)} ${r(s.q[1].y)} ${r(s.q[2].x)} ${r(s.q[2].y)} ${r(s.q[3].x)} ${r(s.q[3].y)}`).join(" ");}
 
@@ -966,7 +1004,7 @@ function scoreGame(){const samp=L=>{const g=gsegs(L),c=Math.ceil(80/g.length),o=
   $$("#gameLevels button").forEach(b=>b.classList.toggle("on",game.sharp?+b.dataset.sharp===game.sharp:+b.dataset.free===game.free));render();}
 
 /* Ovládání ukazatelem */
-function hitList(){if(state.mode==="spline")return spline.pts.map((q,i)=>({q,kind:"sp",i})).reverse();
+function hitList(){if(state.mode==="spline"){const r=spline.pts.map((q,i)=>({q,kind:"sp",i})).reverse();if(spline.kind==="cr"&&spline.bez)crHandles().forEach(h=>r.push({q:h.q,kind:"tn",i:h.i,sign:h.sign}));return r;}
   if(state.mode==="svg"){const r=[];svgS.cmds.forEach((c,ci)=>c.pts.forEach((p,pi)=>r.push({q:p.q,kind:"s",ci,pi})));return r;}
   if(state.mode==="build"||state.mode==="render")return build.pts.map((q,i)=>({q,kind:"p",i})).reverse();
   if(state.mode==="game")return game.user.map((q,i)=>({q,kind:"g",i})).slice(1,-1);
@@ -975,6 +1013,7 @@ function hit(w){const R=px(26);let best=null,bd=R;for(const h of hitList()){cons
 function moveTo(h,x,y){x=clamp(x,0,W);y=clamp(y,0,H);
   if(h.kind==="p"){build.pts[h.i]=P(x,y);if(build.preset){build.preset=null;$("#presetNote").textContent="";markPresets();}updateBuild();if(state.mode==="render")updateRender();render();}
   else if(h.kind==="sp"){spline.pts[h.i]=P(x,y);updateSpline();}
+  else if(h.kind==="tn"){const o=spline.pts[h.i];spline.tan[h.i]=P(3*h.sign*(x-o.x),3*h.sign*(y-o.y));updateSpline();}
   else if(h.kind==="s"){const c=svgS.cmds[h.ci],p=c.pts[h.pi],bx=c.rel?c.p0.x:0,by=c.rel?c.p0.y:0;x=Math.round(x);y=Math.round(y);
     if(p.ax==="x")c.args[p.i]=x-bx;else if(p.ax==="y")c.args[p.i]=y-by;else{c.args[p.i]=x-bx;c.args[p.i+1]=y-by;}
     resolveD(svgS.cmds);svgS.err="";$("#svgNote").textContent="";updateSvg();}
@@ -983,7 +1022,7 @@ function moveTo(h,x,y){x=clamp(x,0,W);y=clamp(y,0,H);
   else{const n=chain.nodes[h.i];n[h.kind]=P(x,y);aligned(n,h.kind);chain.preset=null;updateChain();}}
 cv.addEventListener("pointerdown",e=>{if(e.button)return;const w=toWorld(e),h=hit(w);cv.focus({preventScroll:true});
   if(h){state.drag={...h,ox:h.q.x-w.x,oy:h.q.y-w.y};cv.setPointerCapture(e.pointerId);
-    if(h.kind==="sp"){state.sel=h.i;updateSpline();}else if(h.kind==="s"){svgS.sel=h.ci;updateSvg();}else if(h.kind==="n"||h.kind==="hi"||h.kind==="ho"){chain.sel=h.i;updateChain();}else state.sel=h.i;render();}
+    if(h.kind==="sp"||h.kind==="tn"){state.sel=h.i;updateSpline();}else if(h.kind==="s"){svgS.sel=h.ci;updateSvg();}else if(h.kind==="n"||h.kind==="hi"||h.kind==="ho"){chain.sel=h.i;updateChain();}else state.sel=h.i;render();}
   else if(state.mode==="chain"&&w.x>=0&&w.x<=W&&w.y>=0&&w.y<=H)addNode(w);
   else if(state.mode==="chain"){chain.sel=null;updateChain();}});
 cv.addEventListener("pointermove",e=>{const w=toWorld(e);if(state.drag){const d=state.drag;moveTo(d,w.x+d.ox,w.y+d.oy);}else cv.style.cursor=hit(w)?"grab":state.mode==="chain"?"crosshair":"default";});
@@ -1026,9 +1065,10 @@ $("#closed").onchange=e=>{chain.closed=e.target.checked;chain.preset=null;update
 $("#fill").onchange=e=>{chain.fill=e.target.checked;updateChain();};
 $("#copySvg").onclick=async e=>{const o=$("#svgOut"),b=e.target;try{await navigator.clipboard.writeText(o.value);}catch{o.select();document.execCommand("copy");}b.textContent="Zkopírováno";setTimeout(()=>b.textContent="Kopírovat",1400);};
 $("#spKinds").onclick=e=>{const k=e.target.dataset.kind;if(k){spline.kind=k;updateSpline();}};
-$("#spAdd").onclick=()=>{const p=spline.pts;if(p.length>=SPMAX)return;const a=p[p.length-2],b=p[p.length-1];p.push(P(clamp(b.x+60,30,W-30),clamp(a.y,30,H-30)));for(let i=0;i<p.length;i++)p[i]=P(70+860*i/(p.length-1),p[i].y);state.sel=null;updateSpline();};
-$("#spDel").onclick=()=>{if(spline.pts.length>4){spline.pts.pop();state.sel=null;updateSpline();}};
-$("#spBez").onchange=e=>{spline.bez=e.target.checked;render();};
+$("#spAdd").onclick=()=>{const p=spline.pts;if(p.length>=SPMAX)return;const a=p[p.length-2],b=p[p.length-1];p.push(P(clamp(b.x+60,30,W-30),clamp(a.y,30,H-30)));for(let i=0;i<p.length;i++)p[i]=P(70+860*i/(p.length-1),p[i].y);spline.tan=[];state.sel=null;updateSpline();};
+$("#spReset").onclick=()=>{spline.tan=[];updateSpline();};
+$("#spDel").onclick=()=>{if(spline.pts.length>4){spline.pts.pop();spline.tan=[];state.sel=null;updateSpline();}};
+$("#spBez").onchange=e=>{spline.bez=e.target.checked;updateSpline();};
 $("#spPoly").onchange=e=>{spline.poly=e.target.checked;render();};
 $("#spCmp").onchange=e=>{spline.cmp=e.target.checked;render();};
 $("#spToSvg").onclick=()=>{loadD(splineD(),"Tvoje spline zapsaná jako řada kubických úseků C. SVG žádný příkaz pro spline nemá.");setMode("svg");};
