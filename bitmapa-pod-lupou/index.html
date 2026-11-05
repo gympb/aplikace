@@ -348,6 +348,11 @@ canvas.tap{cursor:crosshair;touch-action:manipulation}
 .counts div{flex:1 1 130px}
 .ctl{display:grid;gap:10px}
 .nest{max-width:none}
+details.navic{border:1.5px dashed var(--line);border-radius:10px;padding:10px 14px;background:var(--paper)}
+details.navic>summary{cursor:pointer;font-weight:600;color:var(--accent);min-height:28px}
+.navbody{display:grid;gap:14px;margin-top:10px;min-width:0}
+.trap details summary{cursor:pointer;font-weight:600;color:var(--accent)}
+.trap details p{margin-top:6px}
 .ratwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px 24px}
 .ratios{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:12px 10px;align-items:start}
 .rat{display:grid;gap:2px;align-content:start}
@@ -490,7 +495,10 @@ canvas#ed{touch-action:none;cursor:crosshair}
 @media (max-width:640px){.lv .mini,.lv .mini .ctv{width:44px}.lv .mini{top:50%}}
 @media (max-width:560px){.cj-row .ctv{width:70px}}
 
-@media print{.hero,#obsah,footer,#tahakTisk,.toast{display:none!important}body{background:#fff;color:#000}.v-tahak section{padding-block:10px;border-top:0;break-inside:avoid}}
+@page{size:A4;margin:9mm}
+@media print{.hero,#obsah,footer,#tahakTisk,.toast{display:none!important}html{font-size:10.5px}body{background:#fff;color:#000;font-size:10.5px;line-height:1.28;padding:0}
+.wrap{max-width:none}.v-tahak section{padding-block:4px;border-top:0;gap:4px;break-inside:avoid}.v-tahak h2{font-size:17px}.v-tahak h3{font-size:12px}
+.v-tahak th,.v-tahak td{padding:1.5px 5px;font-size:9.5px}.v-tahak th{font-size:8px}.v-tahak td code{font-size:9px}.v-tahak .panel{padding:5px 8px;gap:3px}.v-tahak .terms{grid-template-columns:repeat(4,1fr);gap:4px}.v-tahak .terms dd{font-size:9.5px}.v-tahak .check{gap:1px;font-size:9.5px}.v-tahak .cols{grid-template-columns:1fr 1fr;gap:8px}.v-tahak p{font-size:9.5px;max-width:none}}
 </style>
 </head>
 <body>
@@ -557,7 +565,7 @@ canvas#ed{touch-action:none;cursor:crosshair}
       <div><dt>Rozlišení</dt><dd>Kolik pixelů má obrázek na šířku a na výšku, třeba 1920 × 1080.</dd></div>
     </dl>
     <div class="box try"><span class="lbl">Obrázek z čísel</span>
-      <p>Název <b>bitmapa</b> je doslova „mapa bitů“. V nejjednodušším obrázku je pixel buď černý (1), nebo bílý (0). Klepnutím rozsvěcej políčka. Sloupec Teď ukazuje bity, které máš v řádku, a musí se shodovat se sloupcem Zadání.</p>
+      <p>Počítač ukládá všechno jako <b>bity</b>: bit je jednička, nebo nula. Osm bitů dohromady je <b>bajt</b>. Název <b>bitmapa</b> je doslova „mapa bitů“: v nejjednodušším obrázku je pixel buď černý (1), nebo bílý (0). Klepnutím rozsvěcej políčka. Sloupec Teď ukazuje bity, které máš v řádku, a musí se shodovat se sloupcem Zadání.</p>
       <div class="bitsplit">
         <div class="bitgrid" id="bits8"></div>
         <div class="ctl"><div class="cj-row"><span class="ct" id="bitsCt" data-s="s-ok"></span><p class="say" id="bitsSay"></p></div>
@@ -580,12 +588,12 @@ canvas#ed{touch-action:none;cursor:crosshair}
     </div>
     <p>Každý pixel displeje má tři malé zdroje světla: červený, zelený a modrý. Tomu se říká <b>barevný model RGB</b> (Red, Green, Blue). Jas každého se ukládá jako číslo od 0 do 255.</p>
     <div class="box try"><span class="lbl">Namíchej pixel</span>
-      <p>Na schématu svítí tři světla do tmy a každý jezdec řídí jas jednoho z nich. Kde se světla překrývají, sčítají se: naplno dají červená a zelená žlutou, červená a modrá purpurovou, zelená a modrá azurovou a všechny tři bílou.</p>
+      <p>Každý jezdec řídí jas jednoho světla. Zatím svítí jen červené. Přidávej zelené a modré a sleduj, jaké barvy vzniknou v překryvech.</p>
       <div class="mix3">
         <div class="ctl">
           <div class="sl r"><label for="mR">Červená</label><output id="mRv"></output><input type="range" id="mR" min="0" max="255" value="255"></div>
-          <div class="sl g"><label for="mG">Zelená</label><output id="mGv"></output><input type="range" id="mG" min="0" max="255" value="255"></div>
-          <div class="sl b"><label for="mB">Modrá</label><output id="mBv"></output><input type="range" id="mB" min="0" max="255" value="255"></div>
+          <div class="sl g"><label for="mG">Zelená</label><output id="mGv"></output><input type="range" id="mG" min="0" max="255" value="0"></div>
+          <div class="sl b"><label for="mB">Modrá</label><output id="mBv"></output><input type="range" id="mB" min="0" max="255" value="0"></div>
           <div class="chips" id="mChips"></div>
         </div>
         <div class="fig"><div class="venn add"><svg viewBox="0 0 200 180" role="img" aria-label="Červený, zelený a modrý kruh světla se překrývají. Jas každého kruhu řídí příslušný jezdec."><circle id="mcR" cx="100" cy="65" r="55"/><circle id="mcG" cx="68" cy="115" r="55"/><circle id="mcB" cx="132" cy="115" r="55"/></svg></div><span class="cap">Tři světla ve tmě.</span></div>
@@ -595,10 +603,12 @@ canvas#ed{touch-action:none;cursor:crosshair}
         </div>
       </div>
     </div>
+    <p><b>Co jsi zjistil?</b> Světla se sčítají. Naplno dají červená a zelená žlutou, červená a modrá purpurovou, zelená a modrá azurovou a všechny tři bílou.</p>
     <div class="box fun"><span class="lbl">Kolik je to barev</span>
       <p>Každé ze tří čísel má 256 možností, takže všech kombinací je 256 × 256 × 256 = <b>16 777 216</b>. Jedno číslo 0 až 255 se vejde do <b>1 bajtu</b> (8 bitů), jeden pixel tedy zabere <b>3 bajty</b> (24 bitů).</p>
     </div>
-    <div class="box try game" id="match"><span class="lbl">Hra: Trefa barvy</span>
+    <details class="navic"><summary>Navíc: hra Trefa barvy</summary><div class="navbody">
+<div class="box try game" id="match"><span class="lbl">Hra: Trefa barvy</span>
       <p>Namíchej stejnou barvu jako v levém poli. Kolik procent shody dokážeš?</p>
       <div class="duo"><div class="fig"><div class="swatch" id="tgtSw" style="height:64px"></div><span class="cap">Zadání</span></div><div class="fig"><div class="swatch" id="myrSw" style="height:64px"></div><span class="cap">Tvoje barva</span></div></div>
       <div class="ctl">
@@ -608,6 +618,7 @@ canvas#ed{touch-action:none;cursor:crosshair}
       </div>
       <div class="btnrow"><button class="btn pri" id="tChk">Vyhodnotit</button><button class="btn" id="tNew">Nová barva</button><span id="tRes" aria-live="polite"></span></div>
     </div>
+</div></details>
     <div class="kq" data-ok="a">
       <p class="q">Jaké hodnoty RGB má bílý pixel?</p>
       <div class="opts"><button data-v="a">255, 255, 255</button><button data-v="b">0, 0, 0</button><button data-v="c">255, 0, 0</button></div>
@@ -625,22 +636,25 @@ canvas#ed{touch-action:none;cursor:crosshair}
     </div>
     <div class="kq" data-ok="c">
       <p class="q">V detektivce stojí: „Zvětšete tu fotku, ať je vidět poznávací značka!“ Značka má na fotce 12 pixelů. Co se při zvětšení stane?</p>
-      <div class="opts"><button data-v="a">Program značku dopočítá přesně, stačí mu dost času.</button><button data-v="b">Objeví se další detaily, jen jsou moc malé.</button><button data-v="c">Vzniknou jen větší nebo rozmazané kostky, nové informace nepřibudou.</button></div>
+      <div class="opts"><button data-v="a">Program značku dopočítá přesně, stačí mu k tomu dost času a výkonu.</button><button data-v="b">Objeví se další detaily, které byly na fotce jen příliš malé, aby šly vidět.</button><button data-v="c">Vzniknou jen větší nebo rozmazané kostky, nové informace nepřibudou.</button></div>
       <div class="why">Co se při focení neuložilo, v obrázku není. Zvětšení jen roztáhne to, co už tam je. Umělá inteligence umí detaily <i>vymyslet</i>, ale nejsou to skutečné informace ze scény.</div>
     </div>
     <h3>Standardní rozlišení displejů a televizí</h3>
-    <p>Rozlišení displejů se značí zkratkami. Obdélníky jsou ve stejném měřítku. Vyber řádek nebo obdélník a druhý se zvýrazní.</p>
+    <p>Rozlišení displejů se značí zkratkami. Obdélníky jsou ve stejném měřítku. Vyber řádek nebo obdélník a druhý se zvýrazní. Zapamatuj si Full HD a 4K, ostatní jsou pro přehled.</p>
     <div class="resbox">
       <div class="nest" id="nest" role="group" aria-label="Porovnání velikosti rozlišení ve stejném měřítku"></div>
       <p class="resinfo" id="resInfo" aria-live="polite"></p>
       <div class="reslist" id="resList" role="group" aria-label="Seznam rozlišení"></div>
     </div>
-    <div class="box fun"><span class="lbl">Pozor na 2K</span><p>Přesně je 2K kinový formát 2048 × 1080. V obchodech se ale tak často označují monitory QHD 2560 × 1440 a někdy i Full HD. U zkratky proto vždy hledej skutečný počet pixelů.</p></div>
     <div class="box tip"><span class="lbl">Megapixel</span><p>Fotoaparáty a mobily uvádějí počet pixelů v <b>megapixelech</b>: 1 Mpx je milion pixelů. Snímek 4000 × 3000 má 12 Mpx.</p></div>
-    <h3>Poměry stran</h3>
-    <p>Poměr šířky a výšky se jmenuje <b>poměr stran</b>. Když obrázek neodpovídá poměru obrazovky nebo papíru, vzniknou černé pruhy, ořez, nebo zdeformovaný obraz.</p>
+    <details class="navic" open><summary>Navíc: poměry stran</summary><div class="navbody">
+<p>Poměr šířky a výšky se jmenuje <b>poměr stran</b>. Když obrázek neodpovídá poměru obrazovky nebo papíru, vzniknou černé pruhy, ořez, nebo zdeformovaný obraz.</p>
     <div class="ratwrap"><div class="ctl"><b>Televize a monitory</b><div class="ratios"><div class="rat"><i style="aspect-ratio:4/3"></i><b>4 : 3</b><span>starší televize a monitory, projektory</span></div><div class="rat"><i style="aspect-ratio:16/9"></i><b>16 : 9</b><span>televize, většina monitorů</span></div><div class="rat"><i style="aspect-ratio:16/10"></i><b>16 : 10</b><span>notebooky</span></div><div class="rat"><i style="aspect-ratio:21/9"></i><b>21 : 9</b><span>širokoúhlé monitory</span></div><div class="rat"><i style="aspect-ratio:9/19.5"></i><b>9 : 19,5</b><span>mobil na výšku</span></div></div></div>
     <div class="ctl"><b>Fotky a papír</b><div class="ratios"><div class="rat"><i style="aspect-ratio:3/2"></i><b>3 : 2</b><span>fotoaparáty, fotka 10 × 15 cm</span></div><div class="rat"><i style="aspect-ratio:4/3"></i><b>4 : 3</b><span>fotky z mobilu</span></div><div class="rat"><i style="aspect-ratio:1/1"></i><b>1 : 1</b><span>čtverec, sociální sítě</span></div><div class="rat"><i style="aspect-ratio:1/1.414"></i><b>1 : √2</b><span>papír A4, A3, A2: po rozpůlení zůstává poměr stejný</span></div></div></div></div>
+</div></details>
+    <details class="navic"><summary>Navíc: co znamená 2K</summary><div class="navbody">
+<div class="box fun"><span class="lbl">Pozor na 2K</span><p>Přesně je 2K kinový formát 2048 × 1080. V obchodech se ale tak často označují monitory QHD 2560 × 1440 a někdy i Full HD. U zkratky proto vždy hledej skutečný počet pixelů.</p></div>
+</div></details>
     <div class="links2"><a href="../rozliseni/">Aplikace Rozlišení: formáty videa od 30 řádků po 8K →</a></div>
     <div class="kq" data-ok="b">
       <p class="q">O kolik víc pixelů má 4K než Full HD?</p>
@@ -669,15 +683,19 @@ canvas#ed{touch-action:none;cursor:crosshair}
       </div>
       <p class="muted" style="font-size:.92rem">Čím si to vysvětluješ? PNG si pamatuje každý pixel přesně a nejlépe mu jdou stejné plochy, proto je u fotky mnohem větší než JPG. JPG cíleně zahazuje detaily, což fotka snese. Kresba by po něm měla kolem písmen šmouhy.</p>
     </div>
-    <h3>Nejčastější formáty obrázků</h3>
+    <h3>Dva nejdůležitější formáty</h3>
     <div class="fcards">
       <article class="fcard" style="--c:var(--k1)"><canvas data-f="jpg" width="320" height="110" aria-hidden="true"></canvas><div class="fbody"><div class="fhead"><b>JPG</b><span>ztrátová</span></div><dl><dt class="yes">Hodí se na</dt><dd>fotografie</dd><dt class="no">Nehodí se na</dt><dd>text, loga, průhlednost</dd></dl></div></article>
       <article class="fcard" style="--c:var(--k2)"><canvas data-f="png" width="320" height="110" aria-hidden="true"></canvas><div class="fbody"><div class="fhead"><b>PNG</b><span>bezztrátová</span></div><dl><dt class="yes">Hodí se na</dt><dd>snímky obrazovky, loga, průhlednost</dd><dt class="no">Nehodí se na</dt><dd>fotky na web, soubory jsou velké</dd></dl></div></article>
+    </div>
+    <details class="navic"><summary>Navíc: další formáty</summary><div class="navbody">
+<div class="fcards">
       <article class="fcard" style="--c:var(--k3)"><canvas data-f="gif" width="320" height="110" aria-hidden="true"></canvas><div class="fbody"><div class="fhead"><b>GIF</b><span>jen 256 barev</span></div><dl><dt class="yes">Hodí se na</dt><dd>krátké jednoduché animace</dd><dt class="no">Nehodí se na</dt><dd>fotografie</dd></dl></div></article>
       <article class="fcard" style="--c:var(--k4)"><canvas data-f="webp" width="320" height="110" aria-hidden="true"></canvas><div class="fbody"><div class="fhead"><b>WebP</b><span>ztrátová i bezztrátová</span></div><dl><dt class="yes">Hodí se na</dt><dd>obrázky na webu, menší soubory než JPG</dd><dt class="no">Nehodí se na</dt><dd>starší programy ho nemusí otevřít</dd></dl></div></article>
       <article class="fcard" style="--c:var(--muted)"><canvas data-f="bmp" width="320" height="110" aria-hidden="true"></canvas><div class="fbody"><div class="fhead"><b>BMP</b><span>bez komprese</span></div><dl><dt class="yes">Hodí se na</dt><dd>výuka a jednoduché programy</dd><dt class="no">Nehodí se na</dt><dd>posílání a web, soubory jsou obrovské</dd></dl></div></article>
       <article class="fcard" style="--c:var(--r)"><canvas data-f="raw" width="320" height="110" aria-hidden="true"></canvas><div class="fbody"><div class="fhead"><b>RAW</b><span>surová data ze snímače</span></div><dl><dt class="yes">Hodí se na</dt><dd>profesionální úpravy fotek</dd><dt class="no">Nehodí se na</dt><dd>rychlé sdílení, potřebuje editor</dd></dl></div></article>
     </div>
+</div></details>
     <div class="box fun game" id="fmtGame"><span class="lbl">Hra: Který formát?</span>
       <div class="gstat"><span id="fRound"></span><span id="fScore"></span></div>
       <div id="fBody"></div>
@@ -697,17 +715,19 @@ canvas#ed{touch-action:none;cursor:crosshair}
       </div>
     </div>
     <p>Odpověď z kapitoly 1 tedy zní: <b>obrázek měl na papír A2 málo pixelů</b>. Adélin obrázek byl široký 640 px a na 42 cm jich vyšlo jen 39 na palec. Na monitoru byl v pořádku, protože tam měl pixely malé. Text byl ostrý, protože je to písmo, které tiskárna kreslí v plném rozlišení.</p>
-    <div class="box fun game" id="posterGame"><span class="lbl">Hra: Zachraň plakát</span>
+    <details class="navic"><summary>Navíc: hra Zachraň plakát</summary><div class="navbody">
+<div class="box fun game" id="posterGame"><span class="lbl">Hra: Zachraň plakát</span>
       <div class="gstat"><span id="pRound"></span><span id="pScore"></span></div>
       <div id="pBody"></div>
     </div>
+</div></details>
   </article>
 
   <article class="ch" data-title="Test">
     <div><span class="eyebrow">Kapitola 7</span><h2>Test: co jsi zjistil</h2></div>
     <div class="quiz" id="quizR1">
       <div class="kq" data-ok="b"><p class="q">Co je pixel?</p>
-        <div class="opts"><button data-v="a">Jednotka velikosti souboru.</button><button data-v="b">Nejmenší políčko rastrového obrázku s jednou barvou.</button><button data-v="c">Program na úpravu fotek.</button></div>
+        <div class="opts"><button data-v="a">Jednotka, ve které se měří velikost obrázkového souboru.</button><button data-v="b">Nejmenší políčko rastrového obrázku s jednou barvou.</button><button data-v="c">Program, ve kterém se na počítači upravují fotky.</button></div>
         <div class="why">Pixel je základní stavební dílek bitmapy. Velikost souboru se měří v bajtech.</div></div>
       <div class="kq" data-ok="c"><p class="q">Jaká barva vznikne z RGB 255, 255, 0?</p>
         <div class="opts"><button data-v="a">Bílá.</button><button data-v="b">Hnědá.</button><button data-v="c">Žlutá.</button></div>
@@ -722,13 +742,14 @@ canvas#ed{touch-action:none;cursor:crosshair}
         <div class="opts"><button data-v="a">40 DPI.</button><button data-v="b">300 DPI.</button><button data-v="c">100 DPI.</button></div>
         <div class="why">800 pixelů na 8 palců je 100 pixelů na palec. To je pro tisk málo, kostičky budou znát.</div></div>
       <div class="kq" data-ok="a"><p class="q">Proč se malý obrázek po zvětšení nezlepší?</p>
-        <div class="opts"><button data-v="a">Zvětšení nepřidá informace, jen roztáhne ty, které v obrázku už jsou.</button><button data-v="b">Protože má špatný formát.</button><button data-v="c">Zlepší se, jen je potřeba silnější počítač.</button></div>
+        <div class="opts"><button data-v="a">Zvětšení nepřidá informace, jen roztáhne ty, které v obrázku už jsou.</button><button data-v="b">Protože je uložený ve špatném formátu, který zvětšení neumožňuje.</button><button data-v="c">Zlepší se, jen je na to potřeba silnější počítač a dost času.</button></div>
         <div class="why">Co se při pořízení obrázku neuložilo, to v něm není.</div></div>
       <div class="qres"><div class="cj-row"><span class="ct" data-s="s-win"></span><div class="say"><b class="who">Čtverák</b><span class="score"></span><p class="qsay"></p></div></div>
         <div class="box tip"><span class="lbl">Co si odnášíš</span><ul class="check" style="list-style:disc"><li>Bitmapa je mřížka pixelů a každý pixel má jednu barvu.</li><li>Barva jsou tři čísla RGB, pixel tedy zabere 3 bajty.</li><li>Víc pixelů znamená víc detailů, zvětšením ale žádné nepřibudou.</li><li>Velikost bez komprese: šířka × výška × 3. Fotky do JPG, kresby a text do PNG.</li><li>Na tisk počítej s 300 DPI: šířka v palcích × 300 = potřebný počet pixelů.</li></ul></div>
         <div class="links2"><a href="#pokrocily" data-go="r4">Chceš víc? Pokračuj na úroveň Pokročilý →</a><a href="#tahak" data-go="tahak">Všechno pohromadě najdeš v Taháku →</a></div>
         <div><button class="btn qreset">Zkusit test znovu</button></div></div>
     </div>
+    <div class="box try"><span class="lbl">Zkus doma</span><p>Vezmi poslední fotku z mobilu a zjisti její rozlišení. Spočítej, kolik by zabrala bez komprese, a porovnej to se skutečnou velikostí souboru. Jak velkou ji vytiskneš při 300 DPI?</p></div>
   </article>
 
   <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
@@ -742,6 +763,34 @@ canvas#ed{touch-action:none;cursor:crosshair}
     <ul class="goals"><li>popsat, jak z obrazu vznikne bitmapa (vzorkování, kvantování, kódování),</li><li>převádět barvy mezi RGB, HEX a dvojkovým zápisem,</li><li>počítat rozlišení, PPI, DPI, rozměry a velikost souboru,</li><li>vysvětlit rozdíl mezi ztrátovou a bezztrátovou kompresí,</li><li>vybrat vhodný formát a vyhnout se typickým chybám.</li></ul>
     <ol class="prog" aria-label="Kapitoly"></ol>
   </div>
+
+  <article class="ch" data-title="Rekapitulace">
+    <div><span class="eyebrow">Kapitola 1</span><h2>Co už víš</h2></div>
+    <p>Pokročilý kurz staví na úrovni Začátečník. Odpověz zpaměti, bez listování: vybavování upevní znalosti lépe než opakované čtení. Zabere to asi pět minut.</p>
+    <div class="quiz" id="quizRec">
+      <div class="kq" data-ok="b"><p class="q">Co je pixel?</p>
+        <div class="opts"><button data-v="a">Soubor, ve kterém je uložený obrázek.</button><button data-v="b">Nejmenší políčko obrázku s jednou barvou.</button><button data-v="c">Jednotka délky používaná při tisku.</button></div>
+        <div class="why">Pixel je základní dílek bitmapy. Barvu má vždy jen jednu.</div></div>
+      <div class="kq" data-ok="c"><p class="q">Jaké hodnoty RGB má žlutá?</p>
+        <div class="opts"><button data-v="a">0, 0, 255</button><button data-v="b">255, 0, 255</button><button data-v="c">255, 255, 0</button></div>
+        <div class="why">Žlutá vznikne sečtením červeného a zeleného světla.</div></div>
+      <div class="kq" data-ok="a"><p class="q">Kolik bajtů zabere jeden pixel v plných barvách?</p>
+        <div class="opts"><button data-v="a">3 bajty</button><button data-v="b">1 bajt</button><button data-v="c">8 bajtů</button></div>
+        <div class="why">Tři složky, po jednom bajtu na každou.</div></div>
+      <div class="kq" data-ok="c"><p class="q">Kolik bajtů zabere bez komprese obrázek 200 × 100 pixelů v plných barvách?</p>
+        <div class="opts"><button data-v="a">300 B</button><button data-v="b">20 000 B</button><button data-v="c">60 000 B</button></div>
+        <div class="why">200 × 100 = 20 000 pixelů, po 3 bajtech to je 60 000 B.</div></div>
+      <div class="kq" data-ok="b"><p class="q">Který formát zvolíš pro snímek obrazovky s textem?</p>
+        <div class="opts"><button data-v="a">JPG</button><button data-v="b">PNG</button><button data-v="c">RAW</button></div>
+        <div class="why">PNG je bezztrátové a text zůstane ostrý.</div></div>
+      <div class="kq" data-ok="a"><p class="q">Kolik bodů na palec se běžně doporučuje pro tisk fotek?</p>
+        <div class="opts"><button data-v="a">300 DPI</button><button data-v="b">72 DPI</button><button data-v="c">1200 DPI</button></div>
+        <div class="why">Fotka čtená z dosahu ruky potřebuje asi 300 DPI.</div></div>
+      <div class="qres"><div class="cj-row"><span class="ct" data-s="s-win"></span><div class="say"><b class="who">Čtverák</b><span class="score"></span><p class="qsay"></p></div></div>
+        <div class="links2"><a href="#tahak" data-go="tahak">Rychlé připomenutí najdeš v Taháku →</a><a href="#zacatecnik" data-go="r1">Podrobně v úrovni Začátečník →</a></div>
+        <div><button class="btn qreset">Zkusit znovu</button></div></div>
+    </div>
+  </article>
 
   <article class="ch" data-title="Pojmy">
     <div><span class="eyebrow">Kapitola 1</span><h2>Od scény k bajtům</h2></div>
@@ -769,28 +818,8 @@ canvas#ed{touch-action:none;cursor:crosshair}
     </div>
     <div class="kq" data-ok="c">
       <p class="q">Školní znak potřebuješ na vizitku i na plachtu 3 × 2 m. V jakém tvaru ho chceš mít?</p>
-      <div class="opts"><button data-v="a">Jako velké JPG, zmenšit se dá vždy.</button><button data-v="b">Jako PNG s rozlišením 1920 × 1080.</button><button data-v="c">Vektorově, tvary se vykreslí ostře v libovolné velikosti.</button></div>
+      <div class="opts"><button data-v="a">Jako velké JPG, protože zmenšit se obrázek dá vždycky bez problémů.</button><button data-v="b">Jako PNG v rozlišení 1920 × 1080, protože je bezztrátové.</button><button data-v="c">Vektorově, tvary se vykreslí ostře v libovolné velikosti.</button></div>
       <div class="why">Znak se skládá z tvarů, takže je přirozeně vektorový. Bitmapa by musela mít na plachtu desítky tisíc pixelů na šířku.</div>
-    </div>
-  </article>
-
-  <article class="ch" data-title="Historie">
-    <div><span class="eyebrow">Kapitola 2</span><h2>Od 176 pixelů k miliardám</h2></div>
-    <div class="timeline">
-      <div class="tl"><span class="yr">1957</span><span class="kind">první snímek</span><b>Russell Kirsch</b><p>Ve Spojených státech naskenoval fotku tříměsíčního syna. Snímek měl 176 × 176 pixelů, jen černých a bílých.</p></div>
-      <div class="tl"><span class="yr">1965</span><span class="kind">pojem</span><b>Slovo pixel</b><p>V odborném článku ho použil Fred Billingsley z laboratoře JPL, která zpracovávala snímky z kosmických sond.</p></div>
-      <div class="tl"><span class="yr">1975</span><span class="kind">fotoaparát</span><b>Kodak a Steve Sasson</b><p>První digitální fotoaparát měl 100 × 100 pixelů, tedy 0,01 Mpx. Záznam na kazetu trval 23 sekund.</p></div>
-      <div class="tl"><span class="yr">1984</span><span class="kind">počítač</span><b>Macintosh a MacPaint</b><p>Displej 512 × 342 px, 1 bit na pixel. Malování myší se dostalo k běžným lidem.</p></div>
-      <div class="tl"><span class="yr">1987</span><span class="kind">formát</span><b>GIF a VGA</b><p>GIF přinesl paletu 256 barev a kompresi LZW. Standard VGA ukázal na PC 640 × 480 pixelů.</p></div>
-      <div class="tl"><span class="yr">1992</span><span class="kind">formát</span><b>JPEG</b><p>Ztrátová komprese stavěná na vlastnostech lidského zraku. Umožnila fotografie na webu.</p></div>
-      <div class="tl"><span class="yr">1996</span><span class="kind">formát</span><b>PNG</b><p>Vznikl jako volná náhrada GIFu, když se kolem LZW rozhořel patentový spor. Přidal plnou průhlednost.</p></div>
-      <div class="tl"><span class="yr">2010</span><span class="kind">displej</span><b>Retina a WebP</b><p>iPhone 4 má 326 PPI, pixely na něm už oko běžně nerozliší. Google téhož roku uvádí formát WebP.</p></div>
-      <div class="tl"><span class="yr">2017–2019</span><span class="kind">formát</span><b>HEIC a AVIF</b><p>Komprese převzatá z videa. Soubory jsou při stejné kvalitě znatelně menší než JPEG.</p></div>
-    </div>
-    <div class="kq" data-ok="b">
-      <p class="q">Kolik bajtů by bez komprese zabral první snímek z roku 1957 (176 × 176 px, 1 bit na pixel)?</p>
-      <div class="opts"><button data-v="a">30 976 bajtů.</button><button data-v="b">3 872 bajtů.</button><button data-v="c">176 bajtů.</button></div>
-      <div class="why">176 × 176 = 30 976 pixelů, tedy 30 976 bitů. Po vydělení osmi to je 3 872 bajtů. Dnešní ikona na ploše zabere víc.</div>
     </div>
   </article>
 
@@ -879,7 +908,10 @@ canvas#ed{touch-action:none;cursor:crosshair}
       </ol>
       <div class="btnrow"><button class="btn" id="wkTvB">Další krok</button></div>
     </div>
-    <div class="box try"><span class="lbl">Tvůj displej</span>
+    <div class="box try solo" data-ans="109" data-tol="2" data-hint="Nejdřív spočítej úhlopříčku v pixelech: √(2560² + 1440²). Výsledek vyděl 27." data-ok="√(2560² + 1440²) ≈ 2937 px a 2937 / 27 ≈ 109 PPI."><span class="lbl">Nejdřív spočítej sám</span><p>Monitor 27″ má rozlišení 2560 × 1440. Kolik má PPI? Stačí celé číslo.</p>
+      <div class="prac"><div class="row"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Tvůj výsledek"><button class="btn pri">Zkontrolovat</button></div><p class="res" aria-live="polite"></p></div></div>
+    <details class="navic"><summary>Kalkulačka na kontrolu</summary><div class="navbody">
+<div class="box try"><span class="lbl">Tvůj displej</span>
       <div class="chips" id="ppiDev"></div>
       <div class="calc">
         <div class="field"><label for="pW">Šířka (px)</label><input type="number" id="pW" value="1920" min="1"></div>
@@ -890,10 +922,11 @@ canvas#ed{touch-action:none;cursor:crosshair}
       <div class="counts" id="ppiN"></div>
       <p class="note" id="ppiT"></p>
     </div>
+</div></details>
     <p>Stejné rozlišení tedy znamená něco jiného na mobilu a na televizi. Důležitý je i odstup: oko s dobrou ostrostí rozliší zhruba 60 pixelů na stupeň zorného pole. Televizi s 80 PPI proto ze sedačky vnímáš stejně ostře jako mobil v ruce.</p>
     <div class="kq" data-ok="a">
       <p class="q">Notebook i televize mají Full HD. Který z nich má vyšší PPI?</p>
-      <div class="opts"><button data-v="a">Notebook: stejný počet pixelů je na menší ploše.</button><button data-v="b">Televize, protože je větší.</button><button data-v="c">Oba stejně, mají stejné rozlišení.</button></div>
+      <div class="opts"><button data-v="a">Notebook: stejný počet pixelů je na menší ploše.</button><button data-v="b">Televize, protože na větší ploše je přece víc pixelů.</button><button data-v="c">Oba stejně, protože mají úplně stejné rozlišení.</button></div>
       <div class="why">PPI závisí na rozlišení i na fyzické velikosti. Stejný počet pixelů na menší ploše znamená větší hustotu.</div>
     </div>
   </article>
@@ -902,7 +935,14 @@ canvas#ed{touch-action:none;cursor:crosshair}
     <div><span class="eyebrow">Kapitola 6</span><h2>Pixely na papíře</h2></div>
     <p>Přísně vzato je <b>PPI</b> hustota pixelů v obrazu a <b>DPI</b> hustota kapek tiskárny. V běžné řeči se obě zkratky zaměňují. Pro přepočet platí jediný vztah:</p>
     <p class="result">rozměr v palcích = pixely / DPI &nbsp;·&nbsp; pixely = palce × DPI</p>
-    <div class="box try"><span class="lbl">Kolik pixelů na papír</span>
+    <div class="box"><span class="lbl">Řešený příklad</span>
+      <p>Kolik pixelů na šířku potřebuje A4 (21 cm) při 300 DPI?</p>
+      <ol class="steps"><li>Na palce: <code>21 / 2,54 ≈ 8,27″</code></li><li>Na pixely: <code>8,27 × 300 ≈ 2480 px</code></li></ol>
+    </div>
+    <div class="box try solo" data-ans="1181" data-tol="6" data-hint="Stejný postup: centimetry vyděl 2,54 a výsledek vynásob 300." data-ok="10 / 2,54 ≈ 3,94″ a 3,94 × 300 ≈ 1181 px."><span class="lbl">Nejdřív spočítej sám</span><p>Fotku 10 × 15 cm chceš vytisknout při 300 DPI. Kolik pixelů potřebuje na šířku (10 cm)? Stačí celé číslo.</p>
+      <div class="prac"><div class="row"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Tvůj výsledek"><button class="btn pri">Zkontrolovat</button></div><p class="res" aria-live="polite"></p></div></div>
+    <details class="navic"><summary>Kalkulačka na kontrolu</summary><div class="navbody">
+<div class="box try"><span class="lbl">Kolik pixelů na papír</span>
       <div class="chips" id="prPap"></div>
       <div class="calc">
         <div class="field"><label for="prW">Šířka (cm)</label><input type="number" id="prW" value="29.7" step="0.1" min="0.1"></div>
@@ -911,6 +951,7 @@ canvas#ed{touch-action:none;cursor:crosshair}
       </div>
       <ol class="steps" id="prOut"></ol>
     </div>
+</div></details>
     <div class="box tip"><span class="lbl">Mýtus: obrázky pro web mají 72 DPI</span><p>Údaj DPI je v souboru jen poznámka pro tisk. Monitor ho ignoruje a zobrazuje pixely. Pokud v editoru změníš 300 DPI na 72 bez převzorkování, nezmění se ani jeden pixel, ani velikost souboru. Změní se jen rozměr, se kterým se obrázek vytiskne.</p></div>
     <div class="tw"><table><thead><tr><th>Účel</th><th>Doporučená hustota</th><th>Proč</th></tr></thead><tbody>
       <tr><td>fotokniha, časopis</td><td><code>300 DPI</code></td><td>čte se z dosahu ruky</td></tr>
@@ -919,7 +960,7 @@ canvas#ed{touch-action:none;cursor:crosshair}
     </tbody></table></div>
     <div class="kq" data-ok="c">
       <p class="q">Fotku 3000 × 2000 px tiskneš při 300 DPI. Jak velká vyjde?</p>
-      <div class="opts"><button data-v="a">3 × 2 cm</button><button data-v="b">30 × 20 cm</button><button data-v="c">10 × 6,7 palce, tedy asi 25,4 × 16,9 cm</button></div>
+      <div class="opts"><button data-v="a">30 × 20 cm, protože 100 px je 1 cm</button><button data-v="b">3 × 2 cm, protože 1000 px je 1 cm</button><button data-v="c">asi 25,4 × 16,9 cm</button></div>
       <div class="why">3000 / 300 = 10 palců a 2000 / 300 ≈ 6,67 palce. Po vynásobení 2,54 to je asi 25,4 × 16,9 cm.</div>
     </div>
   </article>
@@ -1008,9 +1049,16 @@ canvas#ed{touch-action:none;cursor:crosshair}
       <p>Soubor může mít čtvrtý, <b>alfa kanál</b>: pro každý pixel udává, jak moc je průhledný. JPEG ho nemá, proto dostane logo na bílém pozadí bílý obdélník.</p>
       <p>Do souboru se ukládají i <b>metadata EXIF</b>: datum, model fotoaparátu a často i <b>poloha GPS</b>. Než někam vystavíš fotku pořízenou doma, zvaž, jestli se má poloha zveřejnit.</p>
     </div>
+    <h3>Co je tady špatně?</h3>
+    <div class="cols">
+      <div class="panel trap"><p>Logo s průhledným pozadím ukládám jako JPEG.</p><details><summary>Co je tady špatně?</summary><p>JPEG průhlednost neumí, kolem loga vznikne bílý obdélník. Použij PNG nebo SVG.</p></details></div>
+      <div class="panel trap"><p>Fotku z výletu dávám na web jako PNG o 12 MB.</p><details><summary>Co je tady špatně?</summary><p>Stránka se bude načítat dlouho. Fotka patří do JPEG nebo WebP.</p></details></div>
+      <div class="panel trap"><p>Fotku po každé úpravě znovu ukládám jako JPEG.</p><details><summary>Co je tady špatně?</summary><p>Ztráty se sčítají. Pracuj v bezztrátovém formátu a JPEG vytvoř až na konci.</p></details></div>
+      <div class="panel trap"><p>Fotku z domova vystavím na web i s metadaty EXIF.</p><details><summary>Co je tady špatně?</summary><p>V metadatech může být poloha GPS. Před zveřejněním je odstraň.</p></details></div>
+    </div>
     <div class="kq" data-ok="b">
       <p class="q">Grafik rozpracoval leták s deseti vrstvami a zítra v něm bude pokračovat. Do čeho má uložit práci?</p>
-      <div class="opts"><button data-v="a">JPEG, je nejmenší.</button><button data-v="b">Vlastní formát editoru, třeba PSD. Pro tisk pak vyexportuje finální soubor.</button><button data-v="c">GIF, zachová vrstvy.</button></div>
+      <div class="opts"><button data-v="a">JPEG, protože je nejmenší a zítra ho snadno znovu otevře.</button><button data-v="b">Vlastní formát editoru, třeba PSD. Pro tisk pak vyexportuje finální soubor.</button><button data-v="c">GIF, protože zachová vrstvy a dá se z něj vyrobit i animace.</button></div>
       <div class="why">Pracovní formát zachovává vrstvy a umožní pokračovat. Běžné obrazové formáty vrstvy sloučí.</div>
     </div>
   </article>
@@ -1030,21 +1078,42 @@ canvas#ed{touch-action:none;cursor:crosshair}
       <canvas id="aa" width="72" height="36" class="px"></canvas>
       <p class="muted" style="font-size:.92rem">Bez vyhlazování pixel šikmou čáru buď obsahuje, nebo ne, a vznikají schody. S vyhlazením dostanou krajní pixely mezistupeň podle toho, jak moc je čára překrývá.</p>
     </div>
-    <h3>Pasti, do kterých se chodí</h3>
+    <h3>Co je tady špatně?</h3>
+    <p>Nejdřív si odpověz sám, potom si zobraz vysvětlení.</p>
     <div class="cols">
-      <div class="panel trap"><b>Snímek chatu uložený jako JPG</b><p>Kolem písmen se objeví šmouhy. Snímky obrazovky patří do PNG.</p></div>
-      <div class="panel trap"><b>Fotka odeslaná přes messenger</b><p>Aplikace ji často zmenší a znovu zkomprimuje. Na tisk si vyžádej originál, nebo ji pošli jako soubor.</p></div>
-      <div class="panel trap"><b>Velká fotka v prezentaci</b><p>Dvacet fotek z mobilu nafoukne soubor na stovky MB. Na plátně s Full HD je zbytek pixelů k ničemu. Fotky zmenši.</p></div>
-      <div class="panel trap"><b>Přípona není formát</b><p>Přejmenováním <code>foto.jpg</code> na <code>foto.png</code> se obsah nezmění. Převod musí udělat program.</p></div>
-      <div class="panel trap"><b>Megapixely nejsou kvalita</b><p>Na mobilu rozhoduje i velikost snímače a optika. 200 Mpx na malém snímači nemusí dát lepší fotku než 12 Mpx na velkém.</p></div>
-      <div class="panel trap"><b>Zkratka 2K není jedno rozlišení</b><p>V kině je to 2048 × 1080, v e-shopu často QHD 2560 × 1440. Podobně 4K znamená u televize 3840 × 2160 a v kině 4096 × 2160. Hledej počet pixelů.</p></div>
-      <div class="panel trap"><b>Digitální zoom je ořez</b><p>Bez optického přiblížení mobil jen vezme střed snímku a dopočítá ho. Totéž uděláš později v editoru, a bez ztráty originálu.</p></div>
-      <div class="panel trap"><b>Roztažení bez zachování poměru</b><p>Když změníš jen šířku, lidé na fotce ztloustnou. Drž poměr stran, případně ořízni.</p></div>
+      <div class="panel trap"><p>Spolužák poslal snímek chatu jako JPG a kolem písmen jsou šmouhy.</p><details><summary>Co je tady špatně?</summary><p>JPG patří na fotky. Snímky obrazovky ulož do PNG.</p></details></div>
+      <div class="panel trap"><p>Fotka z akce přišla přes messenger a na papíře A3 je neostrá.</p><details><summary>Co je tady špatně?</summary><p>Aplikace ji zmenšila a znovu zkomprimovala. Vyžádej si originál, nebo ji nech poslat jako soubor.</p></details></div>
+      <div class="panel trap"><p>Prezentace s dvaceti fotkami z mobilu má 400 MB.</p><details><summary>Co je tady špatně?</summary><p>Na plátně s Full HD je většina pixelů k ničemu. Fotky před vložením zmenši.</p></details></div>
+      <div class="panel trap"><p>Přejmenoval jsem <code>foto.jpg</code> na <code>foto.png</code>, takže je obrázek bezztrátový.</p><details><summary>Co je tady špatně?</summary><p>Přípona není formát. Obsah se nezměnil, převod musí udělat program, a ztráty z JPG stejně nevrátí.</p></details></div>
+      <div class="panel trap"><p>E-shop slibuje: 200 Mpx, tedy nejlepší fotky na trhu.</p><details><summary>Co je tady špatně?</summary><p>Megapixely nejsou kvalita. Rozhoduje i velikost snímače a optika.</p></details></div>
+      <div class="panel trap"><p>Monitor je označený 2K, takže bude mít 2048 × 1080.</p><details><summary>Co je tady špatně?</summary><p>Zkratka není přesná, v obchodech často znamená QHD 2560 × 1440. Podobně 4K je u televize 3840 × 2160 a v kině 4096 × 2160. Hledej počet pixelů.</p></details></div>
+      <div class="panel trap"><p>Digitálním zoomem na mobilu získám víc detailů.</p><details><summary>Co je tady špatně?</summary><p>Digitální zoom je ořez a dopočet. Totéž uděláš později v editoru, a bez ztráty originálu.</p></details></div>
+      <div class="panel trap"><p>Fotku na plakát jsem roztáhl jen do šířky, aby vyplnila papír.</p><details><summary>Co je tady špatně?</summary><p>Lidé na fotce ztloustnou. Drž poměr stran, případně ořízni.</p></details></div>
     </div>
     <div class="kq" data-ok="a">
       <p class="q">Jaký postup je nejlepší pro pixel art zvětšený čtyřikrát, aby zůstal ostrý?</p>
       <div class="opts"><button data-v="a">Nejbližší soused, nevznikají nové barvy.</button><button data-v="b">Bikubická interpolace, je nejlepší na všechno.</button><button data-v="c">Uložit jako JPG a pak zvětšit.</button></div>
       <div class="why">Nejbližší soused jen zkopíruje pixely, takže hrany zůstanou tvrdé. Interpolace by je rozmazala.</div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Historie">
+    <div><span class="eyebrow">Kapitola 2</span><h2>Od 176 pixelů k miliardám</h2></div>
+    <div class="timeline">
+      <div class="tl"><span class="yr">1957</span><span class="kind">první snímek</span><b>Russell Kirsch</b><p>Ve Spojených státech naskenoval fotku tříměsíčního syna. Snímek měl 176 × 176 pixelů, jen černých a bílých.</p></div>
+      <div class="tl"><span class="yr">1965</span><span class="kind">pojem</span><b>Slovo pixel</b><p>V odborném článku ho použil Fred Billingsley z laboratoře JPL, která zpracovávala snímky z kosmických sond.</p></div>
+      <div class="tl"><span class="yr">1975</span><span class="kind">fotoaparát</span><b>Kodak a Steve Sasson</b><p>První digitální fotoaparát měl 100 × 100 pixelů, tedy 0,01 Mpx. Záznam na kazetu trval 23 sekund.</p></div>
+      <div class="tl"><span class="yr">1984</span><span class="kind">počítač</span><b>Macintosh a MacPaint</b><p>Displej 512 × 342 px, 1 bit na pixel. Malování myší se dostalo k běžným lidem.</p></div>
+      <div class="tl"><span class="yr">1987</span><span class="kind">formát</span><b>GIF a VGA</b><p>GIF přinesl paletu 256 barev a kompresi LZW. Standard VGA ukázal na PC 640 × 480 pixelů.</p></div>
+      <div class="tl"><span class="yr">1992</span><span class="kind">formát</span><b>JPEG</b><p>Ztrátová komprese stavěná na vlastnostech lidského zraku. Umožnila fotografie na webu.</p></div>
+      <div class="tl"><span class="yr">1996</span><span class="kind">formát</span><b>PNG</b><p>Vznikl jako volná náhrada GIFu, když se kolem LZW rozhořel patentový spor. Přidal plnou průhlednost.</p></div>
+      <div class="tl"><span class="yr">2010</span><span class="kind">displej</span><b>Retina a WebP</b><p>iPhone 4 má 326 PPI, pixely na něm už oko běžně nerozliší. Google téhož roku uvádí formát WebP.</p></div>
+      <div class="tl"><span class="yr">2017–2019</span><span class="kind">formát</span><b>HEIC a AVIF</b><p>Komprese převzatá z videa. Soubory jsou při stejné kvalitě znatelně menší než JPEG.</p></div>
+    </div>
+    <div class="kq" data-ok="b">
+      <p class="q">Kolik bajtů by bez komprese zabral první snímek z roku 1957 (176 × 176 px, 1 bit na pixel)?</p>
+      <div class="opts"><button data-v="a">30 976 bajtů.</button><button data-v="b">3 872 bajtů.</button><button data-v="c">176 bajtů.</button></div>
+      <div class="why">176 × 176 = 30 976 pixelů, tedy 30 976 bitů. Po vydělení osmi to je 3 872 bajtů. Dnešní ikona na ploše zabere víc.</div>
     </div>
   </article>
 
@@ -1054,7 +1123,7 @@ canvas#ed{touch-action:none;cursor:crosshair}
     <div class="panel prac">
       <div class="gstat"><span id="prcType"></span><span id="prcScore"></span></div>
       <p class="task" id="prcQ"></p>
-      <div class="row"><input type="text" id="prcA" aria-label="Tvoje odpověď" autocomplete="off" inputmode="text"><button class="btn pri" id="prcC">Zkontrolovat</button><button class="btn" id="prcH">Nápověda</button><button class="btn" id="prcN">Další úloha</button></div>
+      <div class="row"><input type="text" id="prcA" aria-label="Tvoje odpověď" autocomplete="off" inputmode="text"><button class="btn pri" id="prcC">Zkontrolovat</button><button class="btn" id="prcH">Nápověda</button><button class="btn" id="prcS" hidden>Zkusit podobnou</button><button class="btn" id="prcN">Další úloha</button></div>
       <div class="res" id="prcR" aria-live="polite"></div>
     </div>
   </article>
@@ -1072,22 +1141,22 @@ canvas#ed{touch-action:none;cursor:crosshair}
         <div class="opts"><button data-v="a">3 840 000 B</button><button data-v="b">1 440 000 B</button><button data-v="c">480 000 B</button></div>
         <div class="why">800 × 600 = 480 000 pixelů a každý zabere 1 bajt. Možnost 1 440 000 B by platila pro 24 bitů.</div></div>
       <div class="kq" data-ok="b"><p class="q">Co se stane, když v editoru změníš 300 DPI na 72 DPI bez převzorkování?</p>
-        <div class="opts"><button data-v="a">Soubor se čtyřikrát zmenší.</button><button data-v="b">Pixely zůstanou, změní se jen rozměr pro tisk.</button><button data-v="c">Obrázek ztratí detaily.</button></div>
+        <div class="opts"><button data-v="a">Soubor se čtyřikrát zmenší, protože ubyde většina pixelů.</button><button data-v="b">Pixely zůstanou, změní se jen rozměr pro tisk.</button><button data-v="c">Obrázek ztratí detaily a při tisku bude vypadat hůř.</button></div>
         <div class="why">DPI je v souboru jen údaj pro tisk. Obrazová data se bez převzorkování nezmění.</div></div>
       <div class="kq" data-ok="a"><p class="q">Kdy RLE soubor zvětší?</p>
         <div class="opts"><button data-v="a">Když se sousední pixely stále liší.</button><button data-v="b">Když je obrázek jednobarevný.</button><button data-v="c">RLE soubor nikdy nezvětší.</button></div>
         <div class="why">Běh délky 1 stojí 2 bajty místo 1. Komprese nemůže zmenšit všechna data, některá se musí zvětšit.</div></div>
       <div class="kq" data-ok="c"><p class="q">Proč je JPEG u fotografie účinnější než u textu?</p>
-        <div class="opts"><button data-v="a">Protože text má víc pixelů.</button><button data-v="b">Protože fotka má méně barev.</button><button data-v="c">Protože potlačuje jemné detaily, které fotka snese, ale ostré hrany písma ne.</button></div>
+        <div class="opts"><button data-v="a">Protože text má vždy víc pixelů a JPEG je neumí sloučit do bloků.</button><button data-v="b">Protože fotka má méně barev a JPEG každou ukládá jen jednou.</button><button data-v="c">Protože potlačuje jemné detaily, které fotka snese, ale ostré hrany písma ne.</button></div>
         <div class="why">Ostré přechody se v blocích 8 × 8 popisují špatně a kolem hran vznikají šmouhy.</div></div>
       <div class="kq" data-ok="b"><p class="q">Displej 13,3″ má 2560 × 1600 pixelů. Jaká je přibližně jeho hustota?</p>
         <div class="opts"><button data-v="a">96 PPI</button><button data-v="b">227 PPI</button><button data-v="c">480 PPI</button></div>
         <div class="why">Úhlopříčka v pixelech je √(2560² + 1600²) ≈ 3019 px. Po vydělení 13,3″ vyjde asi 227 PPI.</div></div>
       <div class="kq" data-ok="a"><p class="q">Jaký je rozdíl mezi ořezem a zmenšením?</p>
-        <div class="opts"><button data-v="a">Ořez odebere část obrázku, zmenšení přepočítá všechny pixely.</button><button data-v="b">Není žádný rozdíl, oba snižují rozlišení stejně.</button><button data-v="c">Ořez je ztrátový, zmenšení ne.</button></div>
+        <div class="opts"><button data-v="a">Ořez odebere část obrázku, zmenšení přepočítá všechny pixely.</button><button data-v="b">Není žádný rozdíl, oba úkony snižují rozlišení naprosto stejně.</button><button data-v="c">Ořez je ztrátový, zatímco zmenšení je vždy bezztrátové.</button></div>
         <div class="why">Při ořezu zbylé pixely nemění hodnotu. Při zmenšení vzniknou nové pixely průměrováním.</div></div>
       <div class="kq" data-ok="c"><p class="q">Co obsahuje obvykle RAW soubor z fotoaparátu?</p>
-        <div class="opts"><button data-v="a">Hotovou fotku ve 256 barvách.</button><button data-v="b">Fotku převedenou do CMYK.</button><button data-v="c">Téměř surová data ze snímače s větší hloubkou než JPEG.</button></div>
+        <div class="opts"><button data-v="a">Hotovou upravenou fotku uloženou v paletě 256 barev.</button><button data-v="b">Fotku převedenou do CMYK a připravenou rovnou pro tisk.</button><button data-v="c">Téměř surová data ze snímače s větší hloubkou než JPEG.</button></div>
         <div class="why">RAW nechává rozhodnutí o vyvážení a jasu až na úpravu. Proto se z něj dají zachránit detaily ve stínech.</div></div>
       <div class="kq" data-ok="b"><p class="q">Proč se při zobrazení velké fotky obsadí v paměti víc místa, než má soubor?</p>
         <div class="opts"><button data-v="a">Protože prohlížeč fotku zkopíruje desetkrát.</button><button data-v="b">Protože se soubor musí dekódovat na pixely bez komprese.</button><button data-v="c">Neobsadí, paměť zabírá přesně tolik co soubor.</button></div>
@@ -1096,6 +1165,16 @@ canvas#ed{touch-action:none;cursor:crosshair}
         <div class="box tip"><span class="lbl">Co si odnášíš</span><ul class="check" style="list-style:disc"><li>Bitmapa vzniká vzorkováním, kvantováním a kódováním.</li><li>Velikost bez komprese = šířka × výška × bity na pixel / 8.</li><li>PPI = úhlopříčka v pixelech / úhlopříčka v palcích. Pixely = palce × DPI.</li><li>RLE a PNG obraz zachovají, JPEG část informací zahodí a ztráty se sčítají.</li><li>Formát vybírej podle obsahu: fotka, kresba, průhlednost, další úpravy.</li></ul></div>
         <div class="links2"><a href="#lab" data-go="lab">Zkus to na vlastním obrázku v Laboratoři →</a><a href="#profesional" data-go="pro">Co je uvnitř JPEG? Příručka Profesionál →</a></div>
         <div><button class="btn qreset">Zkusit test znovu</button></div></div>
+    </div>
+    <div class="box try"><span class="lbl">Praktický úkol</span>
+      <p>Připrav jednu vlastní fotku pro dvě použití.</p>
+      <ol class="steps">
+        <li>Zjisti její rozlišení a spočítej velikost bez komprese.</li>
+        <li><b>Web:</b> zmenši ji a ulož tak, aby měla nejvýše 500 kB a na běžném monitoru vypadala dobře.</li>
+        <li><b>Plakát A3:</b> spočítej, kolik DPI vyjde na šířku 29,7 cm. Stačí fotka, nebo je potřeba větší?</li>
+        <li>Prověř kvalitu a velikost souboru v <a href="#lab" data-go="lab">Laboratoři</a>.</li>
+        <li>Ve třech větách zdůvodni zvolený formát a rozlišení.</li>
+      </ol>
     </div>
   </article>
 
@@ -1400,29 +1479,33 @@ magick identify foto.jpg</pre>
 <footer>
 <details class="teacher foot-teacher"><summary>Pro učitele: metodika a plány hodin</summary>
 <h3>Začátečník: plán vyučovací hodiny (45 minut)</h3>
+<p>Plán počítá se základem. Části označené Navíc jsou pro rychlejší žáky, další hodinu nebo domácí práci.</p>
 <ol>
   <li><b>0–5 min</b> · Kapitola 1: promítněte plakát, žáci hlasují, co se stalo. Odpověď nechte na konec hodiny.</li>
   <li><b>5–13 min</b> · Kapitola 2: přibližování a klepnutí na pixel, ve dvojicích Obrázek z čísel.</li>
-  <li><b>13–21 min</b> · Kapitola 3: nejdřív tip, potom mix. Hra Trefa barvy jako krátká soutěž.</li>
-  <li><b>21–27 min</b> · Kapitola 4: rozlišení, otázka s detektivkou jako diskuse.</li>
-  <li><b>27–34 min</b> · Kapitola 5: žáci spočítají velikost vlastní fotky z mobilu a porovnají ji se skutečností. Hra Který formát?</li>
-  <li><b>34–40 min</b> · Kapitola 6: oprava plakátu a návrat k hlasování z první minuty.</li>
-  <li><b>40–45 min</b> · Kapitola 7: test, společná kontrola nejčastější chyby.</li>
+  <li><b>13–20 min</b> · Kapitola 3: nejdřív tip, potom míchání světel.</li>
+  <li><b>20–26 min</b> · Kapitola 4: rozlišení, otázka s detektivkou jako diskuse.</li>
+  <li><b>26–33 min</b> · Kapitola 5: výpočet velikosti, JPG a PNG, hra Který formát?</li>
+  <li><b>33–40 min</b> · Kapitola 6: oprava plakátu a návrat k hlasování z první minuty.</li>
+  <li><b>40–45 min</b> · Kapitola 7: test, společná kontrola nejčastější chyby. Doma úkol Zkus doma.</li>
 </ol>
-<h3>Pokročilý: plán na 3–4 vyučovací hodiny</h3>
+<h3>Pokročilý: plán na 5 vyučovacích hodin</h3>
 <ol>
-  <li><b>1. hodina</b> · Kapitoly 1–4: scéna a bajty, historie, barevné modely, barevná hloubka. Bez počítače: žáci převedou obrázek na mřížku 10 × 10 na čtverečkovaném papíře a zapíší ho čísly pro souseda, který ho nakreslí zpět.</li>
-  <li><b>2. hodina</b> · Kapitoly 5–7: výpočty. Žáci nejprve řeší na papíře, aplikací se jen kontrolují. Řešený příklad projděte po krocích a u každého se ptejte, co bude dál.</li>
-  <li><b>3. hodina</b> · Kapitoly 8–10: komprese a formáty. Skupiny obhajují volbu formátu pro zadaný případ. Vlastní fotky prověřte v Laboratoři.</li>
-  <li><b>4. hodina</b> · Kapitoly 11–12: procvičování ve dvojicích a test. Na konci hodiny každý napíše jednu věc, kterou by vysvětlil spolužákovi, a jednu, ve které si není jistý.</li>
+  <li><b>1. hodina</b> · Kapitoly 1–4: rekapitulace, pojmy, barevné modely a barevná hloubka. Bez počítače: žáci převedou obrázek na mřížku 10 × 10 na čtverečkovaném papíře a zapíší ho čísly pro souseda, který ho nakreslí zpět.</li>
+  <li><b>2. hodina</b> · Kapitoly 5–7: výpočty. Žáci řeší na papíře a kalkulačkou se jen kontrolují. Řešený příklad projděte po krocích a u každého se ptejte, co bude dál.</li>
+  <li><b>3. hodina</b> · Kapitoly 8–9: komprese a formáty. Skupiny obhajují volbu formátu pro zadaný případ.</li>
+  <li><b>4. hodina</b> · Kapitoly 10–12: úpravy, úlohy Co je tady špatně?, historie a procvičování ve dvojicích.</li>
+  <li><b>5. hodina</b> · Kapitola 13: test a Praktický úkol s vlastní fotkou. Na konci každý napíše jednu věc, kterou by vysvětlil spolužákovi, a jednu, ve které si není jistý.</li>
 </ol>
 <h3>Didaktické zásady</h3>
 <ol>
   <li><b>Nejdřív předpověď, pak pokus.</b> Otázky bez hodnocení na začátku kapitol nutí žáky vyslovit, co si myslí. Pokus pak miskoncepci vyvrátí účinněji než výklad.</li>
   <li><b>Od konkrétního k obecnému.</b> Pořadí je vždy obrázek, čísla, vzorec, pojmy se přidávají, až když je žáci vidí.</li>
+  <li><b>Vstupní vybavování.</b> Pokročilý začíná krátkou rekapitulací zpaměti, Tahák slouží k pozdějšímu připomenutí.</li>
   <li><b>Jeden příběh.</b> Plakát z první kapitoly drží hodinu pohromadě a řeší se až na konci.</li>
-  <li><b>Řešené příklady se postupně vytrácejí.</b> Od celého řešení přes doplnění kroků k samostatné úloze, což nováčky méně zatěžuje než řešení naslepo.</li>
+  <li><b>Řešené příklady se postupně vytrácejí.</b> Od celého řešení přes doplnění kroků k samostatné úloze, kalkulačka slouží až ke kontrole. Nováčky to méně zatěžuje než řešení naslepo.</li>
   <li><b>Vysvětlení i u chybných odpovědí a střídání typů úloh.</b> Procvičování záměrně míchá typy, aby žák nejdřív musel poznat, o jakou úlohu jde.</li>
+  <li><b>Oprava po chybě a přenos.</b> Po špatné odpovědi následuje podobná úloha, na závěr žáci vše použijí na vlastní fotce.</li>
   <li><b>Časté miskoncepce</b> jsou zařazené cíleně: zvětšení přidá detail, DPI mění obrázek, PNG je vždy lepší, RGB se míchá jako vodovky, převod JPG na PNG vrátí kvalitu, pixel má pevnou velikost.</li>
 </ol>
 <p>Nápady na pokusy vznikly i z žákovských prací v <a href="../portfolio/">portfoliu</a>: skupiny 4A-BST a Seminář informačních technologií, školní rok 2026/27.</p>
@@ -1450,7 +1533,7 @@ function fmtSize(b){
   return nf(b/1e9,2)+' GB';
 }
 let toastT;
-function toast(h){const t=$('#toast');t.innerHTML=h;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1800);}
+function toast(h){const t=$('#toast');t.innerHTML=h;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),Math.max(1800,h.length*70));}
 function segPick(el,fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset);});}
 
 /* ---------- Čtverák: kreslí se z opravdových pixelů ---------- */
@@ -1575,7 +1658,8 @@ function bmpBytes(w,h,rgbAt){ // 24bitový BMP
 /* ---------- kontrolní otázky a testy ---------- */
 const OKW=['Správně!','Přesně tak.','Výborně!','Ano!'], BADW=['Tohle ne.','Vedle, ale nevadí.','Skoro, ale ne.'];
 function initKq(kq,onAnswer){
-  const ok=kq.dataset.ok, why=kq.querySelector('.why'), whyHtml=why.innerHTML;
+  const ok=kq.dataset.ok, why=kq.querySelector('.why'), whyHtml=why.innerHTML, box=kq.querySelector('.opts');
+  const mixOpts=()=>{if(ok!=='*')shuffle([...box.children]).forEach(b=>box.appendChild(b));};mixOpts();
   kq.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{
     if(kq.classList.contains('done')) return;
     kq.classList.add('done');
@@ -1586,7 +1670,7 @@ function initKq(kq,onAnswer){
     if(ok!=='*') why.innerHTML=`<span class="v ${right?'ok':'bad'}">${pick(right?OKW:BADW)}</span>`+whyHtml;
     if(onAnswer) onAnswer(right);
   });
-  kq.reset=()=>{kq.classList.remove('done');why.innerHTML=whyHtml;kq.querySelectorAll('.opts button').forEach(x=>{x.disabled=false;x.className='';});};
+  kq.reset=()=>{kq.classList.remove('done');why.innerHTML=whyHtml;kq.querySelectorAll('.opts button').forEach(x=>{x.disabled=false;x.className='';});mixOpts();};
 }
 $$('.kq').forEach(kq=>{if(!kq.closest('.quiz')) initKq(kq);});
 $$('.quiz').forEach(qz=>{
@@ -1608,6 +1692,7 @@ $$('.quiz').forEach(qz=>{
 $$('.course').forEach(co=>{
   const id=co.dataset.course, chs=[...co.querySelectorAll('.ch')], prog=co.querySelector('.prog');
   const nav=co.querySelector('.chnav'), done=new Set((lsGet('bitmapa-done-'+id)||'').split(',').filter(Boolean).map(Number));
+  chs.forEach((c,i)=>{const e=c.querySelector('.eyebrow');if(e)e.textContent='Kapitola '+(i+1);});
   prog.innerHTML=chs.map((c,i)=>`<li><button data-i="${i}">${i+1}. ${esc(c.dataset.title)}</button></li>`).join('');
   let cur=Math.min(+(lsGet('bitmapa-ch-'+id)||0)||0,chs.length-1);
   function show(i,scroll){
@@ -1798,12 +1883,11 @@ function runGame(cfg){
   }
   start();
 }
-const F3=['JPG','PNG','GIF'];
+const F3=['JPG','PNG'];
 runGame({body:'#fBody',r:'#fRound',s:'#fScore',win:'Nikdo tě nenachytal.',lose:'Pamatuj: fotka do JPG, ostré hrany a průhlednost do PNG.',rounds:[
  {q:'Fotka z výletu na školní web.',o:F3,a:0,w:'Fotka má plynulé přechody, a tak ji JPG výrazně zmenší a nikdo nic nepozná.'},
  {q:'Logo se školním znakem na průhledném pozadí.',o:F3,a:1,w:'PNG má plnou průhlednost a ostré hrany. JPG průhlednost neumí vůbec.'},
  {q:'Snímek obrazovky s chybovou hláškou pro správce.',o:F3,a:1,w:'PNG zachová text ostrý. Díky velkým plochám bývá i menší než JPG.'},
- {q:'Třívteřinová smyčka mrkajícího smajlíka do starého fóra.',o:F3,a:2,w:'Jen GIF z těchto tří umí animaci. Na pár barev a pohybů mu 256 barev stačí.'},
  {q:'Sto fotek z akce, které chceš poslat e-mailem.',o:F3,a:0,w:'Sto PNG fotek by mělo stovky MB. JPG je zlomek.'},
  {q:'Schéma elektrického obvodu z čar a popisků do referátu.',o:F3,a:1,w:'Čáry a text jsou ostré hrany, tam by JPG dělal šmouhy. Ještě lepší by byl vektor.'}]});
 const P2=['Můžeš tisknout','Najdi větší obrázek'];
@@ -1887,6 +1971,10 @@ const parseN=s=>{const t=String(s).replace(/[\s ]/g,'').replace(',','.');return
 $('#fadeC').onclick=()=>{const a=parseN($('#fadeA').value),b=parseN($('#fadeB').value),o1=a===24883200,o2=Math.abs(b-24.9)<.051;
   $('#fadeR').innerHTML=o1&&o2?'<span class="ok">Správně.</span> 24 883 200 B je 24,9 MB, tedy přesně čtyřikrát víc než Full HD.':
    `<span class="bad">Ještě ne.</span> ${o1?'':'Bity vyděl osmi. '}${o2?'':'Bajty vyděl milionem.'}`;};
+/* nejdřív spočítej sám */
+$$('.solo').forEach(b=>{const i=b.querySelector('input'),r=b.querySelector('.res'),c=()=>{const v=parseN(i.value);if(isNaN(v)){r.textContent='Napiš číslo.';return;}
+  const ok=Math.abs(v-+b.dataset.ans)<=+b.dataset.tol;r.innerHTML=ok?`<span class="ok">Správně.</span> ${esc(b.dataset.ok)}`:`<span class="bad">Ještě ne.</span> ${esc(b.dataset.hint)}`;};
+  b.querySelector('button').onclick=c;i.addEventListener('keydown',e=>{if(e.key==='Enter')c();});});
 /* RLE */
 (function(){
   const PAL=['#fffdf8','#0c5f8f','#f2b807'],NM=['bílá','modrá','žlutá'],G=$('#rleG');let row=[0,0,0,0,0,1,1,1,1,2,2,0,0,0,0,0];
@@ -1974,10 +2062,10 @@ function aaDemo(){
    'Šířka televize':()=>{const d=pick([32,43,50,55,65,75]),w=d*16/Math.sqrt(337)*2.54;return{q:`Jak široká v cm je obrazovka ${d}″ s poměrem 16 : 9? Stačí celé číslo.`,ok:near(w,1.1),h:'√(16² + 9²) ≈ 18,36 je úhlopříčka v dílech.',s:[`${d} / 18,36 ≈ ${nf(d/18.3576,3)}″ na díl`,`${nf(d/18.3576,3)} × 16 ≈ ${nf(d*16/18.3576,1)}″`,`${nf(d*16/18.3576,1)} × 2,54 ≈ ${nf(w)} cm`]};},
    'Komprese RLE':()=>{const n=rnd(3,6),s=[...Array(n)].map((_,i)=>'ABCDEF'[i].repeat(rnd(1,5))).join('');return{q:`Řádek <code>${s}</code> zapíšeš pomocí RLE, kde běh stojí 2 bajty. Kolik bajtů zabere?`,ok:near(n*2,0),h:'Spočítej skupiny stejných písmen.',s:[`Běhů je ${n}`,`${n} × 2 = ${n*2} B, bez komprese ${s.length} B`]};}
   };
-  let bag=[],cur,done=false,good=0,all=0;
-  function nw(){
-    if(!bag.length) bag=shuffle(Object.keys(G));
-    const t=bag.pop();cur=G[t]();done=false;
+  let bag=[],cur,curT,done=false,good=0,all=0;
+  function nw(same){
+    if(!same&&!bag.length) bag=shuffle(Object.keys(G));
+    const t=same?curT:bag.pop();curT=t;cur=G[t]();done=false;$('#prcS').hidden=true;
     $('#prcType').textContent=t;$('#prcQ').innerHTML=cur.q;$('#prcR').innerHTML='';$('#prcA').value='';$('#prcA').inputMode=cur.txt?'text':'decimal';
   }
   const steps=()=>`<ol class="steps">${cur.s.map(x=>`<li><code>${x}</code></li>`).join('')}</ol>`;
@@ -1986,9 +2074,9 @@ function aaDemo(){
     const raw=$('#prcA').value;if(!raw.trim()) return;
     const ok=cur.txt?cur.ok(raw):cur.ok(parseN(raw));all++;if(ok)good++;done=true;
     $('#prcScore').textContent=`Správně ${good} z ${all}`;
-    $('#prcR').innerHTML=(ok?'<p class="ok">Správně!</p>':'<p class="bad">Tohle ne. Postup:</p>')+steps();
+    $('#prcR').innerHTML=(ok?'<p class="ok">Správně!</p>':'<p class="bad">Tohle ne. Projdi si postup a zkus podobnou úlohu.</p>')+steps();$('#prcS').hidden=ok;
   }
-  $('#prcC').onclick=chk;$('#prcN').onclick=nw;
+  $('#prcC').onclick=chk;$('#prcN').onclick=()=>nw();$('#prcS').onclick=()=>nw(true);
   $('#prcH').onclick=()=>{if(!done)$('#prcR').innerHTML=`<p class="note">${cur.h}</p>`;};
   $('#prcA').addEventListener('keydown',e=>{if(e.key==='Enter')chk();});
   nw();
@@ -2055,7 +2143,10 @@ lazy.lab=function(){
   ['kW','kH','kB'].forEach(i=>E(i).oninput=K);['tW','tH','tD'].forEach(i=>E(i).oninput=T);K();T();
 };
 
-$('#tahakTisk').onclick=()=>window.print();
+/* v náhledu uvnitř jiné aplikace prohlížeč tisk tiše zablokuje, proto se ověřuje, že se dialog opravdu otevřel */
+$('#tahakTisk').onclick=()=>{let opened=false;const m=()=>{opened=true;};addEventListener('beforeprint',m,{once:true});
+  try{window.print();}catch(e){}
+  setTimeout(()=>{removeEventListener('beforeprint',m);if(!opened)toast('Tady se tisk nedá spustit. Otevřete soubor přímo v prohlížeči a stiskněte Ctrl+P.');},700);};
 
 /* ========== PROFESIONÁL ========== */
 lazy.pro=function(){
