@@ -152,7 +152,12 @@ footer.ver{max-width:560px;margin:0 auto;text-align:center;font-size:11px;color:
  .side .ans{gap:6px}.side .grp{grid-template-columns:repeat(3,1fr);padding:5px;gap:5px}.side .grp h3{grid-column:1/-1;font-size:11px;margin:0 2px}
  .side .opt{padding:4px 4px;font-size:13.5px;min-height:42px;text-align:center}.side .opt small,.side .opt .ln{display:none}.side .opt .sn{display:inline}
  .side.done .ans{display:none}
- .sb{margin-bottom:8px}.sbt{padding:5px 10px}.qhead{margin:2px 2px 8px}.qhead h2{font-size:17px}
+ .sb{margin-bottom:8px;flex-wrap:nowrap;gap:6px}.sbt{padding:4px 9px;min-width:0;border-radius:12px}.sbt b{font-size:19px}.sbt span{font-size:13px}.sbt .tdot{width:10px;height:10px;margin-right:4px}
+ .qhead{margin:2px 2px 8px;flex-wrap:nowrap;gap:8px}.qhead h2{font-size:15px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qhead .gc{height:26px;min-width:30px;font-size:13px}
+ .turn{font-size:13px;padding:4px 9px;max-width:48%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .stage .pair:not(.one) .d2,.stage .pair:not(.one) .d3{height:var(--mh,clamp(120px,calc((var(--vh,1vh)*100 - 470px)/2),300px))}
+ .pair.one .d3{height:var(--mh,clamp(240px,calc(var(--vh,1vh)*100 - 470px),420px))}
+ .side .grp{padding:4px 5px 5px}.side .grp h3{font-size:10.5px}
  .side .rs .opt{font-size:30px;padding:8px;min-height:56px}
  .side .fb img.acc{width:64px;height:64px}
  .fb b{font-size:16px}
@@ -195,7 +200,18 @@ const h=(t,a={},...ch)=>{const e=document.createElement(t);for(const k in a){if(
 let ZOOM=1;
 function fitScreen(){const W=innerWidth,H=innerHeight;let z=Math.min(W/1280,H/800);z=W>=1400&&H>=860?Math.min(Math.max(z,1),2):1;z=Math.round(z*100)/100;
  const r=document.documentElement;if(z!==ZOOM){ZOOM=z;r.style.zoom=z===1?'':String(z)}r.style.setProperty('--vh',(H/z/100)+'px')}
-fitScreen();addEventListener('resize',fitScreen);
+/* mobil: molekuly se vejdou mezi hlavičku a panel odpovědí */
+let FW=0,FH=0;
+function fitMol(scroll){const pair=document.querySelector('.stage .pair'),side=document.querySelector('.side'),r=document.documentElement;
+ if(!pair||!side||innerWidth/ZOOM>=980){r.style.removeProperty('--mh');return}
+ if(side.classList.contains('done')&&!scroll)return;
+ const H=innerHeight/ZOOM,n=pair.classList.contains('one')?1:2,top=pair.getBoundingClientRect().top+scrollY,sideH=side.offsetHeight;
+ const calc=off=>(H-(top-off)-sideH-10-6*(n-1))/n;
+ let mh=calc(0),off=0;
+ if(scroll&&mh<170){const q=document.querySelector('.sb');off=Math.max(0,(q?q.getBoundingClientRect().top+scrollY:0)-4);mh=calc(off)}
+ mh=Math.max(110,Math.min(n===1?420:300,Math.floor(mh)));r.style.setProperty('--mh',mh+'px');
+ if(scroll&&off)requestAnimationFrame(()=>window.scrollTo(0,off))}
+fitScreen();addEventListener('resize',()=>{fitScreen();const w=innerWidth,hh=innerHeight;if(Math.abs(w-FW)>2||Math.abs(hh-FH)>100){FW=w;FH=hh;fitMol(false)}});
 const store={get(k,d){try{const v=localStorage.getItem('izo_'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('izo_'+k,JSON.stringify(v))}catch(e){}}};
 
 /* ---------- typy odpovědí ---------- */
@@ -407,7 +423,7 @@ function question(){clearInterval(tmr);const q=S.list[S.i];view(()=>{
   nx.innerHTML='';const last=S.i>=S.list.length-1;
   nx.append(h('button',{cls:'btn',on:{click:()=>{S.i++;S.turn=(S.turn+1)%S.teams.length;last?end():question()}}},last?'Výsledky':'Další otázka →'));
   if(okk)confetti(S.o.solo?30:60)}
-},true)}
+},true);FW=innerWidth;FH=innerHeight;fitMol(true)}
 function fbBox(cls,title,text,happy){if(cls==='ko')boom();const img=h('img',{src:cls==='ko'?BOOM:cls==='half'?LAB:MASC,alt:'',cls:cls==='ko'?'acc':''});if(happy)setTimeout(()=>img.classList.add('hop'),30);return h('div',{cls:'fb '+cls},img,h('div',{},h('b',{},title),h('p',{},text)))}
 function boom(){const o=h('div',{cls:'boom'},h('div',{cls:'bw'},h('img',{src:BOOM,alt:'Vondrys po nehodě v laboratoři'}),h('b',{},'BUM!')));o.addEventListener('click',()=>o.remove());document.body.append(o);setTimeout(()=>o.remove(),1500)}
 function end(){clearInterval(tmr);view(()=>{
