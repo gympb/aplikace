@@ -324,6 +324,7 @@
                             <p class="text-xs text-slate-400 font-sans uppercase font-black tracking-widest">Kód barvy</p>
                             <p id="hex-code" class="text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">#6C5CE7</p>
                             <p id="rgb-code" class="text-sm font-bold text-slate-600 mt-1">rgb(108, 92, 231)</p>
+                            <p id="full-binary" class="text-xs font-bold text-slate-500 mt-2"></p>
                         </div>
                     </div>
                 </div>
@@ -502,7 +503,9 @@
                 </div>
 
                 <div id="quiz-result" class="hidden text-center p-8 bg-gradient-to-br from-purple-100 via-pink-100 to-yellow-100 rounded-3xl border-4 border-purple-300 mt-6 shadow-xl">
+                    <div id="result-badge" class="w-20 h-20 mx-auto rounded-full bg-brand-yellow flex items-center justify-center text-4xl text-white mb-4 shadow-lg">🏆</div>
                     <h3 class="text-3xl font-black text-slate-800 mb-2">Tvoje skóre: <span id="score-text" class="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">0/5</span></h3>
+                    <p id="grade-text" class="text-xl font-bold text-brand-green mb-2"></p>
                     <p id="score-message" class="text-slate-700 font-bold text-lg mb-6"></p>
                     <button onclick="resetQuiz()" class="px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-red-500 text-white font-black rounded-2xl shadow-xl hover:opacity-90 text-lg transform hover:scale-105 transition">
                         Zkusit kvíz znovu 🔄
@@ -519,122 +522,6 @@
     </footer>
 
     <!-- JavaScript Logic -->
-                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-200">
-                            <p class="text-xs text-slate-400 font-bold uppercase">Rozměr displeje</p>
-                            <p id="res-dimensions" class="text-sm font-bold text-slate-800 font-mono mt-2">121.8 × 68.5 cm</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= TAB 4: INTERAKTIVNÍ PIXEL ART STUDIO ================= -->
-        <section id="tab-editor" class="tab-content hidden space-y-8">
-            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-white">
-                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-                    <div>
-                        <span class="bg-brand-green text-white font-bold px-3 py-1 rounded-full text-sm">Praktická dílna</span>
-                        <h2 class="text-3xl font-bold text-slate-800 mt-1">Pixel Art Studio ✏️</h2>
-                        <p class="text-slate-600">Vyzkoušej si tvorbu bitmapové grafiky pixel po pixelu!</p>
-                    </div>
-
-                    <!-- Toolbar Controls -->
-                    <div class="flex flex-wrap items-center gap-3">
-                        <div class="flex items-center gap-1 bg-slate-100 p-1.5 rounded-xl">
-                            <button onclick="setTool('pen')" id="tool-pen" class="tool-btn px-3 py-1.5 rounded-lg font-bold text-xs bg-brand-purple text-white shadow"><i class="fa-solid fa-pencil mr-1"></i> Tužka</button>
-                            <button onclick="setTool('bucket')" id="tool-bucket" class="tool-btn px-3 py-1.5 rounded-lg font-bold text-xs bg-white text-slate-700"><i class="fa-solid fa-fill-drip mr-1"></i> Výplň</button>
-                            <button onclick="setTool('eraser')" id="tool-eraser" class="tool-btn px-3 py-1.5 rounded-lg font-bold text-xs bg-white text-slate-700"><i class="fa-solid fa-eraser mr-1"></i> Guma</button>
-                        </div>
-
-                        <div class="flex items-center gap-1 bg-slate-100 p-1.5 rounded-xl">
-                            <button onclick="setGridSize(8)" class="grid-size-btn px-2.5 py-1 rounded-lg font-bold text-xs bg-white text-slate-700">8×8</button>
-                            <button onclick="setGridSize(16)" class="grid-size-btn px-2.5 py-1 rounded-lg font-bold text-xs bg-brand-purple text-white shadow">16×16</button>
-                            <button onclick="setGridSize(24)" class="grid-size-btn px-2.5 py-1 rounded-lg font-bold text-xs bg-white text-slate-700">24×24</button>
-                        </div>
-
-                        <button onclick="exportPNG()" class="px-3 py-2 bg-brand-green text-white hover:bg-opacity-90 rounded-xl font-bold text-xs shadow">
-                            <i class="fa-solid fa-download mr-1"></i> Export PNG
-                        </button>
-                        <button onclick="clearCanvas()" class="px-3 py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-xl font-bold text-xs">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    <!-- Drawing Canvas Container -->
-                    <div class="lg:col-span-2 flex flex-col items-center justify-center bg-slate-100 p-4 md:p-6 rounded-3xl border-2 border-slate-200">
-                        <div id="canvas-wrapper" class="relative bg-white shadow-2xl rounded-xl p-2 border border-slate-300">
-                            <canvas id="pixelCanvas" width="384" height="384" class="pixel-grid-canvas rounded shadow-inner"></canvas>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-3"><i class="fa-solid fa-mouse-pointer mr-1"></i> Kresli klikáním nebo tažením myši po mřížce</p>
-                    </div>
-
-                    <!-- Palette & Options -->
-                    <div class="space-y-6">
-                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                            <h4 class="font-bold text-slate-800 mb-3">Vyber barvu:</h4>
-                            <div class="grid grid-cols-5 gap-2">
-                                <button onclick="setPenColor('#000000')" class="w-10 h-10 rounded-xl bg-black border-2 border-white shadow hover:scale-110 transition"></button>
-                                <button onclick="setPenColor('#6C5CE7')" class="w-10 h-10 rounded-xl bg-purple-600 border-2 border-white shadow hover:scale-110 transition"></button>
-                                <button onclick="setPenColor('#FD79A8')" class="w-10 h-10 rounded-xl bg-pink-400 border-2 border-white shadow hover:scale-110 transition"></button>
-                                <button onclick="setPenColor('#FF7675')" class="w-10 h-10 rounded-xl bg-red-400 border-2 border-white shadow hover:scale-110 transition"></button>
-                                <button onclick="setPenColor('#FDCB6E')" class="w-10 h-10 rounded-xl bg-amber-400 border-2 border-white shadow hover:scale-110 transition"></button>
-                                <button onclick="setPenColor('#00B894')" class="w-10 h-10 rounded-xl bg-emerald-500 border-2 border-white shadow hover:scale-110 transition"></button>
-                                <button onclick="setPenColor('#00CEC9')" class="w-10 h-10 rounded-xl bg-teal-400 border-2 border-white shadow hover:scale-110 transition"></button>
-                                <button onclick="setPenColor('#0984E3')" class="w-10 h-10 rounded-xl bg-blue-500 border-2 border-white shadow hover:scale-110 transition"></button>
-                                <button onclick="setPenColor('#636E72')" class="w-10 h-10 rounded-xl bg-slate-500 border-2 border-white shadow hover:scale-110 transition"></button>
-                                <button onclick="setPenColor('#FFFFFF')" class="w-10 h-10 rounded-xl bg-white border-2 border-slate-300 shadow hover:scale-110 transition flex items-center justify-center text-xs"><i class="fa-solid fa-eraser"></i></button>
-                            </div>
-                        </div>
-
-                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
-                            <h4 class="font-bold text-slate-800">Zobrazení:</h4>
-                            <label class="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" id="toggleGrid" checked onchange="drawGrid()" class="w-5 h-5 rounded accent-brand-purple">
-                                <span class="text-sm font-semibold text-slate-700">Zobrazit rastrovou mřížku</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= TAB 5: VELKÝ KVÍZ (10 OTÁZEK) ================= -->
-        <section id="tab-quiz" class="tab-content hidden space-y-8">
-            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-white max-w-3xl mx-auto">
-                <div class="text-center mb-8">
-                    <span class="bg-brand-yellow text-amber-900 font-bold px-4 py-1.5 rounded-full text-sm">Ověření znalostí</span>
-                    <h2 class="text-3xl font-bold text-slate-800 mt-2">Velký Kvíz z Bitmapové Grafiky 🎯</h2>
-                    <p class="text-slate-600">10 otázek pokrývajících celou látku z tabule i výkladu!</p>
-                </div>
-
-                <div id="quiz-container" class="space-y-6">
-                    <!-- Injected by JS -->
-                </div>
-
-                <div id="quiz-result" class="hidden text-center p-8 bg-slate-50 rounded-3xl border-2 border-slate-200 mt-8">
-                    <div id="result-badge" class="w-20 h-20 mx-auto rounded-full bg-brand-yellow flex items-center justify-center text-4xl text-white mb-4 shadow-lg">
-                        🏆
-                    </div>
-                    <h3 class="text-3xl font-bold text-slate-800 mb-2">Tvoje skóre: <span id="score-text" class="text-brand-purple">0 / 10</span></h3>
-                    <p id="grade-text" class="text-xl font-bold text-brand-green mb-2"></p>
-                    <p id="score-message" class="text-slate-600 mb-6 max-w-md mx-auto"></p>
-                    <button onclick="resetQuiz()" class="px-8 py-3.5 bg-brand-purple text-white font-bold rounded-2xl shadow-lg hover:bg-opacity-90">
-                        Zkusit kvíz znovu 🔄
-                    </button>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="mt-12 text-center text-white/80 text-sm font-semibold">
-        <p>Aplikace pro hodinu informatiky • Téma: BITMAPOVÁ GRAFIKA (RASTR)</p>
-    </footer>
-
-    <!-- JavaScript -->
     <script>
         // ================= TAB NAVIGATION =================
         function switchTab(tabId) {
@@ -642,13 +529,13 @@
             document.getElementById(tabId).classList.remove('hidden');
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-brand-purple', 'text-white', 'shadow');
-                btn.classList.add('bg-slate-100', 'text-slate-700');
+                btn.classList.remove('bg-gradient-to-r', 'from-pink-500', 'to-purple-600', 'text-white', 'shadow-lg');
+                btn.classList.add('bg-white/80', 'text-slate-700', 'shadow-md');
             });
 
             const activeBtn = document.getElementById('btn-' + tabId);
-            activeBtn.classList.remove('bg-slate-100', 'text-slate-700');
-            activeBtn.classList.add('bg-brand-purple', 'text-white', 'shadow');
+            activeBtn.classList.remove('bg-white/80', 'text-slate-700', 'shadow-md');
+            activeBtn.classList.add('bg-gradient-to-r', 'from-pink-500', 'to-purple-600', 'text-white', 'shadow-lg');
 
             if (tabId === 'tab-editor') {
                 initCanvas();
@@ -689,10 +576,6 @@
             const binG = g.toString(2).padStart(8, '0');
             const binB = b.toString(2).padStart(8, '0');
 
-            document.getElementById('bin-r').innerText = binR;
-            document.getElementById('bin-g').innerText = binG;
-            document.getElementById('bin-b').innerText = binB;
-
             const rgbColor = `rgb(${r}, ${g}, ${b})`;
             const hexColor = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
 
@@ -710,35 +593,16 @@
         }
 
         // ================= CALCULATOR LOGIC =================
-        function runFullCalculator() {
-            const diagInches = parseFloat(document.getElementById('calc-diag').value) || 0;
-            const wPx = parseInt(document.getElementById('calc-w').value) || 0;
-            const hPx = parseInt(document.getElementById('calc-h').value) || 0;
-
-            const cmDiag = diagInches * 2.54;
-            const totalPx = (wPx * hPx) / 1000000;
-
-            // PPI calculation
-            const diagPx = Math.sqrt(wPx * wPx + hPx * hPx);
-            const ppi = diagInches > 0 ? (diagPx / diagInches) : 0;
-
-            // Aspect ratio calculation for physical width/height
-            const aspect = hPx > 0 ? (wPx / hPx) : 1;
-            const hInches = diagInches / Math.sqrt(aspect * aspect + 1);
-            const wInches = hInches * aspect;
-
-            const wCm = wInches * 2.54;
-            const hCm = hInches * 2.54;
-
-            document.getElementById('res-cm-diag').innerText = cmDiag.toFixed(1) + ' cm';
-            document.getElementById('res-total-px').innerText = totalPx.toFixed(2) + ' Mpx';
-            document.getElementById('res-ppi').innerText = ppi.toFixed(1) + ' PPI';
-            document.getElementById('res-dimensions').innerText = `${wCm.toFixed(1)} × ${hCm.toFixed(1)} cm`;
+        function calculateScreen() {
+            const inches = parseFloat(document.getElementById('input-inches').value) || 0;
+            const mm = inches * 25.4;
+            document.getElementById('res-mm').innerText = mm.toLocaleString('cs-CZ', { maximumFractionDigits: 0 }) + ' mm';
+            document.getElementById('res-cm').innerText = (mm / 10).toLocaleString('cs-CZ', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' cm';
         }
 
         // ================= PIXEL ART STUDIO =================
         let canvas, ctx;
-        let gridSize = 16;
+        let gridSize = 12;
         let currentColor = '#000000';
         let currentTool = 'pen';
         let isDrawing = false;
@@ -764,11 +628,11 @@
         function setGridSize(size) {
             gridSize = size;
             document.querySelectorAll('.grid-size-btn').forEach(b => {
-                b.classList.remove('bg-brand-purple', 'text-white', 'shadow');
+                b.classList.remove('bg-gradient-to-r', 'from-purple-500', 'to-pink-500', 'text-white', 'shadow');
                 b.classList.add('bg-white', 'text-slate-700');
             });
             event.target.classList.remove('bg-white', 'text-slate-700');
-            event.target.classList.add('bg-brand-purple', 'text-white', 'shadow');
+            event.target.classList.add('bg-gradient-to-r', 'from-purple-500', 'to-pink-500', 'text-white', 'shadow');
 
             resetPixelData();
             drawGrid();
@@ -1000,7 +864,7 @@
                 msg.innerText = "Skvělý výsledek! Většinu učiva z tabule máš v malíčku.";
                 badge.innerText = "🥈";
             } else if (score >= 5) {
-                gradeText.innerText = "Známka: 3 (Dobre) 🥉";
+                gradeText.innerText = "Známka: 3 (Dobře) 🥉";
                 msg.innerText = "Pěkné, ale projdi si ještě jednou záložku s RGB a kalkulačkou rozlišení.";
                 badge.innerText = "🥉";
             } else {
@@ -1021,7 +885,7 @@
 
         window.onload = function() {
             updateRGB();
-            runFullCalculator();
+            calculateScreen();
             renderQuiz();
         };
     </script>
