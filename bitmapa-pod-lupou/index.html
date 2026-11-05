@@ -814,10 +814,11 @@ canvas#ed{touch-action:none;cursor:crosshair}
     <p><b>Barevná hloubka</b> říká, kolik bitů připadá na pixel. S <i>n</i> bity lze rozlišit <b>2<sup>n</sup></b> hodnot.</p>
     <div class="box try"><span class="lbl">Ubírej bity</span>
       <div class="chips" id="depScene"></div>
-      <div class="sl"><label for="depS">Bitů na složku</label><output id="depV"></output><input type="range" id="depS" min="1" max="8" value="8"></div>
+      <div class="sl"><label for="depS">Bitů na složku</label><output id="depV"></output><input type="range" id="depS" min="1" max="10" value="8"></div>
       <label class="chk"><input type="checkbox" id="depD"> Rozptyl (dithering): střídá sousední odstíny, aby oko vidělo mezistupeň</label>
       <canvas id="depC" width="480" height="320" class="px"></canvas>
       <div class="counts" id="depN"></div>
+      <p class="note" id="depNote" hidden>Obrázek se od 9 bitů už nemění: tahle fotka má 8 bitů na složku a prohlížeč i běžný monitor zobrazují také 8 bitů. Čísla nahoře platí pro skutečný soubor s touto hloubkou, třeba 10bitové HDR video na vhodném displeji.</p>
     </div>
     <p>Ostrým hranám mezi odstíny, které vidíš při málo bitech, se říká <b>pásy</b> neboli posterizace. Typicky se objevují na obloze.</p>
     <div class="tw"><table><thead><tr><th>Bitů na pixel</th><th>Barev</th><th>Název</th><th>Použití</th></tr></thead><tbody>
@@ -1738,7 +1739,7 @@ lazy.r4=function(){
   /* barevná hloubka */
   {let k='soumrak';const S=$('#depS'),D=$('#depD');
    function run(){const n=+S.value,o=quant(fullScene(k),n,D.checked);put($('#depC'),o);$('#depV').textContent=n;
-     const bp=n*3;$('#depN').innerHTML=`<div><b>${1<<n}</b><span>odstínů na složku</span></div><div><b>${bp}</b><span>bitů na pixel</span></div><div><b>${nf(2**bp)}</b><span>barev celkem</span></div><div><b>${fmtSize(o.width*o.height*bp/8)}</b><span>bez komprese</span></div>`;}
+     $('#depNote').hidden=n<=8;const bp=n*3;$('#depN').innerHTML=`<div><b>${1<<n}</b><span>odstínů na složku</span></div><div><b>${bp}</b><span>bitů na pixel</span></div><div><b>${nf(2**bp)}</b><span>barev celkem</span></div><div><b>${fmtSize(o.width*o.height*bp/8)}</b><span>bez komprese</span></div>`;}
    chipScene($('#depScene'),k,v=>{k=v;run();},['soumrak','krajina']);S.oninput=run;D.onchange=run;run();}
   jpegDemo();interp();aaDemo();
 };
