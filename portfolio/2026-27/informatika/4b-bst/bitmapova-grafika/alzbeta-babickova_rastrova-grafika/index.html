@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rastrová (bitmapová) grafika</title>
+<link rel="stylesheet" href="../../../../../../assets/portfolio/pisma/pisma.css">
+<style>
+:root{--bg:#fff0f7;--card:#fff;--tx:#3a2342;--mu:#8a6a96;--ac:#e0409a;--ac2:#a66cff;--bd:#f6cfe4;--ok:#2b9a5e;--ko:#d6336c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#241628;--card:#33203a;--tx:#fbe8f4;--mu:#d2a9c8;--ac:#ff7ab8;--ac2:#c9a0ff;--bd:#5a3a66;--ok:#69db9c;--ko:#ff8fb0}}
+:root[data-theme="dark"]{--bg:#241628;--card:#33203a;--tx:#fbe8f4;--mu:#d2a9c8;--ac:#ff7ab8;--ac2:#c9a0ff;--bd:#5a3a66;--ok:#69db9c;--ko:#ff8fb0}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 10% 0%,color-mix(in srgb,var(--ac) 16%,var(--bg)),transparent 50%) fixed,radial-gradient(circle at 95% 15%,color-mix(in srgb,var(--ac2) 18%,var(--bg)),transparent 45%) fixed,var(--bg);color:var(--tx);font:16px/1.5 Quicksand,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 16px 8px;max-width:900px;margin:auto}
+h1{margin:0;font-size:1.8rem;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}h2{margin:0 0 8px;font-size:1.2rem}
+header p{margin:4px 0 0;color:var(--mu)}
+nav{display:flex;gap:6px;flex-wrap:wrap;max-width:900px;margin:12px auto;padding:0 16px}
+nav button{border:2px solid var(--bd);background:var(--card);color:var(--tx);padding:8px 16px;border-radius:22px;cursor:pointer;font:inherit;font-weight:700}
+nav button.on{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;border-color:transparent;box-shadow:0 4px 12px color-mix(in srgb,var(--ac) 40%,transparent)}
+main{max-width:900px;margin:auto;padding:0 16px 40px}
+section{display:none;background:var(--card);border:2px solid var(--bd);border-radius:26px;padding:20px;box-shadow:0 8px 24px color-mix(in srgb,var(--ac) 14%,transparent)}
+section.on{display:block}
+.row{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.mu{color:var(--mu)}.big{font-size:1.4rem;font-weight:700}
+table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid var(--bd);padding:6px 8px;text-align:left}
+.scroll{overflow-x:auto}
+.sl{display:grid;grid-template-columns:24px 1fr 46px;gap:10px;align-items:center;margin:8px 0}
+input[type=range]{width:100%}
+#R{accent-color:#e03131}#G{accent-color:#2f9e44}#B{accent-color:#1971c2}
+.sw{width:100%;height:110px;border-radius:12px;border:1px solid var(--bd)}
+.mix{display:flex;gap:8px;margin:8px 0}.mix div{flex:1;height:34px;border-radius:8px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#fff;text-shadow:0 0 3px #000}
+.grid{display:grid;gap:1px;background:var(--bd);border:1px solid var(--bd);width:min(100%,320px);aspect-ratio:1}
+.grid div{cursor:pointer}
+.btn{border:2px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 14px;border-radius:16px;cursor:pointer;font:inherit;font-weight:600}
+.btn.p{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;border-color:transparent}
+.opt{display:block;width:100%;text-align:left;margin:6px 0}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,var(--card))}
+.opt.ko{border-color:var(--ko);background:color-mix(in srgb,var(--ko) 18%,var(--card))}
+.box{border:2px dashed color-mix(in srgb,var(--ac) 45%,var(--bd));background:color-mix(in srgb,var(--ac) 6%,var(--card));border-radius:18px;padding:12px;margin:10px 0}
+.bar{height:8px;background:var(--bd);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));width:0;border-radius:4px}
+input[type=number]{width:90px;padding:6px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit}
+.tag{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:2px 8px;margin:2px;font-weight:600}
+.ghud{display:flex;justify-content:space-between;font-weight:700;font-size:1.15rem;margin:8px 0}
+.gq{margin:14px 0;font-size:1.1rem;min-height:90px;text-align:center}
+.gopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gopts .btn{min-height:64px;font-size:1rem}
+.gopts .ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 20%,var(--card))}
+.gopts .ko{border-color:var(--ko);background:color-mix(in srgb,var(--ko) 20%,var(--card))}
+.gsw{display:inline-block;width:100%;height:36px;border-radius:12px;border:2px solid var(--bd)}
+.gsw.big{width:150px;height:80px;display:block;margin:0 auto 8px}
+</style>
+<!-- gp-ramec:css --><style>
+.gp-bar,.gp-foot{align-self:stretch;width:100%;box-sizing:border-box;background:#111;color:#c9c9c9;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:10px 16px;text-align:left}
+.gp-bar a,.gp-foot a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.gp-bar a:hover,.gp-foot a:hover{color:#ff972e}
+.gp-bar{background:transparent;color:inherit;padding:10px 16px 0}
+.gp-bar a{color:inherit;opacity:.85}
+.gp-bar a:hover{opacity:1;color:inherit}
+.gp-foot{margin-top:32px;position:relative;z-index:1}
+.gp-in{max-width:720px;margin:0 auto;display:flex;flex-wrap:wrap;gap:2px 14px}
+</style><!-- /gp-ramec:css -->
+</head>
+<body>
+<!-- gp-ramec:bar --><div class="gp-bar"><div class="gp-in"><a href="../../../../../#/2026-27/informatika/4b-bst/bitmapova-grafika">← Zpět do portfolia</a></div></div><!-- /gp-ramec:bar -->
+
+<header><h1>🎀 Rastrová (bitmapová) grafika ✨</h1><p>Informatika – pixely, rozlišení, barvy RGB. Vyzkoušej, pochop, procvič.</p></header>
+<nav id="nav"></nav>
+<main>
+
+<section id="s0">
+<h2>Pixel</h2>
+<p><b>PIXEL = <u>pi</u>cture <u>el</u>ement</b> (obrazový bod). Rastrový obrázek je mřížka malých čtverečků, z nichž každý má jednu barvu. Z dálky splynou v obraz. Opakem je vektorová grafika (křivky a vzorce).</p>
+<div class="row">
+<div style="flex:1;min-width:260px">
+<p class="mu">Namaluj si obrázek 10×10 pixelů. Vyber barvu (záložka RGB nebo tady) a klikej do mřížky.</p>
+<div class="grid" id="pg" style="grid-template-columns:repeat(10,1fr)"></div>
+<p><input type="color" id="pc" value="#e03131"> <button class="btn" id="pclr">Smazat</button> <button class="btn" id="pzoom">Zobrazit mřížku: ano</button></p>
+</div>
+<div style="flex:1;min-width:240px">
+<p>Pixely dohromady: <span class="big" id="pcnt">100</span><br><span class="mu">Barvených pixelů: <b id="pused">0</b>. Pamatuj: pixel je vždy čtverec jedné barvy, žádné přechody uvnitř.</span></p>
+<div class="box"><b>Formáty souborů:</b><br><span class="tag">JPG</span> ztrátová komprese, fotky<br><span class="tag">PNG</span> bezztrátová, průhlednost<br><span class="tag">GIF</span> max. 256 barev, animace<br><span class="tag">RAW</span> surová data ze snímače, bez komprese</div>
+</div></div>
+</section>
+
+<section id="s1">
+<h2>Rozlišení a poměr stran</h2>
+<p>Rozlišení = počet pixelů na šířku × na výšku. Čím víc pixelů, tím jemnější obraz.</p>
+<div class="scroll"><table><tr><th>Název</th><th>Rozlišení</th><th>Pixelů celkem</th><th>Poměr</th></tr>
+<tr><td>VGA</td><td>640×480</td><td>307 200</td><td>4:3</td></tr>
+<tr><td>HD ready</td><td>1280×720</td><td>921 600</td><td>16:9</td></tr>
+<tr><td>HD (Full HD)</td><td>1920×1080</td><td>2 073 600</td><td>16:9</td></tr>
+<tr><td>4K</td><td>3840×2160</td><td>8 294 400</td><td>16:9</td></tr></table></div>
+<p><b>Poměry stran:</b> <span class="tag">3:2</span> (fotoaparáty) <span class="tag">4:3</span> (starší monitory) <span class="tag">16:9</span> (dnešní TV a monitory)</p>
+<p class="mu">Porovnání velikostí (v poměru k 4K):</p>
+<div id="cmp"></div>
+</section>
+
+<section id="s2">
+<h2>Palce, PPI a DPI</h2>
+<p><b>1″ (palec) = 25,4 mm</b>. Úhlopříčka obrazovek se udává v palcích (např. 55″ nebo 65″).<br>
+<b>PPI</b> (pixels per inch) = kolik pixelů se vejde na palec obrazovky. <b>DPI</b> (dots per inch) = kolik bodů na palec vytiskne tiskárna.</p>
+<div class="box"><b>PPI = √(šířka² + výška²) ÷ úhlopříčka v palcích</b> (délka úhlopříčky v pixelech dělená její délkou v palcích)</div>
+<p>Úhlopříčka: <input type="number" id="dg" value="55" min="1"> ″ = <b id="dmm"></b> mm<br>
+Rozlišení: <select id="rs" class="btn"><option value="640,480">VGA 640×480</option><option value="1280,720">HD ready 1280×720</option><option value="1920,1080" selected>HD 1920×1080</option><option value="3840,2160">4K 3840×2160</option></select></p>
+<p>PPI: <span class="big" id="ppi"></span> <span class="mu" id="ppn"></span></p>
+<p class="mu">Zkus: stejné 4K na 55″ a na 65″. Větší obrazovka = nižší PPI = hrubší pixely.</p>
+</section>
+
+<section id="s3">
+<h2>Barvy RGB</h2>
+<p>Obrazovka míchá barvu ze <b>tří základních</b>: <b style="color:#e03131">R</b>ed (červená), <b style="color:#2f9e44">G</b>reen (zelená), <b style="color:#1971c2">B</b>lue (modrá). Je to <b>aditivní míchání</b> (světlo se sčítá): 0 = nesvítí, 255 = svítí naplno.</p>
+<div class="row"><div style="flex:1;min-width:260px">
+<div class="sl"><b style="color:#e03131">R</b><input type="range" id="R" min="0" max="255" value="255"><span id="Rv"></span></div>
+<div class="sl"><b style="color:#2f9e44">G</b><input type="range" id="G" min="0" max="255" value="140"><span id="Gv"></span></div>
+<div class="sl"><b style="color:#1971c2">B</b><input type="range" id="B" min="0" max="255" value="40"><span id="Bv"></span></div>
+<div class="mix"><div id="mr"></div><div id="mg"></div><div id="mb"></div></div>
+<div id="mixs" class="mu" style="font-size:.85rem">Tři barevné složky nahoře se po sečtení dají do výsledku:</div>
+</div>
+<div style="flex:1;min-width:220px"><div class="sw" id="sw"></div>
+<p>Hex: <b id="hex"></b> · rgb(<b id="rgbt"></b>)<br>Jméno: <b id="nm"></b></p>
+<p><button class="btn" data-p="255,0,0">Červená</button> <button class="btn" data-p="255,255,0">Červená + zelená</button> <button class="btn" data-p="0,255,255">Zelená + modrá</button> <button class="btn" data-p="255,0,255">Červená + modrá</button> <button class="btn" data-p="255,255,255">Všechny = bílá</button> <button class="btn" data-p="0,0,0">Nic = černá</button></p></div></div>
+<div class="box"><b>Kolik je to bitů?</b><br>Jedna barevná složka má 256 úrovní (0–255) = <b>8 bitů na barvu</b>.<br>Tři složky = <b>24 bitů na pixel</b> (3 × 8).<br>Počet barev: <b>2²⁴ = 256 · 256 · 256 = 16 777 216</b>.<br>Obrázek 1920×1080 bez komprese: 2 073 600 × 3 B ≈ <b>6,2 MB</b>.</div>
+</section>
+
+<section id="s4">
+<h2>Procvičování</h2>
+<div class="bar"><i id="qb"></i></div>
+<div id="qa" style="margin-top:12px"></div>
+<hr style="border:0;border-top:1px solid var(--bd);margin:20px 0">
+<h2>Úkol: trefa barvy</h2>
+<p class="mu">Zkus pomocí posuvníků namíchat cílovou barvu. Čím blíž, tím víc bodů.</p>
+<div class="row"><div style="flex:1;min-width:140px"><div class="sw" id="tg"></div><p class="mu">Cíl</p></div><div style="flex:1;min-width:140px"><div class="sw" id="tm"></div><p class="mu">Tvoje</p></div></div>
+<div class="sl"><b style="color:#e03131">R</b><input type="range" id="tR" min="0" max="255" value="128"><span id="tRv">128</span></div>
+<div class="sl"><b style="color:#2f9e44">G</b><input type="range" id="tG" min="0" max="255" value="128"><span id="tGv">128</span></div>
+<div class="sl"><b style="color:#1971c2">B</b><input type="range" id="tB" min="0" max="255" value="128"><span id="tBv">128</span></div>
+<button class="btn p" id="tchk">Vyhodnotit</button> <button class="btn" id="tnew">Nová barva</button>
+<p id="tres" class="big"></p>
+</section>
+<section id='s5'><h2>🎮 Barevný blesk</h2><p class='mu'>Hra na procvičení: poznávej barvy podle RGB, hodnoty podle barev a odpovídej na otázky z látky. Máš 3 životy a na každou otázku 10 sekund. Čím rychleji a čím víc správných odpovědí za sebou, tím víc bodů 🔥</p><div id='ghud' class='ghud'></div><div class='bar'><i id='gbar' style='width:100%'></i></div><div id='gq' class='gq'></div><div id='go' class='gopts'></div><p id='gfb' class='mu' style='text-align:center'></p></section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const tabs=["🌸 Pixel","📐 Rozlišení","📏 Palce a PPI","🌈 RGB","💖 Cvičení","🎮 Hra"];
+tabs.forEach((t,i)=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>show(i);$("nav").appendChild(b)});
+function show(i){document.querySelectorAll("section").forEach((s,j)=>s.classList.toggle("on",i==j));[...$("nav").children].forEach((b,j)=>b.classList.toggle("on",i==j));try{location.hash="t"+i}catch(e){}}
+show(Math.min(5,Math.max(0,parseInt((location.hash||"").slice(2))||0)));
+
+// Pixel canvas
+const pg=$("pg"),cells=[];let gridOn=true;
+for(let i=0;i<100;i++){const d=document.createElement("div");d.style.background="#ffffff";d.onclick=()=>{d.style.background=$("pc").value;cnt()};pg.appendChild(d);cells.push(d)}
+function cnt(){$("pused").textContent=cells.filter(c=>c.style.background!="rgb(255, 255, 255)").length}
+$("pclr").onclick=()=>{cells.forEach(c=>c.style.background="#ffffff");cnt()};
+$("pzoom").onclick=()=>{gridOn=!gridOn;pg.style.gap=gridOn?"1px":"0";$("pzoom").textContent="Zobrazit mřížku: "+(gridOn?"ano":"ne")};
+
+// Resolution comparison
+const rl=[["VGA",640,480],["HD ready",1280,720],["HD",1920,1080],["4K",3840,2160]];
+$("cmp").innerHTML=rl.map(r=>`<div style="margin:6px 0"><small>${r[0]} (${r[1]}×${r[2]})</small><div style="height:18px;border-radius:4px;background:var(--ac);width:${Math.max(3,r[1]*r[2]/8294400*100)}%"></div></div>`).join("");
+
+// PPI
+function ppiCalc(){const [w,h]=$("rs").value.split(",").map(Number),d=+$("dg").value||1,p=Math.hypot(w,h)/d;$("ppi").textContent=p.toFixed(1)+" PPI";$("dmm").textContent=(d*25.4).toFixed(1).replace(".",",");$("ppn").textContent="(= "+(25.4/p).toFixed(3).replace(".",",")+" mm na pixel)"}
+$("rs").onchange=$("dg").oninput=ppiCalc;ppiCalc();
+
+// RGB
+const names=[[0,0,0,"černá"],[255,255,255,"bílá"],[255,0,0,"červená"],[0,255,0,"zelená"],[0,0,255,"modrá"],[255,255,0,"žlutá"],[0,255,255,"azurová"],[255,0,255,"purpurová"],[255,140,0,"oranžová"],[128,128,128,"šedá"],[128,0,128,"fialová"],[139,69,19,"hnědá"],[255,192,203,"růžová"]];
+function rgb(){const r=+$("R").value,g=+$("G").value,b=+$("B").value;
+$("Rv").textContent=r;$("Gv").textContent=g;$("Bv").textContent=b;
+const c=`rgb(${r},${g},${b})`;$("sw").style.background=c;
+$("mr").style.background=`rgb(${r},0,0)`;$("mg").style.background=`rgb(0,${g},0)`;$("mb").style.background=`rgb(0,0,${b})`;
+$("mr").textContent="R "+r;$("mg").textContent="G "+g;$("mb").textContent="B "+b;
+$("hex").textContent="#"+[r,g,b].map(v=>v.toString(16).padStart(2,"0")).join("").toUpperCase();
+$("rgbt").textContent=r+", "+g+", "+b;
+let best=names[0],bd=1e9;names.forEach(n=>{const d=(n[0]-r)**2+(n[1]-g)**2+(n[2]-b)**2;if(d<bd){bd=d;best=n}});$("nm").textContent="nejblíž: "+best[3];
+$("pc").value="#"+[r,g,b].map(v=>v.toString(16).padStart(2,"0")).join("")}
+["R","G","B"].forEach(k=>$(k).oninput=rgb);
+document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{const p=b.dataset.p.split(",");["R","G","B"].forEach((k,i)=>$(k).value=p[i]);rgb()});
+rgb();
+
+// Quiz
+const Q=[
+["Co znamená slovo pixel?",["picture element","pixel element","print excel","picture exchange"],0,"PIXEL = picture element, tedy obrazový bod."],
+["Kolik pixelů má obrázek 1920×1080?",["1 920 000","2 073 600","3 000 000","1 080 000"],1,"1920 × 1080 = 2 073 600 pixelů."],
+["Které rozlišení se nazývá 4K?",["1920×1080","2560×1440","3840×2160","1280×720"],2,"4K = 3840×2160, tedy čtyřnásobek počtu pixelů Full HD."],
+["Kolik mm má 1 palec?",["2,54 mm","10 mm","25,4 mm","254 mm"],2,"1″ = 25,4 mm."],
+["Kolik bitů připadá na jednu barevnou složku v RGB?",["1","8","16","24"],1,"8 bitů na barvu, to je 256 úrovní (0–255)."],
+["Kolik bitů má jeden pixel v režimu RGB (3 barvy)?",["8","16","24","32"],2,"3 × 8 = 24 bitů na pixel."],
+["Kolik barev lze zobrazit ve 24bitové hloubce?",["65 536","256","16 777 216","1 024"],2,"2²⁴ = 256·256·256 = 16 777 216."],
+["Jakou barvu dostaneš, když R = 255, G = 255, B = 0?",["Fialovou","Žlutou","Bílou","Azurovou"],1,"Červená + zelená světlo = žlutá (aditivní míchání)."],
+["Co vznikne při R = G = B = 255?",["Černá","Šedá","Bílá","Hnědá"],2,"Všechny tři složky naplno = bílá."],
+["Který poměr stran mají dnešní TV a monitory?",["3:2","4:3","16:9","1:1"],2,"Nejběžnější je 16:9."],
+["Který formát podporuje animace a má max. 256 barev?",["JPG","GIF","RAW","PNG"],1,"GIF: paleta do 256 barev, umí animace."],
+["Co je PPI?",["Počet pixelů na palec","Počet tiskových bodů na cm","Počet barev na pixel","Poměr stran"],0,"PPI = pixels per inch (hustota pixelů). Pro tisk se používá DPI."],
+["Dvě obrazovky mají stejné rozlišení. Která má větší PPI?",["Větší úhlopříčka","Menší úhlopříčka","Obě stejné","Nelze určit"],1,"Stejný počet pixelů na menší ploše = hustší pixely."]];
+let qi=0,sc=0,order=[...Q.keys()].sort(()=>Math.random()-.5).slice(0,10);
+function qshow(){const qa=$("qa");$("qb").style.width=(qi/order.length*100)+"%";
+if(qi>=order.length){const p=sc/order.length;qa.innerHTML=`<p class="big">Výsledek: ${sc} / ${order.length}</p><p>${p>=.9?"Skvělé! 🎉":p>=.6?"Dobrý základ, projdi si chyby ještě jednou.":"Projdi si záložky nahoře a zkus znovu."}</p><button class="btn p" id="qr">Znovu</button>`;$("qr").onclick=()=>{qi=0;sc=0;order=[...Q.keys()].sort(()=>Math.random()-.5).slice(0,10);qshow()};return}
+const q=Q[order[qi]];qa.innerHTML=`<p class="mu">Otázka ${qi+1} / ${order.length}</p><p><b>${q[0]}</b></p>`;
+q[1].forEach((o,i)=>{const b=document.createElement("button");b.className="btn opt";b.textContent=o;b.onclick=()=>{
+qa.querySelectorAll(".opt").forEach((x,j)=>{x.disabled=true;if(j==q[2])x.classList.add("ok")});
+if(i==q[2])sc++;else b.classList.add("ko");
+const e=document.createElement("div");e.className="box";e.textContent=q[3];qa.appendChild(e);
+const n=document.createElement("button");n.className="btn p";n.textContent="Další";n.onclick=()=>{qi++;qshow()};qa.appendChild(n)};qa.appendChild(b)})}
+qshow();
+
+// Color match
+let T=[0,0,0];
+function tnew(){T=[0,0,0].map(()=>Math.floor(Math.random()*256));$("tg").style.background=`rgb(${T})`;$("tres").textContent="";}
+function tupd(){const v=["tR","tG","tB"].map(k=>+$(k).value);["tR","tG","tB"].forEach((k,i)=>$(k+"v").textContent=v[i]);$("tm").style.background=`rgb(${v})`}
+["tR","tG","tB"].forEach(k=>$(k).oninput=tupd);
+$("tnew").onclick=tnew;
+$("tchk").onclick=()=>{const v=["tR","tG","tB"].map(k=>+$(k).value);const d=Math.hypot(...v.map((x,i)=>x-T[i]));const s=Math.max(0,Math.round(100-d/441.7*200));$("tres").textContent=`${s} / 100 bodů (cíl: ${T.join(", ")})`};
+tnew();tupd();
+// Game
+const GC=[['červená',255,0,0],['zelená',0,255,0],['modrá',0,0,255],['žlutá',255,255,0],['azurová',0,255,255],['purpurová',255,0,255],['bílá',255,255,255],['černá',0,0,0]];
+let gs={lives:3,score:0,streak:0,t:10,lock:true,ex:''},gt=null,gbest=0;
+const shuf=a=>[...a].sort(()=>Math.random()-.5);
+function ghud(){$('ghud').innerHTML=`<span>${'💖'.repeat(Math.max(0,gs.lives))}${'🖤'.repeat(3-Math.max(0,gs.lives))}</span><span>⭐ ${gs.score}</span><span>🔥 ${gs.streak}</span>`}
+function gintro(){clearInterval(gt);gs={lives:3,score:0,streak:0,t:10,lock:true,ex:''};ghud();$('gbar').style.width='100%';$('go').innerHTML='';$('gfb').textContent=gbest?'Nejlepší skóre: '+gbest:'';$('gq').innerHTML=`<button class='btn p' onclick='gstart()'>▶ Začít hrát</button>`}
+function gstart(){gs={lives:3,score:0,streak:0,t:10,lock:true,ex:''};clearInterval(gt);gt=setInterval(gtick,100);gnext()}
+function gtick(){if(gs.lock||!$('s5').classList.contains('on'))return;gs.t-=.1;$('gbar').style.width=Math.max(0,gs.t*10)+'%';if(gs.t<=0)gans(-1)}
+function gans(i){if(gs.lock)return;gs.lock=true;const bs=[...$('go').children],ok=i>=0&&bs[i].dataset.ok=='1';
+bs.forEach(b=>{b.disabled=true;if(b.dataset.ok=='1')b.classList.add('ok')});
+if(ok){gs.streak++;gs.score+=10+gs.streak*2+Math.round(gs.t);$('gfb').textContent=gs.streak>2?'Skvěle, jedeš! 🔥':'Správně! ✨'}
+else{gs.lives--;gs.streak=0;if(i>=0)bs[i].classList.add('ko');$('gfb').textContent=(i<0?'Čas vypršel ⏰ ':'Ouha 🙈 ')+gs.ex}
+ghud();setTimeout(gnext,ok?900:1800)}
+function gend(){clearInterval(gt);if(gs.score>gbest)gbest=gs.score;$('go').innerHTML='';$('gbar').style.width='0';$('gq').innerHTML=`<p class='big'>Konec hry 🎀</p><p>Skóre: <b>${gs.score}</b> ⭐ · Nejlepší: <b>${gbest}</b></p><button class='btn p' onclick='gstart()'>🔁 Hrát znovu</button>`;$('gfb').textContent=gs.score>=100?'Jsi barevný mistr! 🌈':'Zkus to znovu a překonej se! 💪'}
+function gnext(){if(gs.lives<=0)return gend();gs.t=10;gs.lock=false;gs.ex='';ghud();$('gfb').textContent='';$('gbar').style.width='100%';
+const r=Math.random();let txt,it;
+if(r<.7){const cc=shuf(GC).slice(0,4),t=cc[0],v=x=>`${x[1]}, ${x[2]}, ${x[3]}`;gs.ex=`rgb(${v(t)}) = ${t[0]}`;
+if(r<.35){txt=`Jakou barvu namíchá <b>rgb(${v(t)})</b>?`;it=cc.map((x,k)=>({h:`<span class='gsw' style='background:rgb(${v(x)})'></span>`,ok:!k}))}
+else{txt=`<span class='gsw big' style='background:rgb(${v(t)})'></span>Jaké hodnoty R, G, B má tato barva?`;it=cc.map((x,k)=>({h:v(x),ok:!k}))}}
+else{const q=Q[Math.floor(Math.random()*Q.length)];gs.ex=q[3];txt=`<b>${q[0]}</b>`;it=q[1].map((o,k)=>({h:o,ok:k==q[2]}))}
+$('gq').innerHTML=txt;$('go').innerHTML='';
+shuf(it).forEach((x,k)=>{const b=document.createElement('button');b.className='btn';b.innerHTML=x.h;b.dataset.ok=x.ok?'1':'0';b.onclick=()=>gans(k);$('go').appendChild(b)})}
+gintro();
+</script>
+<!-- gp-ramec:foot --><footer class="gp-foot"><div class="gp-in"><span>Gymnázium Příbram</span><span>Autor: Alžběta Babičková</span><span>Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" rel="license noopener">CC BY 4.0</a></span></div></footer><!-- /gp-ramec:foot -->
+</body>
+</html>

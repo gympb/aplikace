@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pixely a barvy – laboratoř</title>
+<style>
+:root{--bg:#050b22;--card:rgba(16,36,104,.40);--fg:#eef1ff;--mut:#adb9e3;--bd:rgba(125,162,255,.30);--acc:#7da2ff;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+
+
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--fg);background-color:var(--bg);background-image:radial-gradient(2.6px 2.6px at 20px 30px,#fff 0,#fff 50%,transparent 100%),radial-gradient(2px 2px at 90px 120px,#cfe0ff 0,#cfe0ff 50%,transparent 100%),radial-gradient(2.6px 2.6px at 60px 80px,#fff 0,#fff 50%,transparent 100%),radial-gradient(2px 2px at 130px 160px,#ffe9c4 0,#ffe9c4 50%,transparent 100%),radial-gradient(3.2px 3.2px at 200px 90px,#fff 0,#fff 50%,transparent 100%),radial-gradient(ellipse at 15% 0%,rgba(50,95,210,.22),transparent 55%),radial-gradient(ellipse at 95% 100%,rgba(30,110,210,.18),transparent 50%),radial-gradient(ellipse at 60% 45%,rgba(40,70,170,.1),transparent 55%),linear-gradient(#02040c,#050d2b);background-size:340px 260px,270px 310px,410px 330px,190px 230px,520px 380px,100% 100%,100% 100%,100% 100%,100% 100%;background-attachment:fixed;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.7rem;margin:0 0 4px;letter-spacing:-.01em;color:#fff;text-shadow:0 0 18px rgba(125,162,255,.7)}
+h2{font-size:1.15rem;margin:0 0 8px}
+p{margin:0 0 10px}.mut{color:var(--mut);font-size:.92rem}
+nav{display:flex;gap:6px;margin:16px 0;flex-wrap:wrap}
+nav button{font:inherit;padding:8px 14px;border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:8px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--acc);color:#05060f;border-color:var(--acc);box-shadow:0 0 14px rgba(125,162,255,.5)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.card{background:var(--card);-webkit-backdrop-filter:blur(12px) saturate(1.3);backdrop-filter:blur(12px) saturate(1.3);box-shadow:0 0 24px rgba(60,90,220,.12),inset 0 1px 0 rgba(160,190,255,.12);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:16px}
+.row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.row>*{min-width:0}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.tools button,.btn{font:inherit;padding:6px 12px;border:1px solid var(--bd);background:var(--bg);color:var(--fg);border-radius:6px;cursor:pointer}
+.tools button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+select,input[type=color]{font:inherit;padding:4px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--fg)}
+input[type=color]{width:44px;height:34px;padding:2px}
+canvas{display:block;max-width:100%;border:1px solid var(--bd);touch-action:none;image-rendering:pixelated;cursor:crosshair}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem}
+.pal{display:flex;gap:4px;flex-wrap:wrap}.pal span{width:24px;height:24px;border:1px solid var(--bd);border-radius:4px;cursor:pointer}
+table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--bd)}
+.wrap{overflow-x:auto}
+.sl{display:grid;grid-template-columns:90px 1fr 54px;gap:8px;align-items:center;margin:6px 0}
+.sl input[type=range]{width:100%}
+.venn{position:relative;width:min(300px,100%);aspect-ratio:1;border-radius:10px;overflow:hidden;isolation:isolate}
+.venn i{position:absolute;width:58%;aspect-ratio:1;border-radius:50%}
+.sw{height:64px;border-radius:8px;border:1px solid var(--bd)}
+.steps{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;margin-top:10px}
+.steps div{height:46px;border-radius:4px;border:1px solid var(--bd)}
+.sub{display:flex;gap:2px;height:64px;width:90px;border:1px solid var(--bd);padding:2px;background:#000}
+.sub i{flex:1}
+.ok{font-weight:700}
+.opt{display:block;width:100%;text-align:left;font:inherit;padding:10px 12px;margin:6px 0;border:1px solid var(--bd);background:var(--bg);color:var(--fg);border-radius:8px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--acc)}
+.opt:disabled{cursor:default}
+.opt.good{border-color:#3ddc84;background:rgba(61,220,132,.14)}
+.opt.bad{border-color:#ff6b6b;background:rgba(255,107,107,.14)}
+.fb{border-radius:8px;padding:10px 12px;margin:10px 0;border:1px solid var(--bd)}
+.fb.good{border-color:#3ddc84}.fb.bad{border-color:#ff6b6b}
+.qq{font-size:1.1rem;font-weight:600;margin:8px 0}
+.score{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.score b{font-size:1.2rem}
+summary{cursor:pointer;font-size:1.1rem;margin-bottom:6px}
+.bar{height:8px;border-radius:4px;background:var(--bd);overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .3s}
+.dots{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}.dot{min-width:26px;text-align:center;border:1px solid var(--bd);border-radius:6px;font-size:.8rem;padding:1px 6px;color:var(--mut)}.dot.good{border-color:#3ddc84;color:#3ddc84}.dot.bad{border-color:#ff6b6b;color:#ff6b6b}
+details.card ul{margin:6px 0 10px;padding-left:20px}details.card li{margin:3px 0}
+.fm{display:block;padding:6px 10px;margin:4px 0;border-left:3px solid var(--acc);background:rgba(125,162,255,.08)}
+.space{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.space::before{content:"";position:absolute;inset:0;background-image:radial-gradient(3px 3px at 40px 60px,#fff 0,#fff 50%,transparent 100%),radial-gradient(2.5px 2.5px at 180px 140px,#bcd4ff 0,#bcd4ff 50%,transparent 100%),radial-gradient(3.5px 3.5px at 300px 40px,#fff 0,#fff 45%,rgba(190,210,255,.35) 70%,transparent 100%);background-size:360px 280px,440px 330px,520px 400px;animation:tw 5s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.55}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.space::before{animation:none}}
+.space i{position:absolute;border-radius:50%;aspect-ratio:1}
+.pl1{right:6%;top:9%;width:clamp(90px,14vw,170px);background:radial-gradient(circle at 32% 30%,#a9c4ff,#4c6ef5 40%,#16236b 75%,#070c2e);box-shadow:0 0 50px rgba(110,150,255,.45),inset -14px -10px 30px rgba(0,0,20,.6)}
+.pl1::after{content:"";position:absolute;left:-38%;right:-38%;top:40%;bottom:40%;border-radius:50%;border:5px solid rgba(190,205,255,.55);transform:rotate(-18deg);box-shadow:0 0 14px rgba(150,180,255,.4)}
+.pl2{left:4%;bottom:12%;width:clamp(56px,8vw,100px);background:radial-gradient(circle at 30% 28%,#ffd8a8,#e8743b 45%,#7a2a10 78%,#2a0c04);box-shadow:0 0 36px rgba(255,140,70,.35),inset -10px -8px 20px rgba(20,0,0,.55)}
+.pl3{right:30%;bottom:8%;width:clamp(26px,3.4vw,44px);background:radial-gradient(circle at 35% 30%,#e6e0ff,#8f86c9 55%,#2c2655);box-shadow:0 0 18px rgba(180,170,255,.3),inset -5px -4px 10px rgba(0,0,30,.5)}
+.space i{opacity:.4}
+.pl1{background:radial-gradient(circle at 32% 30%,#fff,#e4ecff 45%,#aebfe8 80%,#7f93c9);box-shadow:0 0 30px rgba(220,230,255,.25),inset -12px -8px 24px rgba(20,40,110,.35)}
+.pl1::after{border-color:rgba(255,255,255,.5);box-shadow:0 0 10px rgba(255,255,255,.2)}
+.pl2{background:radial-gradient(circle at 30% 28%,#fff,#dfe6f7 50%,#9fb0d6 85%);box-shadow:0 0 24px rgba(220,230,255,.2),inset -8px -6px 16px rgba(20,40,110,.35)}
+.pl3{background:radial-gradient(circle at 35% 30%,#fff,#d6def2 60%,#9fb0d6);box-shadow:0 0 14px rgba(220,230,255,.2),inset -4px -3px 8px rgba(20,40,110,.3)}
+.grade{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.gnum{font-size:3.4rem;font-weight:800;line-height:1}
+[hidden]{display:none!important}
+</style>
+<!-- gp-ramec:css --><style>
+.gp-bar,.gp-foot{align-self:stretch;width:100%;box-sizing:border-box;background:#111;color:#c9c9c9;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:10px 16px;text-align:left}
+.gp-bar a,.gp-foot a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.gp-bar a:hover,.gp-foot a:hover{color:#ff972e}
+.gp-bar{background:transparent;color:inherit;padding:10px 16px 0}
+.gp-bar a{color:inherit;opacity:.85}
+.gp-bar a:hover{opacity:1;color:inherit}
+.gp-foot{margin-top:32px;position:relative;z-index:1}
+.gp-in{max-width:720px;margin:0 auto;display:flex;flex-wrap:wrap;gap:2px 14px}
+</style><!-- /gp-ramec:css -->
+</head>
+<body>
+<!-- gp-ramec:bar --><div class="gp-bar"><div class="gp-in"><a href="../../../../../#/2026-27/informatika/4b-bst/bitmapova-grafika">← Zpět do portfolia</a></div></div><!-- /gp-ramec:bar -->
+
+<div class="space" aria-hidden="true"><i class="pl1"></i><i class="pl2"></i><i class="pl3"></i></div>
+<main>
+<h1>Pixely a barvy</h1>
+<p class="mut">Interaktivní cvičení z informatiky: rozlišení obrazu, paměť, barevná hloubka a míchání barev v modelech RGB a CMY.</p>
+<nav role="tablist" id="tabs">
+<button role="tab" data-t="teorie">Teorie</button>
+<button role="tab" data-t="pixely">Pixely a rozlišení</button>
+<button role="tab" data-t="michani">Míchání barev</button>
+<button role="tab" data-t="mix2">Smíchej dvě barvy</button>
+<button role="tab" data-t="ppi">Palce, PPI a DPI</button>
+<button role="tab" data-t="vyzva">Výzva: trefa barvu</button>
+<button role="tab" data-t="kviz">Kvíz</button>
+</nav>
+
+<section id="pixely">
+<details class="card" open><summary><b>Teorie: pixely a rozlišení</b></summary>
+<p>Obrázky v počítači jsou buď <b>vektorové</b> (popsané křivkami a vzorci, dají se zvětšovat bez ztráty kvality), nebo <b>rastrové</b>. Rastrový obraz je mřížka pixelů a každý pixel nese informaci o jedné barvě. Fotografie, screenshoty a obrazovky jsou rastrové.</p>
+<ul><li><b>Rozlišení</b> je počet pixelů na šířku a na výšku. Víc pixelů znamená jemnější detail, ale i víc paměti.</li>
+<li><b>Souřadnice</b> pixelu se píšou [x, y] a počítají se od levého horního rohu, takže y roste směrem dolů a číslování začíná nulou.</li>
+<li><b>Barevná hloubka</b> je počet bitů na jeden pixel. 1 bit rozliší 2 barvy (černá, bílá), 8 bitů 256 barev (paleta) a 24 bitů 16 777 216 barev.</li>
+<li>Zmenšením rozlišení se několik pixelů nahradí jedním a <b>nevratně se ztratí detaily</b>. Zkus si to přepnutím z 32 na 8 v kreslítku níže.</li></ul>
+<code class="mono fm">počet pixelů = šířka × výška</code>
+<code class="mono fm">paměť v bajtech = pixely × bity na pixel ÷ 8</code>
+<p>Příklad: obrázek 16 × 16 ve 24 bitech má 256 pixelů, 256 · 24 = 6 144 bitů, tedy 768 bajtů.</p>
+</details>
+<div class="card">
+<h2>Kresli po pixelech</h2>
+<p class="mut"><b>Pixel</b> = <i>picture element</i>, nejmenší bod obrazu s jednou barvou. Obraz je mřížka šířka × výška pixelů.</p>
+<div class="tools">
+<label>Rozlišení <select id="res"><option>4</option><option>8</option><option selected>16</option><option>32</option><option>64</option></select></label>
+<button id="tPaint" aria-pressed="true">Kreslit</button>
+<button id="tErase" aria-pressed="false">Guma</button>
+<button id="tPick" aria-pressed="false">Pipeta</button>
+<input type="color" id="col" value="#e63946" aria-label="Barva štětce">
+<button id="fill" class="btn">Vyplnit vše</button>
+<button id="clr" class="btn">Smazat</button>
+</div>
+<div class="pal" id="pal" style="margin-bottom:10px"></div>
+<div class="row">
+<canvas id="cv" width="480" height="480" style="width:min(480px,100%)"></canvas>
+<div style="flex:1;min-width:230px">
+<p class="mono" id="hov">Najeď myší na pixel.</p>
+<p><b>Skutečná velikost obrázku</b></p>
+<canvas id="real" style="border:1px solid var(--bd);margin-bottom:10px"></canvas>
+<label>Barevná hloubka <select id="depth"><option value="1">1 bit (černobílá)</option><option value="8">8 bitů (256 barev)</option><option value="24" selected>24 bitů (true color)</option></select></label>
+<p class="mono" id="info" style="margin-top:10px"></p>
+<p class="mut">Obrázek má šířka × výška pixelů. Paměť = počet pixelů × bity na pixel ÷ 8. Při změně rozlišení se obrázek přepočítá a ztratí detaily.</p>
+</div>
+</div>
+</div>
+<div class="card">
+<h2>Běžná rozlišení</h2>
+<div class="wrap"><table id="rt"><thead><tr><th>Název</th><th>Rozměr</th><th>Pixelů</th><th>Nekomprimovaně (24 b)</th></tr></thead><tbody></tbody></table></div>
+</div>
+</section>
+
+<section id="michani" hidden>
+<details class="card" open><summary><b>Teorie: míchání barev</b></summary>
+<p>Barvu v počítači popisuje <b>barevný model</b>. Nejčastější je <b>RGB</b>: červená (Red), zelená (Green) a modrá (Blue). Každá složka má hodnotu 0 až 255 (8 bitů, binárně 00000000 až 11111111).</p>
+<ul><li><b>Aditivní míchání (RGB)</b> sčítá světlo. Používají ho monitory, televize a telefony. Bez světla je černá, se všemi třemi složkami naplno bílá.</li>
+<li><b>Subtraktivní míchání (CMY, v tisku CMYK)</b> odebírá světlo, které pigment pohltí. Papír je bílý, čím víc barviva, tím tmavší barva. K azurové, purpurové a žluté se v tisku přidává černá (K), protože jejich směs vychází spíš do tmava než do čisté černé.</li>
+<li><b>Hex zápis</b> #RRGGBB dává každou složku jako dvě šestnáctková čísla 00 až FF. Například #FFFF00 je R = 255, G = 255, B = 0, tedy žlutá.</li></ul>
+<code class="mono fm">R + G = žlutá    G + B = azurová    R + B = purpurová    R + G + B = bílá</code>
+<code class="mono fm">C = bílá − R    M = bílá − G    Y = bílá − B</code>
+<p>Pixel na displeji se skládá ze tří drobných podpixelů. Z normální vzdálenosti je oko nerozliší a vidí jednu smíchanou barvu.</p>
+</details>
+<div class="card">
+<h2>Míchání světla a pigmentů</h2>
+<div class="tools">
+<button id="mAdd" aria-pressed="true">Aditivní (RGB, světlo)</button>
+<button id="mSub" aria-pressed="false">Subtraktivní (CMY, barvy)</button>
+</div>
+<div class="row">
+<div class="venn" id="venn"><i id="c1" style="left:21%;top:4%"></i><i id="c2" style="left:4%;top:38%"></i><i id="c3" style="left:38%;top:38%"></i></div>
+<div style="flex:1;min-width:260px">
+<div id="mSl"></div>
+<div class="row" style="margin-top:12px;align-items:center">
+<div class="sw" id="mRes" style="width:130px"></div>
+<div class="mono" id="mTxt"></div>
+</div>
+<p class="mut" style="margin-top:10px" id="mHelp"></p>
+<div class="tools"><span class="mut">Zkus:</span><button class="btn" data-p="255,255,0">žlutá</button><button class="btn" data-p="0,255,255">azurová</button><button class="btn" data-p="255,0,255">purpurová</button><button class="btn" data-p="255,255,255">bílá</button><button class="btn" data-p="0,0,0">černá</button></div>
+</div>
+</div>
+</div>
+<div class="card" id="subCard">
+<h2>Jeden pixel pod lupou</h2>
+<div class="row" style="align-items:center">
+<div class="sub" id="sub"><i></i><i></i><i></i></div>
+<p class="mut" style="flex:1;min-width:220px;margin:0">Pixel na monitoru se skládá ze tří podpixelů – červeného, zeleného a modrého. Oko je ze dálky slije do jedné barvy. Jas každého podpixelu určuje číslo 0 až 255.</p>
+</div>
+</div>
+<div class="card">
+<h2>Kolik barev se vejde do pixelu</h2>
+<div class="tools"><label>Bitů na barevný kanál <select id="bpc"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option></select></label></div>
+<p class="mono" id="bOut" style="white-space:pre-wrap"></p>
+<p class="mut">Model RGB má 3 barvy (kanály). Při 8 bitech na barvu je to 24 bitů na pixel, tedy 2²⁴ = 256 · 256 · 256 barev.</p>
+</div>
+</section>
+
+<section id="mix2" hidden>
+<details class="card" open><summary><b>Teorie: smíchání dvou barev</b></summary>
+<p>Smíchání dvou barev v poměru se počítá <b>lineární interpolací</b>. Každý kanál R, G, B se vypočítá zvlášť jako vážený průměr, kde <i>t</i> je podíl barvy B (od 0 do 1).</p>
+<code class="mono fm">výsledek = A × (1 − t) + B × t</code>
+<p>Příklad: červená (255, 0, 0) a modrá (0, 0, 255) v poměru 50 : 50 dá R = 255 · 0,5 + 0 · 0,5 = 127,5 ≈ 128, G = 0, B = 128, tedy tmavě fialová (128, 0, 128).</p>
+<ul><li>Při <i>t</i> = 0 je výsledek čistě A, při <i>t</i> = 1 čistě B.</li>
+<li>Řada mezikroků je <b>barevný přechod</b> (gradient), využívá se v grafice i ve webových stránkách.</li>
+<li>Výsledek se zaokrouhluje na celé číslo, protože kanál má jen hodnoty 0 až 255.</li>
+<li>Míchání čísel v RGB není totéž jako míchání barev štětcem: červená s modrou ve světle dá fialovou, kdežto barvy by dopadly spíš do hněda.</li></ul>
+</details>
+<div class="card">
+<h2>Smíchej dvě barvy v poměru</h2>
+<div class="tools"><label>Barva A <input type="color" id="ca" value="#ff3b30"></label><label>Barva B <input type="color" id="cb" value="#0a84ff"></label></div>
+<div class="sl" style="grid-template-columns:70px 1fr 70px"><span>Poměr B</span><input type="range" id="rt2" min="0" max="100" value="50"><span class="mono" id="rtv"></span></div>
+<div class="row" style="align-items:center;margin-top:8px"><div class="sw" id="r2" style="width:140px"></div><div class="mono" id="r2t"></div></div>
+<div class="steps" id="steps"></div>
+<p class="mut" style="margin-top:8px">Každý kanál se počítá zvlášť: výsledek = A × (1 − t) + B × t. Řada níže ukazuje plynulý přechod po krocích.</p>
+</div>
+</section>
+
+<section id="ppi" hidden>
+<details class="card" open><summary><b>Teorie: palce, PPI a DPI</b></summary>
+<p>Velikost obrazovky se udává jako <b>úhlopříčka v palcích</b> (1″ = 25,4 mm). Úhlopříčka je přepona pravoúhlého trojúhelníku se stranami šířka a výška, proto ji pro pixely počítáme podle Pythagorovy věty.</p>
+<code class="mono fm">úhlopříčka v pixelech = √(šířka² + výška²)</code>
+<code class="mono fm">PPI = úhlopříčka v pixelech ÷ úhlopříčka v palcích</code>
+<code class="mono fm">rozměr v palcích = počet pixelů ÷ PPI (nebo DPI)</code>
+<ul><li><b>PPI</b> (pixels per inch) je hustota pixelů na displeji. Čím vyšší, tím jemnější obraz. Stejné rozlišení na větší obrazovce znamená nižší PPI, proto je na 65″ televizi vidět hrubší zrno než na telefonu.</li>
+<li><b>DPI</b> (dots per inch) je hustota bodů při tisku. Pro kvalitní fotografii se používá zhruba 300 DPI, pro velké plakáty stačí méně, protože se na ně koukáme z dálky.</li>
+<li><b>Poměr stran</b> je šířka : výška po zkrácení. Starší monitory mají 4:3, dnešní 16:9.</li></ul>
+<p>Příklad: Full HD na 24″ má √(1920² + 1080²) ÷ 24 ≈ 2203 ÷ 24 ≈ 92 PPI. Fotka široká 3000 px se při 300 DPI vytiskne 10 palců, tedy 25,4 cm široká.</p>
+</details>
+<div class="card">
+<h2>Úhlopříčka, poměr stran a PPI</h2>
+<div class="tools">
+<label>Šířka <input type="number" id="pw" min="1" max="20000" value="1920" class="mono" style="width:84px"> px</label>
+<label>Výška <input type="number" id="ph" min="1" max="20000" value="1080" class="mono" style="width:84px"> px</label>
+<select id="pres" aria-label="Předvolba rozlišení"><option value="">Předvolby…</option><option value="640x480">640 × 480 (4:3)</option><option value="1280x720">1280 × 720 (16:9)</option><option value="1920x1080">1920 × 1080 (16:9)</option><option value="3840x2160">3840 × 2160 (16:9)</option></select>
+<label>Tisk <input type="number" id="dpi" min="1" max="5000" value="300" class="mono" style="width:80px"> DPI</label>
+</div>
+<div class="sl" style="grid-template-columns:90px 1fr 84px"><span>Úhlopříčka</span><input type="range" id="diag" min="5" max="100" value="55" aria-label="Úhlopříčka v palcích"><input type="number" id="dnum" min="1" max="500" step="0.1" value="55" class="mono" style="width:84px" aria-label="Úhlopříčka v palcích"></div>
+<div class="tools"><label>PPI <input type="number" id="pin" min="1" step="0.1" class="mono" style="width:90px"></label><button class="btn" data-d="24">24″</button><button class="btn" data-d="55">55″</button><button class="btn" data-d="65">65″</button></div>
+<div class="row" style="align-items:center">
+<div id="pSvg" style="width:min(340px,100%)"></div>
+<div class="mono" id="pOut" style="flex:1;min-width:240px;white-space:pre-wrap"></div>
+</div>
+<p class="mut" style="margin-top:10px">1″ (palec) = 25,4 mm. <b>PPI</b> (pixels per inch) říká, kolik pixelů se vejde na palec displeje, <b>DPI</b> (dots per inch) kolik bodů na palec vytiskne tiskárna. Čím vyšší PPI, tím jemnější obraz.</p>
+</div>
+<div class="card">
+<h2>Formáty obrázků</h2>
+<div class="wrap"><table><tbody>
+<tr><td><b>JPG</b></td><td>ztrátová komprese, malé soubory, vhodné pro fotky</td></tr>
+<tr><td><b>PNG</b></td><td>bezeztrátová komprese, podporuje průhlednost, vhodné pro grafiku</td></tr>
+<tr><td><b>GIF</b></td><td>max. 256 barev, jednoduchá animace</td></tr>
+<tr><td><b>RAW</b></td><td>nezpracovaná data ze snímače fotoaparátu, velké soubory, nejvíc detailů</td></tr>
+</tbody></table></div>
+</div>
+</section>
+
+<section id="teorie" hidden>
+<div class="card"><h2>Pixel a rozlišení</h2>
+<p><b>Pixel</b> (<i>picture element</i>) je nejmenší bod rastrového obrazu, který má jednu barvu. Obraz je mřížka pixelů, její rozměry říkáme <b>rozlišení</b> (šířka × výška). Víc pixelů znamená víc detailů, ale i větší soubor.</p>
+<code class="mono fm">počet pixelů = šířka × výška</code>
+<p>Poměr stran je podíl šířky a výšky zkrácený na nejmenší čísla: 640 × 480 je 4:3, 1920 × 1080 je 16:9. První jsou starší monitory a televize, druhý dnes běžné obrazovky.</p></div>
+<div class="card"><h2>Barvy, RGB a barevná hloubka</h2>
+<p>Monitor svítí a barvy <b>sčítá</b> (aditivní míchání). Každý pixel má tři kanály: červený (R), zelený (G) a modrý (B). Jas kanálu je číslo 0 až 255, tedy 8 bitů. Dohromady je to <b>24 bitů na pixel</b> (true color).</p>
+<code class="mono fm">počet barev = 2^(bitů na pixel) = 2²⁴ = 256 · 256 · 256 = 16 777 216</code>
+<p>R + G = žlutá, G + B = azurová, R + B = purpurová, R + G + B = bílá, vše na nule = černá. Tisk a barvy na papíře naopak světlo <b>odebírají</b> (subtraktivní míchání, CMY, v tisku CMYK s černou).</p></div>
+<div class="card"><h2>Palce, PPI a DPI</h2>
+<p>Velikost obrazovek se udává v palcích (″) jako úhlopříčka. <b>PPI</b> (pixels per inch) je hustota pixelů displeje, <b>DPI</b> (dots per inch) hustota bodů při tisku.</p>
+<code class="mono fm">1″ = 25,4 mm = 2,54 cm</code>
+<code class="mono fm">PPI = √(šířka² + výška²) ÷ úhlopříčka v palcích</code>
+<code class="mono fm">velikost tisku v palcích = počet pixelů ÷ DPI</code>
+<p>Příklad: Full HD na 24″ má √(1920² + 1080²) ÷ 24 ≈ 92 PPI, stejné rozlišení na 55″ jen asi 40 PPI, proto je tam vidět jednotlivé pixely.</p></div>
+<div class="card"><h2>Velikost obrázku a formáty</h2>
+<code class="mono fm">paměť v bajtech = pixely × bity na pixel ÷ 8</code>
+<p>Obrázek 100 × 100 px ve 24 bitech: 10 000 · 24 ÷ 8 = 30 000 bajtů. Full HD zabere nekomprimovaně asi 6 MB. Proto se používá komprese:</p>
+<p><b>JPG</b> ztrátová komprese pro fotky, <b>PNG</b> bezeztrátová s průhledností pro grafiku, <b>GIF</b> max. 256 barev a jednoduchá animace, <b>RAW</b> nezpracovaná data ze snímače fotoaparátu.</p></div>
+</section>
+
+<section id="kviz" hidden>
+<details class="card"><summary><b>Teorie: co kvíz prověřuje</b></summary>
+<p>Otázky se týkají všech předchozích částí: pixel jako <i>picture element</i>, počet pixelů a paměť, barevná hloubka a 2²⁴ barev, převod palců, PPI a DPI, poměr stran a míchání barev RGB. Formáty souborů jsou JPG (ztrátový, fotky), PNG (bezeztrátový, průhlednost), GIF (256 barev, animace) a RAW (data ze snímače).</p>
+<p>Při špatné odpovědi si přečti vysvětlení a případně se vrať do záložky Teorie nebo na příslušné cvičení. Výpočty zkus udělat nejdřív sám a teprve potom vybrat odpověď.</p>
+</details>
+<div class="card"><h2>Kvíz</h2>
+<div class="score"><span>✔ Správně: <b id="qOk">0</b></span><span>✘ Špatně: <b id="qBad">0</b></span><span class="mut">Otázka <span id="qPos"></span></span><button class="btn" id="qRe">Začít znovu</button></div>
+<div class="bar"><i id="qBar"></i></div><div id="qDots" class="dots"></div><p class="mono" id="qRate"></p>
+<div id="qBox" aria-live="polite"></div>
+</div>
+</section>
+
+<section id="vyzva" hidden>
+<details class="card" open><summary><b>Teorie: jak odhadovat barvy</b></summary>
+<p>Barvu v RGB si představ jako bod v krychli, jejíž osy jsou R, G a B (každá 0 až 255). Dvě barvy jsou si tím podobnější, čím blíž jsou v té krychli.</p>
+<code class="mono fm">vzdálenost = √((R₁ − R₂)² + (G₁ − G₂)² + (B₁ − B₂)²)</code>
+<code class="mono fm">shoda v % = 100 − vzdálenost ÷ 441,7 × 100</code>
+<p>Číslo 441,7 je největší možná vzdálenost, tedy z černé (0, 0, 0) do bílé (255, 255, 255): √(3 · 255²) ≈ 441,7.</p>
+<ul><li>Začni u šedé (všechny kanály stejné) a hledej, který kanál v cíli převládá.</li>
+<li>Vysoké R a G a nízké B je žlutá až oranžová, vysoké G a B zase tyrkysová, vysoké R a B fialová.</li>
+<li>Vyšší hodnoty všech tří kanálů dělají barvu světlejší, nižší tmavší. Vždy ladíš jeden posuvník po druhém.</li></ul>
+</details>
+<div class="card">
+<h2>Trefíš cílovou barvu?</h2>
+<div class="score"><span>Kolo <b id="cRound">1</b> / 5</span><span>Průměrná shoda: <b id="cAvg">–</b></span></div><div id="cDots" class="dots"></div>
+<p class="mut">Nastav posuvníky R, G, B tak, aby se tvoje barva shodovala s cílovou. Kolik je to procent?</p>
+<div class="row" style="align-items:center">
+<div><div class="sw" id="tg" style="width:150px"></div><p class="mut" style="margin:4px 0 0">Cíl</p></div>
+<div><div class="sw" id="us" style="width:150px"></div><p class="mut" style="margin:4px 0 0">Tvoje barva</p></div>
+<div style="flex:1;min-width:240px"><div id="chSl"></div></div>
+</div>
+<div class="tools" style="margin-top:10px"><button class="btn" id="chk">Zkontroluj</button><button class="btn" id="nw">Nová barva</button><button class="btn" id="hint">Ukaž nápovědu</button></div>
+<p class="mono ok" id="res2"></p>
+<div id="cFinal" class="fb" hidden></div>
+<p class="mono" id="hnt"></p>
+</div>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const hex=n=>n.toString(16).padStart(2,'0').toUpperCase();
+const toHex=(r,g,b)=>'#'+hex(r)+hex(g)+hex(b);
+const fromHex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+/* záložky */
+function show(t){$$('section').forEach(s=>s.hidden=s.id!==t);$$('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===t));}
+$$('#tabs button').forEach(b=>b.onclick=()=>{show(b.dataset.t);try{history.replaceState(null,'','#'+b.dataset.t)}catch(e){}});
+/* ---------- PIXELY ---------- */
+let N=16,grid=[],tool='paint',drawing=false;
+const cv=$('#cv'),cx=cv.getContext('2d'),real=$('#real'),rx=real.getContext('2d');
+const WHITE='#ffffff';
+function newGrid(n){return Array(n*n).fill(WHITE)}
+grid=newGrid(N);
+function render(){
+  const s=cv.width/N;cx.clearRect(0,0,cv.width,cv.height);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){cx.fillStyle=grid[y*N+x];cx.fillRect(x*s,y*s,s,s);}
+  if(N<=32){cx.strokeStyle='rgba(120,130,150,.35)';cx.lineWidth=1;cx.beginPath();for(let i=0;i<=N;i++){cx.moveTo(i*s+.5,0);cx.lineTo(i*s+.5,cv.height);cx.moveTo(0,i*s+.5);cx.lineTo(cv.width,i*s+.5);}cx.stroke();}
+  real.width=N;real.height=N;const id=rx.createImageData(N,N);
+  grid.forEach((h,i)=>{const c=fromHex(h);id.data.set([...c,255],i*4)});rx.putImageData(id,0,0);
+  const sc=Math.max(1,Math.floor(128/N));real.style.width=N+'px';real.style.height=N+'px';
+  info();
+}
+function info(){
+  const d=+$('#depth').value,px=N*N,bits=px*d,B=bits/8;
+  const fmt=b=>b<1024?b.toLocaleString('cs-CZ')+' B':(b/1024).toLocaleString('cs-CZ',{maximumFractionDigits:2})+' kB';
+  $('#info').textContent=`Rozlišení: ${N} × ${N}\nPixelů: ${px.toLocaleString('cs-CZ')}\nBitů: ${bits.toLocaleString('cs-CZ')}\nPaměť: ${fmt(B)}`;
+  $('#info').style.whiteSpace='pre';
+}
+function cell(e){const r=cv.getBoundingClientRect();const x=Math.floor((e.clientX-r.left)/r.width*N),y=Math.floor((e.clientY-r.top)/r.height*N);return x>=0&&y>=0&&x<N&&y<N?[x,y]:null}
+function act(e){const c=cell(e);if(!c)return;const i=c[1]*N+c[0];
+  if(tool==='paint')grid[i]=$('#col').value;else if(tool==='erase')grid[i]=WHITE;
+  else{$('#col').value=grid[i];tool='paint';setTool();}
+  render();}
+cv.addEventListener('pointerdown',e=>{drawing=true;cv.setPointerCapture(e.pointerId);act(e)});
+cv.addEventListener('pointermove',e=>{const c=cell(e);if(c){const h=grid[c[1]*N+c[0]],[r,g,b]=fromHex(h);$('#hov').textContent=`Pixel [${c[0]}, ${c[1]}]  R${r} G${g} B${b}  ${h.toUpperCase()}`}if(drawing&&tool!=='pick')act(e)});
+cv.addEventListener('pointerup',()=>drawing=false);
+function setTool(){[['paint','#tPaint'],['erase','#tErase'],['pick','#tPick']].forEach(([t,s])=>$(s).setAttribute('aria-pressed',tool===t))}
+$('#tPaint').onclick=()=>{tool='paint';setTool()};$('#tErase').onclick=()=>{tool='erase';setTool()};$('#tPick').onclick=()=>{tool='pick';setTool()};
+$('#clr').onclick=()=>{grid=newGrid(N);render()};
+$('#fill').onclick=()=>{grid.fill($('#col').value);render()};
+$('#depth').onchange=info;
+$('#res').onchange=e=>{const n=+e.target.value,g=newGrid(n);
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++)g[y*n+x]=grid[Math.floor(y*N/n)*N+Math.floor(x*N/n)];
+  N=n;grid=g;render();};
+['#e63946','#f4a261','#ffd60a','#2a9d8f','#2a5bd7','#7b2cbf','#8d5524','#808080','#000000','#ffffff'].forEach(c=>{const s=document.createElement('span');s.style.background=c;s.title=c;s.onclick=()=>{$('#col').value=c;tool='paint';setTool()};$('#pal').appendChild(s)});
+[['VGA',640,480],['HD',1280,720],['Full HD',1920,1080],['QHD (2K)',2560,1440],['4K UHD',3840,2160],['8K UHD',7680,4320]].forEach(([n,w,h])=>{
+  const p=w*h,mb=p*3/1048576;
+  $('#rt tbody').insertAdjacentHTML('beforeend',`<tr><td>${n}</td><td>${w} × ${h}</td><td>${p.toLocaleString('cs-CZ')}</td><td>${mb.toLocaleString('cs-CZ',{maximumFractionDigits:1})} MB</td></tr>`)});
+/* ---------- posuvníky ---------- */
+function sliders(el,names,colors,cb,init){
+  const ins=[];el.innerHTML='';
+  names.forEach((n,i)=>{const d=document.createElement('div');d.className='sl';
+    d.innerHTML=`<label>${n}</label><input type="range" min="0" max="255" value="${init?init[i]:0}" style="accent-color:${colors[i]}" aria-label="${n}"><input type="number" min="0" max="255" value="${init?init[i]:0}" class="mono" style="width:54px">`;
+    const r=d.children[1],nb=d.children[2];
+    r.oninput=()=>{nb.value=r.value;cb()};nb.oninput=()=>{r.value=Math.max(0,Math.min(255,+nb.value||0));cb()};
+    el.appendChild(d);ins.push(r)});
+  return {get:()=>ins.map(i=>+i.value),set:v=>{ins.forEach((r,i)=>{r.value=v[i];r.parentNode.children[2].value=v[i]})}};
+}
+/* ---------- MÍCHÁNÍ ---------- */
+let mode='add';
+const ms=sliders($('#mSl'),['Červená','Zelená','Modrá'],['#e63946','#2a9d3f','#2a5bd7'],mUpd,[255,255,0]);
+function mUpd(){
+  const v=ms.get(),[a,b,c]=v;let res;
+  const cs=[$('#c1'),$('#c2'),$('#c3')],V=$('#venn');
+  if(mode==='add'){V.style.background='#000';cs.forEach((e,i)=>{e.style.mixBlendMode='screen';const x=[0,0,0];x[i]=v[i];e.style.background=`rgb(${x})`});res=v;}
+  else{V.style.background='#fff';cs.forEach((e,i)=>{e.style.mixBlendMode='multiply';const x=[255,255,255];x[i]=255-v[i];e.style.background=`rgb(${x})`});res=v.map(q=>255-q);}
+  $('#mRes').style.background=`rgb(${res})`;
+  const nm=mode==='add'?['R','G','B']:['C','M','Y'];
+  $('#mTxt').innerHTML=`${nm.map((n,i)=>`${n}: ${v[i]} (${v[i].toString(2).padStart(8,'0')})`).join('<br>')}<br>Výsledek RGB: ${res.join(', ')}<br>Hex: ${toHex(...res)}`;
+  $('#sub').children[0].style.background=`rgb(${res[0]},0,0)`;$('#sub').children[1].style.background=`rgb(0,${res[1]},0)`;$('#sub').children[2].style.background=`rgb(0,0,${res[2]})`;
+}
+function setMode(m){mode=m;$('#mAdd').setAttribute('aria-pressed',m==='add');$('#mSub').setAttribute('aria-pressed',m==='sub');
+  const lab=m==='add'?['Červená','Zelená','Modrá']:['Azurová','Purpurová','Žlutá'];
+  $$('#mSl label').forEach((l,i)=>l.textContent=lab[i]);
+  const col=m==='add'?['#e63946','#2a9d3f','#2a5bd7']:['#00b4d8','#d6336c','#e9c500'];
+  $$('#mSl input[type=range]').forEach((r,i)=>r.style.accentColor=col[i]);
+  $('#subCard').hidden=m!=='add';
+  $('#mHelp').textContent=m==='add'?'Světlo se sčítá: červená + zelená = žlutá, všechny tři naplno = bílá, všechny nulové = černá (monitor nesvítí).':'Barvy se odebírají ze světla: čím víc barviva, tím tmavší výsledek. Azurová + purpurová + žlutá dává tmavou, v tisku se přidává černá (CMYK).';
+  mUpd();}
+$('#mAdd').onclick=()=>setMode('add');$('#mSub').onclick=()=>setMode('sub');
+$$('[data-p]').forEach(b=>b.onclick=()=>{let v=b.dataset.p.split(',').map(Number);if(mode==='sub')v=v.map(q=>255-q);ms.set(v);mUpd()});
+setMode('add');
+/* ---------- DVĚ BARVY ---------- */
+function m2(){
+  const a=fromHex($('#ca').value),b=fromHex($('#cb').value),t=$('#rt2').value/100;
+  const mix=t2=>a.map((q,i)=>Math.round(q*(1-t2)+b[i]*t2));
+  const r=mix(t);$('#r2').style.background=`rgb(${r})`;$('#rtv').textContent=`${Math.round((1-t)*100)} % A`;
+  $('#r2t').innerHTML=['R','G','B'].map((n,i)=>`${n}: ${a[i]}·${(1-t).toFixed(2)} + ${b[i]}·${t.toFixed(2)} = ${r[i]}`).join('<br>')+`<br>Hex: ${toHex(...r)}`;
+  $('#steps').innerHTML='';for(let i=0;i<9;i++){const d=document.createElement('div');const c=mix(i/8);d.style.background=`rgb(${c})`;d.title=toHex(...c);$('#steps').appendChild(d)}
+}
+['#ca','#cb','#rt2'].forEach(s=>$(s).oninput=m2);m2();
+/* ---------- VÝZVA ---------- */
+let target=[0,0,0],cRes=[],cChecked=false;
+const cs=sliders($('#chSl'),['R','G','B'],['#e63946','#2a9d3f','#2a5bd7'],()=>{$('#us').style.background=`rgb(${cs.get()})`;$('#res2').textContent='';},[128,128,128]);
+function newT(){target=[0,0,0].map(()=>Math.floor(Math.random()*256));$('#tg').style.background=`rgb(${target})`;cs.set([128,128,128]);$('#us').style.background='rgb(128,128,128)';$('#res2').textContent='';$('#hnt').textContent='';cChecked=false;$('#cFinal').hidden=true;}
+$('#chk').onclick=()=>{if(cChecked){$('#res2').textContent='Toto kolo už je vyhodnocené. Pokračuj další barvou.';return}cChecked=true;const u=cs.get(),d=Math.hypot(...u.map((q,i)=>q-target[i])),p=Math.round(100-d/441.67*100);cRes.push(p);
+  $('#res2').textContent=d<8?`Skvělé! Shoda ${p} %. Trefil jsi barvu téměř přesně.`:`Shoda ${p} %. Vzdálenost od cíle: ${d.toFixed(0)}. Zkus upravit posuvníky.`;cUpdate();};
+$('#nw').onclick=()=>{if(!cChecked){$('#res2').textContent='Nejdřív zkontroluj odpověď, pak jdi na další barvu.';return}if(cRes.length>=5)cRes=[];newT();cUpdate();};
+$('#hint').onclick=()=>{$('#hnt').textContent=`Cíl: R ${target[0]}, G ${target[1]}, B ${target[2]}  (${toHex(...target)})`};
+newT();
+const QZ=[
+['Zkratka pixel pochází z anglických slov:','Slovo vzniklo z picture element, česky obrazový prvek, tedy nejmenší bod obrazu s jednou barvou.',[['picture element',''],['pixel exchange','Takový výraz se v informatice nepoužívá. Pixel je zkratka z picture element.'],['photo index','Photo index není původ slova. Pixel znamená picture element, obrazový prvek.'],['print cell','Print cell je vymyšlený pojem. Pixel znamená picture element.']]],
+['Kolik pixelů má obraz 1920 × 1080?','Počet pixelů je součin šířky a výšky: 1920 · 1080 = 2 073 600.',[['2 073 600',''],['3 000','To je součet 1920 + 1080. Pixely tvoří mřížku, proto se šířka a výška násobí.'],['1 036 800','To je přesně polovina správné hodnoty. Zkontroluj násobení 1920 · 1080.'],['207 360','Vyšlo ti desetkrát míň. 1920 · 1080 je přes dva miliony, ne přes dvě stě tisíc.']]],
+['Kolik bitů má jeden pixel v režimu true color (RGB, 8 bitů na kanál)?','Pixel má tři kanály R, G, B po 8 bitech: 3 · 8 = 24 bitů.',[['24',''],['8','8 bitů má jen jeden kanál. Pixel se skládá ze tří barev, takže bitů je 3 · 8.'],['16','16 bitů má starší režim High color. Při 8 bitech na každou ze tří barev je to 24.'],['32','32 bitů je 24 bitů barvy plus 8 bitů průhlednosti (alfa kanál). Čisté RGB má 24.']]],
+['Kolik různých barev lze zapsat 24 bity?','2²⁴ = 256 · 256 · 256 = 16 777 216 barev.',[['16 777 216',''],['65 536','To je 2¹⁶, tedy 16 bitů (High color). 24 bitů dává 2²⁴.'],['256','256 je počet odstupňování jednoho kanálu (8 bitů). Tři kanály se násobí: 256³.'],['1 000 000','Počet barev je mocnina dvojky, ne kulaté číslo. Správně 2²⁴ = 16 777 216.']]],
+['Kolik milimetrů má jeden palec (1″)?','1″ = 25,4 mm = 2,54 cm.',[['25,4 mm',''],['10 mm','10 mm je 1 cm. Palec je zhruba 2,5krát delší.'],['2,54 mm','2,54 je hodnota v centimetrech. V milimetrech je to desetkrát víc, tedy 25,4.'],['304,8 mm','To je jedna stopa (12 palců). Palec je 12krát kratší.']]],
+['Kolik paměti zabere nekomprimovaný obrázek 100 × 100 pixelů při 24 bitech na pixel?','10 000 pixelů · 24 bitů = 240 000 bitů, po vydělení osmi je to 30 000 bajtů.',[['30 000 B',''],['10 000 B','Tolik by to bylo jen při 8 bitech (1 bajt) na pixel. 24 bitů jsou 3 bajty na pixel.'],['240 000 B','240 000 je počet bitů. Do bajtů se převede dělením osmi.'],['3 000 B','Zapomněl jsi na počet pixelů. 100 · 100 = 10 000 pixelů, každý po 3 bajtech.']]],
+['Co vznikne smícháním červeného a zeleného světla (aditivní RGB)?','R + G dává žlutou. Aditivní míchání světlo sčítá.',[['žlutá',''],['azurová','Azurová vzniká ze zeleného a modrého světla (G + B).'],['purpurová','Purpurová vzniká z červeného a modrého světla (R + B).'],['bílá','Bílá vznikne až když svítí všechny tři barvy naplno (R + G + B).']]],
+['Který formát je ztrátový a hodí se na fotografie?','JPG zahazuje část detailů, aby byl soubor malý, a u fotek to skoro není vidět.',[['JPG',''],['PNG','PNG je bezeztrátový. Hodí se na grafiku a průhlednost, fotky jsou v něm velké.'],['RAW','RAW jsou nezpracovaná data ze snímače, nic se v nich neztrácí a soubory jsou velké.'],['GIF','GIF má jen 256 barev, takže se na fotky nehodí. Používá se hlavně na jednoduché animace.']]],
+['Co znamená PPI?','PPI = pixels per inch, počet pixelů na jeden palec displeje.',[['pixelů na palec',''],['pixelů na obrázek','Počet pixelů v celém obrázku je rozlišení. PPI je hustota na palec.'],['bodů tisku na palec','To je DPI, které se používá u tiskáren.'],['palců na pixel','Je to obráceně. PPI říká, kolik pixelů se vejde na palec.']]],
+['Jaké je přibližně PPI displeje 1920 × 1080 s úhlopříčkou 24″?','PPI = √(1920² + 1080²) ÷ 24 ≈ 2203 ÷ 24 ≈ 92.',[['asi 92',''],['asi 2203','2203 je úhlopříčka v pixelech. Ještě ji musíš vydělit úhlopříčkou v palcích.'],['asi 45','To je 1080 ÷ 24, tedy jen výška. Použij úhlopříčku v pixelech.'],['asi 80','To je 1920 ÷ 24, tedy jen šířka. Použij úhlopříčku v pixelech √(š² + v²).']]],
+['Jaký poměr stran má rozlišení 1920 × 1080?','1920 : 1080 zkrátíme číslem 120 a dostaneme 16 : 9.',[['16:9',''],['4:3','4:3 má například 640 × 480. U 1920 × 1080 po zkrácení vyjde 16:9.'],['21:9','21:9 mají ultraširoké monitory, například 2560 × 1080.'],['1:1','1:1 je čtverec, tedy stejná šířka a výška.']]],
+['Kolikrát víc pixelů má 4K UHD (3840 × 2160) než Full HD (1920 × 1080)?','Obě strany jsou dvojnásobné, proto 2 · 2 = 4krát víc pixelů (8 294 400 oproti 2 073 600).',[['4krát',''],['2krát','Dvojnásobná je šířka i výška zvlášť. Pixelů je 2 · 2 = 4krát víc.'],['8krát','Osmkrát by to bylo, kdyby rostla i třetí dimenze. Plocha roste jen 2 · 2.'],['16krát','To by platilo při čtyřnásobných stranách. Tady jsou obě jen dvojnásobné.']]]
+];
+let qs=[],qi=0,okN=0,badN=0,locked=false,qHist=[];
+const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function qStart(){qs=shuf(QZ).map(([q,e,o])=>({q,e,o:shuf(o.map((x,i)=>({t:x[0],why:x[1],ok:i===0})))}));qi=0;okN=0;badN=0;qHist=[];qShow()}
+const GN=['Výborný','Chvalitebný','Dobrý','Dostatečný','Nedostatečný'];
+const GD=['Kapitán galaxie: tvoje raketa dorazíla až ke hvězdám.','Astronaut na oběžné dráze: téměř u cíle, stačí malá korekce.','Družice: letíš stabilně, ale ještě je kam růst.','Meteorit: letíš správným směrem, ale zatím je v tom hodně nárazů.','Černá díra: téma tě zatím pohłtilo, projdi si Teorii a zkus to znovu.'];
+function gradeImg(g){
+ const st=[[20,18],[60,40],[200,24],[215,120],[30,130],[170,140],[90,150],[150,16]].map(p=>`<circle cx='${p[0]}' cy='${p[1]}' r='1.6' fill='#fff'/>`).join('');
+ const art=[
+ `<polygon points='200,22 204,32 215,33 207,40 209,51 200,45 191,51 193,40 185,33 196,32' fill='#ffd60a'/><g transform='translate(110 84) rotate(35)'><path d='M-6 14 L-17 30 L-6 24Z M6 14 L17 30 L6 24Z' fill='#e63946'/><path d='M0-36 C11-20 11 10 6 25 L-6 25 C-11 10 -11-20 0-36Z' fill='#fff'/><circle cy='-9' r='5' fill='#4c6ef5'/><path d='M-4 27 L0 48 L4 27Z' fill='#ffb703'/></g>`,
+ `<circle cx='120' cy='82' r='30' fill='#4c6ef5'/><circle cx='110' cy='72' r='9' fill='#7da2ff'/><g transform='rotate(-15 120 82)'><ellipse cx='120' cy='82' rx='62' ry='20' fill='none' stroke='#fff' opacity='.5'/><rect x='177' y='77' width='10' height='10' rx='2' fill='#fff'/><rect x='170' y='81' width='24' height='2' fill='#ffb703'/></g>`,
+ `<circle cx='120' cy='215' r='95' fill='#3a5bd9'/><g transform='rotate(-20 120 70)'><rect x='103' y='58' width='34' height='24' rx='4' fill='#dfe6ff'/><rect x='52' y='62' width='46' height='16' fill='#4c6ef5' stroke='#fff'/><rect x='142' y='62' width='46' height='16' fill='#4c6ef5' stroke='#fff'/><line x1='120' y1='58' x2='120' y2='40' stroke='#fff'/><circle cx='120' cy='38' r='3' fill='#ffd60a'/></g>`,
+ `<polygon points='105,66 28,22 98,94' fill='#ff8c42' opacity='.55'/><circle cx='122' cy='84' r='24' fill='#8a93b5'/><circle cx='114' cy='76' r='6' fill='#6a7396'/><circle cx='132' cy='92' r='5' fill='#6a7396'/><circle cx='128' cy='72' r='3' fill='#6a7396'/>`,
+ `<g transform='rotate(-20 120 82)'><ellipse cx='120' cy='82' rx='64' ry='15' fill='none' stroke='#9d4edd' stroke-width='4'/><ellipse cx='120' cy='82' rx='46' ry='10' fill='none' stroke='#ff8c42' stroke-width='4'/></g><circle cx='120' cy='82' r='19' fill='#000' stroke='#4c6ef5'/>`][g-1];
+ return `<svg viewBox='0 0 240 160' width='240' style='max-width:100%;border-radius:12px;border:1px solid var(--bd)' role='img' aria-label='${GD[g-1]}'><rect width='240' height='160' rx='12' fill='#07123a'/>${st}${art}</svg>`;
+}
+function rate(p){return p>=90?'výborně':p>=70?'dobře':p>=50?'průměrně, ještě procvičuj':'zatím slabší, projdi si Teorii'}
+function qScore(){
+ $('#qOk').textContent=okN;$('#qBad').textContent=badN;
+ $('#qPos').textContent=qi<qs.length?(qi+1)+' / '+qs.length:'hotovo';
+ const n=qHist.length,tot=qs.length||QZ.length,p=n?Math.round(okN/n*100):0;
+ $('#qBar').style.width=(n/tot*100)+'%';
+ $('#qDots').innerHTML=Array.from({length:tot},(_,i)=>`<span class="dot ${qHist[i]===undefined?'':qHist[i]?'good':'bad'}">${qHist[i]===undefined?i+1:qHist[i]?'✔':'✘'}</span>`).join('');
+ $('#qRate').textContent=n?`Průběžné hodnocení: ${okN} z ${n} (${p} %), ${rate(p)}.`:'Průběžné hodnocení se ukáže po první odpovědi.';
+}
+function qShow(){
+ locked=false;qScore();
+ if(qi>=qs.length){const pct=Math.round(okN/qs.length*100),G=pct>=90?1:pct>=75?2:pct>=50?3:pct>=30?4:5;
+  const msg=pct>=90?'Výborně, téma ovládáš.':pct>=60?'Dobrý výsledek. Podívej se na otázky, které ti nevyšly, v záložce Teorie.':'Zkus si znovu projít záložku Teorie a kvíz zopakovat.';
+  $('#qBox').innerHTML=`<div class="fb ${pct>=60?'good':'bad'}"><div class="grade">${gradeImg(G)}<div><div class="gnum" aria-label="Známka">${G}</div><b>${GN[G-1]}</b><p class="mut" style="margin:4px 0 0">${GD[G-1]}</p></div></div><h3 style="margin:0 0 6px">Výsledek: ${okN} z ${qs.length} (${pct} %)</h3><p style="margin:0">Správně ${okN}, špatně ${badN}. ${msg}</p></div><button class="btn" id="qAgain">Zkusit znovu</button>`;
+  $('#qAgain').onclick=qStart;return}
+ const Q=qs[qi];
+ $('#qBox').innerHTML=`<p class="qq">${Q.q}</p><div id="qOpts"></div><div id="qFb" class="fb" hidden></div><button class="btn" id="qNext" hidden></button>`;
+ Q.o.forEach((o,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=o.t;b.onclick=()=>qPick(i);$('#qOpts').appendChild(b)});
+}
+function qPick(i){
+ if(locked)return;locked=true;const Q=qs[qi],o=Q.o[i],bs=$$('#qOpts .opt'),fb=$('#qFb');
+ bs.forEach((b,k)=>{b.disabled=true;if(Q.o[k].ok){b.classList.add('good');b.textContent='✔ '+Q.o[k].t}});
+ fb.hidden=false;
+ if(o.ok){okN++;fb.className='fb good';fb.innerHTML=`<b>Správně.</b> ${Q.e}`}
+ else{badN++;bs[i].classList.add('bad');bs[i].textContent='✘ '+o.t;fb.className='fb bad';fb.innerHTML=`<b>Špatně, proč:</b> ${o.why}<br><br><b>Správná odpověď:</b> ${Q.o.find(x=>x.ok).t}. ${Q.e}`}
+ qHist.push(o.ok);qScore();
+ const n=$('#qNext');n.hidden=false;n.textContent=qi+1<qs.length?'Další otázka':'Zobrazit výsledek';n.onclick=()=>{qi++;qShow()};n.focus();
+}
+$('#qRe').onclick=qStart;qStart();
+function cUpdate(){
+ const n=cRes.length,avg=n?Math.round(cRes.reduce((a,b)=>a+b,0)/n):null;
+ $('#cRound').textContent=Math.min(n+(cChecked?0:1),5)||1;
+ $('#cAvg').textContent=avg===null?'–':avg+' %';
+ $('#cDots').innerHTML=Array.from({length:5},(_,i)=>cRes[i]===undefined?`<span class="dot">${i+1}</span>`:`<span class="dot ${cRes[i]>=90?'good':cRes[i]<75?'bad':''}">${cRes[i]} %</span>`).join('');
+ const done=n>=5&&cChecked;
+ $('#nw').textContent=done?'Nová hra (5 kol)':'Další barva';
+ if(done){const mx=Math.max(...cRes),mn=Math.min(...cRes);
+  const t=avg>=95?'Mistr barev, trefuješ je téměř přesně.':avg>=90?'Výborné barevné oko.':avg>=80?'Dobrý výsledek, jen doladit kanály.':avg>=65?'Slušné, ale ještě procvičuj. Zkus začít dominantním kanálem.':'Zatím slabší. Projdi si Teorii pod cvičením a zkus to znovu.';
+  const f=$('#cFinal');f.hidden=false;f.className='fb '+(avg>=80?'good':'bad');
+  f.innerHTML=`<b>Hodnocení po 5 kolech: ${avg} %</b><br>${t}<br>Nejlepší kolo ${mx} %, nejhorší ${mn} %.`;}
+}
+cUpdate();
+$$('section>details.card').forEach(d=>d.parentNode.appendChild(d));
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+function ppi(src){
+ const w=Math.max(1,Math.round(+$('#pw').value||1)),h=Math.max(1,Math.round(+$('#ph').value||1)),dp=Math.max(1,+$('#dpi').value||1),dg0=Math.hypot(w,h);
+ let d=src==='diag'?+$('#diag').value:(src==='pin'&&+$('#pin').value>0)?dg0/+$('#pin').value:+$('#dnum').value;
+ if(!(d>0))d=1;
+ if(src!=='dnum')$('#dnum').value=+d.toFixed(2);
+ if(src!=='diag')$('#diag').value=d;
+ if(src!=='pin')$('#pin').value=+(dg0/d).toFixed(1);
+ const g=gcd(w,h),dg=Math.hypot(w,h),p=dg/d,wi=d*w/dg,hi=d*h/dg;
+ $('#pOut').textContent=`Poměr stran: ${w/g}:${h/g}\nPixelů: ${(w*h).toLocaleString('cs-CZ')}\nÚhlopříčka: ${d}″ = ${(d*25.4).toFixed(0)} mm\nRozměr obrazovky: ${(wi*2.54).toFixed(1)} × ${(hi*2.54).toFixed(1)} cm\nPPI = √(${w}² + ${h}²) ÷ ${d} = ${p.toFixed(1)}\nJeden pixel: ${(25.4/p).toFixed(3)} mm\nTisk při ${dp} DPI: ${(w/dp*2.54).toFixed(1)} × ${(h/dp*2.54).toFixed(1)} cm`;
+ const k=Math.min(280/w,200/h),W=w*k,H=h*k,x0=(300-W)/2,y0=(220-H)/2,c=W/8,rows=Math.max(1,Math.round(H/c));
+ let s=`<svg viewBox="0 0 300 220" width="100%" role="img" aria-label="Schéma obrazovky s úhlopříčkou"><g stroke="currentColor" fill="none" stroke-width="1.4">`;
+ for(let i=0;i<=8;i++)s+=`<line x1="${x0+i*c}" y1="${y0}" x2="${x0+i*c}" y2="${y0+H}"/>`;
+ for(let j=0;j<=rows;j++)s+=`<line x1="${x0}" y1="${y0+j*H/rows}" x2="${x0+W}" y2="${y0+j*H/rows}"/>`;
+ s+=`<line x1="${x0}" y1="${y0+H}" x2="${x0+W}" y2="${y0}" stroke="#e63946" stroke-width="2"/></g><rect x="${x0+5*c}" y="${y0+H-H/rows*2}" width="${c}" height="${H/rows}" fill="#2a5bd7" opacity=".7"/><text x="${x0+W/2+8}" y="${y0+H/2-6}" fill="#e63946" font-size="13">${d}″</text><text x="${x0+W/2}" y="${y0+H+14}" text-anchor="middle" fill="currentColor" font-size="11">${w} px</text><text x="${x0-6}" y="${y0+H/2}" text-anchor="end" fill="currentColor" font-size="11">${h} px</text></svg>`;
+ $('#pSvg').innerHTML=s;
+}
+$('#pres').onchange=e=>{if(e.target.value){const [a,b]=e.target.value.split('x');$('#pw').value=a;$('#ph').value=b;ppi()}};
+[['#pw',''],['#ph',''],['#dpi',''],['#diag','diag'],['#dnum','dnum'],['#pin','pin']].forEach(([q,s])=>$(q).oninput=()=>ppi(s));
+$$('[data-d]').forEach(b=>b.onclick=()=>{$('#dnum').value=b.dataset.d;ppi('dnum')});
+ppi();
+function bits(){const b=+$('#bpc').value,n=2**b;$('#bOut').textContent=`${b} b na barvu × 3 barvy = ${3*b} b na pixel\n2^${3*b} = ${n} · ${n} · ${n} = ${(n**3).toLocaleString('cs-CZ')} barev`}
+$('#bpc').oninput=bits;bits();
+show((location.hash||'#pixely').slice(1).replace(/[^a-z0-9]/g,'')||'pixely');
+if(!document.getElementById(location.hash.slice(1)))show('pixely');
+render();
+</script>
+<!-- gp-ramec:foot --><footer class="gp-foot"><div class="gp-in"><span>Gymnázium Příbram</span><span>Autor: Tereza Jirásková</span><span>Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" rel="license noopener">CC BY 4.0</a></span></div></footer><!-- /gp-ramec:foot -->
+</body>
+</html>
