@@ -1546,17 +1546,21 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
 /* ========== ZAČÁTEČNÍK ========== */
 /* plakát */
 function drawPoster(cv,sw){
-  const W=cv.width,H=cv.height,x=cv.getContext('2d'),u=W/100;
+  const W=cv.width,H=cv.height,x=cv.getContext('2d'),u=W/100,iy=Math.round(34*u),ih=Math.round(W*2/3),by=iy+ih,mid=W/2;
   x.fillStyle='#0c3f63';x.fillRect(0,0,W,H);
-  const iw=W,ih=Math.round(W*2/3),iy=Math.round(H*.26);
   const s=down(fullScene('krajina'),sw,Math.round(sw*2/3)),c=mkC(s.width,s.height);c.getContext('2d').putImageData(s,0,0);
-  x.imageSmoothingEnabled=false;x.drawImage(c,0,iy,iw,ih);
-  x.fillStyle='#fff';x.textBaseline='alphabetic';x.textAlign='center';
-  x.font=`800 ${15*u}px "Bricolage Grotesque",sans-serif`;x.fillText('LYŽÁK 2027',W/2,14.5*u);
-  x.font=`600 ${5*u}px "IBM Plex Sans",sans-serif`;x.fillText('Týden na sněhu s celou třídou',W/2,22*u);
-  x.font=`600 ${6*u}px "IBM Plex Sans",sans-serif`;x.fillText('Přihlášky do konce listopadu',W/2,H-16*u);
-  x.font=`400 ${4.4*u}px "IBM Plex Sans",sans-serif`;x.fillText('u vyučujících tělesné výchovy',W/2,H-9*u);
-  x.textAlign='start';
+  x.imageSmoothingEnabled=false;x.drawImage(c,0,iy,W,ih);
+  const line=(t,y,f,col,ls)=>{x.font=f;x.fillStyle=col;if('letterSpacing' in x)x.letterSpacing=ls||'0px';x.fillText(t,mid,y);};
+  x.textAlign='center';x.textBaseline='middle';
+  line('ŠKOLNÍ LYŽAŘSKÝ KURZ',9.5*u,`600 ${3.7*u}px "IBM Plex Sans",sans-serif`,'#f2b807',`${.55*u}px`);
+  line('LYŽÁK 2027',21.5*u,`800 ${15.5*u}px "Bricolage Grotesque",sans-serif`,'#fff');
+  const m=by+(H-by)/2;
+  line('24.–30. ledna 2027',m-12.5*u,`800 ${8.8*u}px "Bricolage Grotesque",sans-serif`,'#f2b807');
+  line('Týden na sněhu s celou třídou',m-3*u,`400 ${4.1*u}px "IBM Plex Sans",sans-serif`,'#fff');
+  x.fillStyle='rgba(255,255,255,.35)';x.fillRect(mid-16*u,m+3*u,32*u,Math.max(1,.25*u));
+  line('Přihlášky do 30. listopadu',m+9*u,`600 ${4.6*u}px "IBM Plex Sans",sans-serif`,'#fff');
+  line('u vyučujících tělesné výchovy',m+14.5*u,`400 ${3.5*u}px "IBM Plex Sans",sans-serif`,'#d7e3ec');
+  if('letterSpacing' in x)x.letterSpacing='0px';x.textAlign='start';x.textBaseline='alphabetic';
 }
 function fmtCards(){
   const crop=(k,x,y,w,h,W,H)=>{const F=fullScene(k),c=mkC(F.width,F.height);c.getContext('2d').putImageData(F,0,0);const t=mkC(W,H),q=t.getContext('2d',{willReadFrequently:true});q.imageSmoothingQuality='high';q.drawImage(c,x,y,w,h,0,0,W,H);return q.getImageData(0,0,W,H);};
