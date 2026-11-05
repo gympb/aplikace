@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="cs" class="dark">
+<head>
+<meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Champions: Datová věda v Lize mistrů</title>
+    <!-- Tailwind CSS -->
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="../../../../../../assets/portfolio/fa/css/all.min.css">
+    <!-- Google Fonts: Montserrat & Inter -->
+    <link rel="stylesheet" href="../../../../../../assets/portfolio/pisma/pisma.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050b1a;
+            color: #f1f5f9;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(0, 82, 204, 0.25) 0%, transparent 40%),
+                radial-gradient(circle at 85% 70%, rgba(0, 240, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(255, 183, 0, 0.08) 0%, transparent 60%);
+            background-attachment: fixed;
+        }
+
+        .ucl-title {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #a5f3fc 50%, #ffb700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .star-pattern {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .tab-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .tab-btn.active {
+            background-color: rgba(0, 240, 255, 0.15);
+            color: #00f0ff;
+            border-bottom: 3px solid #00f0ff;
+            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.25);
+        }
+
+        .tab-btn:not(.active):hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+        }
+
+        .glass-panel {
+            background: rgba(16, 31, 70, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #00f0ff;
+            cursor: pointer;
+            box-shadow: 0 0 12px #00f0ff;
+        }
+
+        .slider-red::-webkit-slider-thumb { background: #ff4d4d; box-shadow: 0 0 12px #ff4d4d; }
+        .slider-green::-webkit-slider-thumb { background: #00e676; box-shadow: 0 0 12px #00e676; }
+        .slider-blue::-webkit-slider-thumb { background: #29b6f6; box-shadow: 0 0 12px #29b6f6; }
+
+        .screen-frame {
+            transition: all 0.3s ease;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+        }
+
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 12s linear infinite;
+        }
+    </style>
+<style id="gp-tw">*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0}.bottom-2{bottom:.5rem}.left-4{left:1rem}.top-0{top:0}.top-4{top:1rem}.z-10{z-index:10}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.my-2{margin-top:.5rem;margin-bottom:.5rem}.my-auto{margin-top:auto;margin-bottom:auto}.mb-1{margin-bottom:.25rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.ml-1{margin-left:.25rem}.mt-1{margin-top:.25rem}.mt-12{margin-top:3rem}.mt-4{margin-top:1rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.aspect-\[21\/9\]{aspect-ratio:21/9}.aspect-\[4\/3\]{aspect-ratio:4/3}.aspect-video{aspect-ratio:16/9}.h-12{height:3rem}.h-3{height:.75rem}.h-40{height:10rem}.h-44{height:11rem}.h-48{height:12rem}.h-64{height:16rem}.h-full{height:100%}.min-h-screen{min-height:100vh}.w-12{width:3rem}.w-28{width:7rem}.w-3{width:.75rem}.w-40{width:10rem}.w-full{width:100%}.max-w-2xl{max-width:42rem}.max-w-7xl{max-width:80rem}.flex-grow{flex-grow:1}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes bounce{0%,to{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}.animate-bounce{animation:bounce 1s infinite}.appearance-none{-webkit-appearance:none;-moz-appearance:none;appearance:none}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem*var(--tw-space-y-reverse))}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.rounded{border-radius:.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-4{border-width:4px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-amber-500\/20{border-color:rgba(245,158,11,.2)}.border-amber-500\/40{border-color:rgba(245,158,11,.4)}.border-emerald-500\/40{border-color:rgba(16,185,129,.4)}.border-pink-500\/40{border-color:rgba(236,72,153,.4)}.border-purple-500\/20{border-color:rgba(168,85,247,.2)}.border-purple-500\/40{border-color:rgba(168,85,247,.4)}.border-rose-500{--tw-border-opacity:1;border-color:rgb(244 63 94/var(--tw-border-opacity,1))}.border-rose-500\/40{border-color:rgba(244,63,94,.4)}.border-sky-500\/40{border-color:rgba(14,165,233,.4)}.border-slate-400{--tw-border-opacity:1;border-color:rgb(148 163 184/var(--tw-border-opacity,1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85/var(--tw-border-opacity,1))}.border-ucl-accent\/40{border-color:rgba(30,56,123,.4)}.border-ucl-glow\/20{border-color:rgba(0,240,255,.2)}.border-ucl-gold\/20{border-color:rgba(255,183,0,.2)}.border-ucl-gold\/30{border-color:rgba(255,183,0,.3)}.border-ucl-gold\/40{border-color:rgba(255,183,0,.4)}.border-ucl-pitch{--tw-border-opacity:1;border-color:rgb(0 230 118/var(--tw-border-opacity,1))}.border-ucl-pitch\/20{border-color:rgba(0,230,118,.2)}.border-ucl-pitch\/40{border-color:rgba(0,230,118,.4)}.border-white\/10{border-color:hsla(0,0%,100%,.1)}.border-white\/20{border-color:hsla(0,0%,100%,.2)}.border-white\/40{border-color:hsla(0,0%,100%,.4)}.border-white\/5{border-color:hsla(0,0%,100%,.05)}.bg-amber-500\/10{background-color:rgba(245,158,11,.1)}.bg-amber-500\/20{background-color:rgba(245,158,11,.2)}.bg-black{--tw-bg-opacity:1;background-color:rgb(0 0 0/var(--tw-bg-opacity,1))}.bg-black\/40{background-color:rgba(0,0,0,.4)}.bg-black\/60{background-color:rgba(0,0,0,.6)}.bg-black\/70{background-color:rgba(0,0,0,.7)}.bg-emerald-500\/20{background-color:rgba(16,185,129,.2)}.bg-pink-500\/20{background-color:rgba(236,72,153,.2)}.bg-purple-500\/10{background-color:rgba(168,85,247,.1)}.bg-purple-500\/20{background-color:rgba(168,85,247,.2)}.bg-rose-500\/20{background-color:rgba(244,63,94,.2)}.bg-sky-500\/20{background-color:rgba(14,165,233,.2)}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42/var(--tw-bg-opacity,1))}.bg-ucl-dark{--tw-bg-opacity:1;background-color:rgb(10 20 47/var(--tw-bg-opacity,1))}.bg-ucl-dark\/60{background-color:rgba(10,20,47,.6)}.bg-ucl-dark\/80{background-color:rgba(10,20,47,.8)}.bg-ucl-glow{--tw-bg-opacity:1;background-color:rgb(0 240 255/var(--tw-bg-opacity,1))}.bg-ucl-glow\/10{background-color:rgba(0,240,255,.1)}.bg-ucl-gold{--tw-bg-opacity:1;background-color:rgb(255 183 0/var(--tw-bg-opacity,1))}.bg-ucl-gold\/10{background-color:rgba(255,183,0,.1)}.bg-ucl-navy{--tw-bg-opacity:1;background-color:rgb(5 11 26/var(--tw-bg-opacity,1))}.bg-ucl-navy\/90{background-color:rgba(5,11,26,.9)}.bg-ucl-pitch{--tw-bg-opacity:1;background-color:rgb(0 230 118/var(--tw-bg-opacity,1))}.bg-ucl-pitch\/10{background-color:rgba(0,230,118,.1)}.bg-gradient-to-tr{background-image:linear-gradient(to top right,var(--tw-gradient-stops))}.from-black\/40{--tw-gradient-from:rgba(0,0,0,.4) var(--tw-gradient-from-position);--tw-gradient-to:transparent var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-ucl-blue{--tw-gradient-from:#0052cc var(--tw-gradient-from-position);--tw-gradient-to:rgba(0,82,204,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-ucl-blue\/30{--tw-gradient-from:rgba(0,82,204,.3) var(--tw-gradient-from-position);--tw-gradient-to:rgba(0,82,204,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.via-ucl-glow{--tw-gradient-to:rgba(0,240,255,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#00f0ff var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-ucl-navy\/50{--tw-gradient-to:rgba(5,11,26,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),rgba(5,11,26,.5) var(--tw-gradient-via-position),var(--tw-gradient-to)}.to-transparent{--tw-gradient-to:transparent var(--tw-gradient-to-position)}.to-ucl-glow\/20{--tw-gradient-to:rgba(0,240,255,.2) var(--tw-gradient-to-position)}.to-ucl-gold{--tw-gradient-to:#ffb700 var(--tw-gradient-to-position)}.object-cover{-o-object-fit:cover;object-fit:cover}.p-1\.5{padding:.375rem}.p-3{padding:.75rem}.p-3\.5{padding:.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-1{padding-left:.25rem;padding-right:.25rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-2\.5{padding-left:.625rem;padding-right:.625rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-0\.5{padding-top:.125rem;padding-bottom:.125rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pt-2{padding-top:.5rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-6xl{font-size:3.75rem;line-height:1}.text-\[10px\]{font-size:10px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.tracking-wider{letter-spacing:.05em}.tracking-widest{letter-spacing:.1em}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77/var(--tw-text-opacity,1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36/var(--tw-text-opacity,1))}.text-black{--tw-text-opacity:1;color:rgb(0 0 0/var(--tw-text-opacity,1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183/var(--tw-text-opacity,1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153/var(--tw-text-opacity,1))}.text-pink-300{--tw-text-opacity:1;color:rgb(249 168 212/var(--tw-text-opacity,1))}.text-pink-400{--tw-text-opacity:1;color:rgb(244 114 182/var(--tw-text-opacity,1))}.text-purple-300{--tw-text-opacity:1;color:rgb(216 180 254/var(--tw-text-opacity,1))}.text-purple-400{--tw-text-opacity:1;color:rgb(192 132 252/var(--tw-text-opacity,1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113/var(--tw-text-opacity,1))}.text-rose-400{--tw-text-opacity:1;color:rgb(251 113 133/var(--tw-text-opacity,1))}.text-sky-300{--tw-text-opacity:1;color:rgb(125 211 252/var(--tw-text-opacity,1))}.text-sky-400{--tw-text-opacity:1;color:rgb(56 189 248/var(--tw-text-opacity,1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249/var(--tw-text-opacity,1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240/var(--tw-text-opacity,1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225/var(--tw-text-opacity,1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139/var(--tw-text-opacity,1))}.text-ucl-glow{--tw-text-opacity:1;color:rgb(0 240 255/var(--tw-text-opacity,1))}.text-ucl-glow\/50{color:rgba(0,240,255,.5)}.text-ucl-glow\/80{color:rgba(0,240,255,.8)}.text-ucl-gold{--tw-text-opacity:1;color:rgb(255 183 0/var(--tw-text-opacity,1))}.text-ucl-navy{--tw-text-opacity:1;color:rgb(5 11 26/var(--tw-text-opacity,1))}.text-ucl-pitch{--tw-text-opacity:1;color:rgb(0 230 118/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.text-white\/20{color:hsla(0,0%,100%,.2)}.opacity-60{opacity:.6}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgba(0,0,0,.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color)}.shadow-2xl,.shadow-inner{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgba(0,0,0,.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color),0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-ucl-glow\/20{--tw-shadow-color:rgba(0,240,255,.2);--tw-shadow:var(--tw-shadow-colored)}.blur{--tw-blur:blur(8px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px)}.backdrop-blur-md,.backdrop-filter{-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-200{transition-duration:.2s}.duration-300{transition-duration:.3s}.hover\:border-blue-500:hover{--tw-border-opacity:1;border-color:rgb(59 130 246/var(--tw-border-opacity,1))}.hover\:border-blue-700:hover{--tw-border-opacity:1;border-color:rgb(29 78 216/var(--tw-border-opacity,1))}.hover\:border-indigo-600:hover{--tw-border-opacity:1;border-color:rgb(79 70 229/var(--tw-border-opacity,1))}.hover\:border-red-500:hover{--tw-border-opacity:1;border-color:rgb(239 68 68/var(--tw-border-opacity,1))}.hover\:border-rose-600:hover{--tw-border-opacity:1;border-color:rgb(225 29 72/var(--tw-border-opacity,1))}.hover\:border-sky-400:hover{--tw-border-opacity:1;border-color:rgb(56 189 248/var(--tw-border-opacity,1))}.hover\:border-ucl-glow:hover{--tw-border-opacity:1;border-color:rgb(0 240 255/var(--tw-border-opacity,1))}.hover\:border-ucl-gold:hover{--tw-border-opacity:1;border-color:rgb(255 183 0/var(--tw-border-opacity,1))}.hover\:border-ucl-pitch:hover{--tw-border-opacity:1;border-color:rgb(0 230 118/var(--tw-border-opacity,1))}.hover\:border-white:hover{--tw-border-opacity:1;border-color:rgb(255 255 255/var(--tw-border-opacity,1))}.hover\:border-yellow-400:hover{--tw-border-opacity:1;border-color:rgb(250 204 21/var(--tw-border-opacity,1))}.hover\:bg-cyan-400:hover{--tw-bg-opacity:1;background-color:rgb(34 211 238/var(--tw-bg-opacity,1))}.hover\:bg-ucl-accent\/40:hover{background-color:rgba(30,56,123,.4)}.hover\:bg-yellow-400:hover{--tw-bg-opacity:1;background-color:rgb(250 204 21/var(--tw-bg-opacity,1))}@media (min-width:640px){.sm\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.sm\:flex-row{flex-direction:row}.sm\:gap-2{gap:.5rem}.sm\:p-8{padding:2rem}.sm\:px-4{padding-left:1rem;padding-right:1rem}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:text-sm{font-size:.875rem;line-height:1.25rem}}@media (min-width:768px){.md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.md\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.md\:flex-row{flex-direction:row}.md\:items-center{align-items:center}}@media (min-width:1024px){.lg\:col-span-5{grid-column:span 5/span 5}.lg\:col-span-6{grid-column:span 6/span 6}.lg\:col-span-7{grid-column:span 7/span 7}.lg\:grid-cols-12{grid-template-columns:repeat(12,minmax(0,1fr))}.lg\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.lg\:px-8{padding-left:2rem;padding-right:2rem}}</style>
+<!-- gp-ramec:css --><style>
+.gp-bar,.gp-foot{align-self:stretch;width:100%;box-sizing:border-box;background:#111;color:#c9c9c9;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:10px 16px;text-align:left}
+.gp-bar a,.gp-foot a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.gp-bar a:hover,.gp-foot a:hover{color:#ff972e}
+.gp-bar{background:transparent;color:inherit;padding:10px 16px 0}
+.gp-bar a{color:inherit;opacity:.85}
+.gp-bar a:hover{opacity:1;color:inherit}
+.gp-foot{margin-top:32px;position:relative;z-index:1}
+.gp-in{max-width:720px;margin:0 auto;display:flex;flex-wrap:wrap;gap:2px 14px}
+</style><!-- /gp-ramec:css -->
+</head>
+<body class="min-h-screen flex flex-col justify-between star-pattern text-slate-100">
+<!-- gp-ramec:bar --><div class="gp-bar"><div class="gp-in"><a href="../../../../../#/2026-27/informatika/4a-bst/bitmapova-grafika">← Zpět do portfolia</a></div></div><!-- /gp-ramec:bar -->
+
+
+    <!-- NAVIGACE / ZÁHLAVÍ -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-ucl-accent/40 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between py-4 gap-4">
+                
+                <!-- LOGO & TITULEK -->
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-ucl-blue via-ucl-glow to-ucl-gold flex items-center justify-center shadow-lg shadow-ucl-glow/20">
+                        <i class="fa-solid fa-futbol text-2xl text-ucl-navy animate-spin-slow"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-extrabold ucl-title tracking-wider uppercase">Pixel Champions</h1>
+                        <p class="text-xs text-ucl-glow/80 font-medium tracking-widest uppercase">Datová věda v Lize mistrů</p>
+                    </div>
+                </div>
+
+                <!-- NAVIGAČNÍ ZÁLOŽKY -->
+                <nav class="flex flex-wrap justify-center gap-1 sm:gap-2 bg-ucl-dark/80 p-1.5 rounded-2xl border border-white/10 shadow-inner">
+                    <button onclick="switchTab('theory')" id="tab-theory" class="tab-btn active px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-book-open text-ucl-glow"></i>
+                        <span>Teorie</span>
+                    </button>
+                    <button onclick="switchTab('rgb')" id="tab-rgb" class="tab-btn px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-palette text-ucl-gold"></i>
+                        <span>RGB Paleta</span>
+                    </button>
+                    <button onclick="switchTab('ratios')" id="tab-ratios" class="tab-btn px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-crop-simple text-purple-400"></i>
+                        <span>Poměry stran</span>
+                    </button>
+                    <button onclick="switchTab('simulator')" id="tab-simulator" class="tab-btn px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-expand text-ucl-pitch"></i>
+                        <span>Rozlišení</span>
+                    </button>
+                    <button onclick="switchTab('screens')" id="tab-screens" class="tab-btn px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-desktop text-amber-400"></i>
+                        <span>Obrazovky & PPI</span>
+                    </button>
+                    <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-ucl-gold"></i>
+                        <span>Kvíz</span>
+                    </button>
+                </nav>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- HLAVNÍ OBSAH - KARTY -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+        <!-- 1. ZÁLOŽKA: TEORIE KÓDOVÁNÍ -->
+        <section id="content-theory" class="tab-content space-y-6">
+            <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-ucl-glow/20">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="p-3 bg-ucl-glow/10 text-ucl-glow rounded-2xl">
+                        <i class="fa-solid fa-microchip text-3xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Jak počítače ukládají fotbalové snímky?</h2>
+                        <p class="text-sm text-slate-300">Základy digitální grafiky od jediného pixelu až po vysílání finále UCL</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Karta 1 -->
+                    <div class="bg-ucl-dark/80 p-5 rounded-2xl border border-white/5 space-y-3">
+                        <div class="text-ucl-gold font-bold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-border-all"></i> 1. Pixel (Obrazový bod)
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Každý obrázek na obrazovce je tvořen mřížkou malých čtverečků zvaných <strong>pixely</strong>. Jeden pixel sám o sobě nenese tvar, pouze jedinou konkrétní barvu. Složením milionů pixelů vzniká detailní záběr na fotbalový trávník i hvězdy UCL.
+                        </p>
+                    </div>
+
+                    <!-- Karta 2 -->
+                    <div class="bg-ucl-dark/80 p-5 rounded-2xl border border-white/5 space-y-3">
+                        <div class="text-ucl-glow font-bold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-sliders"></i> 2. Barevný model RGB
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Displeje skládají barvy ze tří základních světelných kanálů: <strong>Červená (Red)</strong>, <strong>Zelená (Green)</strong> a <strong>Modrá (Blue)</strong>. Mícháním těchto tří světel v různém poměru od 0 (tma) do 255 (plný svit) vytvoříme jakoukoliv barvu.
+                        </p>
+                    </div>
+
+                    <!-- Karta 3 -->
+                    <div class="bg-ucl-dark/80 p-5 rounded-2xl border border-white/5 space-y-3">
+                        <div class="text-ucl-pitch font-bold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-calculator"></i> 3. TrueColor (16.7M+ barev)
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Jelikož každý kanál má 256 úrovní (2<sup>8</sup> bitů = 1 bajt), celkový počet barevných kombinací jednoho pixelu je:
+                            <span class="block my-2 text-center text-ucl-gold font-mono font-bold text-base bg-black/40 py-1 rounded">
+                                256 × 256 × 256 = 16 777 216 barev
+                            </span>
+                            To odpovídá 24-bitové barevné hloubce (3 bajty na jeden pixel).
+                        </p>
+                    </div>
+
+                    <!-- Karta 4 -->
+                    <div class="bg-ucl-dark/80 p-5 rounded-2xl border border-white/5 space-y-3">
+                        <div class="text-purple-400 font-bold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-file-zipper"></i> 4. Komprese dat (JPEG vs PNG)
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Nekomprimovaný fotbalový snímek ve 4K zabírá přes 24 MB.
+                            <strong>Ztrátová komprese (JPEG)</strong> odstraňuje detaily, které lidské oko snadno přehlédne (např. v tmavém publiku). 
+                            <strong>Beztrátová (PNG)</strong> zachovává 100 % dat, což je ideální pro grafiku a loga UCL.
+                        </p>
+                    </div>
+
+                    <!-- Karta 5 -->
+                    <div class="bg-ucl-dark/80 p-5 rounded-2xl border border-white/5 space-y-3">
+                        <div class="text-amber-400 font-bold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-film"></i> 5. Snímková frekvence (FPS)
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Fotbalový přenos není jen jeden obrázek, ale série snímků za sekundu. Standardní TV vysílá při <strong>50/60 FPS</strong>. Při vysílání ve 4K 60 FPS musí TV zpracovat přes <strong>500 milionů pixelů za jedinou sekundu</strong>!
+                        </p>
+                    </div>
+
+                    <!-- Karta 6 -->
+                    <div class="bg-ucl-dark/80 p-5 rounded-2xl border border-white/5 space-y-3">
+                        <div class="text-rose-400 font-bold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> 6. 10-bit HDR vysílání
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Nejmodernější přenosy Ligy mistrů používají 10-bitové HDR. Místo 256 úrovní má každý kanál 1024 úrovní (2<sup>10</sup>). Výsledkem je přes <strong>1 miliarda barev</strong>, což přináší dokonale zářící reflektory stadionu i hlubokou čerň.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. ZÁLOŽKA: RGB PALETA -->
+        <section id="content-rgb" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-ucl-gold/20">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="p-3 bg-ucl-gold/10 text-ucl-gold rounded-2xl">
+                        <i class="fa-solid fa-palette text-3xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Champions League RGB Color Mixer</h2>
+                        <p class="text-sm text-slate-300">Namíchejte barvy nebo vyberte ze široké nabídky klubových a oficiálních barev UCL</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    <!-- Míchací posuvníky -->
+                    <div class="lg:col-span-7 space-y-6 bg-ucl-dark/60 p-6 rounded-2xl border border-white/5">
+                        
+                        <!-- Červený kanál -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between font-bold text-sm">
+                                <span class="text-red-400 flex items-center gap-2"><i class="fa-solid fa-circle"></i> Červená (Red)</span>
+                                <span id="val-r" class="font-mono text-red-400">10</span>
+                            </div>
+                            <input type="range" id="slider-r" min="0" max="255" value="10" oninput="updateRGB()" class="w-full h-3 bg-slate-800 rounded-lg appearance-none custom-slider slider-red">
+                        </div>
+
+                        <!-- Zelený kanál -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between font-bold text-sm">
+                                <span class="text-emerald-400 flex items-center gap-2"><i class="fa-solid fa-circle"></i> Zelená (Green)</span>
+                                <span id="val-g" class="font-mono text-emerald-400">31</span>
+                            </div>
+                            <input type="range" id="slider-g" min="0" max="255" value="31" oninput="updateRGB()" class="w-full h-3 bg-slate-800 rounded-lg appearance-none custom-slider slider-green">
+                        </div>
+
+                        <!-- Modrý kanál -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between font-bold text-sm">
+                                <span class="text-sky-400 flex items-center gap-2"><i class="fa-solid fa-circle"></i> Modrá (Blue)</span>
+                                <span id="val-b" class="font-mono text-sky-400">70</span>
+                            </div>
+                            <input type="range" id="slider-b" min="0" max="255" value="70" oninput="updateRGB()" class="w-full h-3 bg-slate-800 rounded-lg appearance-none custom-slider slider-blue">
+                        </div>
+
+                        <!-- Rychlé tlačítka oficiálních a klubových barev -->
+                        <div class="pt-4 border-t border-white/10 space-y-3">
+                            <label class="block text-xs text-slate-400 font-semibold uppercase tracking-wider">Předvolby barvy UCL a slavných klubů:</label>
+                            
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                <button onclick="setPreset(5, 11, 26)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-ucl-navy text-xs border border-white/20 hover:border-ucl-glow font-medium text-slate-200">
+                                    <span class="w-3 h-3 rounded-full inline-block border border-white/40" style="background:#050b1a"></span> Night Navy
+                                </button>
+                                <button onclick="setPreset(255, 183, 0)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs border border-white/20 hover:border-ucl-gold font-medium text-slate-200">
+                                    <span class="w-3 h-3 rounded-full inline-block" style="background:#ffb700"></span> Star Gold
+                                </button>
+                                <button onclick="setPreset(0, 230, 118)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs border border-white/20 hover:border-ucl-pitch font-medium text-slate-200">
+                                    <span class="w-3 h-3 rounded-full inline-block" style="background:#00e676"></span> Pitch Green
+                                </button>
+                                <button onclick="setPreset(0, 240, 255)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs border border-white/20 hover:border-ucl-glow font-medium text-slate-200">
+                                    <span class="w-3 h-3 rounded-full inline-block" style="background:#00f0ff"></span> Cyan Glow
+                                </button>
+
+                                <button onclick="setPreset(255, 255, 255)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs border border-white/20 hover:border-white font-medium text-slate-200">
+                                    <span class="w-3 h-3 rounded-full inline-block border border-slate-400" style="background:#ffffff"></span> Real Bílá
+                                </button>
+                                <button onclick="setPreset(0, 77, 152)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs border border-white/20 hover:border-blue-500 font-medium text-slate-200">
+                                    <span class="w-3 h-3 rounded-full inline-block" style="background:#004d98"></span> Barca Modrá
+                                </button>
+                                <button onclick="setPreset(220, 5, 45)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs border border-white/20 hover:border-red-500 font-medium text-slate-200">
+                                    <span class="w-3 h-3 rounded-full inline-block" style="background:#dc052d"></span> Bayern Červená
+                                </button>
+                                <button onclick="setPreset(200, 16, 46)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs border border-white/20 hover:border-rose-600 font-medium text-slate-200">
+                                    <span class="w-3 h-3 rounded-full inline-block" style="background:#c8102e"></span> Liverpool Rudá
+                                </button>
+
+                                <button onclick="setPreset(108, 173, 223)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs border border-white/20 hover:border-sky-400 font-medium text-slate-200">
+                                    <span class="w-3 h-3 rounded-full inline-block" style="background:#6caddf"></span> Man City Sv.Modrá
+                                </button>
+                                <button onclick="setPreset(253, 225, 0)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs border border-white/20 hover:border-yellow-400 font-medium text-slate-200">
+                                    <span class="w-3 h-3 rounded-full inline-block" style="background:#fde100"></span> Dortmund Žlutá
+                                </button>
+                                <button onclick="setPreset(0, 23, 79)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs border border-white/20 hover:border-indigo-600 font-medium text-slate-200">
+                                    <span class="w-3 h-3 rounded-full inline-block" style="background:#00174f"></span> Inter Černomodrá
+                                </button>
+                                <button onclick="setPreset(0, 65, 112)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-800 text-xs border border-white/20 hover:border-blue-700 font-medium text-slate-200">
+                                    <span class="w-3 h-3 rounded-full inline-block" style="background:#004170"></span> PSG Tmavomodrá
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Vizuální Náhled & Kódy -->
+                    <div class="lg:col-span-5 flex flex-col items-center justify-center space-y-4">
+                        <div id="color-preview" class="w-full h-48 rounded-2xl shadow-2xl border-2 border-white/20 flex items-center justify-center transition-all duration-200 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-black/40 to-transparent"></div>
+                            <i class="fa-solid fa-futbol text-6xl text-white/20 relative z-10"></i>
+                        </div>
+
+                        <div class="w-full grid grid-cols-2 gap-3 text-center">
+                            <div class="bg-ucl-dark/80 p-3 rounded-xl border border-white/10">
+                                <span class="text-xs text-slate-400 block">HEX Kód</span>
+                                <span id="code-hex" class="font-mono font-bold text-lg text-ucl-glow">#0A1F46</span>
+                            </div>
+                            <div class="bg-ucl-dark/80 p-3 rounded-xl border border-white/10">
+                                <span class="text-xs text-slate-400 block">DEC Zápis</span>
+                                <span id="code-rgb" class="font-mono font-bold text-sm text-ucl-gold">rgb(10, 31, 70)</span>
+                            </div>
+                        </div>
+
+                        <div class="w-full bg-ucl-dark/80 p-3 rounded-xl border border-white/10">
+                            <span class="text-xs text-slate-400 block text-center mb-1">8-Bit Binární Reprezentace</span>
+                            <div id="code-bin" class="font-mono text-xs text-center tracking-widest text-slate-200">
+                                <span class="text-red-400">00001010</span> <span class="text-emerald-400">00011111</span> <span class="text-sky-400">01000110</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. ZÁLOŽKA: POMĚRY STRAN -->
+        <section id="content-ratios" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-purple-500/20">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="p-3 bg-purple-500/10 text-purple-400 rounded-2xl">
+                        <i class="fa-solid fa-crop-simple text-3xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Poměry stran ve sportovním vysílání</h2>
+                        <p class="text-sm text-slate-300">Srovnání různých formátů obrazu od retro TV až po moderní ultrawide monitory</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- 16:9 Standard -->
+                    <div class="bg-ucl-dark/80 p-5 rounded-2xl border border-white/10 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-purple-400">16:9 Standard TV</span>
+                            <span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">Widescreen</span>
+                        </div>
+                        <div class="aspect-video bg-slate-800 rounded-xl border border-purple-500/40 flex items-center justify-center relative overflow-hidden">
+                            <i class="fa-solid fa-tv text-4xl text-white/20"></i>
+                            <span class="absolute bottom-2 text-xs font-mono text-slate-300">Klasické vysílání UCL</span>
+                        </div>
+                        <p class="text-xs text-slate-300">Standardní formát pro moderní televize a monitory. Poskytuje ideální panoráma na celé fotbalové hřiště.</p>
+                    </div>
+
+                    <!-- 9:16 Vertikální -->
+                    <div class="bg-ucl-dark/80 p-5 rounded-2xl border border-white/10 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-sky-400">9:16 Vertikální</span>
+                            <span class="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded">TikTok / Reels</span>
+                        </div>
+                        <div class="h-44 bg-slate-800 rounded-xl border border-sky-500/40 flex items-center justify-center relative overflow-hidden mx-auto w-28">
+                            <i class="fa-solid fa-mobile-screen text-4xl text-white/20"></i>
+                            <span class="absolute bottom-2 text-[10px] font-mono text-slate-300 text-center px-1">Social Clips</span>
+                        </div>
+                        <p class="text-xs text-slate-300">Formát na výšku pro smartphony. Kamery ořezávají obraz a zaostřují přímo na jednotlivé hráče a akce.</p>
+                    </div>
+
+                    <!-- 21:9 Ultrawide -->
+                    <div class="bg-ucl-dark/80 p-5 rounded-2xl border border-white/10 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-amber-400">21:9 Ultrawide</span>
+                            <span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">Kino / Gaming</span>
+                        </div>
+                        <div class="aspect-[21/9] bg-slate-800 rounded-xl border border-amber-500/40 flex items-center justify-center relative overflow-hidden my-auto">
+                            <i class="fa-solid fa-display text-4xl text-white/20"></i>
+                            <span class="absolute bottom-2 text-xs font-mono text-slate-300">Panoramatické monitory</span>
+                        </div>
+                        <p class="text-xs text-slate-300">Extra širokoúhlý formát. Nabízí obrovský přehled o taktice obou týmů v jednom záběru bez pohybu kamery.</p>
+                    </div>
+
+                    <!-- 4:3 Retro TV -->
+                    <div class="bg-ucl-dark/80 p-5 rounded-2xl border border-white/10 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-emerald-400">4:3 Retro Format</span>
+                            <span class="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded">CRT TV / Archiv</span>
+                        </div>
+                        <div class="aspect-[4/3] h-44 bg-slate-800 rounded-xl border border-emerald-500/40 flex items-center justify-center relative overflow-hidden mx-auto">
+                            <i class="fa-solid fa-tv text-4xl text-white/20"></i>
+                            <span class="absolute bottom-2 text-xs font-mono text-slate-300">Historické přenosy (90s)</span>
+                        </div>
+                        <p class="text-xs text-slate-300">Původní téměř čtvercový formát starých CRT televizí. Staré fotbalové zápasy UCL byly vysílány v tomto rozlišení.</p>
+                    </div>
+
+                    <!-- 1:1 Čtverec -->
+                    <div class="bg-ucl-dark/80 p-5 rounded-2xl border border-white/10 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-pink-400">1:1 Čtverec</span>
+                            <span class="text-xs bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded">Instagram Post</span>
+                        </div>
+                        <div class="w-40 h-40 bg-slate-800 rounded-xl border border-pink-500/40 flex items-center justify-center relative overflow-hidden mx-auto">
+                            <i class="fa-solid fa-square text-4xl text-white/20"></i>
+                            <span class="absolute bottom-2 text-xs font-mono text-slate-300">Sociální sítě</span>
+                        </div>
+                        <p class="text-xs text-slate-300">Čtvercový formát populární pro příspěvky na sociálních sítích, grafické sumáře zápasů a statistiky hráčů.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. ZÁLOŽKA: SIMULÁTOR ROZLIŠENÍ -->
+        <section id="content-simulator" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-ucl-pitch/20">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-ucl-pitch/10 text-ucl-pitch rounded-2xl">
+                            <i class="fa-solid fa-expand text-3xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Simulátor kvality & Datového toku</h2>
+                            <p class="text-sm text-slate-300">Přepínejte rozlišení a sledujte změnu kvality i nároků na paměť</p>
+                        </div>
+                    </div>
+
+                    <!-- Tlačítka rozlišení -->
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="setResolution('360p')" id="res-360p" class="res-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-ucl-dark border border-white/10 hover:border-ucl-pitch transition">360p</button>
+                        <button onclick="setResolution('720p')" id="res-720p" class="res-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-ucl-dark border border-white/10 hover:border-ucl-pitch transition">720p HD</button>
+                        <button onclick="setResolution('1080p')" id="res-1080p" class="res-btn active px-3 py-1.5 rounded-xl text-xs font-bold bg-ucl-pitch text-black border border-ucl-pitch transition">1080p Full HD</button>
+                        <button onclick="setResolution('1440p')" id="res-1440p" class="res-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-ucl-dark border border-white/10 hover:border-ucl-pitch transition">1440p QHD</button>
+                        <button onclick="setResolution('4k')" id="res-4k" class="res-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-ucl-dark border border-white/10 hover:border-ucl-pitch transition">4K Ultra HD</button>
+                    </div>
+                </div>
+
+                <!-- Canvas Stadion -->
+                <div class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl">
+                    <canvas id="stadium-canvas" class="w-full h-full object-cover"></canvas>
+                    <div class="absolute top-4 left-4 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-xs font-mono">
+                        Rozlišení mřížky: <span id="canvas-dim-display" class="text-ucl-glow font-bold">1920 × 1080</span>
+                    </div>
+                </div>
+
+                <!-- Datové metriky -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+                    <div class="bg-ucl-dark/80 p-4 rounded-2xl border border-white/5 text-center">
+                        <span class="text-xs text-slate-400 block mb-1">Přesné rozlišení</span>
+                        <span id="metric-pixels-side" class="text-base font-extrabold text-ucl-glow font-mono">1920 × 1080 px</span>
+                    </div>
+                    <div class="bg-ucl-dark/80 p-4 rounded-2xl border border-white/5 text-center">
+                        <span class="text-xs text-slate-400 block mb-1">Celkový počet pixelů</span>
+                        <span id="metric-total-px" class="text-base font-extrabold text-ucl-gold font-mono">2 073 600 px</span>
+                    </div>
+                    <div class="bg-ucl-dark/80 p-4 rounded-2xl border border-white/5 text-center">
+                        <span class="text-xs text-slate-400 block mb-1">Nekomprimovaná RAM</span>
+                        <span id="metric-ram" class="text-base font-extrabold text-ucl-pitch font-mono">6.22 MB</span>
+                    </div>
+                    <div class="bg-ucl-dark/80 p-4 rounded-2xl border border-white/5 text-center">
+                        <span class="text-xs text-slate-400 block mb-1">Typické využití</span>
+                        <span id="metric-use" class="text-xs font-bold text-slate-200 mt-1 block">Mobilní data / TV</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. ZÁLOŽKA: VELIKOST OBRAZOVKY A PPI -->
+        <section id="content-screens" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-amber-500/20">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="p-3 bg-amber-500/10 text-amber-400 rounded-2xl">
+                        <i class="fa-solid fa-desktop text-3xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Velikost Obrazovky, Palce a Hustota Pixelů (PPI)</h2>
+                        <p class="text-sm text-slate-300">Měňte úhlopříčku v palcích a sledujte fyzické rozměry v cm i ostrost obrazu</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    <!-- Posuvník a info -->
+                    <div class="lg:col-span-6 space-y-6 bg-ucl-dark/60 p-6 rounded-2xl border border-white/5">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <label class="text-sm font-bold text-amber-400 flex items-center gap-2">
+                                    <i class="fa-solid fa-ruler-combined"></i> Úhlopříčka obrazovky:
+                                </label>
+                                <span class="text-xl font-extrabold font-mono text-ucl-gold"><span id="diag-inch-val">55</span>" (<span id="diag-cm-val">139.7</span> cm)</span>
+                            </div>
+                            <input type="range" id="screen-slider" min="5" max="85" value="55" oninput="updateScreenCalc()" class="w-full h-3 bg-slate-800 rounded-lg appearance-none custom-slider">
+                            <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+                                <span>5" (Smartphone)</span>
+                                <span>27" (PC Monitor)</span>
+                                <span>55" (TV)</span>
+                                <span>85" (Obří TV)</span>
+                            </div>
+                        </div>
+
+                        <!-- Vypočítané fyzické rozměry -->
+                        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                            <div class="bg-black/40 p-3 rounded-xl border border-white/5">
+                                <span class="text-xs text-slate-400 block">Fyzická šířka</span>
+                                <span id="screen-width-cm" class="font-mono font-bold text-lg text-ucl-glow">121.8 cm</span>
+                            </div>
+                            <div class="bg-black/40 p-3 rounded-xl border border-white/5">
+                                <span class="text-xs text-slate-400 block">Fyzická výška</span>
+                                <span id="screen-height-cm" class="font-mono font-bold text-lg text-ucl-glow">68.5 cm</span>
+                            </div>
+                            <div class="bg-black/40 p-3 rounded-xl border border-white/5">
+                                <span class="text-xs text-slate-400 block">Hustota pixelů (Full HD)</span>
+                                <span id="screen-ppi" class="font-mono font-bold text-lg text-ucl-gold">40.1 PPI</span>
+                            </div>
+                            <div class="bg-black/40 p-3 rounded-xl border border-white/5">
+                                <span class="text-xs text-slate-400 block">Doporučený odstup</span>
+                                <span id="screen-distance" class="font-mono font-bold text-lg text-ucl-pitch">2.2 m</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vizuální simulátor monitoru/TV -->
+                    <div class="lg:col-span-6 flex flex-col items-center justify-center p-6 bg-black/40 rounded-2xl border border-white/5">
+                        <span class="text-xs text-slate-400 mb-4 uppercase tracking-widest">Relativní velikost displeje</span>
+                        
+                        <div class="w-full h-64 flex items-center justify-center relative">
+                            <!-- Rámeček Monitoru -->
+                            <div id="screen-visual-box" class="screen-frame bg-slate-900 border-4 border-slate-700 rounded-lg flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300">
+                                <div class="absolute inset-0 bg-gradient-to-tr from-ucl-blue/30 via-ucl-navy/50 to-ucl-glow/20 flex items-center justify-center">
+                                    <i class="fa-solid fa-futbol text-4xl text-ucl-glow/50"></i>
+                                </div>
+                                <span id="screen-visual-label" class="relative z-10 font-bold text-xs font-mono text-white bg-black/60 px-2 py-1 rounded border border-white/20">55" TV</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. ZÁLOŽKA: INTERAKTIVNÍ KVÍZ -->
+        <section id="content-quiz" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-ucl-gold/30">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="p-3 bg-ucl-gold/10 text-ucl-gold rounded-2xl">
+                        <i class="fa-solid fa-trophy text-3xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">UCL Datový Kvíz</h2>
+                        <p class="text-sm text-slate-300">Otestujte své znalosti z oblasti pixelů, barev a digitálního videa!</p>
+                    </div>
+                </div>
+
+                <div id="quiz-container" class="space-y-6 max-w-2xl mx-auto">
+                    <!-- Otázka -->
+                    <div class="bg-ucl-dark/80 p-6 rounded-2xl border border-white/10 space-y-4">
+                        <div class="flex justify-between items-center text-xs font-bold text-ucl-glow uppercase tracking-wider">
+                            <span id="quiz-progress">Otázka 1 z 4</span>
+                            <span id="quiz-score-live" class="text-ucl-gold">Skóre: 0</span>
+                        </div>
+                        <h3 id="quiz-question" class="text-lg font-bold text-white">Kolik celkových barev lze vytvořit v 24-bitovém módu TrueColor (8 bitů na kanál)?</h3>
+                        
+                        <div id="quiz-options" class="grid grid-cols-1 gap-3 pt-2">
+                            <!-- Možnosti se generují skriptem -->
+                        </div>
+                    </div>
+
+                    <div id="quiz-feedback" class="hidden p-4 rounded-xl text-center font-bold text-sm"></div>
+
+                    <div class="flex justify-end">
+                        <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="hidden px-6 py-2.5 bg-ucl-gold hover:bg-yellow-400 text-black font-bold rounded-xl transition shadow-lg">Další otázka <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PATKA -->
+    <footer class="border-t border-white/10 bg-ucl-navy/90 backdrop-blur-md py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-futbol text-ucl-glow"></i>
+                <span>Pixel Champions &copy; Datová Věda & Grafika v Lize Mistrů</span>
+            </div>
+            <p>Vytvořeno jako interaktivní výuková pomůcka pro digitální obraz a grafické systémy.</p>
+        </div>
+    </footer>
+
+    <!-- INTERAKTIVNÍ SCRIPT -->
+    <script>
+        // 1. Přepínání záložek
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            const targetContent = document.getElementById(`content-${tabId}`);
+            const targetTab = document.getElementById(`tab-${tabId}`);
+
+            if (targetContent) targetContent.classList.remove('hidden');
+            if (targetTab) targetTab.classList.add('active');
+
+            if (tabId === 'simulator') {
+                renderStadiumCanvas();
+            }
+        }
+
+        // 2. RGB Mixer
+        function updateRGB() {
+            const r = parseInt(document.getElementById('slider-r').value);
+            const g = parseInt(document.getElementById('slider-g').value);
+            const b = parseInt(document.getElementById('slider-b').value);
+
+            document.getElementById('val-r').innerText = r;
+            document.getElementById('val-g').innerText = g;
+            document.getElementById('val-b').innerText = b;
+
+            const hexR = r.toString(16).padStart(2, '0').toUpperCase();
+            const hexG = g.toString(16).padStart(2, '0').toUpperCase();
+            const hexB = b.toString(16).padStart(2, '0').toUpperCase();
+            const hexCode = `#${hexR}${hexG}${hexB}`;
+
+            document.getElementById('code-hex').innerText = hexCode;
+            document.getElementById('code-rgb').innerText = `rgb(${r}, ${g}, ${b})`;
+
+            const binR = r.toString(2).padStart(8, '0');
+            const binG = g.toString(2).padStart(8, '0');
+            const binB = b.toString(2).padStart(8, '0');
+            document.getElementById('code-bin').innerHTML = `<span class="text-red-400">${binR}</span> <span class="text-emerald-400">${binG}</span> <span class="text-sky-400">${binB}</span>`;
+
+            document.getElementById('color-preview').style.backgroundColor = hexCode;
+        }
+
+        function setPreset(r, g, b) {
+            document.getElementById('slider-r').value = r;
+            document.getElementById('slider-g').value = g;
+            document.getElementById('slider-b').value = b;
+            updateRGB();
+        }
+
+        // 3. Simulátor Rozlišení (Canvas Render)
+        let currentRes = '1080p';
+        const resPresets = {
+            '360p': { w: 640, h: 360, ram: '0.69 MB', use: 'Špatné připojení / Mobil' },
+            '720p': { w: 1280, h: 720, ram: '2.76 MB', use: 'HD TV Streaming' },
+            '1080p': { w: 1920, h: 1080, ram: '6.22 MB', use: 'Full HD Vysílání' },
+            '1440p': { w: 2560, h: 1440, ram: '11.05 MB', use: 'QHD Monitory' },
+            '4k': { w: 3840, h: 2160, ram: '24.88 MB', use: '4K Premium Stream / UHD TV' }
+        };
+
+        function setResolution(resKey) {
+            currentRes = resKey;
+            document.querySelectorAll('.res-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-ucl-pitch', 'text-black');
+                btn.classList.add('bg-ucl-dark', 'text-white');
+            });
+            const activeBtn = document.getElementById(`res-${resKey}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'bg-ucl-pitch', 'text-black');
+                activeBtn.classList.remove('bg-ucl-dark', 'text-white');
+            }
+
+            const data = resPresets[resKey];
+            const totalPx = data.w * data.h;
+
+            document.getElementById('canvas-dim-display').innerText = `${data.w} × ${data.h}`;
+            document.getElementById('metric-pixels-side').innerText = `${data.w} × ${data.h} px`;
+            document.getElementById('metric-total-px').innerText = totalPx.toLocaleString('cs-CZ') + ' px';
+            document.getElementById('metric-ram').innerText = data.ram;
+            document.getElementById('metric-use').innerText = data.use;
+
+            renderStadiumCanvas();
+        }
+
+        function renderStadiumCanvas() {
+            const canvas = document.getElementById('stadium-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const preset = resPresets[currentRes];
+
+            canvas.width = preset.w;
+            canvas.height = preset.h;
+
+            // Pozadí (Trávník)
+            ctx.fillStyle = '#004d25';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Pruhy trávníku
+            const stripeWidth = canvas.width / 10;
+            for (let i = 0; i < 10; i += 2) {
+                ctx.fillStyle = '#005e2e';
+                ctx.fillRect(i * stripeWidth, 0, stripeWidth, canvas.height);
+            }
+
+            // Hřiště - Čáry
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = Math.max(2, canvas.height / 120);
+
+            // Vnější čára
+            const margin = canvas.width * 0.05;
+            ctx.strokeRect(margin, margin, canvas.width - 2 * margin, canvas.height - 2 * margin);
+
+            // Středová čára & Kruh
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, margin);
+            ctx.lineTo(canvas.width / 2, canvas.height - margin);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, canvas.height * 0.18, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Text s informací o kvalitě v canvasu
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.font = `bold ${canvas.height * 0.15}px Montserrat, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`UCL ${currentRes.toUpperCase()}`, canvas.width / 2, canvas.height / 2);
+        }
+
+        // 4. Kalkulátor obrazovek & PPI
+        function updateScreenCalc() {
+            const diagInches = parseFloat(document.getElementById('screen-slider').value);
+            const ratio = 16 / 9;
+
+            // Vypočet šířky a výšky v palcích z Pythagorovy věty
+            const heightInches = diagInches / Math.sqrt(Math.pow(ratio, 2) + 1);
+            const widthInches = heightInches * ratio;
+
+            const widthCm = (widthInches * 2.54).toFixed(1);
+            const heightCm = (heightInches * 2.54).toFixed(1);
+            const diagCm = (diagInches * 2.54).toFixed(1);
+
+            // PPI pro Full HD (1920x1080)
+            const ppi = (Math.sqrt(Math.pow(1920, 2) + Math.pow(1080, 2)) / diagInches).toFixed(1);
+
+            // Doporučená pozorovací vzdálenost (cca 1.5 - 2 násobek úhlopříčky)
+            const distanceM = ((diagCm * 1.6) / 100).toFixed(1);
+
+            document.getElementById('diag-inch-val').innerText = diagInches;
+            document.getElementById('diag-cm-val').innerText = diagCm;
+            document.getElementById('screen-width-cm').innerText = `${widthCm} cm`;
+            document.getElementById('screen-height-cm').innerText = `${heightCm} cm`;
+            document.getElementById('screen-ppi').innerText = `${ppi} PPI`;
+            document.getElementById('screen-distance').innerText = `${distanceM} m`;
+
+            // Vizualizace velikosti
+            const visualBox = document.getElementById('screen-visual-box');
+            const visualLabel = document.getElementById('screen-visual-label');
+
+            const scalePercent = Math.max(15, (diagInches / 85) * 100);
+            visualBox.style.width = `${scalePercent}%`;
+            visualBox.style.height = `${(scalePercent * 9) / 16 * 1.8}%`;
+            visualLabel.innerText = `${diagInches}" TV`;
+        }
+
+        // 5. Kvízová Logika
+        const quizData = [
+            {
+                q: "Kolik celkových barev lze vytvořit v 24-bitovém módu TrueColor (8 bitů na kanál)?",
+                options: ["256 barev", "65 536 barev", "16 777 216 barev", "1 miliardu barev"],
+                correct: 2
+            },
+            {
+                q: "Jaký poměr stran má standardní moderní televize a sportovní vysílání?",
+                options: ["4:3", "16:9", "21:9", "9:16"],
+                correct: 1
+            },
+            {
+                q: "Který formát grafiky je vhodný pro loga a grafiku UCL s průhledností bez ztráty kvality?",
+                options: ["JPEG", "PNG", "MP4", "GIF"],
+                correct: 1
+            },
+            {
+                q: "Co udává zkratka PPI u displejů?",
+                options: ["Pixels Per Inch (Počet pixelů na palec)", "Points Per Image", "Pixels Per Instant", "Power Per Inch"],
+                correct: 0
+            }
+        ];
+
+        let currentQuizIdx = 0;
+        let score = 0;
+
+        function loadQuizQuestion() {
+            const data = quizData[currentQuizIdx];
+            document.getElementById('quiz-progress').innerText = `Otázka ${currentQuizIdx + 1} z ${quizData.length}`;
+            document.getElementById('quiz-question').innerText = data.q;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            data.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3.5 rounded-xl bg-ucl-navy border border-white/10 hover:border-ucl-glow hover:bg-ucl-accent/40 transition font-medium text-sm flex items-center justify-between";
+                btn.innerHTML = `<span>${opt}</span> <i class="fa-regular fa-circle text-slate-500"></i>`;
+                btn.onclick = () => selectQuizOption(idx, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('quiz-next-btn').classList.add('hidden');
+        }
+
+        function selectQuizOption(selectedIdx, btnElement) {
+            const data = quizData[currentQuizIdx];
+            const allButtons = document.getElementById('quiz-options').children;
+
+            for (let b of allButtons) {
+                b.disabled = true;
+                b.classList.add('opacity-60');
+            }
+
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.classList.remove('hidden');
+
+            if (selectedIdx === data.correct) {
+                score++;
+                document.getElementById('quiz-score-live').innerText = `Skóre: ${score}`;
+                btnElement.classList.remove('opacity-60');
+                btnElement.classList.add('bg-emerald-500/20', 'border-ucl-pitch', 'text-ucl-pitch');
+                feedback.className = "p-4 rounded-xl text-center font-bold text-sm bg-emerald-500/20 text-ucl-pitch border border-ucl-pitch/40";
+                feedback.innerText = "Správně! Získáváte bod.";
+            } else {
+                btnElement.classList.remove('opacity-60');
+                btnElement.classList.add('bg-rose-500/20', 'border-rose-500', 'text-rose-400');
+                allButtons[data.correct].classList.remove('opacity-60');
+                allButtons[data.correct].classList.add('bg-emerald-500/20', 'border-ucl-pitch', 'text-ucl-pitch');
+                feedback.className = "p-4 rounded-xl text-center font-bold text-sm bg-rose-500/20 text-rose-400 border border-rose-500/40";
+                feedback.innerText = `Chyba. Správná odpověď byla: ${data.options[data.correct]}`;
+            }
+
+            const nextBtn = document.getElementById('quiz-next-btn');
+            nextBtn.classList.remove('hidden');
+            if (currentQuizIdx === quizData.length - 1) {
+                nextBtn.innerText = "Zobrazit výsledky";
+            }
+        }
+
+        function nextQuizQuestion() {
+            currentQuizIdx++;
+            if (currentQuizIdx < quizData.length) {
+                loadQuizQuestion();
+            } else {
+                showQuizResults();
+            }
+        }
+
+        function showQuizResults() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = `
+                <div class="bg-ucl-dark/80 p-8 rounded-2xl border border-ucl-gold/40 text-center space-y-4">
+                    <i class="fa-solid fa-trophy text-6xl text-ucl-gold animate-bounce"></i>
+                    <h3 class="text-2xl font-bold text-white">Kvíz Dokončen!</h3>
+                    <p class="text-slate-300">Vaše celkové skóre je: <strong class="text-ucl-gold text-xl">${score} / ${quizData.length}</strong></p>
+                    <button onclick="location.reload()" class="mt-4 px-6 py-2.5 bg-ucl-glow hover:bg-cyan-400 text-black font-bold rounded-xl transition">Spustit znovu</button>
+                </div>
+            `;
+        }
+
+        // Inicializace při načtení
+        window.onload = function() {
+            updateRGB();
+            updateScreenCalc();
+            loadQuizQuestion();
+        };
+    </script>
+<!-- gp-ramec:foot --><footer class="gp-foot"><div class="gp-in"><span>Gymnázium Příbram</span><span>Autor: Ondřej Císař</span><span>Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" rel="license noopener">CC BY 4.0</a></span></div></footer><!-- /gp-ramec:foot -->
+</body>
+</html>

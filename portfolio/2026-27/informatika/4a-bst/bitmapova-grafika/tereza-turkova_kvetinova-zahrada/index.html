@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="cs" class="h-full">
+<head>
+<meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Květinová Zahrada Rastrové Grafiky</title>
+    <!-- Tailwind CSS -->
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="../../../../../../assets/portfolio/fa/css/all.min.css">
+    <!-- Google Fonts - Caveat (pro nadpisy) & Plus Jakarta Sans -->
+    <link rel="stylesheet" href="../../../../../../assets/portfolio/pisma/pisma.css">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fdf8f5;
+            background-image: 
+                radial-gradient(#e2ece9 1.5px, transparent 1.5px), 
+                radial-gradient(#fbcfe8 1.5px, #fdf8f5 1.5px);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+        }
+
+        .font-hand {
+            font-family: 'Caveat', cursive;
+        }
+
+        /* Pastelové kartičky a plátno s květinovým nádechem */
+        .canvas-card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(12px);
+            border: 2px solid #fce7f3;
+            box-shadow: 0 10px 30px -5px rgba(244, 114, 182, 0.15);
+        }
+
+        /* Otáčecí kartičky (Flip Card Effect) */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Animace plovoucích květin */
+        @keyframes floating {
+            0% { transform: translateY(0px) rotate(0deg) scale(1); }
+            50% { transform: translateY(-10px) rotate(6deg) scale(1.05); }
+            100% { transform: translateY(0px) rotate(0deg) scale(1); }
+        }
+        .float-flower {
+            animation: floating 4s ease-in-out infinite;
+        }
+        .float-flower-slow {
+            animation: floating 6s ease-in-out infinite;
+        }
+
+        /* Toast notifikace */
+        #toast-notification {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Pixel Grid Canvas */
+        .pixel-cell {
+            transition: background-color 0.1s ease;
+        }
+    </style>
+<style id="gp-tw">*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0}.-bottom-10{bottom:-2.5rem}.-bottom-4{bottom:-1rem}.-left-4{left:-1rem}.-right-10{right:-2.5rem}.-right-4{right:-1rem}.-top-4{top:-1rem}.bottom-1\/3{bottom:33.333333%}.bottom-1\/4{bottom:25%}.bottom-10{bottom:2.5rem}.bottom-8{bottom:2rem}.left-1\/2{left:50%}.left-1\/4{left:25%}.left-12{left:3rem}.left-4{left:1rem}.left-6{left:1.5rem}.left-8{left:2rem}.right-10{right:2.5rem}.right-16{right:4rem}.right-20{right:5rem}.right-8{right:2rem}.top-1\/2{top:50%}.top-1\/3{top:33.333333%}.top-1\/4{top:25%}.top-12{top:3rem}.top-4{top:1rem}.top-5{top:1.25rem}.top-6{top:1.5rem}.z-10{z-index:10}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.my-4{margin-top:1rem;margin-bottom:1rem}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mr-1{margin-right:.25rem}.mt-1{margin-top:.25rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-5{margin-top:1.25rem}.mt-6{margin-top:1.5rem}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-12{height:3rem}.h-16{height:4rem}.h-20{height:5rem}.h-24{height:6rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-64{height:16rem}.h-7{height:1.75rem}.h-8{height:2rem}.h-full{height:100%}.min-h-\[50px\]{min-height:50px}.min-h-full{min-height:100%}.w-12{width:3rem}.w-16{width:4rem}.w-20{width:5rem}.w-24{width:6rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-7{width:1.75rem}.w-8{width:2rem}.w-full{width:100%}.max-w-7xl{max-width:80rem}.max-w-full{max-width:100%}.max-w-xl{max-width:36rem}.flex-1{flex:1 1 0%}.-translate-x-1\/2{--tw-translate-x:-50%}.-translate-x-1\/2,.-translate-y-20{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-20{--tw-translate-y:-5rem}.scale-110{--tw-scale-x:1.1;--tw-scale-y:1.1}.scale-110,.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes bounce{0%,to{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}.animate-bounce{animation:bounce 1s infinite}.cursor-pointer{cursor:pointer}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0\.5{gap:.125rem}.gap-1{gap:.25rem}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.25rem*var(--tw-space-y-reverse))}.space-y-1\.5>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.375rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.375rem*var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem*var(--tw-space-y-reverse))}.space-y-2\.5>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.625rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.625rem*var(--tw-space-y-reverse))}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.overflow-auto{overflow:auto}.overflow-hidden{overflow:hidden}.overflow-x-hidden{overflow-x:hidden}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-md{border-radius:.375rem}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.border-0{border-width:0}.border-2{border-width:2px}.border-l-4{border-left-width:4px}.border-r{border-right-width:1px}.border-dashed{border-style:dashed}.border-amber-100{--tw-border-opacity:1;border-color:rgb(254 243 199/var(--tw-border-opacity,1))}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138/var(--tw-border-opacity,1))}.border-amber-200\/80{border-color:hsla(48,97%,77%,.8)}.border-black\/10{border-color:rgba(0,0,0,.1)}.border-emerald-200{--tw-border-opacity:1;border-color:rgb(167 243 208/var(--tw-border-opacity,1))}.border-emerald-300{--tw-border-opacity:1;border-color:rgb(110 231 183/var(--tw-border-opacity,1))}.border-emerald-400{--tw-border-opacity:1;border-color:rgb(52 211 153/var(--tw-border-opacity,1))}.border-emerald-500{--tw-border-opacity:1;border-color:rgb(16 185 129/var(--tw-border-opacity,1))}.border-pink-100{--tw-border-opacity:1;border-color:rgb(252 231 243/var(--tw-border-opacity,1))}.border-pink-200{--tw-border-opacity:1;border-color:rgb(251 207 232/var(--tw-border-opacity,1))}.border-pink-200\/80{border-color:rgba(251,207,232,.8)}.border-rose-100{--tw-border-opacity:1;border-color:rgb(255 228 230/var(--tw-border-opacity,1))}.border-rose-200{--tw-border-opacity:1;border-color:rgb(254 205 211/var(--tw-border-opacity,1))}.border-rose-200\/80{border-color:rgba(254,205,211,.8)}.border-rose-300{--tw-border-opacity:1;border-color:rgb(253 164 175/var(--tw-border-opacity,1))}.border-rose-400{--tw-border-opacity:1;border-color:rgb(251 113 133/var(--tw-border-opacity,1))}.border-sky-200{--tw-border-opacity:1;border-color:rgb(186 230 253/var(--tw-border-opacity,1))}.border-stone-100{--tw-border-opacity:1;border-color:rgb(245 245 244/var(--tw-border-opacity,1))}.border-stone-200{--tw-border-opacity:1;border-color:rgb(231 229 228/var(--tw-border-opacity,1))}.border-stone-300{--tw-border-opacity:1;border-color:rgb(214 211 209/var(--tw-border-opacity,1))}.border-white{--tw-border-opacity:1;border-color:rgb(255 255 255/var(--tw-border-opacity,1))}.border-l-amber-400{--tw-border-opacity:1;border-left-color:rgb(251 191 36/var(--tw-border-opacity,1))}.border-l-emerald-400{--tw-border-opacity:1;border-left-color:rgb(52 211 153/var(--tw-border-opacity,1))}.border-l-rose-400{--tw-border-opacity:1;border-left-color:rgb(251 113 133/var(--tw-border-opacity,1))}.border-l-sky-400{--tw-border-opacity:1;border-left-color:rgb(56 189 248/var(--tw-border-opacity,1))}.bg-\[\#264653\]{--tw-bg-opacity:1;background-color:rgb(38 70 83/var(--tw-bg-opacity,1))}.bg-\[\#2a9d8f\]{--tw-bg-opacity:1;background-color:rgb(42 157 143/var(--tw-bg-opacity,1))}.bg-\[\#a8ded6\]{--tw-bg-opacity:1;background-color:rgb(168 222 214/var(--tw-bg-opacity,1))}.bg-\[\#e76f51\]{--tw-bg-opacity:1;background-color:rgb(231 111 81/var(--tw-bg-opacity,1))}.bg-\[\#e9c46a\]{--tw-bg-opacity:1;background-color:rgb(233 196 106/var(--tw-bg-opacity,1))}.bg-\[\#f3a683\]{--tw-bg-opacity:1;background-color:rgb(243 166 131/var(--tw-bg-opacity,1))}.bg-\[\#f4a261\]{--tw-bg-opacity:1;background-color:rgb(244 162 97/var(--tw-bg-opacity,1))}.bg-amber-100{--tw-bg-opacity:1;background-color:rgb(254 243 199/var(--tw-bg-opacity,1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235/var(--tw-bg-opacity,1))}.bg-amber-50\/60{background-color:rgba(255,251,235,.6)}.bg-emerald-100{--tw-bg-opacity:1;background-color:rgb(209 250 229/var(--tw-bg-opacity,1))}.bg-emerald-50{--tw-bg-opacity:1;background-color:rgb(236 253 245/var(--tw-bg-opacity,1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129/var(--tw-bg-opacity,1))}.bg-pink-200{--tw-bg-opacity:1;background-color:rgb(251 207 232/var(--tw-bg-opacity,1))}.bg-pink-50{--tw-bg-opacity:1;background-color:rgb(253 242 248/var(--tw-bg-opacity,1))}.bg-pink-50\/60{background-color:rgba(253,242,248,.6)}.bg-rose-100{--tw-bg-opacity:1;background-color:rgb(255 228 230/var(--tw-bg-opacity,1))}.bg-rose-100\/80{background-color:rgba(255,228,230,.8)}.bg-rose-200{--tw-bg-opacity:1;background-color:rgb(254 205 211/var(--tw-bg-opacity,1))}.bg-rose-50{--tw-bg-opacity:1;background-color:rgb(255 241 242/var(--tw-bg-opacity,1))}.bg-rose-50\/60{background-color:rgba(255,241,242,.6)}.bg-sky-100{--tw-bg-opacity:1;background-color:rgb(224 242 254/var(--tw-bg-opacity,1))}.bg-sky-50{--tw-bg-opacity:1;background-color:rgb(240 249 255/var(--tw-bg-opacity,1))}.bg-stone-100{--tw-bg-opacity:1;background-color:rgb(245 245 244/var(--tw-bg-opacity,1))}.bg-stone-200{--tw-bg-opacity:1;background-color:rgb(231 229 228/var(--tw-bg-opacity,1))}.bg-stone-300{--tw-bg-opacity:1;background-color:rgb(214 211 209/var(--tw-bg-opacity,1))}.bg-stone-50{--tw-bg-opacity:1;background-color:rgb(250 250 249/var(--tw-bg-opacity,1))}.bg-stone-50\/70{background-color:hsla(60,9%,98%,.7)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.bg-white\/80{background-color:hsla(0,0%,100%,.8)}.bg-white\/90{background-color:hsla(0,0%,100%,.9)}.bg-gradient-to-b{background-image:linear-gradient(to bottom,var(--tw-gradient-stops))}.bg-gradient-to-br{background-image:linear-gradient(to bottom right,var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}.bg-gradient-to-tr{background-image:linear-gradient(to top right,var(--tw-gradient-stops))}.from-emerald-100{--tw-gradient-from:#d1fae5 var(--tw-gradient-from-position);--tw-gradient-to:rgba(209,250,229,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-emerald-400{--tw-gradient-from:#34d399 var(--tw-gradient-from-position);--tw-gradient-to:rgba(52,211,153,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-emerald-50\/80{--tw-gradient-from:rgba(236,253,245,.8) var(--tw-gradient-from-position);--tw-gradient-to:rgba(236,253,245,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-emerald-500{--tw-gradient-from:#10b981 var(--tw-gradient-from-position);--tw-gradient-to:rgba(16,185,129,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-rose-100\/70{--tw-gradient-from:rgba(255,228,230,.7) var(--tw-gradient-from-position);--tw-gradient-to:rgba(255,228,230,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-rose-100\/90{--tw-gradient-from:rgba(255,228,230,.9) var(--tw-gradient-from-position);--tw-gradient-to:rgba(255,228,230,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-rose-300{--tw-gradient-from:#fda4af var(--tw-gradient-from-position);--tw-gradient-to:rgba(253,164,175,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-rose-500{--tw-gradient-from:#f43f5e var(--tw-gradient-from-position);--tw-gradient-to:rgba(244,63,94,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-white{--tw-gradient-from:#fff var(--tw-gradient-from-position);--tw-gradient-to:hsla(0,0%,100%,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.via-pink-200{--tw-gradient-to:rgba(251,207,232,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#fbcfe8 var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-pink-400{--tw-gradient-to:rgba(244,114,182,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#f472b6 var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-pink-50\/90{--tw-gradient-to:rgba(253,242,248,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),rgba(253,242,248,.9) var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-rose-50\/30{--tw-gradient-to:rgba(255,241,242,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),rgba(255,241,242,.3) var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-rose-50\/40{--tw-gradient-to:rgba(255,241,242,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),rgba(255,241,242,.4) var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-white{--tw-gradient-to:hsla(0,0%,100%,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#fff var(--tw-gradient-via-position),var(--tw-gradient-to)}.to-emerald-100\/90{--tw-gradient-to:rgba(209,250,229,.9) var(--tw-gradient-to-position)}.to-emerald-200{--tw-gradient-to:#a7f3d0 var(--tw-gradient-to-position)}.to-pink-100\/50{--tw-gradient-to:rgba(252,231,243,.5) var(--tw-gradient-to-position)}.to-pink-100\/70{--tw-gradient-to:rgba(252,231,243,.7) var(--tw-gradient-to-position)}.to-pink-50\/50{--tw-gradient-to:rgba(253,242,248,.5) var(--tw-gradient-to-position)}.to-pink-50\/80{--tw-gradient-to:rgba(253,242,248,.8) var(--tw-gradient-to-position)}.to-pink-500{--tw-gradient-to:#ec4899 var(--tw-gradient-to-position)}.to-rose-50\/30{--tw-gradient-to:rgba(255,241,242,.3) var(--tw-gradient-to-position)}.to-rose-500{--tw-gradient-to:#f43f5e var(--tw-gradient-to-position)}.to-teal-100{--tw-gradient-to:#ccfbf1 var(--tw-gradient-to-position)}.to-teal-500{--tw-gradient-to:#14b8a6 var(--tw-gradient-to-position)}.p-0\.5{padding:.125rem}.p-1{padding:.25rem}.p-2{padding:.5rem}.p-3{padding:.75rem}.p-3\.5{padding:.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pb-12{padding-bottom:3rem}.pl-2{padding-left:.5rem}.pl-3{padding-left:.75rem}.pr-4{padding-right:1rem}.pt-2{padding-top:.5rem}.pt-6{padding-top:1.5rem}.text-left{text-align:left}.text-center{text-align:center}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-5xl{font-size:3rem;line-height:1}.text-9xl{font-size:8rem;line-height:1}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-relaxed{line-height:1.625}.tracking-wider{letter-spacing:.05em}.text-amber-500{--tw-text-opacity:1;color:rgb(245 158 11/var(--tw-text-opacity,1))}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6/var(--tw-text-opacity,1))}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9/var(--tw-text-opacity,1))}.text-emerald-500{--tw-text-opacity:1;color:rgb(16 185 129/var(--tw-text-opacity,1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105/var(--tw-text-opacity,1))}.text-emerald-700{--tw-text-opacity:1;color:rgb(4 120 87/var(--tw-text-opacity,1))}.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70/var(--tw-text-opacity,1))}.text-pink-500{--tw-text-opacity:1;color:rgb(236 72 153/var(--tw-text-opacity,1))}.text-pink-700{--tw-text-opacity:1;color:rgb(190 24 93/var(--tw-text-opacity,1))}.text-rose-100{--tw-text-opacity:1;color:rgb(255 228 230/var(--tw-text-opacity,1))}.text-rose-400{--tw-text-opacity:1;color:rgb(251 113 133/var(--tw-text-opacity,1))}.text-rose-500{--tw-text-opacity:1;color:rgb(244 63 94/var(--tw-text-opacity,1))}.text-rose-600{--tw-text-opacity:1;color:rgb(225 29 72/var(--tw-text-opacity,1))}.text-rose-700{--tw-text-opacity:1;color:rgb(190 18 60/var(--tw-text-opacity,1))}.text-rose-800{--tw-text-opacity:1;color:rgb(159 18 57/var(--tw-text-opacity,1))}.text-sky-500{--tw-text-opacity:1;color:rgb(14 165 233/var(--tw-text-opacity,1))}.text-sky-600{--tw-text-opacity:1;color:rgb(2 132 199/var(--tw-text-opacity,1))}.text-sky-700{--tw-text-opacity:1;color:rgb(3 105 161/var(--tw-text-opacity,1))}.text-sky-800{--tw-text-opacity:1;color:rgb(7 89 133/var(--tw-text-opacity,1))}.text-stone-400{--tw-text-opacity:1;color:rgb(168 162 158/var(--tw-text-opacity,1))}.text-stone-500{--tw-text-opacity:1;color:rgb(120 113 108/var(--tw-text-opacity,1))}.text-stone-600{--tw-text-opacity:1;color:rgb(87 83 78/var(--tw-text-opacity,1))}.text-stone-700{--tw-text-opacity:1;color:rgb(68 64 60/var(--tw-text-opacity,1))}.text-stone-800{--tw-text-opacity:1;color:rgb(41 37 36/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.opacity-0{opacity:0}.opacity-10{opacity:.1}.opacity-30{opacity:.3}.opacity-35{opacity:.35}.opacity-40{opacity:.4}.opacity-60{opacity:.6}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgba(0,0,0,.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color)}.shadow-inner,.shadow-lg{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color),0 4px 6px -4px var(--tw-shadow-color)}.shadow-md{--tw-shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color),0 2px 4px -2px var(--tw-shadow-color)}.shadow-md,.shadow-sm{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgba(0,0,0,.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color),0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.blur{--tw-blur:blur(8px)}.blur,.blur-2xl{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-2xl{--tw-blur:blur(40px)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px)}.backdrop-blur-md,.backdrop-filter{-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-500{transition-duration:.5s}.ease-in-out{transition-timing-function:cubic-bezier(.4,0,.2,1)}.hover\:bg-emerald-600:hover{--tw-bg-opacity:1;background-color:rgb(5 150 105/var(--tw-bg-opacity,1))}.hover\:bg-rose-200:hover{--tw-bg-opacity:1;background-color:rgb(254 205 211/var(--tw-bg-opacity,1))}.hover\:bg-stone-100:hover{--tw-bg-opacity:1;background-color:rgb(245 245 244/var(--tw-bg-opacity,1))}.hover\:bg-stone-200:hover{--tw-bg-opacity:1;background-color:rgb(231 229 228/var(--tw-bg-opacity,1))}.hover\:bg-white\/60:hover{background-color:hsla(0,0%,100%,.6)}.hover\:from-emerald-600:hover{--tw-gradient-from:#059669 var(--tw-gradient-from-position);--tw-gradient-to:rgba(5,150,105,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.hover\:to-teal-600:hover{--tw-gradient-to:#0d9488 var(--tw-gradient-to-position)}.hover\:text-rose-700:hover{--tw-text-opacity:1;color:rgb(190 18 60/var(--tw-text-opacity,1))}@media (min-width:640px){.sm\:h-8{height:2rem}.sm\:w-8{width:2rem}.sm\:flex-row{flex-direction:row}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:text-left{text-align:left}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-sm{font-size:.875rem;line-height:1.25rem}}@media (min-width:768px){.md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (min-width:1024px){.lg\:col-span-3{grid-column:span 3/span 3}.lg\:col-span-5{grid-column:span 5/span 5}.lg\:col-span-7{grid-column:span 7/span 7}.lg\:col-span-9{grid-column:span 9/span 9}.lg\:grid-cols-12{grid-template-columns:repeat(12,minmax(0,1fr))}.lg\:px-8{padding-left:2rem;padding-right:2rem}}</style>
+<!-- gp-ramec:css --><style>
+.gp-bar,.gp-foot{align-self:stretch;width:100%;box-sizing:border-box;background:#111;color:#c9c9c9;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:10px 16px;text-align:left}
+.gp-bar a,.gp-foot a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.gp-bar a:hover,.gp-foot a:hover{color:#ff972e}
+.gp-bar{background:transparent;color:inherit;padding:10px 16px 0}
+.gp-bar a{color:inherit;opacity:.85}
+.gp-bar a:hover{opacity:1;color:inherit}
+.gp-foot{margin-top:32px;position:relative;z-index:1}
+.gp-in{max-width:720px;margin:0 auto;display:flex;flex-wrap:wrap;gap:2px 14px}
+</style><!-- /gp-ramec:css -->
+</head>
+<body class="min-h-full text-stone-700 pb-12 relative overflow-x-hidden">
+<!-- gp-ramec:bar --><div class="gp-bar"><div class="gp-in"><a href="../../../../../#/2026-27/informatika/4a-bst/bitmapova-grafika">← Zpět do portfolia</a></div></div><!-- /gp-ramec:bar -->
+
+
+    <!-- BOHATÉ SAKURY A JARNÍ KVĚTINY V POZADÍ -->
+    <div class="fixed top-4 left-4 text-4xl opacity-40 pointer-events-none float-flower">🌸</div>
+    <div class="fixed top-12 left-1/4 text-3xl opacity-30 pointer-events-none float-flower-slow" style="animation-delay: 0.5s;">🌺</div>
+    <div class="fixed top-1/3 left-8 text-3xl opacity-30 pointer-events-none float-flower" style="animation-delay: 1s;">🌷</div>
+    <div class="fixed bottom-1/3 left-12 text-4xl opacity-35 pointer-events-none float-flower-slow" style="animation-delay: 2s;">🌻</div>
+    <div class="fixed bottom-10 left-6 text-5xl opacity-30 pointer-events-none float-flower" style="animation-delay: 1.2s;">🌸</div>
+    
+    <div class="fixed top-6 right-8 text-4xl opacity-40 pointer-events-none float-flower-slow" style="animation-delay: 1.5s;">🌸</div>
+    <div class="fixed top-1/4 right-20 text-3xl opacity-30 pointer-events-none float-flower" style="animation-delay: 0.8s;">🪷</div>
+    <div class="fixed top-1/2 right-10 text-4xl opacity-30 pointer-events-none float-flower-slow" style="animation-delay: 2.2s;">🌼</div>
+    <div class="fixed bottom-1/4 right-16 text-3xl opacity-35 pointer-events-none float-flower" style="animation-delay: 1.8s;">🌹</div>
+    <div class="fixed bottom-8 right-8 text-5xl opacity-40 pointer-events-none float-flower-slow" style="animation-delay: 2.7s;">🌸</div>
+
+    <!-- TOAST NOTIFIKACE ZA ZÍSKÁNÍ KVĚTIN/LEVELUP -->
+    <div id="toast-notification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transform -translate-y-20 opacity-0 pointer-events-none bg-gradient-to-r from-rose-500 to-pink-500 text-white px-6 py-3 rounded-2xl shadow-xl border border-rose-300 flex items-center gap-3">
+        <span class="text-2xl" id="toast-icon">🌸</span>
+        <div>
+            <h4 class="font-bold text-sm" id="toast-title">Odměna!</h4>
+            <p class="text-xs text-rose-100" id="toast-msg">+5 květin do sbírky</p>
+        </div>
+    </div>
+
+    <!-- HLAVNÍ CONTAINER -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        
+        <!-- HORNÍ KVĚTINOVÁ HLAVIČKA -->
+        <header class="mb-8 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center gap-4 bg-gradient-to-r from-rose-100/90 via-pink-50/90 to-emerald-100/90 p-6 rounded-3xl border-2 border-rose-200 shadow-md backdrop-blur-md relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 text-9xl opacity-10 pointer-events-none">🌸</div>
+            <div class="flex items-center gap-4 relative z-10">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-300 via-pink-200 to-emerald-200 flex items-center justify-center text-4xl border-2 border-white shadow-md float-flower">
+                    🌸
+                </div>
+                <div>
+                    <span class="inline-block px-3 py-1 bg-white/90 text-rose-600 rounded-full text-xs font-extrabold uppercase tracking-wider border border-rose-200 mb-1 shadow-sm">
+                        🌸 Rozkvetlá Informatická Zahrada 🌸
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-black text-stone-800 flex items-center gap-2 font-hand">
+                        Květinová Zahrada Rastrové Grafiky
+                    </h1>
+                </div>
+            </div>
+
+            <!-- DENNÍ SÉRIE & STATY -->
+            <div class="flex items-center gap-3 bg-white/90 p-3 px-5 rounded-2xl border-2 border-pink-200 shadow-sm relative z-10">
+                <div class="flex items-center gap-2 pr-4 border-r border-rose-200">
+                    <span class="text-2xl float-flower">🔥</span>
+                    <div class="text-left">
+                        <div class="text-[10px] text-stone-400 font-extrabold uppercase">Denní Série</div>
+                        <div class="text-xs font-black text-stone-700"><span id="streak-count">1</span> den 🌺</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 pl-2">
+                    <span class="text-2xl float-flower" style="animation-delay: 1s;">🌸</span>
+                    <div class="text-left">
+                        <div class="text-[10px] text-stone-400 font-extrabold uppercase">Vypěstováno</div>
+                        <div class="text-xs font-black text-rose-600"><span id="total-flowers">0</span> 🌸</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- HLAVNÍ OBSAHOVÁ MŘÍŽKA S BOČNÍM PANELU LEVELŮ -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- LEVÝ OBSAHOVÝ PANEL (ZÁLOŽKY) -->
+            <main class="lg:col-span-9 space-y-6">
+                
+                <!-- NAVIGAČNÍ ZÁLOŽKY -->
+                <nav class="flex flex-wrap gap-2 p-2 bg-gradient-to-r from-rose-100/70 to-pink-100/70 rounded-2xl backdrop-blur-md border-2 border-rose-200 shadow-sm">
+                    <button onclick="switchTab('theory')" id="tab-btn-theory" class="tab-btn active px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 bg-white text-rose-700 shadow-sm border border-rose-200">
+                        <span>🌿</span> Záhon Znalostí
+                    </button>
+                    <button onclick="switchTab('cards')" id="tab-btn-cards" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 text-stone-600 hover:text-rose-700 hover:bg-white/60">
+                        <span>🎴</span> Květinové Kartičky
+                    </button>
+                    <button onclick="switchTab('pixelart')" id="tab-btn-pixelart" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 text-stone-600 hover:text-rose-700 hover:bg-white/60">
+                        <span>🎨</span> Pixel Art RGB
+                    </button>
+                    <button onclick="switchTab('quiz')" id="tab-btn-quiz" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 text-stone-600 hover:text-rose-700 hover:bg-white/60">
+                        <span>🌸</span> Zahradní Kvíz
+                    </button>
+                    <button onclick="switchTab('calc')" id="tab-btn-calc" class="tab-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 text-stone-600 hover:text-rose-700 hover:bg-white/60">
+                        <span>🧮</span> Kalkulačka
+                    </button>
+                </nav>
+
+                <!-- 1. ZÁHON ZNALOSTÍ (TEORIE TABULE) -->
+                <section id="content-theory" class="tab-content space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <!-- KARTA 1 -->
+                        <div class="canvas-card p-6 rounded-3xl border-l-4 border-l-emerald-400">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">1</span>
+                                <h3 class="text-lg font-bold text-stone-800">Rastr, Bitmapa & Pixel</h3>
+                            </div>
+                            <ul class="space-y-2 text-xs sm:text-sm text-stone-600 leading-relaxed">
+                                <li>• <strong>Rastr / Bitmapa:</strong> Mřížka pravidelně uspořádaných barevných bodů (pixelů).</li>
+                                <li>• <strong>Pixel (px):</strong> Nejmenší samostatný prvek rastrovaného obrazu nesoucí informaci o barvě.</li>
+                                <li>• <strong>Rozlišení:</strong> Celkový počet pixelů udávaný jako Šířka × Výška (např. 1920 × 1080 px).</li>
+                            </ul>
+                        </div>
+
+                        <!-- KARTA 2 -->
+                        <div class="canvas-card p-6 rounded-3xl border-l-4 border-l-rose-400">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold">2</span>
+                                <h3 class="text-lg font-bold text-stone-800">RGB & Barevná Hloubka</h3>
+                            </div>
+                            <ul class="space-y-2 text-xs sm:text-sm text-stone-600 leading-relaxed">
+                                <li>• <strong>Aditivní model RGB:</strong> Červená (Red), Zelená (Green), Modrá (Blue).</li>
+                                <li>• <strong>8 bitů na kanál:</strong> Rozsah hodnot 0 až 255 (2⁸ = 256 úrovní jasu pro každý kanál).</li>
+                                <li>• <strong>24bitová hloubka (True Color):</strong> Celkem 2²⁴ = 16 777 216 barevných kombinací (~16,7 milionu barev).</li>
+                            </ul>
+                        </div>
+
+                        <!-- KARTA 3 -->
+                        <div class="canvas-card p-6 rounded-3xl border-l-4 border-l-sky-400">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">3</span>
+                                <h3 class="text-lg font-bold text-stone-800">Rozlišení & Úhlopříčka Displeje</h3>
+                            </div>
+                            <ul class="space-y-2 text-xs sm:text-sm text-stone-600 leading-relaxed">
+                                <li>• <strong>Full HD:</strong> 1920 × 1080 px ≈ 2,07 Megapixelu (Mpx).</li>
+                                <li>• <strong>4K UHD:</strong> 3840 × 2160 px ≈ 8,29 Megapixelu (Mpx).</li>
+                                <li>• <strong>Převod palce na mm/cm:</strong> 1" (1 palec) = 25,4 mm = 2,54 cm.</li>
+                                <li>• <strong>Příklady úhlopříček:</strong> 55" ≈ 139,7 cm, 65" ≈ 165,1 cm.</li>
+                            </ul>
+                        </div>
+
+                        <!-- KARTA 4 -->
+                        <div class="canvas-card p-6 rounded-3xl border-l-4 border-l-amber-400">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">4</span>
+                                <h3 class="text-lg font-bold text-stone-800">Poměry Stran & Formáty</h3>
+                            </div>
+                            <ul class="space-y-2 text-xs sm:text-sm text-stone-600 leading-relaxed">
+                                <li>• <strong>Poměry stran:</strong> 16:9 (širokoúhlé monitory), 4:3 (starší obrazovky), 3:2, 1:1 (čtverec).</li>
+                                <li>• <strong>Formáty souborů:</strong></li>
+                                <li class="pl-3">• <strong>JPG:</strong> Ztrátová komprese, ideální pro fotografie.</li>
+                                <li class="pl-3">• <strong>PNG:</strong> Bezztrátová komprese, podpora průhlednosti (alfa kanál).</li>
+                                <li class="pl-3">• <strong>RAW:</strong> Surová nekombinovaná data ze snímače fotoaparátu.</li>
+                                <li class="pl-3">• <strong>PSD:</strong> Pracovní projektový soubor nástroje Adobe Photoshop s vrstvami.</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- 2. OTÁČECÍ KARTIČKY (STUDIJNÍ KARTY) -->
+                <section id="content-cards" class="tab-content hidden space-y-6">
+                    <div class="canvas-card p-6 rounded-3xl text-center max-w-xl mx-auto border-2 border-pink-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">🌸 Kartička <span id="card-current-num">1</span> z <span id="card-total-num">8</span></span>
+                            <span class="text-xs font-extrabold text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">Zvládnuto: <span id="card-mastered-count">0</span> 🌺</span>
+                        </div>
+
+                        <!-- 3D FLIP CARD CONTAINER -->
+                        <div class="w-full h-64 perspective-1000 cursor-pointer my-4" onclick="flipCard()">
+                            <div id="flashcard-inner" class="relative w-full h-full duration-500 transform-style-3d shadow-lg rounded-3xl border-2 border-rose-200 bg-white">
+                                <!-- PŘEDNÍ STRANA (POJEM) -->
+                                <div class="absolute inset-0 w-full h-full rounded-3xl p-6 bg-gradient-to-br from-white via-rose-50/40 to-pink-100/50 flex flex-col items-center justify-center backface-hidden">
+                                    <span class="px-3 py-1 bg-rose-200 text-rose-800 rounded-full text-xs font-black mb-3 border border-rose-300">🌸 POJEM 🌸</span>
+                                    <h3 class="text-2xl font-black text-stone-800 mb-2" id="card-front-title">...</h3>
+                                    <p class="text-xs text-rose-400 mt-4 font-bold"><i class="fa-solid fa-rotate mr-1"></i> Kliknutím otočíš kartičku</p>
+                                </div>
+                                <!-- ZADNÍ STRANA (DEFINICE) -->
+                                <div class="absolute inset-0 w-full h-full rounded-3xl p-6 bg-gradient-to-br from-emerald-50/80 via-white to-pink-50/80 flex flex-col items-center justify-center backface-hidden rotate-y-180 border-2 border-emerald-200">
+                                    <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-black mb-3 border border-emerald-300">🌿 DEFINICE / HODNOTA 🌿</span>
+                                    <p class="text-base font-bold text-stone-700 leading-relaxed text-center" id="card-back-desc">...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- OVLÁDACÍ TLAČÍTKA -->
+                        <div class="flex gap-4 mt-6">
+                            <button onclick="handleCardAnswer(false)" class="flex-1 py-3 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-2xl font-extrabold text-sm transition-all border border-rose-300 flex items-center justify-center gap-2 shadow-sm">
+                                ❌ Nevěděl/a jsem
+                            </button>
+                            <button onclick="handleCardAnswer(true)" class="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl font-extrabold text-sm transition-all shadow-md flex items-center justify-center gap-2 border border-emerald-400">
+                                🌸 Uhodl/a jsem! (+3 🌸)
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. PIXEL ART ATELIÉR -->
+                <section id="content-pixelart" class="tab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        
+                        <!-- MALÍŘSKÁ MŘÍŽKA -->
+                        <div class="lg:col-span-7 canvas-card p-6 rounded-3xl flex flex-col items-center">
+                            <div class="flex justify-between items-center w-full mb-4">
+                                <h3 class="text-lg font-bold text-stone-800 flex items-center gap-2">🎨 Mřížka Pixelů</h3>
+                                <div class="flex gap-2">
+                                    <button onclick="setGridSize(8)" class="px-3 py-1 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-bold">8×8</button>
+                                    <button onclick="setGridSize(16)" class="px-3 py-1 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-bold">16×16</button>
+                                    <button onclick="clearPixelGrid()" class="px-3 py-1 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-xl text-xs font-bold">Vymazat</button>
+                                </div>
+                            </div>
+
+                            <!-- CANVAS GRID -->
+                            <div id="pixel-grid" class="grid gap-0.5 bg-stone-300 p-1 rounded-2xl shadow-inner max-w-full overflow-auto"></div>
+
+                            <!-- ŠABLONY -->
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                <span class="text-xs font-bold text-stone-400 py-1">Předlohy:</span>
+                                <button onclick="loadTemplate('flower')" class="px-3 py-1 bg-pink-50 text-pink-700 border border-pink-200 rounded-xl text-xs font-bold">🌸 Květina</button>
+                                <button onclick="loadTemplate('heart')" class="px-3 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold">❤️ Srdce</button>
+                                <button onclick="loadTemplate('smile')" class="px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold">😊 Smajlík</button>
+                            </div>
+                        </div>
+
+                        <!-- RGB INSPEKTOR & DATA -->
+                        <div class="lg:col-span-5 space-y-6">
+                            
+                            <!-- BAREVNÁ PALETA -->
+                            <div class="canvas-card p-5 rounded-3xl space-y-3">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-stone-400">Výběr Barvy Štětce</h4>
+                                <div class="flex items-center gap-3">
+                                    <input type="color" id="color-picker" value="#e76f51" onchange="updateSelectedColor(this.value)" class="w-12 h-12 rounded-xl cursor-pointer border-0">
+                                    <div>
+                                        <div class="text-xs font-bold text-stone-700" id="color-hex-display">HEX: #E76F51</div>
+                                        <div class="text-xs text-stone-500" id="color-rgb-display">RGB(231, 111, 81)</div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5 pt-2">
+                                    <button onclick="updateSelectedColor('#e76f51')" class="w-7 h-7 rounded-lg bg-[#e76f51] border border-black/10"></button>
+                                    <button onclick="updateSelectedColor('#f4a261')" class="w-7 h-7 rounded-lg bg-[#f4a261] border border-black/10"></button>
+                                    <button onclick="updateSelectedColor('#e9c46a')" class="w-7 h-7 rounded-lg bg-[#e9c46a] border border-black/10"></button>
+                                    <button onclick="updateSelectedColor('#2a9d8f')" class="w-7 h-7 rounded-lg bg-[#2a9d8f] border border-black/10"></button>
+                                    <button onclick="updateSelectedColor('#a8ded6')" class="w-7 h-7 rounded-lg bg-[#a8ded6] border border-black/10"></button>
+                                    <button onclick="updateSelectedColor('#f3a683')" class="w-7 h-7 rounded-lg bg-[#f3a683] border border-black/10"></button>
+                                    <button onclick="updateSelectedColor('#ffffff')" class="w-7 h-7 rounded-lg bg-white border border-stone-300"></button>
+                                    <button onclick="updateSelectedColor('#264653')" class="w-7 h-7 rounded-lg bg-[#264653] border border-black/10"></button>
+                                </div>
+                            </div>
+
+                            <!-- INSKPEKTOR ACTIVE PIXELU -->
+                            <div class="canvas-card p-5 rounded-3xl space-y-2">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-stone-400">Inspekce Pixelu v Paměti</h4>
+                                <div class="p-3 bg-stone-50 rounded-2xl border border-stone-200 font-mono text-xs space-y-1">
+                                    <div>Pozice [X, Y]: <span id="hover-pos" class="font-bold text-emerald-600">[0, 0]</span></div>
+                                    <div>Složka R (Red): <span id="hover-r" class="font-bold text-rose-500">255</span></div>
+                                    <div>Složka G (Green): <span id="hover-g" class="font-bold text-emerald-500">255</span></div>
+                                    <div>Složka B (Blue): <span id="hover-b" class="font-bold text-sky-500">255</span></div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- 4. ZAHRADNÍ KVÍZ -->
+                <section id="content-quiz" class="tab-content hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        
+                        <!-- Kvízové Otázky (Levá strana) -->
+                        <div class="lg:col-span-7 canvas-card p-6 rounded-3xl border border-amber-200/80 shadow-sm" id="quiz-container">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">Otázka <span id="quiz-q-num">1</span> z <span id="quiz-q-total">8</span></span>
+                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">Skóre: <span id="quiz-score">0</span></span>
+                            </div>
+
+                            <h3 class="text-base font-semibold text-stone-800 mb-4" id="quiz-question-text">...</h3>
+
+                            <div class="space-y-2.5 mb-6" id="quiz-options"></div>
+
+                            <div id="quiz-feedback" class="hidden mb-4"></div>
+
+                            <button id="quiz-next-btn" onclick="nextQuestion()" class="hidden w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
+                                Další otázka <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+
+                        <!-- Plátno Malování v Kvízu (Pravá strana vedle otázek) -->
+                        <div class="lg:col-span-5 space-y-6">
+                            <div class="canvas-card p-6 rounded-3xl border border-rose-200/80 shadow-sm flex flex-col items-center sticky top-6">
+                                <h3 class="text-lg font-bold font-hand text-stone-800 mb-2 flex items-center gap-2">
+                                    <span>🌸</span> Malířské Plátno Kvízu
+                                </h3>
+                                <p class="text-xs text-stone-500 text-center mb-4 leading-relaxed">
+                                    Za každou správnou odpověď vykvetou na plátně nové části jarní sakury!
+                                </p>
+
+                                <!-- Paleta odemknutých barev kvízu -->
+                                <div class="flex gap-1.5 mb-4 p-2 bg-stone-50 rounded-2xl border border-stone-200">
+                                    <div id="palette-spot-0" class="w-5 h-5 rounded-full bg-stone-200 border border-stone-300 transition-all"></div>
+                                    <div id="palette-spot-1" class="w-5 h-5 rounded-full bg-stone-200 border border-stone-300 transition-all"></div>
+                                    <div id="palette-spot-2" class="w-5 h-5 rounded-full bg-stone-200 border border-stone-300 transition-all"></div>
+                                    <div id="palette-spot-3" class="w-5 h-5 rounded-full bg-stone-200 border border-stone-300 transition-all"></div>
+                                    <div id="palette-spot-4" class="w-5 h-5 rounded-full bg-stone-200 border border-stone-300 transition-all"></div>
+                                    <div id="palette-spot-5" class="w-5 h-5 rounded-full bg-stone-200 border border-stone-300 transition-all"></div>
+                                    <div id="palette-spot-6" class="w-5 h-5 rounded-full bg-stone-200 border border-stone-300 transition-all"></div>
+                                    <div id="palette-spot-7" class="w-5 h-5 rounded-full bg-stone-200 border border-stone-300 transition-all"></div>
+                                </div>
+
+                                <canvas id="quiz-canvas" width="220" height="220" class="bg-white rounded-2xl border-2 border-dashed border-rose-200 shadow-inner max-w-full"></canvas>
+                            </div>
+
+                            <!-- Sbírka Namalovaných Květin -->
+                            <div class="canvas-card p-5 rounded-3xl border border-pink-200/80 shadow-sm bg-gradient-to-br from-white to-rose-50/30">
+                                <h4 class="text-sm font-bold font-hand text-stone-800 mb-1 flex items-center gap-1.5">
+                                    <span>🌸</span> Sbírka Vypěstovaných Květin
+                                </h4>
+                                <p class="text-[11px] text-stone-500 mb-3">Dokončením kvízů přidáváš namalované květiny do své sbírky:</p>
+                                <div id="flower-garden-collection" class="flex flex-wrap gap-2 min-h-[50px] p-2 bg-white/80 rounded-2xl border border-rose-100 items-center justify-center">
+                                    <span class="text-xs text-stone-400 italic">Zatím žádné vypěstované květiny...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- 5. KALKULAČKA -->
+                <section id="content-calc" class="tab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <!-- KILOBYTE / MEGAPXEL KALKULÁTOR -->
+                        <div class="canvas-card p-6 rounded-3xl space-y-4">
+                            <h3 class="text-lg font-bold text-stone-800 flex items-center gap-2">🧮 Výpočet Rozlišení (Mpx)</h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="text-xs font-bold text-stone-500 uppercase">Šířka (px)</label>
+                                    <input type="number" id="calc-width" value="1920" oninput="calculateResolution()" class="w-full p-3 rounded-xl border border-stone-200 bg-stone-50 text-sm font-bold">
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-stone-500 uppercase">Výška (px)</label>
+                                    <input type="number" id="calc-height" value="1080" oninput="calculateResolution()" class="w-full p-3 rounded-xl border border-stone-200 bg-stone-50 text-sm font-bold">
+                                </div>
+                            </div>
+                            <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1">
+                                <div class="text-xs text-emerald-700">Celkový počet pixelů:</div>
+                                <div class="text-xl font-extrabold text-emerald-800" id="res-mpx-result">2.07 Megapixelů</div>
+                                <div class="text-[11px] text-emerald-600" id="res-ram-result">Velikost v RAM (24-bit): ~6.22 MB</div>
+                            </div>
+                        </div>
+
+                        <!-- PŘEVOD ÚHLOPŘÍČEK -->
+                        <div class="canvas-card p-6 rounded-3xl space-y-4">
+                            <h3 class="text-lg font-bold text-stone-800 flex items-center gap-2">📐 Převod Úhlopříčky (1" = 2.54 cm)</h3>
+                            <div>
+                                <label class="text-xs font-bold text-stone-500 uppercase">Úhlopříčka v palcích (inches)</label>
+                                <input type="number" id="calc-inches" value="55" oninput="calculateDiagonal()" class="w-full p-3 rounded-xl border border-stone-200 bg-stone-50 text-sm font-bold">
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="setDiagonal(55)" class="px-3 py-1 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-bold">55"</button>
+                                <button onclick="setDiagonal(65)" class="px-3 py-1 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-bold">65"</button>
+                                <button onclick="setDiagonal(75)" class="px-3 py-1 bg-stone-100 hover:bg-stone-200 rounded-xl text-xs font-bold">75"</button>
+                            </div>
+                            <div class="p-4 bg-sky-50 rounded-2xl border border-sky-200 space-y-1">
+                                <div class="text-xs text-sky-700">Přepočet úhlopříčky:</div>
+                                <div class="text-xl font-extrabold text-sky-800" id="diag-cm-result">139.7 cm</div>
+                                <div class="text-[11px] text-sky-600" id="diag-mm-result">1397 mm</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+            </main>
+
+            <!-- PRAVÝ BOČNÍ PANEL LEVELŮ A PROKROKU -->
+            <aside class="lg:col-span-3 space-y-6">
+                
+                <!-- ZÍSKANÝ LEVEL KARTA S BOHATÝM KVĚTINOVÝM STYLEM -->
+                <div class="canvas-card p-6 rounded-3xl text-center border-2 border-rose-300 relative overflow-hidden bg-gradient-to-b from-white via-rose-50/30 to-pink-50/50 shadow-md">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-rose-200 rounded-full blur-2xl opacity-60"></div>
+                    <div class="absolute -left-4 -bottom-4 w-24 h-24 bg-pink-200 rounded-full blur-2xl opacity-60"></div>
+                    
+                    <div class="w-22 h-22 w-20 h-20 mx-auto mb-3 rounded-3xl bg-gradient-to-tr from-rose-300 via-pink-200 to-emerald-200 flex items-center justify-center text-4xl shadow-md border-2 border-white float-flower" id="level-badge-icon">
+                        🌱
+                    </div>
+
+                    <span class="px-4 py-1.5 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 rounded-full text-xs font-black border border-emerald-300 shadow-sm">
+                        🌸 ÚROVEŇ <span id="user-level">1</span> 🌸
+                    </span>
+
+                    <h3 class="text-xl font-black text-stone-800 mt-3 font-hand" id="user-rank-title">Zahradní Semínko</h3>
+                    <p class="text-xs text-rose-500 font-medium mt-1">Pěstuj květiny 🌸 plněním kvízů a kartiček!</p>
+
+                    <!-- PROGRESS BAR LEVELU -->
+                    <div class="mt-5 space-y-1.5">
+                        <div class="flex justify-between text-[11px] font-black text-stone-600">
+                            <span>Pokrok v zahradě</span>
+                            <span id="level-progress-text" class="text-rose-600">0 / 20 🌸</span>
+                        </div>
+                        <div class="w-full h-4 bg-stone-100 rounded-full overflow-hidden p-0.5 border-2 border-rose-200 shadow-inner">
+                            <div id="level-progress-bar" class="h-full bg-gradient-to-r from-emerald-400 via-pink-400 to-rose-500 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRAVIDLA ZÍSKÁVÁNÍ BODŮ -->
+                <div class="canvas-card p-5 rounded-3xl space-y-3 border-2 border-pink-200">
+                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-rose-500 flex items-center gap-1.5">
+                        <span>🌸</span> Jak získat nové květiny?
+                    </h4>
+                    <ul class="text-xs space-y-2.5 text-stone-600 font-semibold">
+                        <li class="flex items-center gap-2 p-2 bg-rose-50/60 rounded-xl border border-rose-100">
+                            <span class="text-rose-500 text-base">🎴</span> Otáčecí kartička: <strong class="text-rose-700">+3 🌸</strong>
+                        </li>
+                        <li class="flex items-center gap-2 p-2 bg-pink-50/60 rounded-xl border border-pink-100">
+                            <span class="text-pink-500 text-base">🌸</span> Kvízová otázka: <strong class="text-pink-700">+5 🌸</strong>
+                        </li>
+                        <li class="flex items-center gap-2 p-2 bg-amber-50/60 rounded-xl border border-amber-100">
+                            <span class="text-amber-500 text-base">🔥</span> Denní přihlášení: <strong class="text-amber-700">+10 🌸</strong>
+                        </li>
+                    </ul>
+                </div>
+
+            </aside>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIKA LOGIKY LOGIKY -->
+    <script>
+        /* ----------------------------------------------------
+           STATE & GAMIFICATION LOGIC
+        ---------------------------------------------------- */
+        let totalFlowers = 0;
+        let userLevel = 1;
+        let streakDays = 1;
+
+        const levelThresholds = [
+            { level: 1, flowersNeeded: 0, title: "Zahradní Semínko", icon: "🌱" },
+            { level: 2, flowersNeeded: 20, title: "Jarní Klíček", icon: "🌿" },
+            { level: 3, flowersNeeded: 50, title: "Poupě Růže", icon: "🌷" },
+            { level: 4, flowersNeeded: 90, title: "Sakurový Květ", icon: "🌸" },
+            { level: 5, flowersNeeded: 140, title: "Mistr Květinář", icon: "🌻" }
+        ];
+
+        function addFlowers(amount, reason = "") {
+            totalFlowers += amount;
+            document.getElementById('total-flowers').innerText = totalFlowers;
+            
+            showToast(`+${amount} 🌸`, reason || "Skvělá práce!");
+            checkLevelProgress();
+        }
+
+        function checkLevelProgress() {
+            let currentLevelObj = levelThresholds[0];
+            let nextLevelObj = levelThresholds[1];
+
+            for (let i = levelThresholds.length - 1; i >= 0; i--) {
+                if (totalFlowers >= levelThresholds[i].flowersNeeded) {
+                    currentLevelObj = levelThresholds[i];
+                    nextLevelObj = levelThresholds[i + 1] || null;
+                    break;
+                }
+            }
+
+            if (currentLevelObj.level > userLevel) {
+                userLevel = currentLevelObj.level;
+                showToast(`LEVEL UP! 🎉`, `Jsi nyní: ${currentLevelObj.title}`, "👑");
+            }
+
+            document.getElementById('user-level').innerText = userLevel;
+            document.getElementById('user-rank-title').innerText = currentLevelObj.title;
+            document.getElementById('level-badge-icon').innerText = currentLevelObj.icon;
+
+            if (nextLevelObj) {
+                const currentLevelBase = currentLevelObj.flowersNeeded;
+                const reqForNext = nextLevelObj.flowersNeeded - currentLevelBase;
+                const currentProgress = totalFlowers - currentLevelBase;
+                const percentage = Math.min(100, Math.max(0, (currentProgress / reqForNext) * 100));
+
+                document.getElementById('level-progress-bar').style.width = `${percentage}%`;
+                document.getElementById('level-progress-text').innerText = `${totalFlowers} / ${nextLevelObj.flowersNeeded} 🌸`;
+            } else {
+                document.getElementById('level-progress-bar').style.width = `100%`;
+                document.getElementById('level-progress-text').innerText = `MAX LEVEL 🌸`;
+            }
+        }
+
+        function showToast(title, msg, icon = "🌸") {
+            const toast = document.getElementById('toast-notification');
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-msg').innerText = msg;
+            document.getElementById('toast-icon').innerText = icon;
+
+            toast.classList.remove('opacity-0', '-translate-y-20', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-20', 'pointer-events-none');
+            }, 3000);
+        }
+
+        /* ----------------------------------------------------
+           PREPINANI ZALOZEK
+        ---------------------------------------------------- */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-stone-800', 'shadow-sm');
+                btn.classList.add('text-stone-600');
+            });
+
+            const selectedContent = document.getElementById(`content-${tabId}`);
+            if (selectedContent) selectedContent.classList.remove('hidden');
+
+            const selectedBtn = document.getElementById(`tab-btn-${tabId}`);
+            if (selectedBtn) {
+                selectedBtn.classList.add('bg-white', 'text-stone-800', 'shadow-sm');
+                selectedBtn.classList.remove('text-stone-600');
+            }
+
+            if (tabId === 'cards') initFlashcards();
+            if (tabId === 'pixelart') initPixelArtGrid();
+            if (tabId === 'quiz') restartQuiz();
+        }
+
+        /* ----------------------------------------------------
+           OTÁČECÍ KARTIČKY (FLASHCARDS LOGIC)
+        ---------------------------------------------------- */
+        const initialCardsData = [
+            { front: "Pixel (px)", back: "Nejmenší samostatný prvek rastrovaného obrazu nesoucí informaci o barvě." },
+            { front: "RGB Model", back: "Aditivní míchání světelných kanálů: Červená (Red), Zelená (Green), Modrá (Blue)." },
+            { front: "8 bitů na kanál", back: "Rozsah jasu 0 až 255 (celkem 28 = 256 úrovní pro každý kanál)." },
+            { front: "24-bit True Color", back: "Celkem 224 = 16 777 216 unikátních barevných kombinací (~16,7 milionu barev)." },
+            { front: "Full HD", back: "Rozlišení 1920 × 1080 pixelů (přibližně 2,07 Megapixelu)." },
+            { front: "1 palec (1\")", back: "Jednotka úhlopříčky displejů: 1\" = 25,4 mm = 2,54 cm." },
+            { front: "PNG Formát", back: "Podporuje bezztrátovou kompresi a alfa kanál (průhlednost pozadí)." },
+            { front: "RAW Formát", back: "Surový digitální negativ přímo ze snímače fotoaparátu bez komprese." }
+        ];
+
+        let flashcardQueue = [];
+        let currentCardIndex = 0;
+        let isFlipped = false;
+        let cardsMasteredCount = 0;
+
+        function initFlashcards() {
+            flashcardQueue = [...initialCardsData];
+            currentCardIndex = 0;
+            cardsMasteredCount = 0;
+            renderCurrentFlashcard();
+        }
+
+        function renderCurrentFlashcard() {
+            if (flashcardQueue.length === 0) {
+                document.getElementById('card-front-title').innerText = "Vše zvládnuté! 🎉";
+                document.getElementById('card-back-desc').innerText = "Všechny kartičky jsi úspěšně procvičil/a.";
+                return;
+            }
+
+            isFlipped = false;
+            document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+            
+            const card = flashcardQueue[0];
+            document.getElementById('card-front-title').innerText = card.front;
+            document.getElementById('card-back-desc').innerText = card.back;
+
+            document.getElementById('card-current-num').innerText = cardsMasteredCount + 1;
+            document.getElementById('card-total-num').innerText = initialCardsData.length;
+            document.getElementById('card-mastered-count').innerText = cardsMasteredCount;
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            const inner = document.getElementById('flashcard-inner');
+            if (isFlipped) {
+                inner.classList.add('rotate-y-180');
+            } else {
+                inner.classList.remove('rotate-y-180');
+            }
+        }
+
+        function handleCardAnswer(known) {
+            if (flashcardQueue.length === 0) return;
+
+            const card = flashcardQueue.shift();
+            if (known) {
+                cardsMasteredCount++;
+                addFlowers(3, "Zvládnutá kartička!");
+            } else {
+                flashcardQueue.push(card); // Vrátiť na koniec frontu
+            }
+
+            renderCurrentFlashcard();
+        }
+
+        /* ----------------------------------------------------
+           PIXEL ART EDITOR
+        ---------------------------------------------------- */
+        let gridSize = 8;
+        let selectedColor = '#e76f51';
+        let gridData = [];
+
+        function initPixelArtGrid() {
+            setGridSize(gridSize);
+        }
+
+        function setGridSize(size) {
+            gridSize = size;
+            const container = document.getElementById('pixel-grid');
+            container.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
+            container.innerHTML = '';
+
+            gridData = Array(size).fill(null).map(() => Array(size).fill('#ffffff'));
+
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-md cursor-pointer border border-stone-100 pixel-cell';
+                    cell.onmousedown = () => paintCell(r, c, cell);
+                    cell.onmouseenter = (e) => {
+                        if (e.buttons === 1) paintCell(r, c, cell);
+                        inspectPixel(r, c);
+                    };
+                    container.appendChild(cell);
+                }
+            }
+        }
+
+        function paintCell(r, c, cellElem) {
+            gridData[r][c] = selectedColor;
+            cellElem.style.backgroundColor = selectedColor;
+            inspectPixel(r, c);
+        }
+
+        function updateSelectedColor(hex) {
+            selectedColor = hex;
+            document.getElementById('color-picker').value = hex;
+            document.getElementById('color-hex-display').innerText = `HEX: ${hex.toUpperCase()}`;
+            
+            const rgb = hexToRgb(hex);
+            if (rgb) {
+                document.getElementById('color-rgb-display').innerText = `RGB(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+            }
+        }
+
+        function inspectPixel(r, c) {
+            const hex = gridData[r][c] || '#ffffff';
+            const rgb = hexToRgb(hex) || { r: 255, g: 255, b: 255 };
+
+            document.getElementById('hover-pos').innerText = `[${r}, ${c}]`;
+            document.getElementById('hover-r').innerText = rgb.r;
+            document.getElementById('hover-g').innerText = rgb.g;
+            document.getElementById('hover-b').innerText = rgb.b;
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function clearPixelGrid() {
+            setGridSize(gridSize);
+        }
+
+        function loadTemplate(type) {
+            setGridSize(8);
+            const gridCells = document.getElementById('pixel-grid').children;
+            let pattern = [];
+
+            if (type === 'flower') {
+                pattern = [
+                    [0,0,1,1,1,1,0,0],
+                    [0,1,1,2,2,1,1,0],
+                    [1,1,2,2,2,2,1,1],
+                    [1,2,2,3,3,2,2,1],
+                    [1,2,2,3,3,2,2,1],
+                    [0,1,1,2,2,1,1,0],
+                    [0,0,0,4,4,0,0,0],
+                    [0,0,0,4,4,0,0,0]
+                ];
+            } else if (type === 'heart') {
+                pattern = [
+                    [0,1,1,0,0,1,1,0],
+                    [1,1,1,1,1,1,1,1],
+                    [1,1,1,1,1,1,1,1],
+                    [1,1,1,1,1,1,1,1],
+                    [0,1,1,1,1,1,1,0],
+                    [0,0,1,1,1,1,0,0],
+                    [0,0,0,1,1,0,0,0],
+                    [0,0,0,0,0,0,0,0]
+                ];
+            }
+
+            const colors = { 0: '#ffffff', 1: '#e76f51', 2: '#f4a261', 3: '#e9c46a', 4: '#2a9d8f' };
+
+            let idx = 0;
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const colorHex = colors[pattern[r][c]] || '#ffffff';
+                    gridData[r][c] = colorHex;
+                    if (gridCells[idx]) gridCells[idx].style.backgroundColor = colorHex;
+                    idx++;
+                }
+            }
+        }
+
+        /* ----------------------------------------------------
+           ZAHRADNÍ KVÍZ LOGIKA & ZAHRADNÍ PLÁTNO
+        ---------------------------------------------------- */
+        const pastelColors = ['#f4a261', '#e76f51', '#2a9d8f', '#e9c46a', '#a8ded6', '#f3a683', '#78e08f', '#cf6a87'];
+        
+        const rawQuestionsPool = [
+            {
+                question: "Z jakých základních 3 barev se skládá aditivní barevný model RGB?",
+                options: ["Červená, Žlutá, Modrá", "Červená, Zelená, Modrá", "Azurová, Purpurová, Žlutá", "Černá, Bílá, Šedá"],
+                correct: 1,
+                explanation: "Model RGB využívá aditivní míchání světla tří základních barevných kanálů: Red (Červená), Green (Zelená) a Blue (Modrá)."
+            },
+            {
+                question: "Kolik unikátních úrovní jasu má 1 barevný kanál při hloubce 8 bitů?",
+                options: ["128 úrovní", "256 úrovní (hodnoty 0 až 255)", "1024 úrovní", "16,7 milionu"],
+                correct: 1,
+                explanation: "Při 8 bitech na kanál máme 2⁸ = 256 úrovní jasu (0 vypnuto, 255 plný jas)."
+            },
+            {
+                question: "Kolik celkových barev umožňuje standardní 24bitová barevná hloubka (3 × 8 bit)?",
+                options: ["256 barev", "65 536 barev", "16 777 216 barev (~16.7 mil.)", "4,2 miliardy"],
+                correct: 2,
+                explanation: "2²⁴ = 16 777 216 unikátních barevných kombinací (True Color)."
+            },
+            {
+                question: "Jaké je přesné rozlišení standardního obrazu Full HD?",
+                options: ["1280 × 720 px", "1920 × 1080 px", "3840 × 2160 px", "2560 × 1440 px"],
+                correct: 1,
+                explanation: "Full HD má přesně 1920 pixelů na šířku a 1080 pixelů na výšku (cca 2,07 Megapixelu)."
+            },
+            {
+                question: "Kolik milimetrů/centimetrů odpovídá 1 palci (1 inch/1\")?",
+                options: ["10 mm = 1 cm", "25,4 mm = 2,54 cm", "50 mm = 5 cm", "100 mm = 10 cm"],
+                correct: 1,
+                explanation: "Jeden palec (1\") se v grafice a displejích rovná přesně 25,4 mm, tedy 2,54 cm."
+            },
+            {
+                question: "Který formát je přímo surovým 'digitálním negativem' z fotoaparátu bez komprese?",
+                options: ["JPG", "PNG", "RAW", "GIF"],
+                correct: 2,
+                explanation: "RAW obsahuje nezpracovaná data přímo ze snímače a umožňuje nejvyšší kvalitu úprav."
+            },
+            {
+                question: "Který formát podporuje průhlednost (alfa kanál) a bezztrátovou kompresi?",
+                options: ["JPG", "PNG", "RAW", "BMP"],
+                correct: 1,
+                explanation: "PNG podporuje plnou bezztrátovou kompresi a alfa kanál pro průhledné pozadí."
+            },
+            {
+                question: "Kterému poměru stran odpovídá běžné rozlišení 1920 × 1080 px?",
+                options: ["4 : 3", "3 : 2", "16 : 9", "1 : 1"],
+                correct: 2,
+                explanation: "1920 : 1080 v nejmenším poměru celých čísel děleno 120 je přesně 16 : 9."
+            }
+        ];
+
+        let quizQuestions = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+        let collectedFlowersCount = 0;
+
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function prepareQuizQuestions() {
+            quizQuestions = shuffleArray(rawQuestionsPool).map(q => {
+                const optionsWithIndex = q.options.map((opt, idx) => ({ opt, isCorrect: idx === q.correct }));
+                const shuffledOptions = shuffleArray(optionsWithIndex);
+                const newCorrect = shuffledOptions.findIndex(item => item.isCorrect);
+                return {
+                    question: q.question,
+                    options: shuffledOptions.map(item => item.opt),
+                    correct: newCorrect,
+                    explanation: q.explanation
+                };
+            });
+        }
+
+        function loadQuestion() {
+            if (currentQuestion === 0 && (!quizQuestions || quizQuestions.length === 0)) {
+                prepareQuizQuestions();
+            }
+
+            answered = false;
+            const q = quizQuestions[currentQuestion];
+            
+            const qNum = document.getElementById('quiz-q-num');
+            if (qNum) qNum.innerText = currentQuestion + 1;
+            
+            const qTotal = document.getElementById('quiz-q-total');
+            if (qTotal) qTotal.innerText = quizQuestions.length;
+            
+            const qText = document.getElementById('quiz-question-text');
+            if (qText) qText.innerText = q.question;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            if (optionsContainer) {
+                optionsContainer.innerHTML = '';
+                q.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-3.5 rounded-xl border border-stone-200 bg-stone-50/70 hover:bg-stone-100 transition-all font-medium text-stone-700 text-sm flex items-center gap-3";
+                    btn.innerHTML = `<span class="w-6 h-6 rounded-full bg-white border border-stone-300 flex items-center justify-center text-xs font-bold text-stone-500">${String.fromCharCode(65 + idx)}</span> ${opt}`;
+                    btn.onclick = () => selectOption(idx);
+                    optionsContainer.appendChild(btn);
+                });
+            }
+
+            const feedback = document.getElementById('quiz-feedback');
+            if (feedback) feedback.classList.add('hidden');
+            
+            const nextBtn = document.getElementById('quiz-next-btn');
+            if (nextBtn) nextBtn.classList.add('hidden');
+        }
+
+        function selectOption(index) {
+            if (answered) return;
+            answered = true;
+
+            const q = quizQuestions[currentQuestion];
+            const optionsContainer = document.getElementById('quiz-options');
+            const buttons = optionsContainer.children;
+
+            if (index === q.correct) {
+                score++;
+                buttons[index].className = "w-full text-left p-3.5 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-medium text-emerald-800 text-sm flex items-center gap-3 shadow-sm";
+                addFlowers(5, "Správná odpoved v kvízu!");
+                paintFlowerStep(score);
+            } else {
+                buttons[index].className = "w-full text-left p-3.5 rounded-xl border-2 border-rose-400 bg-rose-50 font-medium text-rose-800 text-sm flex items-center gap-3";
+                buttons[q.correct].className = "w-full text-left p-3.5 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-medium text-emerald-800 text-sm flex items-center gap-3";
+            }
+
+            document.getElementById('quiz-score').innerText = score;
+
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.className = `p-3 rounded-xl text-xs font-medium ${index === q.correct ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`;
+            feedback.innerText = q.explanation;
+            feedback.classList.remove('hidden');
+
+            document.getElementById('quiz-next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < quizQuestions.length) {
+                loadQuestion();
+            } else {
+                showQuizResults();
+            }
+        }
+
+        function paintFlowerStep(step) {
+            const spot = document.getElementById(`palette-spot-${step - 1}`);
+            if (spot) {
+                spot.style.backgroundColor = pastelColors[step - 1];
+                spot.classList.add('shadow-md', 'scale-110');
+            }
+
+            const canvas = document.getElementById('quiz-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2 + 10;
+
+            if (step === 1) {
+                ctx.beginPath();
+                ctx.moveTo(cx, cy + 60);
+                ctx.quadraticCurveTo(cx - 10, cy + 20, cx, cy);
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = '#2a9d8f';
+                ctx.stroke();
+            } else if (step === 2 || step === 3) {
+                ctx.beginPath();
+                ctx.ellipse(cx - 15, cy + 35, 12, 6, -Math.PI / 4, 0, 2 * Math.PI);
+                ctx.fillStyle = '#78e08f';
+                ctx.fill();
+            } else if (step >= 4 && step <= 7) {
+                const angle = ((step - 4) * (Math.PI / 2));
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle);
+                ctx.beginPath();
+                ctx.ellipse(0, -28, 14, 25, 0, 0, 2 * Math.PI);
+                ctx.fillStyle = pastelColors[step - 1];
+                ctx.fill();
+                ctx.restore();
+            } else if (step === 8) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, 14, 0, 2 * Math.PI);
+                ctx.fillStyle = '#e9c46a';
+                ctx.fill();
+            }
+        }
+
+        function showQuizResults() {
+            const container = document.getElementById('quiz-container');
+            if (score > 0) saveDrawnFlowerToGarden();
+
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="text-5xl">🌸</div>
+                        <h3 class="text-2xl font-bold font-hand text-stone-800">Kvíz dokončen!</h3>
+                        <p class="text-stone-600 text-sm">Získal jsi <strong class="text-emerald-600">${score} z ${quizQuestions.length}</strong> bodů.</p>
+                        ${score > 0 ? `<div class="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold border border-emerald-200 inline-block">🌸 Květina byla přidána do tvé sbírky!</div>` : ''}
+                        <br>
+                        <button onclick="restartQuiz()" class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-md transition-all">
+                            <i class="fa-solid fa-rotate-right mr-1"></i> Spustit Nový Kvíz (S Náhodnými Otázkami)
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function saveDrawnFlowerToGarden() {
+            const collection = document.getElementById('flower-garden-collection');
+            if (!collection) return;
+            if (collectedFlowersCount === 0) collection.innerHTML = '';
+            
+            collectedFlowersCount++;
+            const flowerIcons = ['🌸', '🌺', '🌷', '🌻', '🌹', '🪷', '🌼'];
+            const randomIcon = flowerIcons[(collectedFlowersCount - 1) % flowerIcons.length];
+            
+            const flowerBadge = document.createElement('div');
+            flowerBadge.className = 'flex items-center gap-1 px-3 py-1.5 bg-rose-100/80 border border-rose-300 rounded-2xl text-xs font-bold text-rose-800 shadow-sm animate-bounce';
+            flowerBadge.innerHTML = `<span class="text-base">${randomIcon}</span> Květina #${collectedFlowersCount} (${score}/8)`;
+            collection.appendChild(flowerBadge);
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            prepareQuizQuestions();
+            
+            for (let i = 0; i < 8; i++) {
+                const spot = document.getElementById(`palette-spot-${i}`);
+                if (spot) spot.style.backgroundColor = '#e7e5e4';
+            }
+
+            const canvas = document.getElementById('quiz-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            const container = document.getElementById('quiz-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">Otázka <span id="quiz-q-num">1</span> z <span id="quiz-q-total">8</span></span>
+                        <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">Skóre: <span id="quiz-score">0</span></span>
+                    </div>
+                    <h3 class="text-base font-semibold text-stone-800 mb-4" id="quiz-question-text">...</h3>
+                    <div class="space-y-2.5 mb-6" id="quiz-options"></div>
+                    <div id="quiz-feedback" class="hidden mb-4"></div>
+                    <button id="quiz-next-btn" onclick="nextQuestion()" class="hidden w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2">
+                        Další otázka <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                `;
+            }
+            loadQuestion();
+        }
+
+        /* ----------------------------------------------------
+           KALKULAČKA LOGIKA
+        ---------------------------------------------------- */
+        function calculateResolution() {
+            const w = parseInt(document.getElementById('calc-width').value) || 0;
+            const h = parseInt(document.getElementById('calc-height').value) || 0;
+            const totalPx = w * h;
+            const mpx = (totalPx / 1000000).toFixed(2);
+            const bytesInRam = totalPx * 3;
+            const mbInRam = (bytesInRam / (1024 * 1024)).toFixed(2);
+
+            document.getElementById('res-mpx-result').innerText = `${mpx} Megapixelů (${totalPx.toLocaleString()} px)`;
+            document.getElementById('res-ram-result').innerText = `Velikost v RAM (24-bit): ~${mbInRam} MB`;
+        }
+
+        function calculateDiagonal() {
+            const inches = parseFloat(document.getElementById('calc-inches').value) || 0;
+            const cm = (inches * 2.54).toFixed(1);
+            const mm = (inches * 25.4).toFixed(0);
+
+            document.getElementById('diag-cm-result').innerText = `${cm} cm`;
+            document.getElementById('diag-mm-result').innerText = `${mm} mm`;
+        }
+
+        function setDiagonal(val) {
+            document.getElementById('calc-inches').value = val;
+            calculateDiagonal();
+        }
+
+        /* INICIALIZACE PO NAČTENÍ */
+        window.onload = function() {
+            calculateResolution();
+            calculateDiagonal();
+            checkLevelProgress();
+        };
+    </script>
+<!-- gp-ramec:foot --><footer class="gp-foot"><div class="gp-in"><span>Gymnázium Příbram</span><span>Autor: Tereza Turková</span><span>Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" rel="license noopener">CC BY 4.0</a></span></div></footer><!-- /gp-ramec:foot -->
+</body>
+</html>

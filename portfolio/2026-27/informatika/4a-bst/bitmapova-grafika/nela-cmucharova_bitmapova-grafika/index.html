@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitmapová Grafika - Kompletní Interaktivní Výuka</title>
+    <!-- Tailwind CSS CDN -->
+    <!-- Font Awesome Icons & Google Fonts -->
+    <link rel="stylesheet" href="../../../../../../assets/portfolio/fa/css/all.min.css">
+    <link rel="stylesheet" href="../../../../../../assets/portfolio/pisma/pisma.css">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 20%, #a1c4fd 40%, #c2e9fb 60%, #e0c3fc 80%, #8ec5fc 100%);
+            background-size: 200% 200%;
+            animation: rainbowBG 12s ease infinite;
+            min-height: 100vh;
+        }
+
+        @keyframes rainbowBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .card-pop {
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .card-pop:hover {
+            transform: translateY(-7px) scale(1.02);
+        }
+        .pixel-grid-canvas {
+            image-rendering: pixelated;
+            cursor: crosshair;
+        }
+        .glow-rainbow {
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.5), 0 0 30px rgba(0, 206, 201, 0.4);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #ff7675, #fd79a8, #6c5ce7, #00cec9);
+            border-radius: 10px;
+        }
+    </style>
+<style id="gp-tw">*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.pointer-events-none{pointer-events:none}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.-bottom-10{bottom:-2.5rem}.-right-10{right:-2.5rem}.top-0{top:0}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mr-1{margin-right:.25rem}.mr-1\.5{margin-right:.375rem}.mr-2{margin-right:.5rem}.mt-1{margin-top:.25rem}.mt-12{margin-top:3rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-11{height:2.75rem}.h-14{height:3.5rem}.h-2{height:.5rem}.h-20{height:5rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-56{height:14rem}.h-6{height:1.5rem}.h-9{height:2.25rem}.w-10{width:2.5rem}.w-11{width:2.75rem}.w-12{width:3rem}.w-14{width:3.5rem}.w-16{width:4rem}.w-20{width:5rem}.w-24{width:6rem}.w-5{width:1.25rem}.w-56{width:14rem}.w-6{width:1.5rem}.w-9{width:2.25rem}.w-full{width:100%}.max-w-3xl{max-width:48rem}.max-w-7xl{max-width:80rem}.max-w-md{max-width:28rem}.-rotate-3{--tw-rotate:-3deg}.-rotate-3,.-rotate-6{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-rotate-6{--tw-rotate:-6deg}.rotate-3{--tw-rotate:3deg}.rotate-3,.scale-105{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-105{--tw-scale-x:1.05;--tw-scale-y:1.05}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes bounce{0%,to{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}.animate-bounce{animation:bounce 1s infinite}.cursor-pointer{cursor:pointer}.appearance-none{-webkit-appearance:none;-moz-appearance:none;appearance:none}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-cols-5{grid-template-columns:repeat(5,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.25rem*var(--tw-space-y-reverse))}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.space-y-8>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(2rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(2rem*var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.rounded{border-radius:.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-4{border-width:4px}.border-8{border-width:8px}.border-b-8{border-bottom-width:8px}.border-t{border-top-width:1px}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138/var(--tw-border-opacity,1))}.border-amber-300{--tw-border-opacity:1;border-color:rgb(252 211 77/var(--tw-border-opacity,1))}.border-amber-300\/80{border-color:rgba(252,211,77,.8)}.border-amber-400{--tw-border-opacity:1;border-color:rgb(251 191 36/var(--tw-border-opacity,1))}.border-blue-200{--tw-border-opacity:1;border-color:rgb(191 219 254/var(--tw-border-opacity,1))}.border-blue-400{--tw-border-opacity:1;border-color:rgb(96 165 250/var(--tw-border-opacity,1))}.border-blue-800\/80{border-color:rgba(30,64,175,.8)}.border-brand-purple{--tw-border-opacity:1;border-color:rgb(108 92 231/var(--tw-border-opacity,1))}.border-cyan-200{--tw-border-opacity:1;border-color:rgb(165 243 252/var(--tw-border-opacity,1))}.border-cyan-300{--tw-border-opacity:1;border-color:rgb(103 232 249/var(--tw-border-opacity,1))}.border-cyan-400{--tw-border-opacity:1;border-color:rgb(34 211 238/var(--tw-border-opacity,1))}.border-emerald-200{--tw-border-opacity:1;border-color:rgb(167 243 208/var(--tw-border-opacity,1))}.border-emerald-300{--tw-border-opacity:1;border-color:rgb(110 231 183/var(--tw-border-opacity,1))}.border-emerald-500{--tw-border-opacity:1;border-color:rgb(16 185 129/var(--tw-border-opacity,1))}.border-indigo-200{--tw-border-opacity:1;border-color:rgb(199 210 254/var(--tw-border-opacity,1))}.border-pink-200{--tw-border-opacity:1;border-color:rgb(251 207 232/var(--tw-border-opacity,1))}.border-pink-300{--tw-border-opacity:1;border-color:rgb(249 168 212/var(--tw-border-opacity,1))}.border-pink-400{--tw-border-opacity:1;border-color:rgb(244 114 182/var(--tw-border-opacity,1))}.border-purple-200{--tw-border-opacity:1;border-color:rgb(233 213 255/var(--tw-border-opacity,1))}.border-purple-300{--tw-border-opacity:1;border-color:rgb(216 180 254/var(--tw-border-opacity,1))}.border-purple-400{--tw-border-opacity:1;border-color:rgb(192 132 252/var(--tw-border-opacity,1))}.border-purple-800\/80{border-color:rgba(107,33,168,.8)}.border-red-200{--tw-border-opacity:1;border-color:rgb(254 202 202/var(--tw-border-opacity,1))}.border-red-400{--tw-border-opacity:1;border-color:rgb(248 113 113/var(--tw-border-opacity,1))}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249/var(--tw-border-opacity,1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240/var(--tw-border-opacity,1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225/var(--tw-border-opacity,1))}.border-white{--tw-border-opacity:1;border-color:rgb(255 255 255/var(--tw-border-opacity,1))}.bg-amber-400{--tw-bg-opacity:1;background-color:rgb(251 191 36/var(--tw-bg-opacity,1))}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11/var(--tw-bg-opacity,1))}.bg-black{--tw-bg-opacity:1;background-color:rgb(0 0 0/var(--tw-bg-opacity,1))}.bg-blue-100{--tw-bg-opacity:1;background-color:rgb(219 234 254/var(--tw-bg-opacity,1))}.bg-blue-500{--tw-bg-opacity:1;background-color:rgb(59 130 246/var(--tw-bg-opacity,1))}.bg-brand-green{--tw-bg-opacity:1;background-color:rgb(0 184 148/var(--tw-bg-opacity,1))}.bg-brand-purple{--tw-bg-opacity:1;background-color:rgb(108 92 231/var(--tw-bg-opacity,1))}.bg-brand-yellow{--tw-bg-opacity:1;background-color:rgb(253 203 110/var(--tw-bg-opacity,1))}.bg-emerald-100{--tw-bg-opacity:1;background-color:rgb(209 250 229/var(--tw-bg-opacity,1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129/var(--tw-bg-opacity,1))}.bg-indigo-300{--tw-bg-opacity:1;background-color:rgb(165 180 252/var(--tw-bg-opacity,1))}.bg-pink-400{--tw-bg-opacity:1;background-color:rgb(244 114 182/var(--tw-bg-opacity,1))}.bg-pink-500{--tw-bg-opacity:1;background-color:rgb(236 72 153/var(--tw-bg-opacity,1))}.bg-pink-600{--tw-bg-opacity:1;background-color:rgb(219 39 119/var(--tw-bg-opacity,1))}.bg-purple-50{--tw-bg-opacity:1;background-color:rgb(250 245 255/var(--tw-bg-opacity,1))}.bg-purple-600{--tw-bg-opacity:1;background-color:rgb(147 51 234/var(--tw-bg-opacity,1))}.bg-red-100{--tw-bg-opacity:1;background-color:rgb(254 226 226/var(--tw-bg-opacity,1))}.bg-red-400{--tw-bg-opacity:1;background-color:rgb(248 113 113/var(--tw-bg-opacity,1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68/var(--tw-bg-opacity,1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249/var(--tw-bg-opacity,1))}.bg-slate-200{--tw-bg-opacity:1;background-color:rgb(226 232 240/var(--tw-bg-opacity,1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252/var(--tw-bg-opacity,1))}.bg-slate-500{--tw-bg-opacity:1;background-color:rgb(100 116 139/var(--tw-bg-opacity,1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42/var(--tw-bg-opacity,1))}.bg-teal-400{--tw-bg-opacity:1;background-color:rgb(45 212 191/var(--tw-bg-opacity,1))}.bg-teal-600{--tw-bg-opacity:1;background-color:rgb(13 148 136/var(--tw-bg-opacity,1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.bg-white\/80{background-color:hsla(0,0%,100%,.8)}.bg-white\/90{background-color:hsla(0,0%,100%,.9)}.bg-yellow-400{--tw-bg-opacity:1;background-color:rgb(250 204 21/var(--tw-bg-opacity,1))}.bg-gradient-to-b{background-image:linear-gradient(to bottom,var(--tw-gradient-stops))}.bg-gradient-to-br{background-image:linear-gradient(to bottom right,var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}.bg-gradient-to-tr{background-image:linear-gradient(to top right,var(--tw-gradient-stops))}.from-amber-200{--tw-gradient-from:#fde68a var(--tw-gradient-from-position);--tw-gradient-to:hsla(48,97%,77%,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-amber-300{--tw-gradient-from:#fcd34d var(--tw-gradient-from-position);--tw-gradient-to:rgba(252,211,77,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-amber-400{--tw-gradient-from:#fbbf24 var(--tw-gradient-from-position);--tw-gradient-to:rgba(251,191,36,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-amber-50{--tw-gradient-from:#fffbeb var(--tw-gradient-from-position);--tw-gradient-to:rgba(255,251,235,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-amber-500{--tw-gradient-from:#f59e0b var(--tw-gradient-from-position);--tw-gradient-to:rgba(245,158,11,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-blue-50{--tw-gradient-from:#eff6ff var(--tw-gradient-from-position);--tw-gradient-to:rgba(239,246,255,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-blue-500{--tw-gradient-from:#3b82f6 var(--tw-gradient-from-position);--tw-gradient-to:rgba(59,130,246,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-blue-900{--tw-gradient-from:#1e3a8a var(--tw-gradient-from-position);--tw-gradient-to:rgba(30,58,138,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-cyan-400{--tw-gradient-from:#22d3ee var(--tw-gradient-from-position);--tw-gradient-to:rgba(34,211,238,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-cyan-50{--tw-gradient-from:#ecfeff var(--tw-gradient-from-position);--tw-gradient-to:rgba(236,254,255,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-cyan-500{--tw-gradient-from:#06b6d4 var(--tw-gradient-from-position);--tw-gradient-to:rgba(6,182,212,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-emerald-50{--tw-gradient-from:#ecfdf5 var(--tw-gradient-from-position);--tw-gradient-to:rgba(236,253,245,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-emerald-500{--tw-gradient-from:#10b981 var(--tw-gradient-from-position);--tw-gradient-to:rgba(16,185,129,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-indigo-50{--tw-gradient-from:#eef2ff var(--tw-gradient-from-position);--tw-gradient-to:rgba(238,242,255,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-indigo-600{--tw-gradient-from:#4f46e5 var(--tw-gradient-from-position);--tw-gradient-to:rgba(79,70,229,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-pink-400{--tw-gradient-from:#f472b6 var(--tw-gradient-from-position);--tw-gradient-to:rgba(244,114,182,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-pink-500{--tw-gradient-from:#ec4899 var(--tw-gradient-from-position);--tw-gradient-to:rgba(236,72,153,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-pink-600{--tw-gradient-from:#db2777 var(--tw-gradient-from-position);--tw-gradient-to:rgba(219,39,119,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-pink-900{--tw-gradient-from:#831843 var(--tw-gradient-from-position);--tw-gradient-to:rgba(131,24,67,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-purple-100{--tw-gradient-from:#f3e8ff var(--tw-gradient-from-position);--tw-gradient-to:rgba(243,232,255,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-purple-400{--tw-gradient-from:#c084fc var(--tw-gradient-from-position);--tw-gradient-to:rgba(192,132,252,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-purple-50{--tw-gradient-from:#faf5ff var(--tw-gradient-from-position);--tw-gradient-to:rgba(250,245,255,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-purple-500{--tw-gradient-from:#a855f7 var(--tw-gradient-from-position);--tw-gradient-to:rgba(168,85,247,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-purple-600{--tw-gradient-from:#9333ea var(--tw-gradient-from-position);--tw-gradient-to:rgba(147,51,234,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-purple-900{--tw-gradient-from:#581c87 var(--tw-gradient-from-position);--tw-gradient-to:rgba(88,28,135,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-red-50{--tw-gradient-from:#fef2f2 var(--tw-gradient-from-position);--tw-gradient-to:hsla(0,86%,97%,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-red-500{--tw-gradient-from:#ef4444 var(--tw-gradient-from-position);--tw-gradient-to:rgba(239,68,68,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-slate-50{--tw-gradient-from:#f8fafc var(--tw-gradient-from-position);--tw-gradient-to:rgba(248,250,252,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-slate-900{--tw-gradient-from:#0f172a var(--tw-gradient-from-position);--tw-gradient-to:rgba(15,23,42,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-yellow-400{--tw-gradient-from:#facc15 var(--tw-gradient-from-position);--tw-gradient-to:rgba(250,204,21,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.via-cyan-400{--tw-gradient-to:rgba(34,211,238,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#22d3ee var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-green-400{--tw-gradient-to:rgba(74,222,128,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#4ade80 var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-indigo-400{--tw-gradient-to:rgba(129,140,248,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#818cf8 var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-indigo-950{--tw-gradient-to:rgba(30,27,75,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#1e1b4b var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-orange-200{--tw-gradient-to:hsla(32,98%,83%,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#fed7aa var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-orange-300{--tw-gradient-to:hsla(31,97%,72%,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#fdba74 var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-orange-400{--tw-gradient-to:rgba(251,146,60,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#fb923c var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-pink-100{--tw-gradient-to:rgba(252,231,243,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#fce7f3 var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-pink-50{--tw-gradient-to:rgba(253,242,248,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#fdf2f8 var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-pink-500{--tw-gradient-to:rgba(236,72,153,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#ec4899 var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-pink-600{--tw-gradient-to:rgba(219,39,119,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#db2777 var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-pink-950{--tw-gradient-to:rgba(80,7,36,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#500724 var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-purple-500{--tw-gradient-to:rgba(168,85,247,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#a855f7 var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-purple-600{--tw-gradient-to:rgba(147,51,234,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#9333ea var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-rose-400{--tw-gradient-to:rgba(251,113,133,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#fb7185 var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-teal-400{--tw-gradient-to:rgba(45,212,191,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#2dd4bf var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-teal-50{--tw-gradient-to:rgba(240,253,250,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#f0fdfa var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-yellow-400{--tw-gradient-to:rgba(250,204,21,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#facc15 var(--tw-gradient-via-position),var(--tw-gradient-to)}.to-blue-50{--tw-gradient-to:#eff6ff var(--tw-gradient-to-position)}.to-blue-500{--tw-gradient-to:#3b82f6 var(--tw-gradient-to-position)}.to-blue-600{--tw-gradient-to:#2563eb var(--tw-gradient-to-position)}.to-cyan-400{--tw-gradient-to:#22d3ee var(--tw-gradient-to-position)}.to-cyan-50{--tw-gradient-to:#ecfeff var(--tw-gradient-to-position)}.to-cyan-500{--tw-gradient-to:#06b6d4 var(--tw-gradient-to-position)}.to-cyan-600{--tw-gradient-to:#0891b2 var(--tw-gradient-to-position)}.to-emerald-300{--tw-gradient-to:#6ee7b7 var(--tw-gradient-to-position)}.to-indigo-950{--tw-gradient-to:#1e1b4b var(--tw-gradient-to-position)}.to-orange-50{--tw-gradient-to:#fff7ed var(--tw-gradient-to-position)}.to-orange-500{--tw-gradient-to:#f97316 var(--tw-gradient-to-position)}.to-pink-300{--tw-gradient-to:#f9a8d4 var(--tw-gradient-to-position)}.to-pink-50{--tw-gradient-to:#fdf2f8 var(--tw-gradient-to-position)}.to-pink-500{--tw-gradient-to:#ec4899 var(--tw-gradient-to-position)}.to-pink-600{--tw-gradient-to:#db2777 var(--tw-gradient-to-position)}.to-purple-50{--tw-gradient-to:#faf5ff var(--tw-gradient-to-position)}.to-purple-500{--tw-gradient-to:#a855f7 var(--tw-gradient-to-position)}.to-purple-600{--tw-gradient-to:#9333ea var(--tw-gradient-to-position)}.to-purple-950{--tw-gradient-to:#3b0764 var(--tw-gradient-to-position)}.to-red-300{--tw-gradient-to:#fca5a5 var(--tw-gradient-to-position)}.to-red-500{--tw-gradient-to:#ef4444 var(--tw-gradient-to-position)}.to-rose-500{--tw-gradient-to:#f43f5e var(--tw-gradient-to-position)}.to-slate-900{--tw-gradient-to:#0f172a var(--tw-gradient-to-position)}.to-teal-50{--tw-gradient-to:#f0fdfa var(--tw-gradient-to-position)}.to-teal-500{--tw-gradient-to:#14b8a6 var(--tw-gradient-to-position)}.to-yellow-100{--tw-gradient-to:#fef9c3 var(--tw-gradient-to-position)}.to-yellow-200{--tw-gradient-to:#fef08a var(--tw-gradient-to-position)}.to-yellow-50{--tw-gradient-to:#fefce8 var(--tw-gradient-to-position)}.to-yellow-500{--tw-gradient-to:#eab308 var(--tw-gradient-to-position)}.bg-clip-text{-webkit-background-clip:text;background-clip:text}.p-1\.5{padding:.375rem}.p-2{padding:.5rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-2\.5{padding-left:.625rem;padding-right:.625rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-3\.5{padding-left:.875rem;padding-right:.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-0\.5{padding-top:.125rem;padding-bottom:.125rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-3\.5{padding-top:.875rem;padding-bottom:.875rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pb-12{padding-bottom:3rem}.pr-2{padding-right:.5rem}.pt-2{padding-top:.5rem}.pt-4{padding-top:1rem}.pt-6{padding-top:1.5rem}.text-left{text-align:left}.text-center{text-align:center}.font-heading{font-family:Fredoka,sans-serif}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.font-sans{font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-\[220px\]{font-size:220px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.tracking-wider{letter-spacing:.05em}.tracking-widest{letter-spacing:.1em}.text-amber-500{--tw-text-opacity:1;color:rgb(245 158 11/var(--tw-text-opacity,1))}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6/var(--tw-text-opacity,1))}.text-amber-900{--tw-text-opacity:1;color:rgb(120 53 15/var(--tw-text-opacity,1))}.text-amber-950{--tw-text-opacity:1;color:rgb(69 26 3/var(--tw-text-opacity,1))}.text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246/var(--tw-text-opacity,1))}.text-brand-green{--tw-text-opacity:1;color:rgb(0 184 148/var(--tw-text-opacity,1))}.text-brand-purple{--tw-text-opacity:1;color:rgb(108 92 231/var(--tw-text-opacity,1))}.text-cyan-300{--tw-text-opacity:1;color:rgb(103 232 249/var(--tw-text-opacity,1))}.text-cyan-400{--tw-text-opacity:1;color:rgb(34 211 238/var(--tw-text-opacity,1))}.text-cyan-500{--tw-text-opacity:1;color:rgb(6 182 212/var(--tw-text-opacity,1))}.text-cyan-600{--tw-text-opacity:1;color:rgb(8 145 178/var(--tw-text-opacity,1))}.text-emerald-500{--tw-text-opacity:1;color:rgb(16 185 129/var(--tw-text-opacity,1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105/var(--tw-text-opacity,1))}.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70/var(--tw-text-opacity,1))}.text-green-500{--tw-text-opacity:1;color:rgb(34 197 94/var(--tw-text-opacity,1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229/var(--tw-text-opacity,1))}.text-pink-300{--tw-text-opacity:1;color:rgb(249 168 212/var(--tw-text-opacity,1))}.text-pink-400{--tw-text-opacity:1;color:rgb(244 114 182/var(--tw-text-opacity,1))}.text-pink-500{--tw-text-opacity:1;color:rgb(236 72 153/var(--tw-text-opacity,1))}.text-purple-300{--tw-text-opacity:1;color:rgb(216 180 254/var(--tw-text-opacity,1))}.text-purple-500{--tw-text-opacity:1;color:rgb(168 85 247/var(--tw-text-opacity,1))}.text-purple-600{--tw-text-opacity:1;color:rgb(147 51 234/var(--tw-text-opacity,1))}.text-purple-900{--tw-text-opacity:1;color:rgb(88 28 135/var(--tw-text-opacity,1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity,1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38/var(--tw-text-opacity,1))}.text-red-800{--tw-text-opacity:1;color:rgb(153 27 27/var(--tw-text-opacity,1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225/var(--tw-text-opacity,1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139/var(--tw-text-opacity,1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85/var(--tw-text-opacity,1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59/var(--tw-text-opacity,1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42/var(--tw-text-opacity,1))}.text-teal-700{--tw-text-opacity:1;color:rgb(15 118 110/var(--tw-text-opacity,1))}.text-teal-950{--tw-text-opacity:1;color:rgb(4 47 46/var(--tw-text-opacity,1))}.text-transparent{color:transparent}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.text-white\/80{color:hsla(0,0%,100%,.8)}.text-yellow-300{--tw-text-opacity:1;color:rgb(253 224 71/var(--tw-text-opacity,1))}.accent-blue-500{accent-color:#3b82f6}.accent-brand-purple{accent-color:#6c5ce7}.accent-emerald-500{accent-color:#10b981}.accent-purple-600{accent-color:#9333ea}.accent-red-500{accent-color:#ef4444}.opacity-10{opacity:.1}.opacity-90{opacity:.9}.shadow{--tw-shadow:0 1px 3px 0 rgba(0,0,0,.1),0 1px 2px -1px rgba(0,0,0,.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color),0 1px 2px -1px var(--tw-shadow-color)}.shadow,.shadow-2xl{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgba(0,0,0,.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgba(0,0,0,.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color)}.shadow-inner,.shadow-lg{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color),0 4px 6px -4px var(--tw-shadow-color)}.shadow-md{--tw-shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color),0 2px 4px -2px var(--tw-shadow-color)}.shadow-md,.shadow-sm{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgba(0,0,0,.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color),0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur{--tw-backdrop-blur:blur(8px)}.backdrop-blur,.backdrop-blur-md{-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1)}.duration-150,.transition-colors{transition-duration:.15s}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05}.hover\:scale-105:hover,.hover\:scale-110:hover{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:scale-110:hover{--tw-scale-x:1.1;--tw-scale-y:1.1}.hover\:border-amber-400:hover{--tw-border-opacity:1;border-color:rgb(251 191 36/var(--tw-border-opacity,1))}.hover\:border-blue-400:hover{--tw-border-opacity:1;border-color:rgb(96 165 250/var(--tw-border-opacity,1))}.hover\:border-brand-purple:hover{--tw-border-opacity:1;border-color:rgb(108 92 231/var(--tw-border-opacity,1))}.hover\:border-cyan-400:hover{--tw-border-opacity:1;border-color:rgb(34 211 238/var(--tw-border-opacity,1))}.hover\:border-emerald-400:hover{--tw-border-opacity:1;border-color:rgb(52 211 153/var(--tw-border-opacity,1))}.hover\:border-indigo-400:hover{--tw-border-opacity:1;border-color:rgb(129 140 248/var(--tw-border-opacity,1))}.hover\:border-purple-400:hover{--tw-border-opacity:1;border-color:rgb(192 132 252/var(--tw-border-opacity,1))}.hover\:border-red-400:hover{--tw-border-opacity:1;border-color:rgb(248 113 113/var(--tw-border-opacity,1))}.hover\:bg-blue-600:hover{--tw-bg-opacity:1;background-color:rgb(37 99 235/var(--tw-bg-opacity,1))}.hover\:bg-emerald-600:hover{--tw-bg-opacity:1;background-color:rgb(5 150 105/var(--tw-bg-opacity,1))}.hover\:bg-pink-600:hover{--tw-bg-opacity:1;background-color:rgb(219 39 119/var(--tw-bg-opacity,1))}.hover\:bg-red-200:hover{--tw-bg-opacity:1;background-color:rgb(254 202 202/var(--tw-bg-opacity,1))}.hover\:bg-red-600:hover{--tw-bg-opacity:1;background-color:rgb(220 38 38/var(--tw-bg-opacity,1))}.hover\:bg-white:hover{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.hover\:bg-yellow-500:hover{--tw-bg-opacity:1;background-color:rgb(234 179 8/var(--tw-bg-opacity,1))}.hover\:bg-opacity-90:hover{--tw-bg-opacity:0.9}.hover\:opacity-90:hover{opacity:.9}.focus\:border-purple-500:focus{--tw-border-opacity:1;border-color:rgb(168 85 247/var(--tw-border-opacity,1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}@media (min-width:640px){.sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.sm\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}}@media (min-width:768px){.md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.md\:p-6{padding:1.5rem}.md\:p-8{padding:2rem}}@media (min-width:1024px){.lg\:col-span-2{grid-column:span 2/span 2}.lg\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.lg\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.lg\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}}</style>
+<!-- gp-ramec:css --><style>
+.gp-bar,.gp-foot{align-self:stretch;width:100%;box-sizing:border-box;background:#111;color:#c9c9c9;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:10px 16px;text-align:left}
+.gp-bar a,.gp-foot a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.gp-bar a:hover,.gp-foot a:hover{color:#ff972e}
+.gp-bar{background:transparent;color:inherit;padding:10px 16px 0}
+.gp-bar a{color:inherit;opacity:.85}
+.gp-bar a:hover{opacity:1;color:inherit}
+.gp-foot{margin-top:32px;position:relative;z-index:1}
+.gp-in{max-width:720px;margin:0 auto;display:flex;flex-wrap:wrap;gap:2px 14px}
+</style><!-- /gp-ramec:css -->
+</head>
+<body class="text-slate-800 pb-12">
+<!-- gp-ramec:bar --><div class="gp-bar"><div class="gp-in"><a href="../../../../../#/2026-27/informatika/4a-bst/bitmapova-grafika">← Zpět do portfolia</a></div></div><!-- /gp-ramec:bar -->
+
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white/90 backdrop-blur-md shadow-2xl sticky top-0 z-50 border-b-8 border-gradient">
+        <div class="h-2 w-full bg-gradient-to-r from-red-500 via-yellow-400 via-green-400 via-cyan-400 via-purple-500 to-pink-500"></div>
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-pink-500 via-purple-500 to-cyan-400 text-white p-3 rounded-2xl shadow-lg transform -rotate-6 animate-bounce">
+                    <i class="fa-solid fa-border-all text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-black bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">Bitmapová Grafika 🎨</h1>
+                    <p class="text-xs font-black tracking-widest text-pink-500 uppercase">Hravý & Krásně Barevný Průvodce</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex flex-wrap gap-2">
+                <button onclick="switchTab('tab-pojmy')" id="btn-tab-pojmy" class="nav-btn px-4 py-2.5 rounded-2xl font-black text-sm bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg border-2 border-white transform scale-105">
+                    <i class="fa-solid fa-book-open mr-1.5"></i> Pojmy & Formáty
+                </button>
+                <button onclick="switchTab('tab-rgb')" id="btn-tab-rgb" class="nav-btn px-4 py-2.5 rounded-2xl font-black text-sm bg-white/80 hover:bg-white text-slate-700 shadow-md border-2 border-pink-200">
+                    <i class="fa-solid fa-palette mr-1.5 text-pink-500"></i> RGB & 8-bit
+                </button>
+                <button onclick="switchTab('tab-resolution')" id="btn-tab-resolution" class="nav-btn px-4 py-2.5 rounded-2xl font-black text-sm bg-white/80 hover:bg-white text-slate-700 shadow-md border-2 border-cyan-200">
+                    <i class="fa-solid fa-tv mr-1.5 text-cyan-500"></i> Rozlišení & Úhlopříčka
+                </button>
+                <button onclick="switchTab('tab-editor')" id="btn-tab-editor" class="nav-btn px-4 py-2.5 rounded-2xl font-black text-sm bg-white/80 hover:bg-white text-slate-700 shadow-md border-2 border-emerald-200">
+                    <i class="fa-solid fa-pencil mr-1.5 text-emerald-500"></i> Pixel Editor
+                </button>
+                <button onclick="switchTab('tab-quiz')" id="btn-tab-quiz" class="nav-btn px-4 py-2.5 rounded-2xl font-black text-sm bg-white/80 hover:bg-white text-slate-700 shadow-md border-2 border-amber-200">
+                    <i class="fa-solid fa-gamepad mr-1.5 text-amber-500"></i> Mini Kvíz
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 mt-8">
+
+        <!-- ================= TAB 1: POJMY A FORMÁTY ================= -->
+        <section id="tab-pojmy" class="tab-content block space-y-8">
+            <!-- Hero Info Banner -->
+            <div class="bg-white/90 backdrop-blur rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-pink-300 relative overflow-hidden glow-rainbow">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-pink-500 pointer-events-none">
+                    <i class="fa-solid fa-shapes text-[220px]"></i>
+                </div>
+                <div class="inline-block bg-gradient-to-r from-amber-400 via-pink-500 to-purple-500 text-white font-black px-4 py-1 rounded-full text-xs uppercase mb-3 shadow">
+                    ✨ Výklad učiva z tabule
+                </div>
+                <h2 class="text-4xl font-black text-slate-800 mb-6">Základní slovníček bitmapové grafiky 📖</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <!-- Rastr -->
+                    <div class="bg-gradient-to-br from-amber-300 via-orange-300 to-yellow-200 border-4 border-white rounded-3xl p-5 card-pop shadow-lg text-amber-950">
+                        <div class="w-14 h-14 bg-amber-500 text-white rounded-2xl flex items-center justify-center font-black text-2xl mb-3 shadow-md transform -rotate-3">
+                            <i class="fa-solid fa-table-cells"></i>
+                        </div>
+                        <h3 class="text-2xl font-black mb-1">RASTR</h3>
+                        <p class="text-sm font-semibold opacity-90">Pravidelná <strong>mřížka čtvercových buněk</strong> (sloupců a řádků), která rozděluje plochu obrázku.</p>
+                    </div>
+
+                    <!-- Bitmapa -->
+                    <div class="bg-gradient-to-br from-purple-400 via-indigo-400 to-pink-300 border-4 border-white rounded-3xl p-5 card-pop shadow-lg text-white">
+                        <div class="w-14 h-14 bg-purple-600 text-white rounded-2xl flex items-center justify-center font-black text-2xl mb-3 shadow-md transform rotate-3">
+                            <i class="fa-solid fa-image"></i>
+                        </div>
+                        <h3 class="text-2xl font-black mb-1">BITMAPA</h3>
+                        <p class="text-sm font-semibold opacity-90">Obrázek uložený jako mapa jednotlivých bodů (pixelů). Každý bod má přesně danou polohu a barvu.</p>
+                    </div>
+
+                    <!-- Pixel -->
+                    <div class="bg-gradient-to-br from-pink-400 via-rose-400 to-red-300 border-4 border-white rounded-3xl p-5 card-pop shadow-lg text-white">
+                        <div class="w-14 h-14 bg-pink-600 text-white rounded-2xl flex items-center justify-center font-black text-2xl mb-3 shadow-md transform -rotate-3">
+                            <i class="fa-solid fa-vector-square"></i>
+                        </div>
+                        <h3 class="text-2xl font-black mb-1">PIXEL (px)</h3>
+                        <p class="text-sm font-semibold opacity-90">Nejmenší samostatná jednotka rastrového obrázku. Výraz pochází z "Picture Element".</p>
+                    </div>
+
+                    <!-- Rozlišení -->
+                    <div class="bg-gradient-to-br from-cyan-400 via-teal-400 to-emerald-300 border-4 border-white rounded-3xl p-5 card-pop shadow-lg text-teal-950">
+                        <div class="w-14 h-14 bg-teal-600 text-white rounded-2xl flex items-center justify-center font-black text-2xl mb-3 shadow-md transform rotate-3">
+                            <i class="fa-solid fa-expand"></i>
+                        </div>
+                        <h3 class="text-2xl font-black mb-1">ROZLIŠENÍ</h3>
+                        <p class="text-sm font-semibold opacity-90">Celkový počet pixelů v šířce a výšce (např. <strong>1920 × 1080 px</strong>). Určuje detailnost obrazu.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formáty Souborů -->
+            <div class="bg-white/90 backdrop-blur rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-purple-300">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-black px-4 py-1 rounded-full text-xs shadow uppercase">🌈 Souborové Formáty</span>
+                    <h2 class="text-3xl font-black text-slate-800">Používané formáty bitmapových souborů</h2>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- JPG -->
+                    <div class="p-5 border-4 border-red-200 rounded-3xl hover:border-red-400 transition bg-gradient-to-br from-red-50 to-orange-50 flex gap-4 items-start shadow-md">
+                        <span class="text-3xl bg-gradient-to-br from-red-500 to-orange-500 text-white font-black px-4 py-3 rounded-2xl shadow-md">JPG</span>
+                        <div>
+                            <h4 class="font-black text-xl text-slate-800">JPEG / JPG</h4>
+                            <p class="text-xs font-black text-red-500 uppercase tracking-wider mb-2">Ztrátová komprese</p>
+                            <p class="text-sm font-medium text-slate-600">Ideální pro běžné fotografie na webu. Malá velikost souboru za cenu drobné ztráty kvality.</p>
+                        </div>
+                    </div>
+
+                    <!-- PNG -->
+                    <div class="p-5 border-4 border-blue-200 rounded-3xl hover:border-blue-400 transition bg-gradient-to-br from-blue-50 to-cyan-50 flex gap-4 items-start shadow-md">
+                        <span class="text-3xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white font-black px-4 py-3 rounded-2xl shadow-md">PNG</span>
+                        <div>
+                            <h4 class="font-black text-xl text-slate-800">PNG</h4>
+                            <p class="text-xs font-black text-blue-500 uppercase tracking-wider mb-2">Neztrátový + Průhlednost</p>
+                            <p class="text-sm font-medium text-slate-600">Skvělý pro grafiku, loga a ikony. Podporuje **alfa kanál** (průhledné pozadí).</p>
+                        </div>
+                    </div>
+
+                    <!-- GIF -->
+                    <div class="p-5 border-4 border-purple-200 rounded-3xl hover:border-purple-400 transition bg-gradient-to-br from-purple-50 to-pink-50 flex gap-4 items-start shadow-md">
+                        <span class="text-3xl bg-gradient-to-br from-purple-500 to-pink-500 text-white font-black px-4 py-3 rounded-2xl shadow-md">GIF</span>
+                        <div>
+                            <h4 class="font-black text-xl text-slate-800">GIF</h4>
+                            <p class="text-xs font-black text-purple-500 uppercase tracking-wider mb-2">Animace (max 256 barev)</p>
+                            <p class="text-sm font-medium text-slate-600">Používá se pro jednoduché animované sekvence. Má omezenou barevnou paletu.</p>
+                        </div>
+                    </div>
+
+                    <!-- RAW -->
+                    <div class="p-5 border-4 border-emerald-200 rounded-3xl hover:border-emerald-400 transition bg-gradient-to-br from-emerald-50 to-teal-50 flex gap-4 items-start shadow-md">
+                        <span class="text-3xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white font-black px-4 py-3 rounded-2xl shadow-md">RAW</span>
+                        <div>
+                            <h4 class="font-black text-xl text-slate-800">RAW</h4>
+                            <p class="text-xs font-black text-emerald-600 uppercase tracking-wider mb-2">Surová data z foťáku</p>
+                            <p class="text-sm font-medium text-slate-600">„Digitální negativ“. Obsahuje neupravená data přímo ze snímače foťáku bez komprese.</p>
+                        </div>
+                    </div>
+
+                    <!-- PSD -->
+                    <div class="p-5 border-4 border-indigo-200 rounded-3xl hover:border-indigo-400 transition bg-gradient-to-br from-indigo-50 to-blue-50 flex gap-4 items-start shadow-md">
+                        <span class="text-3xl bg-gradient-to-br from-indigo-600 to-blue-600 text-white font-black px-4 py-3 rounded-2xl shadow-md">PSD</span>
+                        <div>
+                            <h4 class="font-black text-xl text-slate-800">PSD</h4>
+                            <p class="text-xs font-black text-indigo-600 uppercase tracking-wider mb-2">Projekt Photoshop</p>
+                            <p class="text-sm font-medium text-slate-600">Pracovní formát Adobe Photoshop. Ukládá vrstvy, masky, efekty a textové objekty.</p>
+                        </div>
+                    </div>
+
+                    <!-- TIFF -->
+                    <div class="p-5 border-4 border-amber-200 rounded-3xl hover:border-amber-400 transition bg-gradient-to-br from-amber-50 to-yellow-50 flex gap-4 items-start shadow-md">
+                        <span class="text-3xl bg-gradient-to-br from-amber-500 to-yellow-500 text-white font-black px-4 py-3 rounded-2xl shadow-md">TIFF</span>
+                        <div>
+                            <h4 class="font-black text-xl text-slate-800">TIFF</h4>
+                            <p class="text-xs font-black text-amber-600 uppercase tracking-wider mb-2">Pro profesionální tisk</p>
+                            <p class="text-sm font-medium text-slate-600">Vysoká kvalita bez komprese. Používá se v tiskárnách, nakladatelstvích a skenování.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: RGB A BAREVNÁ HLOUBKA ================= -->
+        <section id="tab-rgb" class="tab-content hidden space-y-8">
+            <div class="bg-white/90 backdrop-blur rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-pink-400">
+                <div class="max-w-3xl mb-6">
+                    <span class="bg-gradient-to-r from-pink-500 to-rose-500 text-white font-black px-4 py-1 rounded-full text-xs uppercase shadow">🌈 Míchadlo Barev</span>
+                    <h2 class="text-3xl font-black text-slate-800 mt-2">Barevný model RGB a Barevná Hloubka 🎨</h2>
+                    <p class="text-slate-600 mt-2 font-medium">
+                        V počítači je každá barva složena ze 3 barevných kanálů: 
+                        <span class="text-red-500 font-black">R</span>ed (Červená), 
+                        <span class="text-green-500 font-black">G</span>reen (Zelená) a 
+                        <span class="text-blue-500 font-black">B</span>lue (Modrá).
+                    </p>
+                </div>
+
+                <!-- Formula Card from Board -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                    <div class="bg-gradient-to-br from-purple-900 to-slate-900 text-white rounded-3xl p-6 text-center shadow-xl border-2 border-purple-400 card-pop">
+                        <p class="text-purple-300 text-xs font-black uppercase tracking-wider">1 Kanál</p>
+                        <p class="text-4xl font-black text-yellow-300 mt-1">8 bitů</p>
+                        <p class="text-xs text-slate-300 mt-2 font-semibold">Hodnoty 0 až 255 (2<sup>8</sup> = 256 možností)</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-3xl p-6 text-center shadow-xl border-2 border-cyan-400 card-pop">
+                        <p class="text-cyan-300 text-xs font-black uppercase tracking-wider">Celková barevná hloubka</p>
+                        <p class="text-4xl font-black text-cyan-300 mt-1">24 bitů</p>
+                        <p class="text-xs text-slate-300 mt-2 font-semibold">3 kanály × 8 bitů = 24 bit TrueColor</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-pink-900 to-purple-950 text-white rounded-3xl p-6 text-center shadow-xl border-2 border-pink-400 card-pop">
+                        <p class="text-pink-300 text-xs font-black uppercase tracking-wider">Celkem možných barev</p>
+                        <p class="text-4xl font-black text-pink-400 mt-1">2<sup>24</sup></p>
+                        <p class="text-sm font-mono font-black text-yellow-300 mt-2">16 777 216 barev!</p>
+                    </div>
+                </div>
+
+                <!-- RGB Mixer Simulator -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center bg-gradient-to-br from-slate-50 via-pink-50 to-purple-50 p-6 md:p-8 rounded-3xl border-4 border-purple-200 shadow-inner">
+                    <div class="space-y-6">
+                        <h3 class="text-2xl font-black text-slate-800">Namíchej si vlastní pixel!</h3>
+                        
+                        <!-- Red Slider -->
+                        <div class="space-y-1 bg-white p-4 rounded-2xl shadow-sm border border-red-200">
+                            <div class="flex justify-between font-black text-sm">
+                                <span class="text-red-500 flex items-center gap-2"><i class="fa-solid fa-circle text-red-500 text-lg"></i> Červená (R)</span>
+                                <span id="val-r" class="font-mono bg-red-500 text-white px-3 py-1 rounded-xl shadow">255</span>
+                            </div>
+                            <input type="range" id="slider-r" min="0" max="255" value="108" oninput="updateRGB()" 
+                                class="w-full h-4 bg-red-100 rounded-lg appearance-none cursor-pointer accent-red-500">
+                        </div>
+
+                        <!-- Green Slider -->
+                        <div class="space-y-1 bg-white p-4 rounded-2xl shadow-sm border border-emerald-200">
+                            <div class="flex justify-between font-black text-sm">
+                                <span class="text-emerald-500 flex items-center gap-2"><i class="fa-solid fa-circle text-emerald-500 text-lg"></i> Zelená (G)</span>
+                                <span id="val-g" class="font-mono bg-emerald-500 text-white px-3 py-1 rounded-xl shadow">92</span>
+                            </div>
+                            <input type="range" id="slider-g" min="0" max="255" value="92" oninput="updateRGB()" 
+                                class="w-full h-4 bg-emerald-100 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                        </div>
+
+                        <!-- Blue Slider -->
+                        <div class="space-y-1 bg-white p-4 rounded-2xl shadow-sm border border-blue-200">
+                            <div class="flex justify-between font-black text-sm">
+                                <span class="text-blue-500 flex items-center gap-2"><i class="fa-solid fa-circle text-blue-500 text-lg"></i> Modrá (B)</span>
+                                <span id="val-b" class="font-mono bg-blue-500 text-white px-3 py-1 rounded-xl shadow">231</span>
+                            </div>
+                            <input type="range" id="slider-b" min="0" max="255" value="231" oninput="updateRGB()" 
+                                class="w-full h-4 bg-blue-100 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                        </div>
+
+                        <!-- Presets -->
+                        <div class="pt-2">
+                            <p class="text-xs font-black text-slate-500 mb-2 uppercase tracking-wider">Rychlé předvolby barev:</p>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="setRGB(255,0,0)" class="px-3.5 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs font-black shadow-md">Červená</button>
+                                <button onclick="setRGB(0,255,0)" class="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-black shadow-md">Zelená</button>
+                                <button onclick="setRGB(0,0,255)" class="px-3.5 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-xs font-black shadow-md">Modrá</button>
+                                <button onclick="setRGB(255,255,0)" class="px-3.5 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-slate-900 rounded-xl text-xs font-black shadow-md">Žlutá</button>
+                                <button onclick="setRGB(255,0,255)" class="px-3.5 py-1.5 bg-pink-500 hover:bg-pink-600 text-white rounded-xl text-xs font-black shadow-md">Fialová</button>
+                                <button onclick="setRGB(255,255,255)" class="px-3.5 py-1.5 bg-white text-slate-800 border-2 rounded-xl text-xs font-black shadow-md">Bílá</button>
+                                <button onclick="setRGB(0,0,0)" class="px-3.5 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-black shadow-md">Černá</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Color Preview Block -->
+                    <div class="flex flex-col items-center justify-center space-y-4">
+                        <div id="color-preview" class="w-56 h-56 rounded-full shadow-2xl border-8 border-white transition-colors duration-150 flex items-center justify-center text-white font-mono text-xl font-black glow-rainbow" style="background-color: rgb(108, 92, 231);">
+                            PIXEL
+                        </div>
+                        <div class="bg-white px-8 py-4 rounded-3xl shadow-xl border-4 border-purple-200 text-center font-mono">
+                            <p class="text-xs text-slate-400 font-sans uppercase font-black tracking-widest">Kód barvy</p>
+                            <p id="hex-code" class="text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">#6C5CE7</p>
+                            <p id="rgb-code" class="text-sm font-bold text-slate-600 mt-1">rgb(108, 92, 231)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: ROZLIŠENÍ & POMĚRY STRAN ================= -->
+        <section id="tab-resolution" class="tab-content hidden space-y-8">
+            <div class="bg-white/90 backdrop-blur rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-cyan-300">
+                <div class="max-w-3xl mb-6">
+                    <span class="bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-black px-4 py-1 rounded-full text-xs uppercase shadow">📺 Displeje a Obrazovky</span>
+                    <h2 class="text-3xl font-black text-slate-800 mt-2">Rozlišení, Poměry Stran a Úhlopříčka 🖥️</h2>
+                    <p class="text-slate-600 font-medium">Přehled rozlišení a výpočtů rozměrů obrazovek podle zápisu na tabuli.</p>
+                </div>
+
+                <!-- Full HD vs 4K Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Full HD -->
+                    <div class="bg-gradient-to-br from-blue-900 via-indigo-950 to-slate-900 text-white p-6 rounded-3xl border-4 border-blue-400 relative overflow-hidden shadow-xl card-pop">
+                        <span class="bg-blue-500 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow">Standard</span>
+                        <h3 class="text-4xl font-black text-white mt-3">Full HD</h3>
+                        <p class="text-3xl font-mono text-yellow-300 font-black mt-1">1920 × 1080 px</p>
+                        <div class="mt-4 pt-4 border-t border-blue-800/80 text-sm text-slate-300 space-y-1 font-semibold">
+                            <p><i class="fa-solid fa-check text-cyan-400 mr-2"></i><strong>2 073 600</strong> pixelů celkem (2 Mpx)</p>
+                            <p><i class="fa-solid fa-check text-cyan-400 mr-2"></i>Poměr dílků: <strong>16 : 9</strong> (16 dílků šířka, 9 výška)</p>
+                        </div>
+                    </div>
+
+                    <!-- 4K -->
+                    <div class="bg-gradient-to-br from-purple-900 via-pink-950 to-slate-900 text-white p-6 rounded-3xl border-4 border-pink-400 relative overflow-hidden shadow-xl card-pop">
+                        <span class="bg-pink-500 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow">Ultra HD</span>
+                        <h3 class="text-4xl font-black text-white mt-3">4K</h3>
+                        <p class="text-3xl font-mono text-pink-300 font-black mt-1">3840 × 2160 px</p>
+                        <div class="mt-4 pt-4 border-t border-purple-800/80 text-sm text-slate-300 space-y-1 font-semibold">
+                            <p><i class="fa-solid fa-check text-pink-400 mr-2"></i><strong>8 294 400</strong> pixelů celkem (8 Mpx)</p>
+                            <p><i class="fa-solid fa-check text-pink-400 mr-2"></i>Přesně <strong>4× více pixelů</strong> než Full HD!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Poměry stran obrazovek -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-black text-slate-800 mb-4">Nejčastější Poměry Stran (Aspect Ratio)</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <!-- 16:9 -->
+                        <div class="border-4 border-purple-200 rounded-3xl p-4 text-center hover:border-purple-400 transition bg-gradient-to-b from-purple-50 to-pink-50 shadow-md">
+                            <div class="w-16 h-9 bg-slate-800 rounded-lg mx-auto mb-2 flex items-center justify-center text-white text-xs font-mono font-bold shadow">16:9</div>
+                            <h4 class="font-black text-slate-800 text-lg">16 : 9</h4>
+                            <p class="text-xs font-bold text-purple-600">Monitor, TV, YouTube</p>
+                        </div>
+                        <!-- 4:3 -->
+                        <div class="border-4 border-cyan-200 rounded-3xl p-4 text-center hover:border-cyan-400 transition bg-gradient-to-b from-cyan-50 to-blue-50 shadow-md">
+                            <div class="w-12 h-9 bg-slate-800 rounded-lg mx-auto mb-2 flex items-center justify-center text-white text-xs font-mono font-bold shadow">4:3</div>
+                            <h4 class="font-black text-slate-800 text-lg">4 : 3</h4>
+                            <p class="text-xs font-bold text-cyan-600">Staré TV, iPad</p>
+                        </div>
+                        <!-- 3:2 -->
+                        <div class="border-4 border-amber-200 rounded-3xl p-4 text-center hover:border-amber-400 transition bg-gradient-to-b from-amber-50 to-yellow-50 shadow-md">
+                            <div class="w-13 h-9 bg-slate-800 rounded-lg mx-auto mb-2 flex items-center justify-center text-white text-xs font-mono font-bold shadow">3:2</div>
+                            <h4 class="font-black text-slate-800 text-lg">3 : 2</h4>
+                            <p class="text-xs font-bold text-amber-600">Fotografie, Surface</p>
+                        </div>
+                        <!-- 1:1 -->
+                        <div class="border-4 border-emerald-200 rounded-3xl p-4 text-center hover:border-emerald-400 transition bg-gradient-to-b from-emerald-50 to-teal-50 shadow-md">
+                            <div class="w-9 h-9 bg-slate-800 rounded-lg mx-auto mb-2 flex items-center justify-center text-white text-xs font-mono font-bold shadow">1:1</div>
+                            <h4 class="font-black text-slate-800 text-lg">1 : 1</h4>
+                            <p class="text-xs font-bold text-emerald-600">Čtverec / Instagram</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inch to MM Calculator (z tabule) -->
+                <div class="bg-gradient-to-r from-amber-200 via-orange-200 to-yellow-200 p-6 md:p-8 rounded-3xl border-4 border-white shadow-xl">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <span class="bg-amber-500 text-white font-black px-4 py-1 rounded-full text-xs uppercase shadow">Převodní vzorec</span>
+                            <h3 class="text-2xl font-black text-amber-950 mt-2">1 Palec (1") = 25,4 mm</h3>
+                            <p class="text-sm font-semibold text-amber-900 mt-1">Zadej úhlopříčku displeje v palcích (např. 55" nebo 65" z tabule) a spočítej rozměr v cm!</p>
+                        </div>
+                        <div class="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-md border-2 border-amber-300">
+                            <input type="number" id="input-inches" value="55" min="1" max="120" oninput="calculateScreen()" 
+                                class="w-24 px-4 py-2 rounded-xl border-2 border-amber-400 font-black text-xl text-center focus:outline-none focus:border-purple-500">
+                            <span class="font-black text-amber-950 text-xl pr-2">palců (")</span>
+                        </div>
+                    </div>
+
+                    <div id="calc-result" class="mt-6 pt-6 border-t border-amber-300/80 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center font-bold">
+                        <div class="bg-white p-4 rounded-2xl shadow-md border-2 border-amber-300">
+                            <p class="text-xs text-slate-400 uppercase font-black">Úhlopříčka v milimetrech</p>
+                            <p id="res-mm" class="text-3xl text-amber-600 font-mono font-black mt-1">1 397 mm</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-md border-2 border-purple-300">
+                            <p class="text-xs text-slate-400 uppercase font-black">Úhlopříčka v centimetrech</p>
+                            <p id="res-cm" class="text-3xl text-purple-600 font-mono font-black mt-1">139,7 cm</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: INTERAKTIVNÍ PIXEL EDITOR / SIMULÁTOR RASTRU ================= -->
+        <section id="tab-editor" class="tab-content hidden space-y-8">
+            <div class="bg-white/90 backdrop-blur rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-emerald-300">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <div>
+                        <span class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black px-4 py-1 rounded-full text-xs uppercase shadow">🎨 Simulátor RASTROVÉ MŘÍŽKY</span>
+                        <h2 class="text-3xl font-black text-slate-800 mt-2">Interaktivní Pixel Kreslení ✏️</h2>
+                        <p class="text-slate-600 font-medium">Klikáním do mřížky vyzkoušej, jak se obrázek skládá z jednotlivých pixelů.</p>
+                    </div>
+
+                    <!-- Toolbar Controls -->
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-1 bg-slate-100 p-2 rounded-2xl border-2 border-slate-200">
+                            <button onclick="setGridSize(12)" class="grid-size-btn px-3 py-1.5 rounded-xl font-black text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow">12×12</button>
+                            <button onclick="setGridSize(16)" class="grid-size-btn px-3 py-1.5 rounded-xl font-black text-xs bg-white text-slate-700">16×16</button>
+                            <button onclick="setGridSize(24)" class="grid-size-btn px-3 py-1.5 rounded-xl font-black text-xs bg-white text-slate-700">24×24</button>
+                        </div>
+                        <button onclick="clearCanvas()" class="px-5 py-2.5 bg-gradient-to-r from-red-500 to-pink-500 text-white hover:opacity-90 rounded-2xl font-black text-sm shadow-md">
+                            <i class="fa-solid fa-trash-can mr-1.5"></i> Vymazat
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    <!-- Drawing Canvas Container -->
+                    <div class="lg:col-span-2 flex flex-col items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-6 rounded-3xl border-4 border-emerald-200 shadow-inner">
+                        <div id="canvas-wrapper" class="relative bg-white shadow-2xl rounded-2xl p-3 border-4 border-white glow-rainbow">
+                            <canvas id="pixelCanvas" width="384" height="384" class="pixel-grid-canvas rounded-lg shadow-inner"></canvas>
+                        </div>
+                        <p class="text-xs font-black text-teal-700 mt-4 uppercase tracking-wider"><i class="fa-solid fa-mouse-pointer mr-1.5"></i> Klikni a táhni myší pro kreslení pixelů</p>
+                    </div>
+
+                    <!-- Tools & Palette -->
+                    <div class="space-y-6">
+                        <!-- Color Palette -->
+                        <div class="bg-white p-6 rounded-3xl border-4 border-pink-200 shadow-md">
+                            <h4 class="font-black text-slate-800 text-lg mb-3">Vyber barvu pixelu:</h4>
+                            <div class="grid grid-cols-5 gap-3">
+                                <button onclick="setPenColor('#000000')" class="w-11 h-11 rounded-2xl bg-black border-2 border-white shadow-md hover:scale-110 transition transform"></button>
+                                <button onclick="setPenColor('#6C5CE7')" class="w-11 h-11 rounded-2xl bg-purple-600 border-2 border-white shadow-md hover:scale-110 transition transform"></button>
+                                <button onclick="setPenColor('#FD79A8')" class="w-11 h-11 rounded-2xl bg-pink-400 border-2 border-white shadow-md hover:scale-110 transition transform"></button>
+                                <button onclick="setPenColor('#FF7675')" class="w-11 h-11 rounded-2xl bg-red-400 border-2 border-white shadow-md hover:scale-110 transition transform"></button>
+                                <button onclick="setPenColor('#FDCB6E')" class="w-11 h-11 rounded-2xl bg-amber-400 border-2 border-white shadow-md hover:scale-110 transition transform"></button>
+                                <button onclick="setPenColor('#00B894')" class="w-11 h-11 rounded-2xl bg-emerald-500 border-2 border-white shadow-md hover:scale-110 transition transform"></button>
+                                <button onclick="setPenColor('#00CEC9')" class="w-11 h-11 rounded-2xl bg-teal-400 border-2 border-white shadow-md hover:scale-110 transition transform"></button>
+                                <button onclick="setPenColor('#0984E3')" class="w-11 h-11 rounded-2xl bg-blue-500 border-2 border-white shadow-md hover:scale-110 transition transform"></button>
+                                <button onclick="setPenColor('#a29bfe')" class="w-11 h-11 rounded-2xl bg-indigo-300 border-2 border-white shadow-md hover:scale-110 transition transform"></button>
+                                <button onclick="setPenColor('#FFFFFF')" class="w-11 h-11 rounded-2xl bg-white border-2 border-slate-300 shadow-md hover:scale-110 transition transform flex items-center justify-center text-xs text-slate-600 font-bold"><i class="fa-solid fa-eraser text-lg"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Zoom / Grid toggle -->
+                        <div class="bg-white p-6 rounded-3xl border-4 border-cyan-200 shadow-md space-y-3">
+                            <h4 class="font-black text-slate-800 text-lg">Možnosti zobrazení:</h4>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" id="toggleGrid" checked onchange="drawGrid()" class="w-6 h-6 rounded-lg accent-purple-600">
+                                <span class="text-sm font-black text-slate-700">Zobrazit rastrovou mřížku</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 5: HRAVÝ KVÍZ ================= -->
+        <section id="tab-quiz" class="tab-content hidden space-y-8">
+            <div class="bg-white/90 backdrop-blur rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-300 max-w-3xl mx-auto">
+                <div class="text-center mb-8">
+                    <span class="bg-gradient-to-r from-amber-400 via-orange-400 to-pink-500 text-white font-black px-5 py-1.5 rounded-full text-xs uppercase shadow">🎯 Ověř si znalosti</span>
+                    <h2 class="text-4xl font-black text-slate-800 mt-2">Kvíz: Bitmapová Grafika 🎯</h2>
+                    <p class="text-slate-600 font-medium">Odpověz na otázky vycházející z látky na tabuli!</p>
+                </div>
+
+                <div id="quiz-container" class="space-y-6">
+                    <!-- Questions will be injected by JS -->
+                </div>
+
+                <div id="quiz-result" class="hidden text-center p-8 bg-gradient-to-br from-purple-100 via-pink-100 to-yellow-100 rounded-3xl border-4 border-purple-300 mt-6 shadow-xl">
+                    <h3 class="text-3xl font-black text-slate-800 mb-2">Tvoje skóre: <span id="score-text" class="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">0/5</span></h3>
+                    <p id="score-message" class="text-slate-700 font-bold text-lg mb-6"></p>
+                    <button onclick="resetQuiz()" class="px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-red-500 text-white font-black rounded-2xl shadow-xl hover:opacity-90 text-lg transform hover:scale-105 transition">
+                        Zkusit kvíz znovu 🔄
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 text-center text-slate-800 font-black text-sm">
+        <p class="bg-white/80 backdrop-blur inline-block px-6 py-2 rounded-full shadow-lg border-2 border-white">Aplikace pro výuku informatiky • Téma: Bitmapová Grafika & Rastr ✨</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-200">
+                            <p class="text-xs text-slate-400 font-bold uppercase">Rozměr displeje</p>
+                            <p id="res-dimensions" class="text-sm font-bold text-slate-800 font-mono mt-2">121.8 × 68.5 cm</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: INTERAKTIVNÍ PIXEL ART STUDIO ================= -->
+        <section id="tab-editor" class="tab-content hidden space-y-8">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-white">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <div>
+                        <span class="bg-brand-green text-white font-bold px-3 py-1 rounded-full text-sm">Praktická dílna</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-1">Pixel Art Studio ✏️</h2>
+                        <p class="text-slate-600">Vyzkoušej si tvorbu bitmapové grafiky pixel po pixelu!</p>
+                    </div>
+
+                    <!-- Toolbar Controls -->
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-1 bg-slate-100 p-1.5 rounded-xl">
+                            <button onclick="setTool('pen')" id="tool-pen" class="tool-btn px-3 py-1.5 rounded-lg font-bold text-xs bg-brand-purple text-white shadow"><i class="fa-solid fa-pencil mr-1"></i> Tužka</button>
+                            <button onclick="setTool('bucket')" id="tool-bucket" class="tool-btn px-3 py-1.5 rounded-lg font-bold text-xs bg-white text-slate-700"><i class="fa-solid fa-fill-drip mr-1"></i> Výplň</button>
+                            <button onclick="setTool('eraser')" id="tool-eraser" class="tool-btn px-3 py-1.5 rounded-lg font-bold text-xs bg-white text-slate-700"><i class="fa-solid fa-eraser mr-1"></i> Guma</button>
+                        </div>
+
+                        <div class="flex items-center gap-1 bg-slate-100 p-1.5 rounded-xl">
+                            <button onclick="setGridSize(8)" class="grid-size-btn px-2.5 py-1 rounded-lg font-bold text-xs bg-white text-slate-700">8×8</button>
+                            <button onclick="setGridSize(16)" class="grid-size-btn px-2.5 py-1 rounded-lg font-bold text-xs bg-brand-purple text-white shadow">16×16</button>
+                            <button onclick="setGridSize(24)" class="grid-size-btn px-2.5 py-1 rounded-lg font-bold text-xs bg-white text-slate-700">24×24</button>
+                        </div>
+
+                        <button onclick="exportPNG()" class="px-3 py-2 bg-brand-green text-white hover:bg-opacity-90 rounded-xl font-bold text-xs shadow">
+                            <i class="fa-solid fa-download mr-1"></i> Export PNG
+                        </button>
+                        <button onclick="clearCanvas()" class="px-3 py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-xl font-bold text-xs">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    <!-- Drawing Canvas Container -->
+                    <div class="lg:col-span-2 flex flex-col items-center justify-center bg-slate-100 p-4 md:p-6 rounded-3xl border-2 border-slate-200">
+                        <div id="canvas-wrapper" class="relative bg-white shadow-2xl rounded-xl p-2 border border-slate-300">
+                            <canvas id="pixelCanvas" width="384" height="384" class="pixel-grid-canvas rounded shadow-inner"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-3"><i class="fa-solid fa-mouse-pointer mr-1"></i> Kresli klikáním nebo tažením myši po mřížce</p>
+                    </div>
+
+                    <!-- Palette & Options -->
+                    <div class="space-y-6">
+                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                            <h4 class="font-bold text-slate-800 mb-3">Vyber barvu:</h4>
+                            <div class="grid grid-cols-5 gap-2">
+                                <button onclick="setPenColor('#000000')" class="w-10 h-10 rounded-xl bg-black border-2 border-white shadow hover:scale-110 transition"></button>
+                                <button onclick="setPenColor('#6C5CE7')" class="w-10 h-10 rounded-xl bg-purple-600 border-2 border-white shadow hover:scale-110 transition"></button>
+                                <button onclick="setPenColor('#FD79A8')" class="w-10 h-10 rounded-xl bg-pink-400 border-2 border-white shadow hover:scale-110 transition"></button>
+                                <button onclick="setPenColor('#FF7675')" class="w-10 h-10 rounded-xl bg-red-400 border-2 border-white shadow hover:scale-110 transition"></button>
+                                <button onclick="setPenColor('#FDCB6E')" class="w-10 h-10 rounded-xl bg-amber-400 border-2 border-white shadow hover:scale-110 transition"></button>
+                                <button onclick="setPenColor('#00B894')" class="w-10 h-10 rounded-xl bg-emerald-500 border-2 border-white shadow hover:scale-110 transition"></button>
+                                <button onclick="setPenColor('#00CEC9')" class="w-10 h-10 rounded-xl bg-teal-400 border-2 border-white shadow hover:scale-110 transition"></button>
+                                <button onclick="setPenColor('#0984E3')" class="w-10 h-10 rounded-xl bg-blue-500 border-2 border-white shadow hover:scale-110 transition"></button>
+                                <button onclick="setPenColor('#636E72')" class="w-10 h-10 rounded-xl bg-slate-500 border-2 border-white shadow hover:scale-110 transition"></button>
+                                <button onclick="setPenColor('#FFFFFF')" class="w-10 h-10 rounded-xl bg-white border-2 border-slate-300 shadow hover:scale-110 transition flex items-center justify-center text-xs"><i class="fa-solid fa-eraser"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+                            <h4 class="font-bold text-slate-800">Zobrazení:</h4>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" id="toggleGrid" checked onchange="drawGrid()" class="w-5 h-5 rounded accent-brand-purple">
+                                <span class="text-sm font-semibold text-slate-700">Zobrazit rastrovou mřížku</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 5: VELKÝ KVÍZ (10 OTÁZEK) ================= -->
+        <section id="tab-quiz" class="tab-content hidden space-y-8">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-white max-w-3xl mx-auto">
+                <div class="text-center mb-8">
+                    <span class="bg-brand-yellow text-amber-900 font-bold px-4 py-1.5 rounded-full text-sm">Ověření znalostí</span>
+                    <h2 class="text-3xl font-bold text-slate-800 mt-2">Velký Kvíz z Bitmapové Grafiky 🎯</h2>
+                    <p class="text-slate-600">10 otázek pokrývajících celou látku z tabule i výkladu!</p>
+                </div>
+
+                <div id="quiz-container" class="space-y-6">
+                    <!-- Injected by JS -->
+                </div>
+
+                <div id="quiz-result" class="hidden text-center p-8 bg-slate-50 rounded-3xl border-2 border-slate-200 mt-8">
+                    <div id="result-badge" class="w-20 h-20 mx-auto rounded-full bg-brand-yellow flex items-center justify-center text-4xl text-white mb-4 shadow-lg">
+                        🏆
+                    </div>
+                    <h3 class="text-3xl font-bold text-slate-800 mb-2">Tvoje skóre: <span id="score-text" class="text-brand-purple">0 / 10</span></h3>
+                    <p id="grade-text" class="text-xl font-bold text-brand-green mb-2"></p>
+                    <p id="score-message" class="text-slate-600 mb-6 max-w-md mx-auto"></p>
+                    <button onclick="resetQuiz()" class="px-8 py-3.5 bg-brand-purple text-white font-bold rounded-2xl shadow-lg hover:bg-opacity-90">
+                        Zkusit kvíz znovu 🔄
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 text-center text-white/80 text-sm font-semibold">
+        <p>Aplikace pro hodinu informatiky • Téma: BITMAPOVÁ GRAFIKA (RASTR)</p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // ================= TAB NAVIGATION =================
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-purple', 'text-white', 'shadow');
+                btn.classList.add('bg-slate-100', 'text-slate-700');
+            });
+
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('bg-slate-100', 'text-slate-700');
+            activeBtn.classList.add('bg-brand-purple', 'text-white', 'shadow');
+
+            if (tabId === 'tab-editor') {
+                initCanvas();
+            }
+        }
+
+        // ================= FORMATS FILTER =================
+        function filterFormats(filter) {
+            document.querySelectorAll('.fmt-btn').forEach(b => {
+                b.classList.remove('bg-brand-purple', 'text-white', 'shadow');
+                b.classList.add('bg-slate-100', 'text-slate-700');
+            });
+            event.target.classList.remove('bg-slate-100', 'text-slate-700');
+            event.target.classList.add('bg-brand-purple', 'text-white', 'shadow');
+
+            document.querySelectorAll('.fmt-card').forEach(card => {
+                if (filter === 'all') {
+                    card.classList.remove('hidden');
+                } else if (filter === 'transparent') {
+                    card.classList.toggle('hidden', card.dataset.trans !== 'true');
+                } else if (filter === 'lossless') {
+                    card.classList.toggle('hidden', card.dataset.lossless !== 'true');
+                }
+            });
+        }
+
+        // ================= RGB & BINARY MIXER =================
+        function updateRGB() {
+            const r = parseInt(document.getElementById('slider-r').value);
+            const g = parseInt(document.getElementById('slider-g').value);
+            const b = parseInt(document.getElementById('slider-b').value);
+
+            document.getElementById('val-r').innerText = r;
+            document.getElementById('val-g').innerText = g;
+            document.getElementById('val-b').innerText = b;
+
+            const binR = r.toString(2).padStart(8, '0');
+            const binG = g.toString(2).padStart(8, '0');
+            const binB = b.toString(2).padStart(8, '0');
+
+            document.getElementById('bin-r').innerText = binR;
+            document.getElementById('bin-g').innerText = binG;
+            document.getElementById('bin-b').innerText = binB;
+
+            const rgbColor = `rgb(${r}, ${g}, ${b})`;
+            const hexColor = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+
+            document.getElementById('color-preview').style.backgroundColor = rgbColor;
+            document.getElementById('hex-code').innerText = hexColor;
+            document.getElementById('rgb-code').innerText = rgbColor;
+            document.getElementById('full-binary').innerText = `${binR} ${binG} ${binB}`;
+        }
+
+        function setRGB(r, g, b) {
+            document.getElementById('slider-r').value = r;
+            document.getElementById('slider-g').value = g;
+            document.getElementById('slider-b').value = b;
+            updateRGB();
+        }
+
+        // ================= CALCULATOR LOGIC =================
+        function runFullCalculator() {
+            const diagInches = parseFloat(document.getElementById('calc-diag').value) || 0;
+            const wPx = parseInt(document.getElementById('calc-w').value) || 0;
+            const hPx = parseInt(document.getElementById('calc-h').value) || 0;
+
+            const cmDiag = diagInches * 2.54;
+            const totalPx = (wPx * hPx) / 1000000;
+
+            // PPI calculation
+            const diagPx = Math.sqrt(wPx * wPx + hPx * hPx);
+            const ppi = diagInches > 0 ? (diagPx / diagInches) : 0;
+
+            // Aspect ratio calculation for physical width/height
+            const aspect = hPx > 0 ? (wPx / hPx) : 1;
+            const hInches = diagInches / Math.sqrt(aspect * aspect + 1);
+            const wInches = hInches * aspect;
+
+            const wCm = wInches * 2.54;
+            const hCm = hInches * 2.54;
+
+            document.getElementById('res-cm-diag').innerText = cmDiag.toFixed(1) + ' cm';
+            document.getElementById('res-total-px').innerText = totalPx.toFixed(2) + ' Mpx';
+            document.getElementById('res-ppi').innerText = ppi.toFixed(1) + ' PPI';
+            document.getElementById('res-dimensions').innerText = `${wCm.toFixed(1)} × ${hCm.toFixed(1)} cm`;
+        }
+
+        // ================= PIXEL ART STUDIO =================
+        let canvas, ctx;
+        let gridSize = 16;
+        let currentColor = '#000000';
+        let currentTool = 'pen';
+        let isDrawing = false;
+        let pixelData = [];
+
+        function initCanvas() {
+            canvas = document.getElementById('pixelCanvas');
+            ctx = canvas.getContext('2d');
+            if (pixelData.length !== gridSize) {
+                resetPixelData();
+            }
+            drawGrid();
+
+            canvas.onmousedown = (e) => { isDrawing = true; handleCanvasClick(e); };
+            canvas.onmousemove = (e) => { if (isDrawing && currentTool !== 'bucket') handleCanvasClick(e); };
+            window.onmouseup = () => { isDrawing = false; };
+        }
+
+        function resetPixelData() {
+            pixelData = Array(gridSize).fill(null).map(() => Array(gridSize).fill('#FFFFFF'));
+        }
+
+        function setGridSize(size) {
+            gridSize = size;
+            document.querySelectorAll('.grid-size-btn').forEach(b => {
+                b.classList.remove('bg-brand-purple', 'text-white', 'shadow');
+                b.classList.add('bg-white', 'text-slate-700');
+            });
+            event.target.classList.remove('bg-white', 'text-slate-700');
+            event.target.classList.add('bg-brand-purple', 'text-white', 'shadow');
+
+            resetPixelData();
+            drawGrid();
+        }
+
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(b => {
+                b.classList.remove('bg-brand-purple', 'text-white', 'shadow');
+                b.classList.add('bg-white', 'text-slate-700');
+            });
+            document.getElementById('tool-' + tool).classList.remove('bg-white', 'text-slate-700');
+            document.getElementById('tool-' + tool).classList.add('bg-brand-purple', 'text-white', 'shadow');
+        }
+
+        function setPenColor(color) {
+            currentColor = color;
+            if (currentTool === 'eraser') setTool('pen');
+        }
+
+        function handleCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / (rect.width / gridSize));
+            const y = Math.floor((e.clientY - rect.top) / (rect.height / gridSize));
+
+            if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+                if (currentTool === 'pen') {
+                    pixelData[y][x] = currentColor;
+                } else if (currentTool === 'eraser') {
+                    pixelData[y][x] = '#FFFFFF';
+                } else if (currentTool === 'bucket') {
+                    floodFill(x, y, pixelData[y][x], currentColor);
+                }
+                drawGrid();
+            }
+        }
+
+        function floodFill(x, y, targetColor, replacementColor) {
+            if (targetColor === replacementColor) return;
+            if (pixelData[y][x] !== targetColor) return;
+
+            pixelData[y][x] = replacementColor;
+
+            if (x > 0) floodFill(x - 1, y, targetColor, replacementColor);
+            if (x < gridSize - 1) floodFill(x + 1, y, targetColor, replacementColor);
+            if (y > 0) floodFill(x, y - 1, targetColor, replacementColor);
+            if (y < gridSize - 1) floodFill(x, y + 1, targetColor, replacementColor);
+        }
+
+        function drawGrid() {
+            if (!ctx) return;
+            const cellSize = canvas.width / gridSize;
+            const showGrid = document.getElementById('toggleGrid').checked;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    ctx.fillStyle = pixelData[r][c];
+                    ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+
+                    if (showGrid) {
+                        ctx.strokeStyle = '#e2e8f0';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+        }
+
+        function clearCanvas() {
+            resetPixelData();
+            drawGrid();
+        }
+
+        function exportPNG() {
+            const expCanvas = document.createElement('canvas');
+            expCanvas.width = 512;
+            expCanvas.height = 512;
+            const expCtx = expCanvas.getContext('2d');
+            const cell = 512 / gridSize;
+
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    expCtx.fillStyle = pixelData[r][c];
+                    expCtx.fillRect(c * cell, r * cell, cell, cell);
+                }
+            }
+
+            const link = document.createElement('a');
+            link.download = 'pixel-art.png';
+            link.href = expCanvas.toDataURL();
+            link.click();
+        }
+
+        // ================= EXPANDED 10-QUESTION QUIZ =================
+        const quizData = [
+            {
+                q: "Co přesně znamená zkratka PIXEL?",
+                options: ["Picture Element (Obrazový prvek)", "Pixelated Image (Pixelovaný obrázek)", "Picture Exact Location", "Printed Information Element"],
+                correct: 0,
+                explain: "Pixel vznikl spojením slov Picture + Element a představuje nejmenší samostatný bod obrázku."
+            },
+            {
+                q: "Kolik možných hodnot (úrovní jasu) nabízí 1 kanál při 8-bitové barevné hloubce?",
+                options: ["100", "256 (hodnoty 0 až 255)", "1024", "16,7 miliónu"],
+                correct: 1,
+                explain: "8 bitů umožňuje 2 na 8 = 256 různých hodnot (od 0 pro nejtmavší po 255 pro nejjasnější)."
+            },
+            {
+                q: "Kolik celkových barev lze vytvořit v 24-bitovém barevném režimu (True Color)?",
+                options: ["256 barev", "65 536 barev", "Přesně 16 777 216 barev (2^24)", "Nekonečně mnoho"],
+                correct: 2,
+                explain: "Při 8 bitech na každý ze 3 kanálů (RGB) je to 256 × 256 × 256 = 16 777 216 barev."
+            },
+            {
+                q: "Která vlastnost je typická pro formát PNG?",
+                options: ["Ztrátová komprese fotografií", "Podpora Alfa kanálu (průhlednosti)", "Omezení na 256 barev", "Ukládání pouze vektorů"],
+                correct: 1,
+                explain: "PNG je bezztrátový formát navržený pro web, který vyniká skvělou podporou průhlednosti."
+            },
+            {
+                q: "Který formát je omezen na paletu maximálně 256 barev a podporuje animace?",
+                options: ["JPEG", "TIFF", "GIF", "PSD"],
+                correct: 2,
+                explain: "GIF používá indexovanou paletu max 256 barev (8 bitů) a je populární pro krátké animace."
+            },
+            {
+                q: "Kolik pixelů celkem obsahuje obrazovka s rozlišením Full HD (1920 × 1080 px)?",
+                options: ["1 000 000 px", "2 073 600 px (cca 2 Mpx)", "8 294 400 px", "3 840 000 px"],
+                correct: 1,
+                explain: "Vynásobením šířky a výšky: 1920 × 1080 = 2 073 600 pixelů."
+            },
+            {
+                q: "Kolikrát více pixelů má 4K (Ultra HD) oproti Standardnímu Full HD rozlišení?",
+                options: ["2× více", "3× více", "4× více", "8× více"],
+                correct: 2,
+                explain: "Jelikož se zdvojnásobila šířka (3840 vs 1920) i výška (2160 vs 1080), celková plocha v pixelech je 2 × 2 = 4× větší!"
+            },
+            {
+                q: "Kolik milimetrů má 1 palec (1\") zapsaný na tabuli?",
+                options: ["10 mm", "25,4 mm (2,54 cm)", "50 mm", "100 mm"],
+                correct: 1,
+                explain: "Anglický palec (inch) je definován přesně jako 25,4 mm."
+            },
+            {
+                q: "Co je to formát RAW?",
+                options: ["Malý komprimovaný soubor pro web", "Surová nezpracovaná data přímo ze snímače foťáku", "Soustava vektorových čar", "Speciální formát pro tiskárny"],
+                correct: 1,
+                explain: "RAW obsahuje neupravená data z fotosnímače bez komprese a úprav vyvážení bílé."
+            },
+            {
+                q: "Co se stane s bitmapovým obrázkem, pokud jej výrazně zvětšíme?",
+                options: ["Bude mít automaticky vyšší kvalitu", "Začne být viditelná rastrová mřížka ('pixelizace / kostičkování')", "Převede se na vektorový tvar", "Zmenší se jeho datová velikost"],
+                correct: 1,
+                explain: "Bitmapa má pevný počet pixelů. Při zvětšení se pixely musí roztáhnout nebo dopočítat, což způsobuje ztrátu ostrosti."
+            }
+        ];
+
+        let userAnswers = {};
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = quizData.map((q, idx) => `
+                <div class="p-6 border-2 border-slate-100 rounded-2xl bg-slate-50 space-y-3">
+                    <div class="flex justify-between items-start gap-2">
+                        <h4 class="font-bold text-slate-800 text-base">${idx + 1}. ${q.q}</h4>
+                        <span class="text-xs bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded">Otázka ${idx + 1}/10</span>
+                    </div>
+                    <div class="grid grid-cols-1 gap-2">
+                        ${q.options.map((opt, oIdx) => `
+                            <button onclick="selectAnswer(${idx}, ${oIdx})" id="q-${idx}-opt-${oIdx}" 
+                                class="quiz-opt-${idx} text-left p-3 rounded-xl border border-slate-200 bg-white font-semibold text-sm hover:border-brand-purple transition">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="explain-${idx}" class="hidden p-3 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 font-medium">
+                        💡 <strong>Vysvětlení:</strong> ${q.explain}
+                    </div>
+                </div>
+            `).join('') + `
+                <button onclick="submitQuiz()" class="w-full py-4 bg-brand-green text-white font-bold rounded-2xl shadow-lg hover:bg-opacity-90 text-lg mt-4">
+                    Vyhodnotit celý kvíz ✨
+                </button>
+            `;
+        }
+
+        function selectAnswer(qIdx, oIdx) {
+            userAnswers[qIdx] = oIdx;
+            document.querySelectorAll(`.quiz-opt-${qIdx}`).forEach(b => {
+                b.classList.remove('border-brand-purple', 'bg-purple-50', 'text-brand-purple');
+            });
+            const selectedBtn = document.getElementById(`q-${qIdx}-opt-${oIdx}`);
+            selectedBtn.classList.add('border-brand-purple', 'bg-purple-50', 'text-brand-purple');
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            quizData.forEach((q, idx) => {
+                const expEl = document.getElementById(`explain-${idx}`);
+                expEl.classList.remove('hidden');
+
+                document.querySelectorAll(`.quiz-opt-${idx}`).forEach((btn, oIdx) => {
+                    btn.disabled = true;
+                    if (oIdx === q.correct) {
+                        btn.classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-800');
+                    } else if (userAnswers[idx] === oIdx) {
+                        btn.classList.add('bg-red-100', 'border-red-400', 'text-red-800');
+                    }
+                });
+
+                if (userAnswers[idx] === q.correct) {
+                    score++;
+                }
+            });
+
+            document.getElementById('score-text').innerText = `${score} / ${quizData.length}`;
+            const gradeText = document.getElementById('grade-text');
+            const msg = document.getElementById('score-message');
+            const badge = document.getElementById('result-badge');
+
+            if (score >= 9) {
+                gradeText.innerText = "Známka: 1 (Výborně!) 🥇";
+                msg.innerText = "Perfektní! Látku bitmapové grafiky ovládaš na jedničku s hvězdičkou!";
+                badge.innerText = "🥇";
+            } else if (score >= 7) {
+                gradeText.innerText = "Známka: 2 (Chvalitebně) 🥈";
+                msg.innerText = "Skvělý výsledek! Většinu učiva z tabule máš v malíčku.";
+                badge.innerText = "🥈";
+            } else if (score >= 5) {
+                gradeText.innerText = "Známka: 3 (Dobre) 🥉";
+                msg.innerText = "Pěkné, ale projdi si ještě jednou záložku s RGB a kalkulačkou rozlišení.";
+                badge.innerText = "🥉";
+            } else {
+                gradeText.innerText = "Prostuduj si teorii znovu 💡";
+                msg.innerText = "Nevadí, zkus si projít vysvětlení u jednotlivých otázek a spusť kvíz znova!";
+                badge.innerText = "📖";
+            }
+
+            document.getElementById('quiz-result').classList.remove('hidden');
+            document.getElementById('quiz-result').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            document.getElementById('quiz-result').classList.add('hidden');
+            renderQuiz();
+        }
+
+        window.onload = function() {
+            updateRGB();
+            runFullCalculator();
+            renderQuiz();
+        };
+    </script>
+<!-- gp-ramec:foot --><footer class="gp-foot"><div class="gp-in"><span>Gymnázium Příbram</span><span>Autor: Nela Čmuchařová</span><span>Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" rel="license noopener">CC BY 4.0</a></span></div></footer><!-- /gp-ramec:foot -->
+</body>
+</html>

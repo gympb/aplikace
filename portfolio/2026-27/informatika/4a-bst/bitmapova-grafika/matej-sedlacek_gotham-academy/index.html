@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gotham Academy | Bitmap Graphics Lab - Bat-Tech Edition</title>
+    <!-- Tailwind CSS -->
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="../../../../../../assets/portfolio/fa/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="../../../../../../assets/portfolio/pisma/pisma.css">
+    <style>
+        body {
+            background-color: #07090e;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(245, 197, 24, 0.08) 0%, transparent 60%),
+                linear-gradient(180deg, #07090e 0%, #0a0d14 100%);
+        }
+
+        .bat-glow {
+            box-shadow: 0 0 15px rgba(245, 197, 24, 0.25);
+        }
+
+        .bat-glow-hover:hover {
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.4);
+            border-color: #f5c518;
+        }
+
+        .pixel-grid-cell {
+            transition: all 0.1s ease;
+        }
+
+        .pixel-grid-cell:hover {
+            transform: scale(1.15);
+            z-index: 10;
+            box-shadow: 0 0 10px #f5c518;
+        }
+
+        /* Bat Signal Animation */
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.03); }
+        }
+
+        .batsignal-pulse {
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0d14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #232d3f;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f5c518;
+        }
+    </style>
+<style id="gp-tw">*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:Rajdhani,sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:JetBrains Mono,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.pointer-events-none{pointer-events:none}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.-bottom-8{bottom:-2rem}.-right-8{right:-2rem}.top-0{top:0}.z-10{z-index:10}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.ml-1{margin-left:.25rem}.mr-1{margin-right:.25rem}.mr-1\.5{margin-right:.375rem}.mt-0\.5{margin-top:.125rem}.mt-8{margin-top:2rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-16{height:4rem}.h-3\.5{height:.875rem}.h-32{height:8rem}.h-40{height:10rem}.h-6{height:1.5rem}.h-64{height:16rem}.h-8{height:2rem}.min-h-screen{min-height:100vh}.w-10{width:2.5rem}.w-16{width:4rem}.w-3\.5{width:.875rem}.w-6{width:1.5rem}.w-64{width:16rem}.w-8{width:2rem}.w-full{width:100%}.max-w-2xl{max-width:42rem}.max-w-3xl{max-width:48rem}.max-w-7xl{max-width:80rem}.max-w-\[280px\]{max-width:280px}.max-w-md{max-width:28rem}.max-w-xl{max-width:36rem}.flex-grow{flex-grow:1}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.grid-cols-8{grid-template-columns:repeat(8,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0\.5{gap:.125rem}.gap-1{gap:.25rem}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-2\.5{gap:.625rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-y-0\.5>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.125rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.125rem*var(--tw-space-y-reverse))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.25rem*var(--tw-space-y-reverse))}.space-y-1\.5>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.375rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.375rem*var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem*var(--tw-space-y-reverse))}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem*var(--tw-space-y-reverse))}.space-y-5>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.space-y-8>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(2rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(2rem*var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.rounded{border-radius:.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-md{border-radius:.375rem}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.border-0{border-width:0}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-amber-500\/40{border-color:rgba(245,158,11,.4)}.border-bat-border{--tw-border-opacity:1;border-color:rgb(35 45 63/var(--tw-border-opacity,1))}.border-bat-border\/40{border-color:rgba(35,45,63,.4)}.border-red-500\/40{border-color:rgba(239,68,68,.4)}.border-white\/20{border-color:hsla(0,0%,100%,.2)}.border-white\/40{border-color:hsla(0,0%,100%,.4)}.border-yellow-500{--tw-border-opacity:1;border-color:rgb(234 179 8/var(--tw-border-opacity,1))}.border-yellow-500\/20{border-color:rgba(234,179,8,.2)}.border-yellow-500\/30{border-color:rgba(234,179,8,.3)}.border-yellow-500\/40{border-color:rgba(234,179,8,.4)}.bg-amber-500\/20{background-color:rgba(245,158,11,.2)}.bg-bat-card{--tw-bg-opacity:1;background-color:rgb(18 23 34/var(--tw-bg-opacity,1))}.bg-bat-dark{--tw-bg-opacity:1;background-color:rgb(10 13 20/var(--tw-bg-opacity,1))}.bg-bat-dark\/95{background-color:rgba(10,13,20,.95)}.bg-bat-yellow{--tw-bg-opacity:1;background-color:rgb(245 197 24/var(--tw-bg-opacity,1))}.bg-black{--tw-bg-opacity:1;background-color:rgb(0 0 0/var(--tw-bg-opacity,1))}.bg-black\/40{background-color:rgba(0,0,0,.4)}.bg-black\/50{background-color:rgba(0,0,0,.5)}.bg-black\/60{background-color:rgba(0,0,0,.6)}.bg-black\/80{background-color:rgba(0,0,0,.8)}.bg-blue-500{--tw-bg-opacity:1;background-color:rgb(59 130 246/var(--tw-bg-opacity,1))}.bg-blue-500\/20{background-color:rgba(59,130,246,.2)}.bg-cyan-500\/20{background-color:rgba(6,182,212,.2)}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129/var(--tw-bg-opacity,1))}.bg-emerald-500\/20{background-color:rgba(16,185,129,.2)}.bg-purple-500\/20{background-color:rgba(168,85,247,.2)}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68/var(--tw-bg-opacity,1))}.bg-red-500\/20{background-color:rgba(239,68,68,.2)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42/var(--tw-bg-opacity,1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.bg-yellow-400{--tw-bg-opacity:1;background-color:rgb(250 204 21/var(--tw-bg-opacity,1))}.bg-yellow-500\/10{background-color:rgba(234,179,8,.1)}.bg-yellow-500\/20{background-color:rgba(234,179,8,.2)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right,var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}.bg-gradient-to-tr{background-image:linear-gradient(to top right,var(--tw-gradient-stops))}.from-amber-600{--tw-gradient-from:#d97706 var(--tw-gradient-from-position);--tw-gradient-to:rgba(217,119,6,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-bat-card{--tw-gradient-from:#121722 var(--tw-gradient-from-position);--tw-gradient-to:rgba(18,23,34,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-yellow-400{--tw-gradient-from:#facc15 var(--tw-gradient-from-position);--tw-gradient-to:rgba(250,204,21,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.via-amber-500{--tw-gradient-to:rgba(245,158,11,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#f59e0b var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-slate-900{--tw-gradient-to:rgba(15,23,42,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#0f172a var(--tw-gradient-via-position),var(--tw-gradient-to)}.to-bat-card{--tw-gradient-to:#121722 var(--tw-gradient-to-position)}.to-yellow-400{--tw-gradient-to:#facc15 var(--tw-gradient-to-position)}.to-yellow-600{--tw-gradient-to:#ca8a04 var(--tw-gradient-to-position)}.p-1\.5{padding:.375rem}.p-2{padding:.5rem}.p-2\.5{padding:.625rem}.p-3{padding:.75rem}.p-3\.5{padding:.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-1\.5{padding-left:.375rem;padding-right:.375rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-2\.5{padding-left:.625rem;padding-right:.625rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:.125rem;padding-bottom:.125rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pb-1\.5{padding-bottom:.375rem}.pb-3{padding-bottom:.75rem}.pb-4{padding-bottom:1rem}.pt-1{padding-top:.25rem}.pt-2{padding-top:.5rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:JetBrains Mono,monospace}.font-sans{font-family:Rajdhani,sans-serif}.font-tech{font-family:Orbitron,sans-serif}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.tracking-tight{letter-spacing:-.025em}.tracking-wide{letter-spacing:.025em}.tracking-wider{letter-spacing:.05em}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77/var(--tw-text-opacity,1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36/var(--tw-text-opacity,1))}.text-bat-yellow{--tw-text-opacity:1;color:rgb(245 197 24/var(--tw-text-opacity,1))}.text-black{--tw-text-opacity:1;color:rgb(0 0 0/var(--tw-text-opacity,1))}.text-blue-300{--tw-text-opacity:1;color:rgb(147 197 253/var(--tw-text-opacity,1))}.text-blue-400{--tw-text-opacity:1;color:rgb(96 165 250/var(--tw-text-opacity,1))}.text-cyan-300{--tw-text-opacity:1;color:rgb(103 232 249/var(--tw-text-opacity,1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183/var(--tw-text-opacity,1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153/var(--tw-text-opacity,1))}.text-green-400{--tw-text-opacity:1;color:rgb(74 222 128/var(--tw-text-opacity,1))}.text-purple-300{--tw-text-opacity:1;color:rgb(216 180 254/var(--tw-text-opacity,1))}.text-red-300{--tw-text-opacity:1;color:rgb(252 165 165/var(--tw-text-opacity,1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113/var(--tw-text-opacity,1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240/var(--tw-text-opacity,1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225/var(--tw-text-opacity,1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.text-yellow-400{--tw-text-opacity:1;color:rgb(250 204 21/var(--tw-text-opacity,1))}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.accent-blue-500{accent-color:#3b82f6}.accent-green-500{accent-color:#22c55e}.accent-red-500{accent-color:#ef4444}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgba(0,0,0,.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color)}.shadow-2xl,.shadow-inner{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgba(0,0,0,.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color),0 4px 6px -4px var(--tw-shadow-color)}.shadow-lg,.shadow-md{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color),0 2px 4px -2px var(--tw-shadow-color)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color),0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-yellow-500\/20{--tw-shadow-color:rgba(234,179,8,.2);--tw-shadow:var(--tw-shadow-colored)}.outline-none{outline:2px solid transparent;outline-offset:2px}.ring-2{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.ring-yellow-400{--tw-ring-opacity:1;--tw-ring-color:rgb(250 204 21/var(--tw-ring-opacity,1))}.blur-3xl{--tw-blur:blur(64px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px)}.backdrop-blur-md,.backdrop-blur-sm{-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1)}.duration-150,.transition-colors{transition-duration:.15s}.duration-300{transition-duration:.3s}.selection\:bg-yellow-500 ::-moz-selection{--tw-bg-opacity:1;background-color:rgb(234 179 8/var(--tw-bg-opacity,1))}.selection\:bg-yellow-500 ::selection{--tw-bg-opacity:1;background-color:rgb(234 179 8/var(--tw-bg-opacity,1))}.selection\:text-black ::-moz-selection{--tw-text-opacity:1;color:rgb(0 0 0/var(--tw-text-opacity,1))}.selection\:text-black ::selection{--tw-text-opacity:1;color:rgb(0 0 0/var(--tw-text-opacity,1))}.selection\:bg-yellow-500::-moz-selection{--tw-bg-opacity:1;background-color:rgb(234 179 8/var(--tw-bg-opacity,1))}.selection\:bg-yellow-500::selection{--tw-bg-opacity:1;background-color:rgb(234 179 8/var(--tw-bg-opacity,1))}.selection\:text-black::-moz-selection{--tw-text-opacity:1;color:rgb(0 0 0/var(--tw-text-opacity,1))}.selection\:text-black::selection{--tw-text-opacity:1;color:rgb(0 0 0/var(--tw-text-opacity,1))}.hover\:border-yellow-500:hover{--tw-border-opacity:1;border-color:rgb(234 179 8/var(--tw-border-opacity,1))}.hover\:border-yellow-500\/50:hover{border-color:rgba(234,179,8,.5)}.hover\:bg-amber-400:hover{--tw-bg-opacity:1;background-color:rgb(251 191 36/var(--tw-bg-opacity,1))}.hover\:bg-bat-accent:hover{--tw-bg-opacity:1;background-color:rgb(43 54 74/var(--tw-bg-opacity,1))}.hover\:bg-bat-accent\/50:hover{background-color:rgba(43,54,74,.5)}.hover\:text-bat-yellow:hover{--tw-text-opacity:1;color:rgb(245 197 24/var(--tw-text-opacity,1))}.hover\:opacity-80:hover{opacity:.8}.focus\:border-yellow-500:focus{--tw-border-opacity:1;border-color:rgb(234 179 8/var(--tw-border-opacity,1))}@media (min-width:640px){.sm\:h-4{height:1rem}.sm\:w-32{width:8rem}.sm\:w-4{width:1rem}.sm\:flex-row{flex-direction:row}}@media (min-width:768px){.md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.md\:flex-row{flex-direction:row}.md\:p-6{padding:1.5rem}.md\:p-8{padding:2rem}.md\:text-4xl{font-size:2.25rem;line-height:2.5rem}.md\:text-base{font-size:1rem;line-height:1.5rem}}@media (min-width:1024px){.lg\:col-span-2{grid-column:span 2/span 2}.lg\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.lg\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.lg\:p-8{padding:2rem}.lg\:px-8{padding-left:2rem;padding-right:2rem}}</style>
+<!-- gp-ramec:css --><style>
+.gp-bar,.gp-foot{align-self:stretch;width:100%;box-sizing:border-box;background:#111;color:#c9c9c9;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:10px 16px;text-align:left}
+.gp-bar a,.gp-foot a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.gp-bar a:hover,.gp-foot a:hover{color:#ff972e}
+.gp-bar{background:transparent;color:inherit;padding:10px 16px 0}
+.gp-bar a{color:inherit;opacity:.85}
+.gp-bar a:hover{opacity:1;color:inherit}
+.gp-foot{margin-top:32px;position:relative;z-index:1}
+.gp-in{max-width:720px;margin:0 auto;display:flex;flex-wrap:wrap;gap:2px 14px}
+</style><!-- /gp-ramec:css -->
+</head>
+<body class="text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-yellow-500 selection:text-black">
+<!-- gp-ramec:bar --><div class="gp-bar"><div class="gp-in"><a href="../../../../../#/2026-27/informatika/4a-bst/bitmapova-grafika">← Zpět do portfolia</a></div></div><!-- /gp-ramec:bar -->
+
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 bg-bat-dark/95 backdrop-blur-md border-b border-bat-border px-4 lg:px-8 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Logo / Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 flex items-center justify-center text-black font-black shadow-lg shadow-yellow-500/20 text-lg">
+                    <i class="fa-solid fa-mask"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-tech font-extrabold text-base tracking-wider text-bat-yellow uppercase">
+                            Gotham Academy
+                        </h1>
+                        <span class="text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 px-1.5 py-0.5 rounded font-mono font-bold uppercase">Bat-Tech</span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-mono tracking-tight">Bitmap Graphics Lab • Podle výukové tabule</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex items-center gap-1 bg-bat-card p-1.5 rounded-xl border border-bat-border text-sm font-bold font-tech">
+                <button onclick="switchTab('theory')" id="tab-theory" class="nav-btn active flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-black bg-bat-yellow shadow-md shadow-yellow-500/20">
+                    <i class="fa-solid fa-microchip text-xs"></i> Teorie & Moduly
+                </button>
+                <button onclick="switchTab('practice')" id="tab-practice" class="nav-btn flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-slate-400 hover:text-bat-yellow hover:bg-bat-accent/50">
+                    <i class="fa-solid fa-gamepad text-xs"></i> Bat-Laboratoř
+                </button>
+                <button onclick="switchTab('quiz')" id="tab-quiz" class="nav-btn flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-slate-400 hover:text-bat-yellow hover:bg-bat-accent/50">
+                    <i class="fa-solid fa-user-shield text-xs"></i> Prověrka Znalostí
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8">
+
+        <!-- SECTION 1: THEORY & INTERACTIVE MODULES -->
+        <section id="section-theory" class="space-y-8">
+            
+            <!-- Hero Banner: Gotham Academy Whiteboard Intro -->
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-bat-card via-slate-900 to-bat-card border border-bat-border p-6 md:p-8 shadow-2xl">
+                <div class="absolute -right-8 -bottom-8 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-3xl space-y-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-bat-yellow text-xs font-mono uppercase tracking-wider">
+                        <i class="fa-solid fa-chalkboard"></i> Analýza dat z učební tabule
+                    </div>
+                    <h2 class="text-2xl md:text-4xl font-tech font-black text-white tracking-wide uppercase">
+                        Základy Rastrové Grafiky
+                    </h2>
+                    <p class="text-slate-300 leading-relaxed text-sm md:text-base font-sans">
+                        Prozkoumejte architekturu rastrového zobrazování, principy 8bitové RGB barevné hloubky ($2^{24}$ barev), kalkulace PPI displejů ($1'' = 25,4\text{ mm}$) a matici grafických formátů.
+                    </p>
+                    <div class="flex flex-wrap gap-2 pt-2 text-xs font-mono">
+                        <span class="px-2.5 py-1 rounded bg-black/60 text-bat-yellow border border-bat-border">RASTR / BITMAPA</span>
+                        <span class="px-2.5 py-1 rounded bg-black/60 text-bat-yellow border border-bat-border">PIXEL</span>
+                        <span class="px-2.5 py-1 rounded bg-black/60 text-bat-yellow border border-bat-border">ROZLIŠENÍ</span>
+                        <span class="px-2.5 py-1 rounded bg-black/60 text-amber-400 border border-bat-border">RGB 8bit / kanál</span>
+                        <span class="px-2.5 py-1 rounded bg-black/60 text-emerald-400 border border-bat-border">1" = 25,4 mm</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 1: Pixel & Rastr -->
+            <div id="mod-pixel" class="rounded-2xl bg-bat-card border border-bat-border p-6 space-y-6">
+                <div class="flex items-center justify-between border-b border-bat-border pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 rounded-xl bg-yellow-500/10 text-bat-yellow border border-yellow-500/20">
+                            <i class="fa-solid fa-border-all text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-tech font-bold text-white uppercase tracking-wider">1. Rastr, Bitmapa & Pixel</h3>
+                            <p class="text-xs text-slate-400">Mřížka obrazových bodů a uchování barevné informace</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6 items-center">
+                    <div class="space-y-4 text-sm text-slate-300">
+                        <p>
+                            <strong class="text-white">Rastr (Bitmapa):</strong> Pravidelná dvoudimenzionální matice (mřížka) složená z řádků a sloupců.
+                        </p>
+                        <p>
+                            <strong class="text-white">Pixel (Picture Element):</strong> Nejmenší samostatný prvek obrazu s adresovatelnou souřadnicí $[X,Y]$ a přesně definovanou barvou.
+                        </p>
+                        <div class="p-4 rounded-xl bg-black/50 border border-bat-border space-y-3 font-mono text-xs">
+                            <div class="text-bat-yellow font-bold uppercase tracking-wider flex items-center justify-between">
+                                <span>Interaktivní Inspekce Pixelu</span>
+                                <i class="fa-solid fa-crosshair"></i>
+                            </div>
+                            <div id="active-pixel-info" class="bg-bat-dark p-2.5 rounded border border-bat-border flex justify-between items-center">
+                                <span>Pozice: [<span id="px-coords" class="text-bat-yellow">0,0</span>]</span>
+                                <span id="px-color-val" class="font-bold text-white">RGB(245, 197, 24)</span>
+                            </div>
+                            <div class="flex items-center justify-between gap-2 pt-1">
+                                <span class="text-slate-400">Změnit barvu bodu:</span>
+                                <input type="color" id="pixel-color-picker" value="#f5c518" class="w-8 h-8 rounded border-0 bg-transparent cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Grid -->
+                    <div class="flex flex-col items-center justify-center p-5 bg-black/80 rounded-xl border border-bat-border">
+                        <div class="text-xs font-mono text-slate-400 mb-2 flex justify-between w-full max-w-[280px]">
+                            <span>Bat-Grid (8×8 px)</span>
+                            <span class="text-bat-yellow">Zoom 1000%</span>
+                        </div>
+                        <div id="raster-grid" class="grid grid-cols-8 gap-1 bg-bat-dark p-2.5 rounded-lg border border-bat-border shadow-2xl">
+                            <!-- Populated with JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 2: RGB Model & Color Depth -->
+            <div id="mod-rgb" class="rounded-2xl bg-bat-card border border-bat-border p-6 space-y-6">
+                <div class="flex items-center gap-3 border-b border-bat-border pb-4">
+                    <div class="p-2.5 rounded-xl bg-yellow-500/10 text-bat-yellow border border-yellow-500/20">
+                        <i class="fa-solid fa-palette text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-tech font-bold text-white uppercase tracking-wider">2. RGB Model a Barevná Hloubka</h3>
+                        <p class="text-xs text-slate-400">8 bitů / kanál (0–255), 24-bit True Color ($2^{24} = 16,7\text{ mil.}$ barev)</p>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <div class="space-y-3 text-sm text-slate-300">
+                        <h4 class="font-bold text-white uppercase text-xs tracking-wider">Princip z výukové tabule:</h4>
+                        <ul class="space-y-2 text-xs">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-angle-right text-bat-yellow mt-0.5"></i>
+                                <span><strong>Aditivní míchání světla:</strong> Složky Červená (R), Zelená (G), Modrá (B).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-angle-right text-bat-yellow mt-0.5"></i>
+                                <span><strong>8 bitů na kanál:</strong> $2^8 = 256$ hodnot (rozsah 0 až 255).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-angle-right text-bat-yellow mt-0.5"></i>
+                                <span><strong>24-bitová hloubka:</strong> 3 kanály $\times$ 8 bitů = 24 bitů na pixel.</span>
+                            </li>
+                        </ul>
+
+                        <div class="p-4 rounded-xl bg-black/60 border border-yellow-500/30 font-mono text-xs space-y-1">
+                            <div class="text-bat-yellow font-bold">Výpočet celkových barev:</div>
+                            <div class="text-slate-200">256 × 256 × 256 = <span class="text-yellow-400 font-bold">16 777 216</span></div>
+                            <div class="text-slate-500 text-[11px]">$2^8 \times 2^8 \times 2^8 = 2^{24}$ unikátních odstínů</div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive RGB Sliders -->
+                    <div class="lg:col-span-2 rounded-xl bg-black/60 p-5 border border-bat-border space-y-4">
+                        <div class="grid md:grid-cols-2 gap-6 items-center">
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-xs font-mono font-bold mb-1">
+                                        <span class="text-red-400">Červená (Red): <span id="val-r">245</span></span>
+                                        <span class="text-slate-500" id="bin-r">11110101</span>
+                                    </div>
+                                    <input type="range" id="slider-r" min="0" max="255" value="245" class="w-full accent-red-500 cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-mono font-bold mb-1">
+                                        <span class="text-green-400">Zelená (Green): <span id="val-g">197</span></span>
+                                        <span class="text-slate-500" id="bin-g">11000101</span>
+                                    </div>
+                                    <input type="range" id="slider-g" min="0" max="255" value="197" class="w-full accent-green-500 cursor-pointer">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-mono font-bold mb-1">
+                                        <span class="text-blue-400">Modrá (Blue): <span id="val-b">24</span></span>
+                                        <span class="text-slate-500" id="bin-b">00011000</span>
+                                    </div>
+                                    <input type="range" id="slider-b" min="0" max="255" value="24" class="w-full accent-blue-500 cursor-pointer">
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col items-center space-y-3">
+                                <div id="rgb-preview" class="w-full h-32 rounded-xl shadow-2xl transition-colors duration-150 border border-white/20 flex items-center justify-center font-mono font-bold text-sm text-black" style="background-color: rgb(245, 197, 24);">
+                                    <span class="bg-black/80 text-bat-yellow px-3 py-1 rounded-md backdrop-blur-sm border border-yellow-500/40" id="rgb-hex-text">#F5C518</span>
+                                </div>
+                                <div class="text-center font-mono text-xs text-slate-400">
+                                    Kód: <span id="rgb-css-text" class="text-bat-yellow font-bold">rgb(245, 197, 24)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 3: Resolution & Aspect Ratios -->
+            <div id="mod-res" class="rounded-2xl bg-bat-card border border-bat-border p-6 space-y-6">
+                <div class="flex items-center gap-3 border-b border-bat-border pb-4">
+                    <div class="p-2.5 rounded-xl bg-yellow-500/10 text-bat-yellow border border-yellow-500/20">
+                        <i class="fa-solid fa-expand text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-tech font-bold text-white uppercase tracking-wider">3. Rozlišení a Poměry Stran</h3>
+                        <p class="text-xs text-slate-400">Full HD (1080p), 4K (2160p) a zjednodušení poměrů (16:9, 4:3, 3:2, 1:1)</p>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div class="grid gap-3 font-mono">
+                            <div class="p-3.5 rounded-xl bg-black/60 border border-bat-border flex justify-between items-center">
+                                <div>
+                                    <div class="font-bold text-white text-sm">Full HD (1080p)</div>
+                                    <div class="text-xs text-slate-400">1920 × 1080 px</div>
+                                </div>
+                                <div class="text-right text-xs text-bat-yellow font-bold">
+                                    2 073 600 px (~2,07 Mpx)
+                                </div>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-black/60 border border-bat-border flex justify-between items-center">
+                                <div>
+                                    <div class="font-bold text-white text-sm">4K Ultra HD (2160p)</div>
+                                    <div class="text-xs text-slate-400">3840 × 2160 px</div>
+                                </div>
+                                <div class="text-right text-xs text-bat-yellow font-bold">
+                                    8 294 400 px (~8,29 Mpx)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-black/80 border border-yellow-500/30 text-xs font-mono space-y-2 text-slate-300">
+                            <div class="text-bat-yellow font-bold">Výpočet poměru 16:9 z tabule:</div>
+                            <p>Dělením rozlišení $1920 \times 1080$ společným jmenovatelem (120):</p>
+                            <div class="bg-bat-dark p-2 rounded text-center text-white font-bold border border-bat-border">
+                                1920 / 120 = <span class="text-bat-yellow">16 dílků</span> &nbsp;|&nbsp; 1080 / 120 = <span class="text-bat-yellow">9 dílků</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Aspect Ratio Box -->
+                    <div class="bg-black/60 p-5 rounded-xl border border-bat-border space-y-4 flex flex-col justify-between">
+                        <div>
+                            <label class="text-xs font-bold text-slate-300 block mb-2 font-tech uppercase tracking-wider">Zvolte poměr stran:</label>
+                            <div class="grid grid-cols-4 gap-2 text-center text-xs font-mono font-bold">
+                                <button onclick="setAspectRatio('16:9', 16/9)" class="ratio-btn active p-2 rounded-lg bg-bat-yellow text-black transition-all">16:9</button>
+                                <button onclick="setAspectRatio('4:3', 4/3)" class="ratio-btn p-2 rounded-lg bg-bat-dark text-slate-300 border border-bat-border hover:border-yellow-500 transition-all">4:3</button>
+                                <button onclick="setAspectRatio('3:2', 3/2)" class="ratio-btn p-2 rounded-lg bg-bat-dark text-slate-300 border border-bat-border hover:border-yellow-500 transition-all">3:2</button>
+                                <button onclick="setAspectRatio('1:1', 1/1)" class="ratio-btn p-2 rounded-lg bg-bat-dark text-slate-300 border border-bat-border hover:border-yellow-500 transition-all">1:1</button>
+                            </div>
+                        </div>
+
+                        <div class="w-full h-40 bg-bat-dark rounded-lg flex items-center justify-center p-2 relative overflow-hidden border border-bat-border">
+                            <div id="aspect-box" class="bg-gradient-to-tr from-amber-600 to-yellow-400 rounded border border-white/40 shadow-xl flex items-center justify-center transition-all duration-300 text-xs font-bold text-black font-mono" style="width: 80%; aspect-ratio: 16/9;">
+                                <span id="aspect-label">16 : 9</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 4: Formats Matrix -->
+            <div id="mod-formats" class="rounded-2xl bg-bat-card border border-bat-border p-6 space-y-6">
+                <div class="flex items-center gap-3 border-b border-bat-border pb-4">
+                    <div class="p-2.5 rounded-xl bg-yellow-500/10 text-bat-yellow border border-yellow-500/20">
+                        <i class="fa-solid fa-file-code text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-tech font-bold text-white uppercase tracking-wider">4. Matice Formátů Souborů</h3>
+                        <p class="text-xs text-slate-400">Přehled formátů JPG, PNG, GIF, RAW, PSD, TIFF</p>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-4 font-sans">
+                    <div class="p-4 rounded-xl bg-black/60 border border-bat-border space-y-1.5 hover:border-yellow-500/50 transition-all">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-xs font-bold">.JPG</span>
+                            <span class="text-[11px] text-slate-400">Ztrátový</span>
+                        </div>
+                        <h5 class="text-sm font-bold text-white">Fotografie a web</h5>
+                        <p class="text-xs text-slate-400">Vysoká komprese, malá Velikost. Bez průhlednosti.</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-black/60 border border-bat-border space-y-1.5 hover:border-yellow-500/50 transition-all">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono text-xs font-bold">.PNG</span>
+                            <span class="text-[11px] text-slate-400">Bezztrátový</span>
+                        </div>
+                        <h5 class="text-sm font-bold text-white">Grafika + Průhlednost</h5>
+                        <p class="text-xs text-slate-400">Ideální pro loga a UI. Podporuje Alfa kanál.</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-black/60 border border-bat-border space-y-1.5 hover:border-yellow-500/50 transition-all">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono text-xs font-bold">.GIF</span>
+                            <span class="text-[11px] text-slate-400">Max 256 barev</span>
+                        </div>
+                        <h5 class="text-sm font-bold text-white">Animace</h5>
+                        <p class="text-xs text-slate-400">Indexované barvy (8 bitů celkem), animované sekvence.</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-black/60 border border-bat-border space-y-1.5 hover:border-yellow-500/50 transition-all">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded bg-red-500/20 text-red-300 font-mono text-xs font-bold">.RAW</span>
+                            <span class="text-[11px] text-slate-400">Surová data</span>
+                        </div>
+                        <h5 class="text-sm font-bold text-white">Profi Fotografie</h5>
+                        <p class="text-xs text-slate-400">Nekomprimovaná data přímo ze snímače (12-14 bit/kanál).</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-black/60 border border-bat-border space-y-1.5 hover:border-yellow-500/50 transition-all">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono text-xs font-bold">.PSD</span>
+                            <span class="text-[11px] text-slate-400">Projektový</span>
+                        </div>
+                        <h5 class="text-sm font-bold text-white">Adobe Photoshop</h5>
+                        <p class="text-xs text-slate-400">Ukládá vrstvy, masky, efekty a kompletní editační stav.</p>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-black/60 border border-bat-border space-y-1.5 hover:border-yellow-500/50 transition-all">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold">.TIFF</span>
+                            <span class="text-[11px] text-slate-400">Tiskový standard</span>
+                        </div>
+                        <h5 class="text-sm font-bold text-white">Prepress & Tisk</h5>
+                        <p class="text-xs text-slate-400">Vysoká kvalita, podpora CMYK a bezztrátové ukládání.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 5: PPI & Screen Calculator -->
+            <div id="mod-ppi" class="rounded-2xl bg-bat-card border border-bat-border p-6 space-y-6">
+                <div class="flex items-center gap-3 border-b border-bat-border pb-4">
+                    <div class="p-2.5 rounded-xl bg-yellow-500/10 text-bat-yellow border border-yellow-500/20">
+                        <i class="fa-solid fa-ruler-combined text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-tech font-bold text-white uppercase tracking-wider">5. Kalkulátor Hustoty Pixelů (PPI)</h3>
+                        <p class="text-xs text-slate-400">Přepočet: $1'' = 25,4\text{ mm}$, výpočet fyzické velikosti pixelu z úhlopříčky ($55'', 65''$)</p>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-4 text-sm text-slate-300">
+                        <div class="p-4 rounded-xl bg-black/60 border border-bat-border space-y-2 font-mono text-xs">
+                            <div class="text-bat-yellow font-bold">Základní převodní vztah z tabule:</div>
+                            <div>1 palec (1 inch / 1") = <span class="text-white font-bold">25,4 mm</span></div>
+                            <div class="text-slate-400">PPI = Počet pixelů na 1 palec úhlopříčky</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-black/60 p-5 rounded-xl border border-bat-border space-y-4 font-mono">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs text-slate-400 block mb-1">Úhlopříčka displeje (v palcích "):</label>
+                                <input type="number" id="calc-diag" value="65" class="w-full bg-bat-dark border border-bat-border rounded-lg px-3 py-2 text-sm text-bat-yellow focus:border-yellow-500 outline-none">
+                            </div>
+
+                            <div>
+                                <label class="text-xs text-slate-400 block mb-1">Rozlišení obrazovky:</label>
+                                <select id="calc-res" class="w-full bg-bat-dark border border-bat-border rounded-lg px-3 py-2 text-sm text-white focus:border-yellow-500 outline-none" onchange="calculatePPI()">
+                                    <option value="1920x1080">Full HD (1920 × 1080)</option>
+                                    <option value="3840x2160" selected>4K Ultra HD (3840 × 2160)</option>
+                                    <option value="2560x1440">QHD / 2K (2560 × 1440)</option>
+                                </select>
+                            </div>
+
+                            <button onclick="calculatePPI()" class="w-full py-2.5 rounded-lg bg-bat-yellow hover:bg-amber-400 text-black font-tech font-bold text-xs uppercase tracking-wider transition-all">
+                                Vypočítat Hodnoty
+                            </button>
+                        </div>
+
+                        <div class="p-3.5 rounded-xl bg-bat-dark border border-bat-border space-y-2 text-xs">
+                            <div class="flex justify-between items-center border-b border-bat-border pb-1.5">
+                                <span class="text-slate-400">Hustota (PPI):</span>
+                                <span id="res-ppi" class="text-bat-yellow font-bold text-sm">67.78 PPI</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-bat-border pb-1.5">
+                                <span class="text-slate-400">Velikost 1 pixelu:</span>
+                                <span id="res-px-size" class="text-emerald-400 font-bold text-sm">0.375 mm</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400">Fyzické rozměry:</span>
+                                <span id="res-dims" class="text-slate-300">143.9 cm × 80.9 cm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: PRACTICE LAB -->
+        <section id="section-practice" class="space-y-6 hidden">
+            <div class="text-center max-w-xl mx-auto space-y-1">
+                <h2 class="text-2xl font-tech font-bold text-white uppercase tracking-wider">Bat-Laboratoř Procvičování</h2>
+                <p class="text-xs text-slate-400">Kompaktní trenažér tvorby pixel artu a přesného míchání RGB kanálů</p>
+            </div>
+
+            <!-- Compact 2-column layout for Practice (No vertical scroll needed) -->
+            <div class="grid lg:grid-cols-2 gap-6 items-start">
+                
+                <!-- Mini App 1: Bat-Pixel Art Editor -->
+                <div class="rounded-2xl bg-bat-card border border-bat-border p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-bat-border pb-3">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-paint-brush text-bat-yellow"></i>
+                            <h3 class="text-sm font-tech font-bold text-white uppercase tracking-wider">Bat-Pixel Art (16×16)</h3>
+                        </div>
+                        <button onclick="clearPixelArtCanvas()" class="px-2.5 py-1 rounded bg-bat-dark border border-bat-border text-[11px] text-slate-300 hover:text-bat-yellow transition-all font-mono">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Vyčistit
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                        <!-- Canvas 16x16 Grid -->
+                        <div id="pixel-art-grid" class="grid grid-cols-16 gap-0.5 bg-black p-2 rounded-xl border border-bat-border shadow-2xl">
+                            <!-- JS Populated -->
+                        </div>
+
+                        <!-- Paleta -->
+                        <div class="space-y-3 w-full sm:w-32">
+                            <div class="p-3 rounded-xl bg-black/60 border border-bat-border space-y-2">
+                                <span class="text-[11px] font-tech text-slate-400 uppercase block">Paleta</span>
+                                <input type="color" id="art-color-picker" value="#f5c518" class="w-full h-8 rounded border-0 bg-transparent cursor-pointer">
+                                <div class="grid grid-cols-3 gap-1.5 pt-1">
+                                    <button onclick="setArtColor('#f5c518')" class="w-6 h-6 rounded bg-yellow-400 border border-white/20"></button>
+                                    <button onclick="setArtColor('#000000')" class="w-6 h-6 rounded bg-black border border-white/20"></button>
+                                    <button onclick="setArtColor('#ffffff')" class="w-6 h-6 rounded bg-white border border-white/20"></button>
+                                    <button onclick="setArtColor('#ef4444')" class="w-6 h-6 rounded bg-red-500 border border-white/20"></button>
+                                    <button onclick="setArtColor('#3b82f6')" class="w-6 h-6 rounded bg-blue-500 border border-white/20"></button>
+                                    <button onclick="setArtColor('#10b981')" class="w-6 h-6 rounded bg-emerald-500 border border-white/20"></button>
+                                </div>
+                            </div>
+                            <div class="p-2.5 rounded-lg bg-black/40 border border-bat-border text-[11px] font-mono text-slate-400 space-y-0.5">
+                                <div>256 px</div>
+                                <div>768 Bytů (0.75 KB)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mini App 2: Bat-Signal RGB Challenge -->
+                <div class="rounded-2xl bg-bat-card border border-bat-border p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-bat-border pb-3">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-gamepad text-bat-yellow"></i>
+                            <h3 class="text-sm font-tech font-bold text-white uppercase tracking-wider">Bat-Signal RGB Výzva</h3>
+                        </div>
+                        <button onclick="startNewRGBGame()" class="px-2.5 py-1 rounded bg-bat-dark border border-bat-border text-[11px] text-bat-yellow hover:bg-bat-accent transition-all font-mono">
+                            Nová Barva
+                        </button>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3 text-center">
+                            <div>
+                                <span class="text-[11px] font-mono text-slate-400 block mb-1">Cílový Odstín</span>
+                                <div id="game-target-box" class="h-16 rounded-xl border border-white/20 shadow-inner"></div>
+                            </div>
+                            <div>
+                                <span class="text-[11px] font-mono text-slate-400 block mb-1">Vaše Míchání</span>
+                                <div id="game-user-box" class="h-16 rounded-xl border border-white/20 shadow-inner"></div>
+                            </div>
+                        </div>
+
+                        <div id="game-feedback" class="p-2 rounded-lg bg-black/60 text-center font-mono font-bold text-xs text-slate-300 border border-bat-border">
+                            Nastavte posuvníky a porovnejte!
+                        </div>
+
+                        <div class="space-y-2 font-mono">
+                            <div>
+                                <div class="flex justify-between text-xs text-red-400">
+                                    <span>R (Red):</span>
+                                    <span id="g-val-r">128</span>
+                                </div>
+                                <input type="range" id="g-slider-r" min="0" max="255" value="128" oninput="updateGameUserColor()" class="w-full accent-red-500">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs text-green-400">
+                                    <span>G (Green):</span>
+                                    <span id="g-val-g">128</span>
+                                </div>
+                                <input type="range" id="g-slider-g" min="0" max="255" value="128" oninput="updateGameUserColor()" class="w-full accent-green-500">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs text-blue-400">
+                                    <span>B (Blue):</span>
+                                    <span id="g-val-b">128</span>
+                                </div>
+                                <input type="range" id="g-slider-b" min="0" max="255" value="128" oninput="updateGameUserColor()" class="w-full accent-blue-500">
+                            </div>
+                        </div>
+
+                        <button onclick="checkGameScore()" class="w-full py-2 rounded-lg bg-bat-yellow hover:bg-amber-400 text-black font-tech font-bold text-xs uppercase tracking-wider transition-all shadow-md">
+                            Porovnat Složky Barvy
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 3: KNOWLEDGE TEST -->
+        <section id="section-quiz" class="space-y-6 hidden">
+            <div class="text-center max-w-xl mx-auto space-y-1">
+                <h2 class="text-2xl font-tech font-bold text-white uppercase tracking-wider">Gotham Academy Prověrka</h2>
+                <p class="text-xs text-slate-400">Ověření teoretických i praktických znalostí z tabule</p>
+            </div>
+
+            <div class="max-w-2xl mx-auto bg-bat-card border border-bat-border rounded-2xl p-6 space-y-6 shadow-2xl">
+                <!-- Quiz Container -->
+                <div id="quiz-container" class="space-y-5">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Quiz Controls -->
+                <div id="quiz-footer" class="flex justify-between items-center border-t border-bat-border pt-4">
+                    <span id="quiz-progress" class="text-xs font-mono text-slate-400">Otázka 1 z 8</span>
+                    <button id="quiz-next-btn" onclick="nextQuestion()" class="px-5 py-2 rounded-xl bg-bat-yellow hover:bg-amber-400 text-black font-tech font-bold text-xs uppercase tracking-wider transition-all shadow-md">
+                        Další Otázka <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- Results View -->
+                <div id="quiz-results" class="hidden text-center space-y-5 py-4">
+                    <div class="w-16 h-16 rounded-full bg-yellow-500/10 text-bat-yellow border border-yellow-500/30 flex items-center justify-center mx-auto text-2xl">
+                        <i class="fa-solid fa-mask"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-xl font-tech font-bold text-white">Prověrka Dokončena!</h3>
+                        <p class="text-slate-400 text-xs">Výsledné skóre:</p>
+                        <div id="score-text" class="text-3xl font-tech font-black text-bat-yellow">0 / 8</div>
+                    </div>
+                    <p id="score-eval" class="text-xs text-slate-300 max-w-md mx-auto"></p>
+                    <button onclick="restartQuiz()" class="px-5 py-2.5 rounded-xl bg-bat-yellow hover:bg-amber-400 text-black font-tech font-bold text-xs uppercase tracking-wider transition-all shadow-md">
+                        <i class="fa-solid fa-rotate-right mr-1.5"></i> Opakovat Prověrku
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-bat-border bg-black py-4 text-center text-xs text-slate-500 mt-8 font-mono">
+        <div class="max-w-7xl mx-auto px-4">
+            Gotham Academy • Bat-Tech Bitmap Graphics Module
+        </div>
+    </footer>
+
+    <!-- App JavaScript Logic -->
+    <script>
+        // TAB SWITCHING
+        function switchTab(tabId) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-bat-yellow', 'text-black', 'shadow-md');
+                btn.classList.add('text-slate-400');
+            });
+
+            document.getElementById(`section-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.add('bg-bat-yellow', 'text-black', 'shadow-md');
+            activeBtn.classList.remove('text-slate-400');
+        }
+
+        // --- MODULE 1: RASTER GRID LOGIC ---
+        const gridContainer = document.getElementById('raster-grid');
+        let selectedCell = null;
+
+        function initRasterGrid() {
+            gridContainer.innerHTML = '';
+            for (let i = 0; i < 64; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'w-6 h-6 rounded-xs bg-slate-900 cursor-pointer border border-bat-border pixel-grid-cell';
+                
+                // Bat-signal accent pattern
+                const x = i % 8;
+                const y = Math.floor(i / 8);
+                let isYellow = (y >= 2 && y <= 5 && x >= 2 && x <= 5);
+                
+                const r = isYellow ? 245 : 20;
+                const g = isYellow ? 197 : 25;
+                const b = isYellow ? 24 : 35;
+
+                cell.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+                cell.onclick = () => selectPixel(cell, i, r, g, b);
+                gridContainer.appendChild(cell);
+            }
+        }
+
+        function selectPixel(cell, index, r, g, b) {
+            if (selectedCell) selectedCell.classList.remove('ring-2', 'ring-yellow-400');
+            selectedCell = cell;
+            cell.classList.add('ring-2', 'ring-yellow-400');
+
+            const x = index % 8;
+            const y = Math.floor(index / 8);
+            document.getElementById('px-coords').textContent = `${x}, ${y}`;
+            document.getElementById('px-color-val').textContent = cell.style.backgroundColor;
+        }
+
+        document.getElementById('pixel-color-picker').addEventListener('input', (e) => {
+            if (selectedCell) {
+                selectedCell.style.backgroundColor = e.target.value;
+                document.getElementById('px-color-val').textContent = e.target.value;
+            }
+        });
+
+        // --- MODULE 2: RGB MIXER LOGIC ---
+        const sliderR = document.getElementById('slider-r');
+        const sliderG = document.getElementById('slider-g');
+        const sliderB = document.getElementById('slider-b');
+
+        function updateRGBMixer() {
+            const r = parseInt(sliderR.value);
+            const g = parseInt(sliderG.value);
+            const b = parseInt(sliderB.value);
+
+            document.getElementById('val-r').textContent = r;
+            document.getElementById('val-g').textContent = g;
+            document.getElementById('val-b').textContent = b;
+
+            document.getElementById('bin-r').textContent = r.toString(2).padStart(8, '0');
+            document.getElementById('bin-g').textContent = g.toString(2).padStart(8, '0');
+            document.getElementById('bin-b').textContent = b.toString(2).padStart(8, '0');
+
+            const hex = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+            document.getElementById('rgb-preview').style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+            document.getElementById('rgb-hex-text').textContent = hex;
+            document.getElementById('rgb-css-text').textContent = `rgb(${r}, ${g}, ${b})`;
+        }
+
+        [sliderR, sliderG, sliderB].forEach(slider => slider.addEventListener('input', updateRGBMixer));
+
+        // --- MODULE 3: ASPECT RATIO ---
+        function setAspectRatio(label, ratio) {
+            document.querySelectorAll('.ratio-btn').forEach(btn => {
+                btn.classList.remove('bg-bat-yellow', 'text-black');
+                btn.classList.add('bg-bat-dark', 'text-slate-300');
+            });
+            event.target.classList.add('bg-bat-yellow', 'text-black');
+            event.target.classList.remove('bg-bat-dark', 'text-slate-300');
+
+            const aspectBox = document.getElementById('aspect-box');
+            document.getElementById('aspect-label').textContent = label;
+            aspectBox.style.aspectRatio = ratio;
+        }
+
+        // --- MODULE 5: PPI CALCULATOR ---
+        function calculatePPI() {
+            const diagInches = parseFloat(document.getElementById('calc-diag').value) || 65;
+            const resVal = document.getElementById('calc-res').value.split('x');
+            const widthPx = parseInt(resVal[0]);
+            const heightPx = parseInt(resVal[1]);
+
+            const diagPx = Math.sqrt(widthPx * widthPx + heightPx * heightPx);
+            const ppi = diagPx / diagInches;
+
+            const angle = Math.atan(9 / 16);
+            const heightInches = diagInches * Math.sin(angle);
+            const widthInches = diagInches * Math.cos(angle);
+
+            const widthCm = (widthInches * 2.54).toFixed(1);
+            const heightCm = (heightInches * 2.54).toFixed(1);
+            const pixelSizeMm = (25.4 / ppi).toFixed(3);
+
+            document.getElementById('res-ppi').textContent = `${ppi.toFixed(2)} PPI`;
+            document.getElementById('res-px-size').textContent = `${pixelSizeMm} mm`;
+            document.getElementById('res-dims').textContent = `${widthCm} cm × ${heightCm} cm`;
+        }
+
+        // --- PRACTICE: PIXEL ART EDITOR ---
+        let currentArtColor = '#f5c518';
+
+        function initPixelArtGrid() {
+            const artGrid = document.getElementById('pixel-art-grid');
+            artGrid.innerHTML = '';
+            for (let i = 0; i < 256; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'w-3.5 h-3.5 sm:w-4 sm:h-4 bg-bat-dark cursor-pointer border border-bat-border/40 hover:opacity-80 transition-all';
+                cell.onclick = () => {
+                    cell.style.backgroundColor = currentArtColor;
+                };
+                artGrid.appendChild(cell);
+            }
+        }
+
+        function setArtColor(color) {
+            currentArtColor = color;
+            document.getElementById('art-color-picker').value = color;
+        }
+
+        document.getElementById('art-color-picker').addEventListener('input', (e) => {
+            currentArtColor = e.target.value;
+        });
+
+        function clearPixelArtCanvas() {
+            document.querySelectorAll('#pixel-art-grid > div').forEach(cell => {
+                cell.style.backgroundColor = '#0a0d14';
+            });
+        }
+
+        // --- PRACTICE: RGB GAME LOGIC ---
+        let targetRGB = { r: 0, g: 0, b: 0 };
+
+        function startNewRGBGame() {
+            targetRGB.r = Math.floor(Math.random() * 256);
+            targetRGB.g = Math.floor(Math.random() * 256);
+            targetRGB.b = Math.floor(Math.random() * 256);
+
+            document.getElementById('game-target-box').style.backgroundColor = `rgb(${targetRGB.r}, ${targetRGB.g}, ${targetRGB.b})`;
+            
+            document.getElementById('g-slider-r').value = 128;
+            document.getElementById('g-slider-g').value = 128;
+            document.getElementById('g-slider-b').value = 128;
+            updateGameUserColor();
+
+            document.getElementById('game-feedback').textContent = 'Nastavte posuvníky a porovnejte!';
+            document.getElementById('game-feedback').className = 'p-2 rounded-lg bg-black/60 text-center font-mono font-bold text-xs text-slate-300 border border-bat-border';
+        }
+
+        function updateGameUserColor() {
+            const r = document.getElementById('g-slider-r').value;
+            const g = document.getElementById('g-slider-g').value;
+            const b = document.getElementById('g-slider-b').value;
+
+            document.getElementById('g-val-r').textContent = r;
+            document.getElementById('g-val-g').textContent = g;
+            document.getElementById('g-val-b').textContent = b;
+
+            document.getElementById('game-user-box').style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function checkGameScore() {
+            const r = parseInt(document.getElementById('g-slider-r').value);
+            const g = parseInt(document.getElementById('g-slider-g').value);
+            const b = parseInt(document.getElementById('g-slider-b').value);
+
+            const totalDiff = Math.abs(targetRGB.r - r) + Math.abs(targetRGB.g - g) + Math.abs(targetRGB.b - b);
+
+            const feedback = document.getElementById('game-feedback');
+            if (totalDiff < 30) {
+                feedback.textContent = `Přezkoumání schváleno! Odchylka pouze ${totalDiff} bodů! 🦇`;
+                feedback.className = 'p-2 rounded-lg bg-yellow-500/20 text-bat-yellow border border-yellow-500/40 text-center font-mono font-bold text-xs';
+            } else if (totalDiff < 80) {
+                feedback.textContent = `Docela přesné! Odchylka ${totalDiff} bodů.`;
+                feedback.className = 'p-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-center font-mono font-bold text-xs';
+            } else {
+                feedback.textContent = `Odchylka ${totalDiff} bodů. Zkuste ještě doladit složky!`;
+                feedback.className = 'p-2 rounded-lg bg-red-500/20 text-red-300 border border-red-500/40 text-center font-mono font-bold text-xs';
+            }
+        }
+
+        // --- QUIZ LOGIC ---
+        const quizQuestions = [
+            {
+                q: "Bat-počítač zpracovává rastrový obraz. Co přesně znamená pojem 'Pixel'?",
+                options: [
+                    "Vektorová křivka popsaná matematickou rovnicí",
+                    "Nejmenší samostatný obrazový bod mřížky s konkrétní barvou",
+                    "Jednotka komprese souborů .JPG",
+                    "Typ monitoru s vysokou obnovovací frekvencí"
+                ],
+                correct: 1,
+                exp: "Pixel (Picture Element) je nejmenší nedělitelný prvek rastrové mřížky."
+            },
+            {
+                q: "Systém Bat-Computeru využívá 8-bitový RGB kanál (True Color). Kolik celkem unikátních barev dokáže zobrazit?",
+                options: [
+                    "256 barev",
+                    "65 536 barev",
+                    "16 777 216 barev ($2^{24}$)",
+                    "4,2 miliardy barev"
+                ],
+                correct: 2,
+                exp: "Jedná se o $256 \times 256 \times 256 = 2^{24} = 16\ 777\ 216$ barevných odstínů."
+            },
+            {
+                q: "Který formát je BEZZTRÁTOVÝ a podporuje průhlednost (Alfa kanál) pro loga a schémata?",
+                options: [
+                    "JPG",
+                    "PNG",
+                    "MP4",
+                    "RAW"
+                ],
+                correct: 1,
+                exp: "PNG ukládá obraz bezztrátově a podporuje Alfa kanál (průhlednost)."
+            },
+            {
+                q: "Kolik pixelů obsahuje obrazovka Bat-monitoru s rozlišením Full HD (1920 × 1080)?",
+                options: [
+                    "Cca 1 Megapixel",
+                    "Přesně 2 073 600 pixelů (~2,07 Mpx)",
+                    "Přesně 8 294 400 pixelů (~8,29 Mpx)",
+                    "5 Megapixelů"
+                ],
+                correct: 1,
+                exp: "$1920 \times 1080 = 2\ 073\ 600\text{ px}$."
+            },
+            {
+                q: "Jaký je převodní vztah z tabule mezi 1 palcem (1\") a milimetry pro výpočet PPI?",
+                options: [
+                    "1\" = 10 mm",
+                    "1\" = 25,4 mm",
+                    "1\" = 30 mm",
+                    "1\" = 100 mm"
+                ],
+                correct: 1,
+                exp: "1 palec (inch) = 25,4 mm."
+            },
+            {
+                q: "Jaký poměr stran (Aspect Ratio) odpovídá rozlišení 1920 × 1080 po vydělení jmenovatelem 120?",
+                options: [
+                    "4 : 3",
+                    "3 : 2",
+                    "16 : 9",
+                    "1 : 1"
+                ],
+                correct: 2,
+                exp: "1920 / 120 = 16 a 1080 / 120 = 9 $\rightarrow$ 16:9."
+            },
+            {
+                q: "Který formát představuje nekomprimovaný 'digitální negativ' ze snímače fotoaparátu?",
+                options: [
+                    "GIF",
+                    "PSD",
+                    "RAW",
+                    "TIFF"
+                ],
+                correct: 2,
+                exp: "RAW obsahuje surová nekomprimovaná data pro následné profesionální úpravy."
+            },
+            {
+                q: "Co znamená hodnota (0, 0, 0) a (255, 255, 255) v aditivním fúzním RGB modelu?",
+                options: [
+                    "(0,0,0) je bílá a (255,255,255) je černá",
+                    "(0,0,0) je úplné temno (černá) a (255,255,255) je maximální svit (bílá)",
+                    "Určuje rozlišení v DPI",
+                    "Představuje průhlednost v procentech"
+                ],
+                correct: 1,
+                exp: "Aditivní model přidává světlo: 0 = absenci světla, 255 = plnou intenzitu."
+            }
+        ];
+
+        let currentQuestionIdx = 0;
+        let userScore = 0;
+        let selectedOptionIdx = null;
+
+        function renderQuestion() {
+            const container = document.getElementById('quiz-container');
+            const q = quizQuestions[currentQuestionIdx];
+
+            document.getElementById('quiz-progress').textContent = `Otázka ${currentQuestionIdx + 1} z ${quizQuestions.length}`;
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <h4 class="text-base font-tech font-bold text-white">${currentQuestionIdx + 1}. ${q.q}</h4>
+                    <div class="grid gap-2.5">
+                        ${q.options.map((opt, idx) => `
+                            <button onclick="selectAnswer(${idx})" class="quiz-opt-btn p-3 rounded-xl bg-black/60 border border-bat-border hover:border-yellow-500 text-left text-xs text-slate-200 transition-all flex items-center justify-between">
+                                <span>${opt}</span>
+                                <i class="fa-regular fa-circle text-slate-500 opt-icon"></i>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            selectedOptionIdx = null;
+        }
+
+        function selectAnswer(idx) {
+            const buttons = document.querySelectorAll('.quiz-opt-btn');
+            buttons.forEach((btn, i) => {
+                btn.classList.remove('border-yellow-500', 'bg-yellow-500/10');
+                if (i === idx) {
+                    btn.classList.add('border-yellow-500', 'bg-yellow-500/10');
+                }
+            });
+            selectedOptionIdx = idx;
+        }
+
+        function nextQuestion() {
+            if (selectedOptionIdx === null) {
+                alert('Vyberte prosím jednu z odpovedí.');
+                return;
+            }
+
+            if (selectedOptionIdx === quizQuestions[currentQuestionIdx].correct) {
+                userScore++;
+            }
+
+            currentQuestionIdx++;
+
+            if (currentQuestionIdx < quizQuestions.length) {
+                renderQuestion();
+            } else {
+                showQuizResults();
+            }
+        }
+
+        function showQuizResults() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('quiz-footer').classList.add('hidden');
+            
+            const resultsScreen = document.getElementById('quiz-results');
+            resultsScreen.classList.remove('hidden');
+
+            document.getElementById('score-text').textContent = `${userScore} / ${quizQuestions.length}`;
+
+            const evalText = document.getElementById('score-eval');
+            if (userScore === quizQuestions.length) {
+                evalText.textContent = "Perfektní! Získáváte hodnost Bat-Tech Operativa s plnou znalostí rastrové grafiky.";
+            } else if (userScore >= 5) {
+                evalText.textContent = "Velmi dobrý výsledek! Většinu teoretických i výpočetních postupů ovládate.";
+            } else {
+                evalText.textContent = "Doporučujeme projít výkladové moduly v sekci Teorie a zopakovat test.";
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestionIdx = 0;
+            userScore = 0;
+            document.getElementById('quiz-results').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('quiz-footer').classList.remove('hidden');
+            renderQuestion();
+        }
+
+        window.onload = function() {
+            initRasterGrid();
+            updateRGBMixer();
+            calculatePPI();
+            initPixelArtGrid();
+            startNewRGBGame();
+            renderQuestion();
+        };
+    </script>
+<!-- gp-ramec:foot --><footer class="gp-foot"><div class="gp-in"><span>Gymnázium Příbram</span><span>Autor: Matěj Sedláček</span><span>Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" rel="license noopener">CC BY 4.0</a></span></div></footer><!-- /gp-ramec:foot -->
+</body>
+</html>

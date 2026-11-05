@@ -8,6 +8,6 @@ Knihovny pro studentské práce v `portfolio/`, ať nejsou v každé práci zvl�
 | `lucide.min.js` | Lucide 1.69.0 | ISC |
 | `react/` | React a React DOM 18.3.1 | MIT |
 | `confetti.browser.js` | canvas-confetti | ISC |
-| `pisma/` | písma z balíčků Fontsource (Inter, Fira Code, Outfit a další) | SIL OFL 1.1 |
+| `pisma/` | písma z balíčků Fontsource (Inter, Fira Code, Outfit, Fredoka a další) | SIL OFL 1.1 |
 
 Soubory se nepřepisují na novou verzi bez vyzkoušení všech prací, které je používají.

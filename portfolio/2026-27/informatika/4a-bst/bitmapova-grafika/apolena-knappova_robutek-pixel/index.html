@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastrová Grafika s Robůtkem Pixelem</title>
+    <!-- Tailwind CSS -->
+    <!-- Font Awesome Ikony -->
+    <link rel="stylesheet" href="../../../../../../assets/portfolio/fa/css/all.min.css">
+    <!-- Písma Fredoka a Inter -->
+    <link rel="stylesheet" href="../../../../../../assets/portfolio/pisma/pisma.css">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        h1, h2, h3, h4, .font-heading { font-family: 'Fredoka', sans-serif; }
+        
+        .checkerboard-bg {
+            background-color: #ffffff;
+            background-image: linear-gradient(45deg, #cbd5e1 25%, transparent 25%), 
+                              linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #cbd5e1 75%), 
+                              linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+        }
+
+        .speech-bubble {
+            position: relative;
+            background: #ffffff;
+            border-radius: 1.25rem;
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 20px;
+            border-width: 8px 12px 8px 0;
+            border-style: solid;
+            border-color: transparent #ffffff transparent transparent;
+            display: block;
+            width: 0;
+        }
+        @media (max-width: 768px) {
+            .speech-bubble::after {
+                left: 20px;
+                top: -12px;
+                border-width: 0 8px 12px 8px;
+                border-color: transparent transparent #ffffff transparent;
+            }
+        }
+    </style>
+<style id="gp-tw">*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:JetBrains Mono,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.top-0{top:0}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-6{margin-bottom:1.5rem}.mt-0\.5{margin-top:.125rem}.mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-8{margin-top:2rem}.mt-auto{margin-top:auto}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-12{height:3rem}.h-16{height:4rem}.h-2\.5{height:.625rem}.h-20{height:5rem}.h-3{height:.75rem}.h-4{height:1rem}.h-48{height:12rem}.h-7{height:1.75rem}.h-8{height:2rem}.h-full{height:100%}.min-h-\[48px\]{min-height:48px}.min-h-screen{min-height:100vh}.w-10{width:2.5rem}.w-12{width:3rem}.w-16{width:4rem}.w-3{width:.75rem}.w-4{width:1rem}.w-48{width:12rem}.w-7{width:1.75rem}.w-8{width:2rem}.w-full{width:100%}.max-w-7xl{max-width:80rem}.max-w-full{max-width:100%}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-crosshair{cursor:crosshair}.cursor-pointer{cursor:pointer}.touch-none{touch-action:none}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.grid-cols-6{grid-template-columns:repeat(6,minmax(0,1fr))}.grid-cols-8{grid-template-columns:repeat(8,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0{gap:0}.gap-1{gap:.25rem}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-x-1>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(.25rem*var(--tw-space-x-reverse));margin-left:calc(.25rem*(1 - var(--tw-space-x-reverse)))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.25rem*var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem*var(--tw-space-y-reverse))}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem*var(--tw-space-y-reverse))}.space-y-5>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.overflow-auto{overflow:auto}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-md{border-radius:.375rem}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-4{border-width:4px}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-b-4{border-bottom-width:4px}.border-r{border-right-width:1px}.border-t{border-top-width:1px}.border-cyan-400{--tw-border-opacity:1;border-color:rgb(34 211 238/var(--tw-border-opacity,1))}.border-cyan-500{--tw-border-opacity:1;border-color:rgb(6 182 212/var(--tw-border-opacity,1))}.border-emerald-200{--tw-border-opacity:1;border-color:rgb(167 243 208/var(--tw-border-opacity,1))}.border-indigo-100{--tw-border-opacity:1;border-color:rgb(224 231 255/var(--tw-border-opacity,1))}.border-indigo-200{--tw-border-opacity:1;border-color:rgb(199 210 254/var(--tw-border-opacity,1))}.border-purple-100{--tw-border-opacity:1;border-color:rgb(243 232 255/var(--tw-border-opacity,1))}.border-rose-200{--tw-border-opacity:1;border-color:rgb(254 205 211/var(--tw-border-opacity,1))}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249/var(--tw-border-opacity,1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240/var(--tw-border-opacity,1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225/var(--tw-border-opacity,1))}.border-slate-400{--tw-border-opacity:1;border-color:rgb(148 163 184/var(--tw-border-opacity,1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59/var(--tw-border-opacity,1))}.border-slate-900{--tw-border-opacity:1;border-color:rgb(15 23 42/var(--tw-border-opacity,1))}.border-white\/30{border-color:hsla(0,0%,100%,.3)}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11/var(--tw-bg-opacity,1))}.bg-black{--tw-bg-opacity:1;background-color:rgb(0 0 0/var(--tw-bg-opacity,1))}.bg-blue-500{--tw-bg-opacity:1;background-color:rgb(59 130 246/var(--tw-bg-opacity,1))}.bg-cyan-100{--tw-bg-opacity:1;background-color:rgb(207 250 254/var(--tw-bg-opacity,1))}.bg-cyan-50{--tw-bg-opacity:1;background-color:rgb(236 254 255/var(--tw-bg-opacity,1))}.bg-cyan-500{--tw-bg-opacity:1;background-color:rgb(6 182 212/var(--tw-bg-opacity,1))}.bg-cyan-600{--tw-bg-opacity:1;background-color:rgb(8 145 178/var(--tw-bg-opacity,1))}.bg-emerald-100{--tw-bg-opacity:1;background-color:rgb(209 250 229/var(--tw-bg-opacity,1))}.bg-emerald-50{--tw-bg-opacity:1;background-color:rgb(236 253 245/var(--tw-bg-opacity,1))}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105/var(--tw-bg-opacity,1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94/var(--tw-bg-opacity,1))}.bg-indigo-200{--tw-bg-opacity:1;background-color:rgb(199 210 254/var(--tw-bg-opacity,1))}.bg-indigo-50{--tw-bg-opacity:1;background-color:rgb(238 242 255/var(--tw-bg-opacity,1))}.bg-indigo-600{--tw-bg-opacity:1;background-color:rgb(79 70 229/var(--tw-bg-opacity,1))}.bg-indigo-900{--tw-bg-opacity:1;background-color:rgb(49 46 129/var(--tw-bg-opacity,1))}.bg-purple-50{--tw-bg-opacity:1;background-color:rgb(250 245 255/var(--tw-bg-opacity,1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68/var(--tw-bg-opacity,1))}.bg-red-600{--tw-bg-opacity:1;background-color:rgb(220 38 38/var(--tw-bg-opacity,1))}.bg-rose-100{--tw-bg-opacity:1;background-color:rgb(255 228 230/var(--tw-bg-opacity,1))}.bg-rose-50{--tw-bg-opacity:1;background-color:rgb(255 241 242/var(--tw-bg-opacity,1))}.bg-rose-600{--tw-bg-opacity:1;background-color:rgb(225 29 72/var(--tw-bg-opacity,1))}.bg-sky-100{--tw-bg-opacity:1;background-color:rgb(224 242 254/var(--tw-bg-opacity,1))}.bg-sky-600{--tw-bg-opacity:1;background-color:rgb(2 132 199/var(--tw-bg-opacity,1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249/var(--tw-bg-opacity,1))}.bg-slate-200{--tw-bg-opacity:1;background-color:rgb(226 232 240/var(--tw-bg-opacity,1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252/var(--tw-bg-opacity,1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42/var(--tw-bg-opacity,1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.bg-white\/20{background-color:hsla(0,0%,100%,.2)}.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}.from-cyan-500{--tw-gradient-from:#06b6d4 var(--tw-gradient-from-position);--tw-gradient-to:rgba(6,182,212,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-rose-500{--tw-gradient-from:#f43f5e var(--tw-gradient-from-position);--tw-gradient-to:rgba(244,63,94,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.to-blue-600{--tw-gradient-to:#2563eb var(--tw-gradient-to-position)}.to-pink-600{--tw-gradient-to:#db2777 var(--tw-gradient-to-position)}.p-1{padding:.25rem}.p-1\.5{padding:.375rem}.p-2{padding:.5rem}.p-2\.5{padding:.625rem}.p-3{padding:.75rem}.p-3\.5{padding:.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-2\.5{padding-left:.625rem;padding-right:.625rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-0\.5{padding-top:.125rem;padding-bottom:.125rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.pb-1{padding-bottom:.25rem}.pb-4{padding-bottom:1rem}.pl-1{padding-left:.25rem}.pt-1{padding-top:.25rem}.pt-2{padding-top:.5rem}.pt-3{padding-top:.75rem}.pt-4{padding-top:1rem}.text-center{text-align:center}.text-right{text-align:right}.font-heading{font-family:Fredoka,sans-serif}.font-mono{font-family:JetBrains Mono,monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.tracking-wider{letter-spacing:.05em}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36/var(--tw-text-opacity,1))}.text-amber-500{--tw-text-opacity:1;color:rgb(245 158 11/var(--tw-text-opacity,1))}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6/var(--tw-text-opacity,1))}.text-cyan-300{--tw-text-opacity:1;color:rgb(103 232 249/var(--tw-text-opacity,1))}.text-cyan-500{--tw-text-opacity:1;color:rgb(6 182 212/var(--tw-text-opacity,1))}.text-cyan-600{--tw-text-opacity:1;color:rgb(8 145 178/var(--tw-text-opacity,1))}.text-cyan-700{--tw-text-opacity:1;color:rgb(14 116 144/var(--tw-text-opacity,1))}.text-cyan-800{--tw-text-opacity:1;color:rgb(21 94 117/var(--tw-text-opacity,1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183/var(--tw-text-opacity,1))}.text-emerald-500{--tw-text-opacity:1;color:rgb(16 185 129/var(--tw-text-opacity,1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105/var(--tw-text-opacity,1))}.text-emerald-700{--tw-text-opacity:1;color:rgb(4 120 87/var(--tw-text-opacity,1))}.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70/var(--tw-text-opacity,1))}.text-green-600{--tw-text-opacity:1;color:rgb(22 163 74/var(--tw-text-opacity,1))}.text-indigo-100{--tw-text-opacity:1;color:rgb(224 231 255/var(--tw-text-opacity,1))}.text-indigo-300{--tw-text-opacity:1;color:rgb(165 180 252/var(--tw-text-opacity,1))}.text-indigo-500{--tw-text-opacity:1;color:rgb(99 102 241/var(--tw-text-opacity,1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229/var(--tw-text-opacity,1))}.text-indigo-800{--tw-text-opacity:1;color:rgb(55 48 163/var(--tw-text-opacity,1))}.text-indigo-900{--tw-text-opacity:1;color:rgb(49 46 129/var(--tw-text-opacity,1))}.text-indigo-950{--tw-text-opacity:1;color:rgb(30 27 75/var(--tw-text-opacity,1))}.text-pink-600{--tw-text-opacity:1;color:rgb(219 39 119/var(--tw-text-opacity,1))}.text-purple-500{--tw-text-opacity:1;color:rgb(168 85 247/var(--tw-text-opacity,1))}.text-purple-600{--tw-text-opacity:1;color:rgb(147 51 234/var(--tw-text-opacity,1))}.text-purple-700{--tw-text-opacity:1;color:rgb(126 34 206/var(--tw-text-opacity,1))}.text-purple-900{--tw-text-opacity:1;color:rgb(88 28 135/var(--tw-text-opacity,1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity,1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38/var(--tw-text-opacity,1))}.text-rose-100{--tw-text-opacity:1;color:rgb(255 228 230/var(--tw-text-opacity,1))}.text-rose-500{--tw-text-opacity:1;color:rgb(244 63 94/var(--tw-text-opacity,1))}.text-rose-600{--tw-text-opacity:1;color:rgb(225 29 72/var(--tw-text-opacity,1))}.text-rose-800{--tw-text-opacity:1;color:rgb(159 18 57/var(--tw-text-opacity,1))}.text-sky-600{--tw-text-opacity:1;color:rgb(2 132 199/var(--tw-text-opacity,1))}.text-sky-800{--tw-text-opacity:1;color:rgb(7 89 133/var(--tw-text-opacity,1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139/var(--tw-text-opacity,1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85/var(--tw-text-opacity,1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59/var(--tw-text-opacity,1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.accent-green-500{accent-color:#22c55e}.accent-purple-500{accent-color:#a855f7}.accent-red-500{accent-color:#ef4444}.accent-sky-500{accent-color:#0ea5e9}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgba(0,0,0,.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color)}.shadow-inner,.shadow-lg{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color),0 4px 6px -4px var(--tw-shadow-color)}.shadow-md{--tw-shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color),0 2px 4px -2px var(--tw-shadow-color)}.shadow-md,.shadow-sm{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgba(0,0,0,.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color)}.shadow-cyan-200{--tw-shadow-color:#a5f3fc;--tw-shadow:var(--tw-shadow-colored)}.shadow-emerald-200{--tw-shadow-color:#a7f3d0;--tw-shadow:var(--tw-shadow-colored)}.blur{--tw-blur:blur(8px)}.blur,.grayscale{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.grayscale{--tw-grayscale:grayscale(100%)}.invert{--tw-invert:invert(100%)}.invert,.sepia{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.sepia{--tw-sepia:sepia(100%)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1)}.duration-150,.transition-transform{transition-duration:.15s}.selection\:bg-cyan-200 ::-moz-selection{--tw-bg-opacity:1;background-color:rgb(165 243 252/var(--tw-bg-opacity,1))}.selection\:bg-cyan-200 ::selection{--tw-bg-opacity:1;background-color:rgb(165 243 252/var(--tw-bg-opacity,1))}.selection\:text-cyan-900 ::-moz-selection{--tw-text-opacity:1;color:rgb(22 78 99/var(--tw-text-opacity,1))}.selection\:text-cyan-900 ::selection{--tw-text-opacity:1;color:rgb(22 78 99/var(--tw-text-opacity,1))}.selection\:bg-cyan-200::-moz-selection{--tw-bg-opacity:1;background-color:rgb(165 243 252/var(--tw-bg-opacity,1))}.selection\:bg-cyan-200::selection{--tw-bg-opacity:1;background-color:rgb(165 243 252/var(--tw-bg-opacity,1))}.selection\:text-cyan-900::-moz-selection{--tw-text-opacity:1;color:rgb(22 78 99/var(--tw-text-opacity,1))}.selection\:text-cyan-900::selection{--tw-text-opacity:1;color:rgb(22 78 99/var(--tw-text-opacity,1))}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:border-cyan-400:hover{--tw-border-opacity:1;border-color:rgb(34 211 238/var(--tw-border-opacity,1))}.hover\:bg-cyan-200:hover{--tw-bg-opacity:1;background-color:rgb(165 243 252/var(--tw-bg-opacity,1))}.hover\:bg-cyan-500:hover{--tw-bg-opacity:1;background-color:rgb(6 182 212/var(--tw-bg-opacity,1))}.hover\:bg-emerald-500:hover{--tw-bg-opacity:1;background-color:rgb(16 185 129/var(--tw-bg-opacity,1))}.hover\:bg-rose-100:hover{--tw-bg-opacity:1;background-color:rgb(255 228 230/var(--tw-bg-opacity,1))}.hover\:bg-rose-50:hover{--tw-bg-opacity:1;background-color:rgb(255 241 242/var(--tw-bg-opacity,1))}.hover\:bg-slate-100:hover{--tw-bg-opacity:1;background-color:rgb(241 245 249/var(--tw-bg-opacity,1))}.hover\:bg-slate-200:hover{--tw-bg-opacity:1;background-color:rgb(226 232 240/var(--tw-bg-opacity,1))}.hover\:text-cyan-600:hover{--tw-text-opacity:1;color:rgb(8 145 178/var(--tw-text-opacity,1))}.hover\:opacity-80:hover{opacity:.8}.focus\:ring-cyan-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(6 182 212/var(--tw-ring-opacity,1))}.focus\:ring-emerald-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(16 185 129/var(--tw-ring-opacity,1))}.disabled\:opacity-50:disabled{opacity:.5}@media (min-width:640px){.sm\:h-20{height:5rem}.sm\:w-20{width:5rem}.sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.sm\:flex-row{flex-direction:row}.sm\:items-center{align-items:center}.sm\:space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(.5rem*var(--tw-space-x-reverse));margin-left:calc(.5rem*(1 - var(--tw-space-x-reverse)))}.sm\:p-5{padding:1.25rem}.sm\:p-6{padding:1.5rem}.sm\:p-7{padding:1.75rem}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}.sm\:text-base{font-size:1rem;line-height:1.5rem}.sm\:text-sm{font-size:.875rem;line-height:1.25rem}}@media (min-width:768px){.md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.md\:flex-row{flex-direction:row}.md\:items-center{align-items:center}}@media (min-width:1024px){.lg\:col-span-5{grid-column:span 5/span 5}.lg\:col-span-6{grid-column:span 6/span 6}.lg\:col-span-7{grid-column:span 7/span 7}.lg\:grid-cols-12{grid-template-columns:repeat(12,minmax(0,1fr))}.lg\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.lg\:p-8{padding:2rem}.lg\:px-8{padding-left:2rem;padding-right:2rem}}</style>
+<!-- gp-ramec:css --><style>
+.gp-bar,.gp-foot{align-self:stretch;width:100%;box-sizing:border-box;background:#111;color:#c9c9c9;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:10px 16px;text-align:left}
+.gp-bar a,.gp-foot a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+.gp-bar a:hover,.gp-foot a:hover{color:#ff972e}
+.gp-bar{background:transparent;color:inherit;padding:10px 16px 0}
+.gp-bar a{color:inherit;opacity:.85}
+.gp-bar a:hover{opacity:1;color:inherit}
+.gp-foot{margin-top:32px;position:relative;z-index:1}
+.gp-in{max-width:720px;margin:0 auto;display:flex;flex-wrap:wrap;gap:2px 14px}
+</style><!-- /gp-ramec:css -->
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col selection:bg-cyan-200 selection:text-cyan-900">
+<!-- gp-ramec:bar --><div class="gp-bar"><div class="gp-in"><a href="../../../../../#/2026-27/informatika/4a-bst/bitmapova-grafika">← Zpět do portfolia</a></div></div><!-- /gp-ramec:bar -->
+
+
+    <!-- Robotická Horní Lišta -->
+    <header class="bg-white border-b-4 border-cyan-400 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo & Maskot -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('editor')">
+                    <div class="w-12 h-12 bg-cyan-500 rounded-2xl flex items-center justify-center text-white shadow-md shadow-cyan-200">
+                        <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="6" width="16" height="13" rx="4" fill="#38bdf8"/>
+                            <circle cx="8.5" cy="11" r="1.5" fill="#ffffff"/>
+                            <circle cx="15.5" cy="11" r="1.5" fill="#ffffff"/>
+                            <path d="M8.5 15h7" stroke="#ffffff" stroke-linecap="round"/>
+                            <path d="M12 2v4" stroke="#0284c7" stroke-linecap="round"/>
+                            <circle cx="12" cy="2" r="1.5" fill="#f59e0b"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="font-heading font-bold text-xl sm:text-2xl text-slate-800 leading-none">
+                            Rastrová Grafika <span class="text-cyan-600">s Pixelem</span>
+                        </h1>
+                        <p class="text-xs text-slate-500 font-medium mt-1">Interaktivní výuková aplikace (ZŠ &amp; SŠ)</p>
+                    </div>
+                </div>
+
+                <!-- Navigace - Záložky -->
+                <nav class="flex space-x-1 sm:space-x-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 overflow-x-auto">
+                    <button onclick="switchTab('editor')" id="tab-editor" class="tab-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-heading font-semibold transition-all flex items-center gap-2 bg-white text-cyan-700 shadow-sm border border-slate-200 whitespace-nowrap">
+                        <i class="fa-solid fa-paintbrush text-cyan-500"></i>
+                        <span>1. Pixel Studio</span>
+                    </button>
+                    <button onclick="switchTab('lab')" id="tab-lab" class="tab-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-heading font-semibold text-slate-600 hover:text-cyan-600 transition-all flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-flask text-amber-500"></i>
+                        <span>2. Laboratoř</span>
+                    </button>
+                    <button onclick="switchTab('theory')" id="tab-theory" class="tab-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-heading font-semibold text-slate-600 hover:text-cyan-600 transition-all flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-book-open text-indigo-500"></i>
+                        <span>3. Teorie &amp; Tahák</span>
+                    </button>
+                    <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-heading font-semibold text-slate-600 hover:text-cyan-600 transition-all flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-robot text-emerald-500"></i>
+                        <span>4. Robo-Kvíz</span>
+                    </button>
+                    <button onclick="switchTab('guide')" id="tab-guide" class="tab-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-heading font-semibold text-slate-600 hover:text-cyan-600 transition-all flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-graduation-cap text-rose-500"></i>
+                        <span>5. Návod &amp; Tisk</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hlavní Obsah -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- ROBŮTEK PIXEL - Bleskový Rádce -->
+        <div class="bg-gradient-to-r from-cyan-500 to-blue-600 rounded-3xl p-4 sm:p-5 shadow-lg text-white mb-6 flex flex-col md:flex-row items-center gap-4">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shrink-0 border-2 border-white/30">
+                <svg class="w-12 h-12" viewBox="0 0 24 24" fill="none">
+                    <rect x="4" y="6" width="16" height="13" rx="4" fill="#ffffff"/>
+                    <circle cx="8.5" cy="11" r="2" fill="#0284c7"/>
+                    <circle cx="15.5" cy="11" r="2" fill="#0284c7"/>
+                    <path d="M8.5 15Q12 18 15.5 15" stroke="#0284c7" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 2v4" stroke="#ffffff" stroke-width="2"/>
+                    <circle cx="12" cy="2" r="1.5" fill="#f59e0b"/>
+                </svg>
+            </div>
+            
+            <div class="speech-bubble flex-grow p-4 text-slate-700 text-sm sm:text-base border border-slate-100 shadow-sm">
+                <div class="font-heading font-bold text-cyan-600 text-xs uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-comment-dots"></i> Robůtek Pixel hlásí:
+                </div>
+                <p id="roboAdvice" class="font-medium text-slate-700">Ahoj! Vítám tě v aplikaci. Víš, že každý obrázek v počítači nebo na mobilu se skládá z tisíců malinkých barevných čtverečků zvaných **PIXELY**? Pojďme si to vyzkoušet!</p>
+            </div>
+        </div>
+
+
+        <!-- ========================================================================= -->
+        <!-- MODULE 1: PIXEL ART STUDIO                                               -->
+        <!-- ========================================================================= -->
+        <section id="sec-editor" class="tab-content space-y-6">
+            <div class="bg-white rounded-3xl p-5 sm:p-7 border-2 border-slate-200 shadow-sm">
+                
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="font-heading font-bold text-2xl text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-palette text-cyan-500"></i> Pixel Art Studio (Praxe)
+                        </h2>
+                        <p class="text-slate-500 text-sm mt-0.5">Nakresli si vlastní rastrový obrázek pixel po pixelu jako v pravé bitmapě!</p>
+                    </div>
+
+                    <!-- Volba Mřížky & Zoom -->
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                            <span class="text-xs font-bold text-slate-500 font-heading px-2">Mřížka:</span>
+                            <button onclick="setGridSize(8)" id="grid-8" class="grid-btn px-3 py-1.5 rounded-xl text-xs font-heading font-bold bg-cyan-600 text-white shadow-sm">8×8</button>
+                            <button onclick="setGridSize(16)" id="grid-16" class="grid-btn px-3 py-1.5 rounded-xl text-xs font-heading font-bold text-slate-600 hover:bg-slate-200">16×16</button>
+                            <button onclick="setGridSize(32)" id="grid-32" class="grid-btn px-3 py-1.5 rounded-xl text-xs font-heading font-bold text-slate-600 hover:bg-slate-200">32×32</button>
+                        </div>
+
+                        <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                            <span class="text-xs font-bold text-slate-500 font-heading px-2">Lupa:</span>
+                            <button onclick="setZoom(1)" id="zoom-1" class="zoom-btn px-2.5 py-1.5 rounded-xl text-xs font-heading font-bold bg-cyan-600 text-white shadow-sm">100%</button>
+                            <button onclick="setZoom(1.5)" id="zoom-1.5" class="zoom-btn px-2.5 py-1.5 rounded-xl text-xs font-heading font-bold text-slate-600 hover:bg-slate-200">150%</button>
+                            <button onclick="setZoom(2)" id="zoom-2" class="zoom-btn px-2.5 py-1.5 rounded-xl text-xs font-heading font-bold text-slate-600 hover:bg-slate-200">200%</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    
+                    <!-- Nástroje a Barvy -->
+                    <div class="lg:col-span-5 bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-5">
+                        
+                        <!-- Historie Zpět / Vpřed -->
+                        <div class="flex items-center justify-between gap-2 bg-white p-2 rounded-xl border border-slate-200">
+                            <span class="text-xs font-bold text-slate-500 font-heading pl-1">Historie kroků:</span>
+                            <div class="flex gap-2">
+                                <button onclick="undo()" id="btnUndo" disabled class="px-3 py-1.5 bg-slate-100 text-slate-400 rounded-lg text-xs font-heading font-bold disabled:opacity-50 transition-all flex items-center gap-1">
+                                    <i class="fa-solid fa-rotate-left"></i> Zpět
+                                </button>
+                                <button onclick="redo()" id="btnRedo" disabled class="px-3 py-1.5 bg-slate-100 text-slate-400 rounded-lg text-xs font-heading font-bold disabled:opacity-50 transition-all flex items-center gap-1">
+                                    <i class="fa-solid fa-rotate-right"></i> Vpřed
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Kreslicí Nástroje -->
+                        <div>
+                            <label class="block font-heading font-bold text-xs uppercase text-slate-500 mb-2">1. Vyber si nástroj</label>
+                            <div class="grid grid-cols-4 gap-2">
+                                <button onclick="setTool('pencil')" id="tool-pencil" class="tool-btn p-2.5 rounded-xl border-2 border-cyan-500 bg-cyan-50 text-cyan-700 font-heading font-bold text-xs flex flex-col items-center gap-1">
+                                    <i class="fa-solid fa-pencil text-base"></i> Tužka
+                                </button>
+                                <button onclick="setTool('bucket')" id="tool-bucket" class="tool-btn p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 font-heading font-bold text-xs flex flex-col items-center gap-1">
+                                    <i class="fa-solid fa-fill-drip text-base"></i> Výplň
+                                </button>
+                                <button onclick="setTool('eyedropper')" id="tool-eyedropper" class="tool-btn p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 font-heading font-bold text-xs flex flex-col items-center gap-1">
+                                    <i class="fa-solid fa-eye-dropper text-base"></i> Pipeta
+                                </button>
+                                <button onclick="setTool('eraser')" id="tool-eraser" class="tool-btn p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 font-heading font-bold text-xs flex flex-col items-center gap-1">
+                                    <i class="fa-solid fa-eraser text-base"></i> Guma
+                                </button>
+                                <button onclick="setTool('line')" id="tool-line" class="tool-btn p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 font-heading font-bold text-xs flex flex-col items-center gap-1">
+                                    <i class="fa-solid fa-slash text-base"></i> Čára
+                                </button>
+                                <button onclick="setTool('rect')" id="tool-rect" class="tool-btn p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 font-heading font-bold text-xs flex flex-col items-center gap-1">
+                                    <i class="fa-regular fa-square text-base"></i> Obdélník
+                                </button>
+                                <button onclick="setTool('circle')" id="tool-circle" class="tool-btn p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 font-heading font-bold text-xs flex flex-col items-center gap-1">
+                                    <i class="fa-regular fa-circle text-base"></i> Kruh
+                                </button>
+                                <button onclick="setTool('stamp')" id="tool-stamp" class="tool-btn p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 font-heading font-bold text-xs flex flex-col items-center gap-1">
+                                    <i class="fa-solid fa-stamp text-base"></i> Razítko
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Zrcadlení & Razítka Volby -->
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <div>
+                                <label class="block font-heading font-bold text-xs text-slate-500 mb-1">Symetrie (Zrcadlení)</label>
+                                <div class="flex gap-1">
+                                    <button onclick="toggleSymX()" id="symX" class="flex-1 py-1.5 px-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600">
+                                        <i class="fa-solid fa-arrows-left-right"></i> Vodorovně
+                                    </button>
+                                    <button onclick="toggleSymY()" id="symY" class="flex-1 py-1.5 px-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600">
+                                        <i class="fa-solid fa-arrows-up-down"></i> Svisle
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block font-heading font-bold text-xs text-slate-500 mb-1">Výběr Razítka</label>
+                                <select id="stampSelect" class="w-full bg-white border border-slate-200 rounded-lg p-1.5 text-xs font-bold text-slate-700">
+                                    <option value="heart">❤️ Srdíčko</option>
+                                    <option value="star">⭐ Hvězda</option>
+                                    <option value="coin">🪙 Mince</option>
+                                    <option value="robot">🤖 Robůtek</option>
+                                    <option value="house">🏠 Dům</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Paleta Barev -->
+                        <div>
+                            <label class="block font-heading font-bold text-xs uppercase text-slate-500 mb-2">2. Vyber barvu pixelu</label>
+                            <div class="flex items-center gap-3 mb-3">
+                                <input type="color" id="colorPicker" value="#0284c7" class="w-10 h-10 rounded-xl cursor-pointer bg-white border-2 border-slate-300 p-1 shadow-sm">
+                                <div class="flex-grow">
+                                    <input type="text" id="hexInput" value="#0284C7" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-1 text-xs font-mono font-bold text-slate-700 uppercase">
+                                    <span id="editorRgbDisplay" class="text-[11px] text-slate-500 font-mono mt-0.5 block">RGB: 2, 132, 199</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Rychlá Paleta -->
+                            <div class="grid grid-cols-6 gap-2">
+                                <button onclick="setColor('#000000')" class="h-7 rounded-lg bg-black border border-slate-300 hover:scale-105 transition-transform shadow-sm"></button>
+                                <button onclick="setColor('#ffffff')" class="h-7 rounded-lg bg-white border border-slate-300 hover:scale-105 transition-transform shadow-sm"></button>
+                                <button onclick="setColor('#ef4444')" class="h-7 rounded-lg bg-red-500 border border-slate-300 hover:scale-105 transition-transform shadow-sm"></button>
+                                <button onclick="setColor('#22c55e')" class="h-7 rounded-lg bg-green-500 border border-slate-300 hover:scale-105 transition-transform shadow-sm"></button>
+                                <button onclick="setColor('#0284c7')" class="h-7 rounded-lg bg-sky-600 border border-slate-300 hover:scale-105 transition-transform shadow-sm"></button>
+                                <button onclick="setColor('#eab308')" class="h-7 rounded-lg bg-amber-500 border border-slate-300 hover:scale-105 transition-transform shadow-sm"></button>
+                            </div>
+                        </div>
+
+                        <!-- Filtry na obrázek -->
+                        <div class="pt-2 border-t border-slate-200">
+                            <label class="block font-heading font-bold text-xs uppercase text-slate-500 mb-2">3. Aplikuj Filtry na plátno</label>
+                            <div class="grid grid-cols-3 gap-1.5">
+                                <button onclick="applyFilter('grayscale')" class="py-1 px-2 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-slate-100">Černobílá</button>
+                                <button onclick="applyFilter('sepia')" class="py-1 px-2 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-slate-100">Sepie</button>
+                                <button onclick="applyFilter('invert')" class="py-1 px-2 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-slate-100">Inverze</button>
+                                <button onclick="applyFilter('brighten')" class="py-1 px-2 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-slate-100">Jas +20%</button>
+                                <button onclick="applyFilter('darken')" class="py-1 px-2 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-slate-100">Ztmavit</button>
+                                <button onclick="applyFilter('blur')" class="py-1 px-2 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-slate-100">Rozostření</button>
+                            </div>
+                        </div>
+
+                        <!-- Volby a Export -->
+                        <div class="pt-3 border-t border-slate-200 space-y-3">
+                            <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-600">
+                                <input type="checkbox" id="toggleGrid" checked class="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500">
+                                <span>Zobrazit pomocnou mřížku</span>
+                            </label>
+
+                            <div class="flex gap-2">
+                                <button onclick="clearCanvas()" class="flex-1 py-2.5 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-xs font-heading font-bold transition-all flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-trash-can"></i> Smazat
+                                </button>
+                                <button onclick="downloadImage()" class="flex-1 py-2.5 px-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-heading font-bold shadow-md shadow-cyan-200 transition-all flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-download"></i> Uložit PNG
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kreslicí Plátno -->
+                    <div class="lg:col-span-7 flex flex-col items-center justify-center">
+                        <div id="canvasContainer" class="relative p-3 bg-white rounded-3xl border-4 border-slate-200 shadow-md checkerboard-bg max-w-full overflow-auto flex items-center justify-center">
+                            <canvas id="pixelCanvas" width="380" height="380" class="cursor-crosshair rounded-xl block touch-none transition-all duration-150"></canvas>
+                        </div>
+
+                        <!-- Inspector o pixelu -->
+                        <div class="w-full max-w-md mt-4 bg-slate-100 rounded-2xl border border-slate-200 p-3 flex items-center justify-between text-xs font-mono text-slate-700">
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-400 font-bold">Pozice:</span>
+                                <span id="hoverCoords" class="text-cyan-600 font-bold">X: --, Y: --</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-400 font-bold">Barva:</span>
+                                <div id="hoverColorPreview" class="w-4 h-4 rounded-md border border-slate-300 bg-transparent"></div>
+                                <span id="hoverColorHex" class="text-slate-700 font-bold">#------</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================================================= -->
+        <!-- MODULE 2: LABORATOŘ A SIMULÁTORY                                         -->
+        <!-- ========================================================================= -->
+        <section id="sec-lab" class="tab-content space-y-6 hidden">
+            
+            <!-- RGB Míchačka + Subpixel displej -->
+            <div class="bg-white rounded-3xl p-5 sm:p-7 border-2 border-slate-200 shadow-sm">
+                <h2 class="font-heading font-bold text-2xl text-slate-800 flex items-center gap-2 mb-1">
+                    <i class="fa-solid fa-flask text-amber-500"></i> 1. Laboratoř RGB Barev a Subpixelů
+                </h2>
+                <p class="text-slate-500 text-sm mb-6">Mícháním tří základních světelných kanálů (Červená, Zelená, Modrá) vznikají v monitoru všechny barvy!</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    
+                    <!-- Posuvníky -->
+                    <div class="lg:col-span-6 bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs font-bold font-heading mb-1">
+                                <span class="text-red-500"><i class="fa-solid fa-circle text-[10px]"></i> R - Red (Červená)</span>
+                                <span id="valR" class="font-mono text-slate-700">255</span>
+                            </div>
+                            <input type="range" id="sliderR" min="0" max="255" value="255" oninput="updateRGBMixer()" class="w-full accent-red-500 bg-slate-200 h-2.5 rounded-lg cursor-pointer">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-bold font-heading mb-1">
+                                <span class="text-green-600"><i class="fa-solid fa-circle text-[10px]"></i> G - Green (Zelená)</span>
+                                <span id="valG" class="font-mono text-slate-700">128</span>
+                            </div>
+                            <input type="range" id="sliderG" min="0" max="255" value="128" oninput="updateRGBMixer()" class="w-full accent-green-500 bg-slate-200 h-2.5 rounded-lg cursor-pointer">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-bold font-heading mb-1">
+                                <span class="text-sky-600"><i class="fa-solid fa-circle text-[10px]"></i> B - Blue (Modrá)</span>
+                                <span id="valB" class="font-mono text-slate-700">0</span>
+                            </div>
+                            <input type="range" id="sliderB" min="0" max="255" value="0" oninput="updateRGBMixer()" class="w-full accent-sky-500 bg-slate-200 h-2.5 rounded-lg cursor-pointer">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-bold font-heading mb-1">
+                                <span class="text-purple-600"><i class="fa-solid fa-ghost text-[10px]"></i> Alpha (Průhlednost)</span>
+                                <span id="valA" class="font-mono text-slate-700">100%</span>
+                            </div>
+                            <input type="range" id="sliderA" min="0" max="100" value="100" oninput="updateRGBMixer()" class="w-full accent-purple-500 bg-slate-200 h-2.5 rounded-lg cursor-pointer">
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-200 flex justify-between items-center text-xs font-mono">
+                            <span class="text-slate-500">HEX kód: <strong id="rgbHexDisplay" class="text-cyan-600 text-sm">#FF8000FF</strong></span>
+                            <span class="bg-cyan-100 text-cyan-800 font-bold px-2 py-0.5 rounded-full text-[10px]">24-bit / 32-bit</span>
+                        </div>
+                    </div>
+
+                    <!-- Výsledný Pixel & Subpixel LED mřížka -->
+                    <div class="lg:col-span-6 flex flex-col items-center justify-center gap-4">
+                        <div class="text-center">
+                            <span class="text-xs font-heading font-bold text-slate-400 uppercase tracking-wider block mb-2">Pohled pod mikroskopem (Subpixely displeje)</span>
+                            <div class="bg-slate-900 p-3 rounded-2xl border-4 border-slate-300 shadow-inner flex gap-2">
+                                <div id="ledR" class="w-8 h-20 rounded-lg bg-red-600 transition-opacity duration-150 flex items-end justify-center pb-1 text-[10px] text-white font-mono font-bold">R</div>
+                                <div id="ledG" class="w-8 h-20 rounded-lg bg-green-500 transition-opacity duration-150 flex items-end justify-center pb-1 text-[10px] text-white font-mono font-bold">G</div>
+                                <div id="ledB" class="w-8 h-20 rounded-lg bg-blue-500 transition-opacity duration-150 flex items-end justify-center pb-1 text-[10px] text-white font-mono font-bold">B</div>
+                            </div>
+                        </div>
+
+                        <div class="w-full">
+                            <span class="text-xs font-heading font-bold text-slate-400 uppercase tracking-wider block text-center mb-1">Výsledná barva jednoho pixelu</span>
+                            <div class="w-full h-16 rounded-2xl checkerboard-bg border-2 border-slate-200 overflow-hidden shadow-inner">
+                                <div id="rgbMixedBox" class="w-full h-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interaktivní Trenažér RLE Komprese -->
+            <div class="bg-white rounded-3xl p-5 sm:p-7 border-2 border-slate-200 shadow-sm">
+                <h2 class="font-heading font-bold text-2xl text-slate-800 flex items-center gap-2 mb-1">
+                    <i class="fa-solid fa-file-zipper text-emerald-500"></i> 2. Interaktivní Simulátor RLE Komprese
+                </h2>
+                <p class="text-slate-500 text-sm mb-6">Klikáním na políčka nakresli řádek a sleduj, jak algoritmus **Run-Length Encoding (RLE)** stlačuje opakováním stejných barev datovou velikost!</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <div class="lg:col-span-6 flex flex-col items-center">
+                        <span class="text-xs font-heading font-bold text-slate-500 uppercase mb-2">Kliknutím měň barvy v řádce (8 pixelů)</span>
+                        <div id="rleGrid" class="flex border-4 border-slate-300 rounded-2xl overflow-hidden shadow-md"></div>
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="clearRLE()" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-heading font-bold text-slate-600">Vyčistit</button>
+                            <button onclick="presetRLE('pattern')" class="px-3 py-1 bg-cyan-100 hover:bg-cyan-200 rounded-lg text-xs font-heading font-bold text-cyan-800">Vzor A</button>
+                            <button onclick="presetRLE('solid')" class="px-3 py-1 bg-cyan-100 hover:bg-cyan-200 rounded-lg text-xs font-heading font-bold text-cyan-800">Jednobarevný</button>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-6 bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+                        <div class="text-xs font-bold uppercase font-heading text-slate-400">Komprimovaný RLE Zápis:</div>
+                        <div id="rleOutput" class="font-mono text-sm font-bold bg-white p-3 rounded-xl border border-slate-200 text-slate-800 min-h-[48px] flex items-center flex-wrap gap-1"></div>
+                        
+                        <div class="pt-2 border-t border-slate-200 flex justify-between items-center text-xs">
+                            <span class="text-slate-500">Původní velikost: <strong class="font-mono text-slate-800">8 Bajtů</strong></span>
+                            <span class="text-slate-500">Komprimováno: <strong id="rleSize" class="font-mono text-emerald-600">-- Bajtů</strong></span>
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl text-xs font-heading font-bold text-emerald-800 text-center">
+                            Úspora paměti: <span id="rleSavings" class="text-sm font-mono font-bold">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rozlišení Obrazovky & Kalkulačka velikosti -->
+            <div class="bg-white rounded-3xl p-5 sm:p-7 border-2 border-slate-200 shadow-sm">
+                <h2 class="font-heading font-bold text-2xl text-slate-800 flex items-center gap-2 mb-1">
+                    <i class="fa-solid fa-calculator text-indigo-500"></i> 3. Kalkulačka Rozlišení &amp; Velikosti v Paměti
+                </h2>
+                <p class="text-slate-500 text-sm mb-6">Spočítej přesnou nekomprimovanou datovou velikost bitmapy podle rozlišení a barevné hloubky.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div onclick="setResPreset(1280, 720)" class="res-card cursor-pointer p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 hover:border-cyan-400 transition-all text-center">
+                        <span class="text-xs font-bold text-slate-400 font-heading">HD Ready</span>
+                        <div class="font-heading font-bold text-lg text-slate-800">1280 × 720</div>
+                        <span class="text-[11px] text-cyan-600 font-mono font-bold">~0.9 Megapixelu</span>
+                    </div>
+                    <div onclick="setResPreset(1920, 1080)" class="res-card cursor-pointer p-4 rounded-2xl border-2 border-cyan-500 bg-cyan-50 transition-all text-center">
+                        <span class="text-xs font-bold text-cyan-600 font-heading">Full HD Standard</span>
+                        <div class="font-heading font-bold text-lg text-cyan-800">1920 × 1080</div>
+                        <span class="text-[11px] text-cyan-600 font-mono font-bold">~2.1 Megapixelu</span>
+                    </div>
+                    <div onclick="setResPreset(3840, 2160)" class="res-card cursor-pointer p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 hover:border-cyan-400 transition-all text-center">
+                        <span class="text-xs font-bold text-slate-400 font-heading">4K Ultra HD</span>
+                        <div class="font-heading font-bold text-lg text-slate-800">3840 × 2160</div>
+                        <span class="text-[11px] text-cyan-600 font-mono font-bold">~8.3 Megapixelu</span>
+                    </div>
+                    <div onclick="setResPreset(7680, 4320)" class="res-card cursor-pointer p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 hover:border-cyan-400 transition-all text-center">
+                        <span class="text-xs font-bold text-slate-400 font-heading">8K Super HD</span>
+                        <div class="font-heading font-bold text-lg text-slate-800">7680 × 4320</div>
+                        <span class="text-[11px] text-cyan-600 font-mono font-bold">~33.2 Megapixelu</span>
+                    </div>
+                </div>
+
+                <!-- Vlastní Rozměry a Barevná hloubka -->
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-6">
+                    <div>
+                        <label class="block font-heading font-bold text-xs text-slate-500 mb-1">Šířka (px)</label>
+                        <input type="number" id="calcW" value="1920" oninput="recalcMemory()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm font-mono font-bold text-slate-700">
+                    </div>
+                    <div>
+                        <label class="block font-heading font-bold text-xs text-slate-500 mb-1">Výška (px)</label>
+                        <input type="number" id="calcH" value="1080" oninput="recalcMemory()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm font-mono font-bold text-slate-700">
+                    </div>
+                    <div>
+                        <label class="block font-heading font-bold text-xs text-slate-500 mb-1">Barevná hloubka</label>
+                        <select id="calcDepth" onchange="recalcMemory()" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm font-bold text-slate-700">
+                            <option value="1">1-bit (Černobílá - 2 barvy)</option>
+                            <option value="8">8-bit (256 barev / GIF)</option>
+                            <option value="24" selected>24-bit (True Color - 16.7 mil barev)</option>
+                            <option value="32">32-bit (True Color + Alpha kanál)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Výstup kalkulátoru -->
+                <div class="bg-indigo-900 text-white p-5 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <span class="text-xs font-heading font-bold text-indigo-300 uppercase block">Vzorec výpočtu nekomprimovaných dat:</span>
+                        <span class="text-sm font-mono text-indigo-100">Šířka × Výška × Barevná hloubka v bitech / 8</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-heading text-indigo-300 block">Celková velikost v RAM:</span>
+                        <span id="calcBytesOutput" class="text-2xl font-mono font-bold text-cyan-300">6,220,800 B</span>
+                        <span id="calcMbOutput" class="text-sm font-mono font-bold text-emerald-300 block">~ 5.93 MB</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================================================= -->
+        <!-- MODULE 3: TEORETICKÝ TAHÁK A UČEBNICE                                    -->
+        <!-- ========================================================================= -->
+        <section id="sec-theory" class="tab-content space-y-6 hidden">
+            <div class="bg-white rounded-3xl p-5 sm:p-7 border-2 border-slate-200 shadow-sm">
+                
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="font-heading font-bold text-2xl text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-book-open text-indigo-500"></i> Teoretický Tahák &amp; Učebnice (ZŠ &amp; SŠ)
+                        </h2>
+                        <p class="text-slate-500 text-sm mt-0.5">Kompletní přehled látky pro přípravu na školní prověrku a testy z informatiky.</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+                        <button onclick="setTheoryFilter('all')" id="tf-all" class="tf-btn px-3 py-1.5 rounded-xl text-xs font-heading font-bold bg-indigo-600 text-white shadow-sm">Vše</button>
+                        <button onclick="setTheoryFilter('zs')" id="tf-zs" class="tf-btn px-3 py-1.5 rounded-xl text-xs font-heading font-bold text-slate-600 hover:bg-slate-200">2. Stupeň ZŠ</button>
+                        <button onclick="setTheoryFilter('ss')" id="tf-ss" class="tf-btn px-3 py-1.5 rounded-xl text-xs font-heading font-bold text-slate-600 hover:bg-slate-200">Pokročilé SŠ</button>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    
+                    <!-- Karta 1: Základy a Definice -->
+                    <div class="theory-card theory-zs bg-slate-50 border-2 border-slate-200 rounded-2xl p-5 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-heading font-bold text-lg text-indigo-900">1. Základy Bitmapy &amp; Rastr vs. Vektor</h3>
+                            <span class="bg-sky-100 text-sky-800 font-bold text-xs px-2.5 py-1 rounded-full">ZŠ &amp; SŠ</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                            **Rastrová (bitmapová) grafika** popisuje obrázek pomocí mřížky barevných bodů (pixelů). Každý pixel má svou přesnou pozici $[X,Y]$ a namíchanou barvu.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                            <div class="bg-white p-3 rounded-xl border border-slate-200 text-xs">
+                                <strong class="text-cyan-700 font-heading block text-sm mb-1">Rastrová Grafika</strong>
+                                <ul class="list-disc list-inside space-y-1 text-slate-600">
+                                    <li>Skládá se z mřížky pixelů.</li>
+                                    <li>Při zvětšení ztrácí kvalitu (**pixelizace**).</li>
+                                    <li>Vhodná pro fotografie a reálný svět.</li>
+                                    <li>Formáty: JPG, PNG, GIF, RAW, WEBP.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-slate-200 text-xs">
+                                <strong class="text-purple-700 font-heading block text-sm mb-1">Vektorová Grafika</strong>
+                                <ul class="list-disc list-inside space-y-1 text-slate-600">
+                                    <li>Skládá se z matematických čar a křivek.</li>
+                                    <li>Lze libovolně zvětšovat bez ztráty kvality.</li>
+                                    <li>Vhodná pro loga, nápisy a geometrické ikony.</li>
+                                    <li>Formáty: SVG, EPS, AI, PDF.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Karta 2: Rozlišení PPI a DPI -->
+                    <div class="theory-card theory-zs bg-slate-50 border-2 border-slate-200 rounded-2xl p-5 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-heading font-bold text-lg text-indigo-900">2. Rozlišení Obrazovky &amp; Hustota Tisku (DPI/PPI)</h3>
+                            <span class="bg-sky-100 text-sky-800 font-bold text-xs px-2.5 py-1 rounded-full">ZŠ &amp; SŠ</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                            Rozlišení udává celkový počet pixelů obrázku (např. Full HD $1920 \times 1080 = 2.07 \text{ MPx}$). Hustota udává, kolik pixelů se vejde na jeden palec ($1 \text{ palec} = 2.54 \text{ cm}$).
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                            <div class="bg-white p-3 rounded-xl border border-slate-200">
+                                <strong class="text-indigo-600 font-heading block text-xs">PPI (Pixels Per Inch)</strong>
+                                Hustota bodů na displeji monitoru nebo mobilu. Běžné monitory mají 96–150 PPI, mobily až 450 PPI.
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-slate-200">
+                                <strong class="text-indigo-600 font-heading block text-xs">DPI (Dots Per Inch)</strong>
+                                Hustota vytištěných barevných kapek tiskárny na papír. Standard pro kvalitní tisk fotek je **300 DPI**.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Karta 3: Barevné Modely RGB a CMYK -->
+                    <div class="theory-card theory-zs bg-slate-50 border-2 border-slate-200 rounded-2xl p-5 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-heading font-bold text-lg text-indigo-900">3. Barevné Modely: RGB vs. CMYK</h3>
+                            <span class="bg-sky-100 text-sky-800 font-bold text-xs px-2.5 py-1 rounded-full">ZŠ &amp; SŠ</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+                                <strong class="text-red-600 font-heading block text-sm mb-1">RGB (Aditivní míchání světla)</strong>
+                                Pokrývá obrazovky, monitory a TV. Míchají se paprsky barvy Red (Červená), Green (Zelená) a Blue (Modrá). Smícháním všech tří v plné síle vznikne **Bílé světlo**.
+                            </div>
+                            <div class="bg-white p-3.5 rounded-xl border border-slate-200">
+                                <strong class="text-pink-600 font-heading block text-sm mb-1">CMYK (Subtraktivní míchání pigmentu)</strong>
+                                Používá se pro tiskárny. Míchají se tisková barviva Cyan (Azurová), Magenta (Purpurová), Yellow (Žlutá) a Key/Black (Černá). Smícháním vzniká **Tmavě hnědá/Černá**.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Karta 4: Komprese a Formáty -->
+                    <div class="theory-card theory-zs bg-slate-50 border-2 border-slate-200 rounded-2xl p-5 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-heading font-bold text-lg text-indigo-900">4. Formáty Souborů &amp; Komprese</h3>
+                            <span class="bg-sky-100 text-sky-800 font-bold text-xs px-2.5 py-1 rounded-full">ZŠ &amp; SŠ</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                            <div class="bg-white p-3 rounded-xl border border-slate-200">
+                                <strong class="text-amber-600 font-heading text-sm block">JPEG / JPG</strong>
+                                **Ztrátová komprese**. Ideální na fotky. Zmenšuje soubor vypouštěním nepatrných detailů. **Neumí průhlednost**.
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-slate-200">
+                                <strong class="text-cyan-600 font-heading text-sm block">PNG</strong>
+                                **Beztrátová komprese**. Ideální pro grafiku, ikony a text. Podporuje **průhledné pozadí** (Alpha kanál).
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-slate-200">
+                                <strong class="text-purple-600 font-heading text-sm block">GIF</strong>
+                                Podporuje **krátké animace** a průhlednost. Omezen na maximálně 256 barev (8-bitová paleta).
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-slate-200">
+                                <strong class="text-rose-600 font-heading text-sm block">RAW</strong>
+                                **Nekomprimovaný digitální negativ** přímo ze snímače foťáku. Používají ho profesionálové k úpravám.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Karta 5: Pokročilá SŠ Teorie -->
+                    <div class="theory-card theory-ss bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-5 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-heading font-bold text-lg text-indigo-950">5. Pokročilá SŠ Teorie: Vzorkování, Kvantování &amp; Konvoluce</h3>
+                            <span class="bg-indigo-200 text-indigo-900 font-bold text-xs px-2.5 py-1 rounded-full">Pouze SŠ</span>
+                        </div>
+                        <div class="space-y-2 text-xs text-indigo-950 leading-relaxed">
+                            <p>**A/D Převod obrazu:** Převod spojitého světelného signálu z čočky fotoaparátu do digitální podoby probíhá ve dvou krocích:
+                                1. **Prostorové Vzorkování (Sampling):** Rozdělení obrazu na mřížku pixelů podle rozlišení snímače.
+                                2. **Napěťové Kvantování (Quantization):** Převod naměřeného světelného napětí na diskrétní číslo podle bitové hloubky.
+                            </p>
+                            <p>**Adresování paměti RAM:** Obrázek je v paměti uložen jako 1D pole. Adresa pixelu $[X,Y]$ se počítá jako: $Index = (Y \times \text{Šířka}) + X$.</p>
+                            <p>**Interpolace při změně velikosti:** Při zvětšování fotky se chybějící pixely dopočítávají metodami: *Nearest Neighbor* (Nejbližší soused - zanechá ostré pixely), *Bilineární* nebo *Bikubická interpolace* (vyhlazení přechodů).</p>
+                        </div>
+                    </div>
+
+                    <!-- Karta 6: Vrstvy, Maska & Histogram -->
+                    <div class="theory-card theory-ss bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-5 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-heading font-bold text-lg text-indigo-950">6. Vrstvy, Maska Vrstvy &amp; Histogram</h3>
+                            <span class="bg-indigo-200 text-indigo-900 font-bold text-xs px-2.5 py-1 rounded-full">Pouze SŠ</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-indigo-950">
+                            <div class="bg-white p-3 rounded-xl border border-indigo-100">
+                                <strong class="text-indigo-800 font-heading block mb-1">Vrstvy &amp; Maskování</strong>
+                                Vrstvy fungují jako průhledné fólie nad sebou pro nedestruktivní úpravy. **Maska vrstvy** odkrývá (bílá barva) nebo skrývá (černá barva) části vrstvy bez smazání dat.
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-indigo-100">
+                                <strong class="text-indigo-800 font-heading block mb-1">Histogram Jasů</strong>
+                                Sloupcový graf zobrazující zastoupení jasů od nejtmavších (vlevo - stíny) po nejsvětlejší (vpravo - světla). Odhaluje podexponovanou (tmavou) nebo přeexponovanou (přepálenou) fotku.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================================================= -->
+        <!-- MODULE 4: ROBOTICKÝ KVÍZ (ZŠ & SŠ)                                        -->
+        <!-- ========================================================================= -->
+        <section id="sec-quiz" class="tab-content space-y-6 hidden">
+            <div class="bg-white rounded-3xl p-5 sm:p-7 border-2 border-slate-200 shadow-sm">
+                
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="font-heading font-bold text-2xl text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-robot text-emerald-500"></i> Robotický Kvíz Znalostí
+                        </h2>
+                        <p class="text-slate-500 text-sm mt-0.5">Otestuj si svoje znalosti z bitmapové grafiky a získej pochvalu od Robůtka!</p>
+                    </div>
+
+                    <!-- Přepínač Obtížnosti Kvízu -->
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-1 bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+                            <button onclick="setQuizLevel('zs')" id="ql-zs" class="ql-btn px-3 py-1.5 rounded-xl text-xs font-heading font-bold bg-emerald-600 text-white shadow-sm">Začátečník (ZŠ)</button>
+                            <button onclick="setQuizLevel('ss')" id="ql-ss" class="ql-btn px-3 py-1.5 rounded-xl text-xs font-heading font-bold text-slate-600 hover:bg-slate-200">Pokročilý (SŠ)</button>
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-2xl text-emerald-800 font-heading font-bold text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-star text-amber-400"></i>
+                            <span id="quizScore">Skóre: 0 / 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Otázky -->
+                <div id="quizContainer" class="space-y-6"></div>
+
+                <!-- Restart Kvízu -->
+                <div class="mt-8 pt-4 border-t border-slate-100 flex justify-end">
+                    <button onclick="resetQuiz()" class="py-3 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-heading font-bold rounded-2xl shadow-md shadow-emerald-200 transition-all flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-rotate-right"></i> Vyzkoušet kvíz znovu
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================================================= -->
+        <!-- MODULE 5: NÁVOD, METODIKA & TISKOVÉ PRACOVNÍ LISTY                        -->
+        <!-- ========================================================================= -->
+        <section id="sec-guide" class="tab-content space-y-6 hidden">
+            
+            <!-- Generátor Tiskových Podkladů -->
+            <div class="bg-gradient-to-r from-rose-500 to-pink-600 rounded-3xl p-6 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <h2 class="font-heading font-bold text-2xl flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i> Tisknutelný Pracovní List A4
+                    </h2>
+                    <p class="text-rose-100 text-sm mt-1">Vygeneruj si kompletní papírový pracovní list s mřížkou k vybarvování, úkoly a příklady přímo pro tisk!</p>
+                </div>
+                <button onclick="generateWorksheet()" class="py-3 px-6 bg-white text-rose-600 hover:bg-rose-50 font-heading font-bold rounded-2xl shadow-md transition-all flex items-center gap-2 text-sm shrink-0">
+                    <i class="fa-solid fa-file-pdf"></i> Otevřít Pracovní List pro Tisk
+                </button>
+            </div>
+
+            <!-- Návod jak aplikaci používat -->
+            <div class="bg-white rounded-3xl p-5 sm:p-7 border-2 border-slate-200 shadow-sm space-y-5">
+                <h2 class="font-heading font-bold text-2xl text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-cyan-500"></i> Uživatelský Návod &amp; Jak aplikaci používat
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+                        <strong class="font-heading text-sm text-cyan-700 block"><i class="fa-solid fa-paintbrush"></i> 1. Kreslení v Pixel Studiu</strong>
+                        <p class="text-slate-600 leading-relaxed">
+                            Vyber si mřížku ($8\times8$ až $32\times32$). Pomocí **Tužky**, **Tvarů** nebo **Razítek** kresli pixely. Pomocí tlačítka **Zpět** se můžeš vrátit o krok vzad. Zapni si **Symetrii** pro zrcadlovou kresbu a vytvořený obrázek stáhni tlačítkem **Uložit PNG**.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+                        <strong class="font-heading text-sm text-amber-600 block"><i class="fa-solid fa-flask"></i> 2. Laboratoř a Míchání</strong>
+                        <p class="text-slate-600 leading-relaxed">
+                            Posunuj posuvníky **RGB** a sleduj, jak se v reálném čase rozsvěcují fyzické **subpixely** (LED diody monitoru). V simulátoru **RLE** klikáním na pixely vyzkoušej, jak kompresní algoritmus stlačuje stejné barevné posloupnosti.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+                        <strong class="font-heading text-sm text-indigo-600 block"><i class="fa-solid fa-book-open"></i> 3. Učení &amp; Kvíz</strong>
+                        <p class="text-slate-600 leading-relaxed">
+                            Prostuduj si **Teoretický Tahák** rozdělený na učivo ZŠ a SŠ. Následně otevři **Robo-Kvíz**, zvol požadovanou obtížnost a prověř svoje znalosti z prověrky.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proč se to tak dělá (Vědecké a matematické důvody) -->
+            <div class="bg-white rounded-3xl p-5 sm:p-7 border-2 border-slate-200 shadow-sm space-y-4">
+                <h2 class="font-heading font-bold text-2xl text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-brain text-purple-500"></i> Proč se to v bitmapové grafice dělá právě takto?
+                </h2>
+
+                <div class="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    <div class="bg-purple-50 p-4 rounded-2xl border border-purple-100">
+                        <strong class="font-heading text-purple-900 block text-sm mb-1">Proč zrovna barvy Červená, Zelená a Modrá (RGB)?</strong>
+                        Je to dáno **biologií lidského oka**! V sítnici oka máme světlocitlivé buňky zvané **čípky**, které jsou nejcitlivější právě na tyto tři vlnové délky světla (červená, zelená, modrá). Monitor tedy nemusí svítit tisíci barvami, stačí namíchat správný poměr těchto tří základních světel.
+                    </div>
+
+                    <div class="bg-purple-50 p-4 rounded-2xl border border-purple-100">
+                        <strong class="font-heading text-purple-900 block text-sm mb-1">Proč je rozsah kanálů právě od 0 do 255?</strong>
+                        Je to dáno **matematikou 8-bitového bajtu** v počítačích. Počítače pracují v dvojkové soustavě (bitech). V 1 bajtu ($8 \text{ bitů}$) lze vyjádřit přesně $2^8 = 256$ různých stavů (číselná řada od $0$ do $255$). Pro 3 kanály (RGB) je to $256 \times 256 \times 256 = 16.7 \text{ milionu}$ barev (True Color).
+                    </div>
+                </div>
+            </div>
+
+            <!-- Praktická Cvičení do Hodiny pro Učitele -->
+            <div class="bg-white rounded-3xl p-5 sm:p-7 border-2 border-slate-200 shadow-sm space-y-4">
+                <h2 class="font-heading font-bold text-2xl text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-emerald-500"></i> Praktická Cvičení do Hodiny Informatiky
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
+                        <div class="flex justify-between items-center"><strong class="font-heading text-sm text-slate-800">Cvičení 1: Pixel Art Smajlík</strong> <span class="bg-slate-200 font-bold px-2 py-0.5 rounded-full text-[10px]">10 min</span></div>
+                        <p class="text-slate-600">V Pixel Studiu zvol mřížku $16\times16$ a nakresli žlutého smajlíka s očima a úsměvem. Zjisti pozici $X, Y$ levého oka.</p>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
+                        <div class="flex justify-between items-center"><strong class="font-heading text-sm text-slate-800">Cvičení 2: Detektiv RGB</strong> <span class="bg-slate-200 font-bold px-2 py-0.5 rounded-full text-[10px]">15 min</span></div>
+                        <p class="text-slate-600">V Laboratoři namíchej pomocí posuvníků čistou žlutou, fialovou a tyrkysovou barvu. Zapiš si jejich HEX kódy.</p>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
+                        <div class="flex justify-between items-center"><strong class="font-heading text-sm text-slate-800">Cvičení 3: Výpočet 4K Fotky</strong> <span class="bg-slate-200 font-bold px-2 py-0.5 rounded-full text-[10px]">10 min</span></div>
+                        <p class="text-slate-600">V kalkulačce rozlišení přepni z Full HD na 4K s 24-bitovou hloubkou. Zjisti, o kolik MB se zvětší nároky na RAM.</p>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
+                        <div class="flex justify-between items-center"><strong class="font-heading text-sm text-slate-800">Cvičení 4: Souboj RLE Komprese</strong> <span class="bg-slate-200 font-bold px-2 py-0.5 rounded-full text-[10px]">10 min</span></div>
+                        <p class="text-slate-600">V simulátoru RLE nakresli nejprve střídavý řádek a pak jednobarevný. Porovnej procentuální úsporu komprese.</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Zápatí -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p class="font-medium">Výuková webová aplikace pro informatiku &bull; 2. stupeň ZŠ &amp; SŠ</p>
+            <p class="text-slate-400 font-heading font-semibold">Robůtek Pixel &copy; 2026</p>
+        </div>
+    </footer>
+
+
+    <!-- JAVASCRIPT APLIKAČNÍ LOGIKA -->
+    <script>
+        /* ========================================================================= */
+        /* SPRÁVA ZÁLOŽEK & ROBŮTKOVY RADY                                           */
+        /* ========================================================================= */
+        const roboAdvices = {
+            'editor': "V Pixel Studiu si vyzkoušíš kreslení po čtverečkách. Každé kliknutí obarví přesně 1 PIXEL!",
+            'lab': "V Laboratoři uvidíš, jak monitor míchá barvy z RGB světýlek a jak algoritmus RLE komprimuje data!",
+            'theory': "Tady najdeš kompletní tahák od základů až po pokročilou SŠ teorii. Ideální příprava na test!",
+            'quiz': "Pojďme si ověřit, co ses naučil/a! Zvol si obtížnost (ZŠ nebo SŠ) a získej plný počet bodů!",
+            'guide': "Tady si můžeš vygenerovat tisknutelný Pracovní list A4 nebo si přečíst, proč barvy fungují právě takhle!"
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-cyan-700', 'shadow-sm', 'border', 'border-slate-200');
+                btn.classList.add('text-slate-600');
+            });
+
+            document.getElementById(`sec-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-white', 'text-cyan-700', 'shadow-sm', 'border', 'border-slate-200');
+                activeBtn.classList.remove('text-slate-600');
+            }
+
+            document.getElementById('roboAdvice').innerText = roboAdvices[tabId];
+        }
+
+        /* ========================================================================= */
+        /* PIXEL ART STUDIO LOGIKA & HISTORIE KROKŮ                                  */
+        /* ========================================================================= */
+        const canvas = document.getElementById('pixelCanvas');
+        const ctx = canvas.getContext('2d');
+        let gridSize = 8;
+        let zoomLevel = 1;
+        let pixelData = [];
+        let history = [];
+        let historyIndex = -1;
+        
+        let currentTool = 'pencil';
+        let currentColor = '#0284c7';
+        let isDrawing = false;
+        let symX = false;
+        let symY = false;
+
+        let startCol = null;
+        let startRow = null;
+
+        function initEditor() {
+            pixelData = Array(gridSize).fill().map(() => Array(gridSize).fill(null));
+            history = [];
+            historyIndex = -1;
+            saveHistory();
+            drawEditorCanvas();
+        }
+
+        function saveHistory() {
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            const copy = pixelData.map(row => [...row]);
+            history.push(copy);
+            historyIndex++;
+            updateHistoryButtons();
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                pixelData = history[historyIndex].map(row => [...row]);
+                drawEditorCanvas();
+                updateHistoryButtons();
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                pixelData = history[historyIndex].map(row => [...row]);
+                drawEditorCanvas();
+                updateHistoryButtons();
+            }
+        }
+
+        function updateHistoryButtons() {
+            const btnUndo = document.getElementById('btnUndo');
+            const btnRedo = document.getElementById('btnRedo');
+            
+            btnUndo.disabled = historyIndex <= 0;
+            btnRedo.disabled = historyIndex >= history.length - 1;
+
+            if (!btnUndo.disabled) {
+                btnUndo.classList.remove('bg-slate-100', 'text-slate-400');
+                btnUndo.classList.add('bg-cyan-100', 'text-cyan-800', 'hover:bg-cyan-200');
+            } else {
+                btnUndo.classList.add('bg-slate-100', 'text-slate-400');
+                btnUndo.classList.remove('bg-cyan-100', 'text-cyan-800', 'hover:bg-cyan-200');
+            }
+
+            if (!btnRedo.disabled) {
+                btnRedo.classList.remove('bg-slate-100', 'text-slate-400');
+                btnRedo.classList.add('bg-cyan-100', 'text-cyan-800', 'hover:bg-cyan-200');
+            } else {
+                btnRedo.classList.add('bg-slate-100', 'text-slate-400');
+                btnRedo.classList.remove('bg-cyan-100', 'text-cyan-800', 'hover:bg-cyan-200');
+            }
+        }
+
+        function setGridSize(size) {
+            gridSize = size;
+            document.querySelectorAll('.grid-btn').forEach(btn => {
+                btn.classList.remove('bg-cyan-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-600');
+            });
+            const activeBtn = document.getElementById(`grid-${size}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-cyan-600', 'text-white', 'shadow-sm');
+                activeBtn.classList.remove('text-slate-600');
+            }
+            initEditor();
+        }
+
+        function setZoom(zoom) {
+            zoomLevel = zoom;
+            document.querySelectorAll('.zoom-btn').forEach(btn => {
+                btn.classList.remove('bg-cyan-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-600');
+            });
+            const activeBtn = document.getElementById(`zoom-${zoom}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-cyan-600', 'text-white', 'shadow-sm');
+                activeBtn.classList.remove('text-slate-600');
+            }
+            
+            canvas.style.transform = `scale(${zoom})`;
+            canvas.style.transformOrigin = 'center center';
+        }
+
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.classList.remove('border-2', 'border-cyan-500', 'bg-cyan-50', 'text-cyan-700');
+                btn.classList.add('border', 'border-slate-200', 'bg-white', 'text-slate-600');
+            });
+            const activeBtn = document.getElementById(`tool-${tool}`);
+            if (activeBtn) {
+                activeBtn.classList.add('border-2', 'border-cyan-500', 'bg-cyan-50', 'text-cyan-700');
+                activeBtn.classList.remove('border', 'border-slate-200', 'bg-white', 'text-slate-600');
+            }
+        }
+
+        function toggleSymX() {
+            symX = !symX;
+            document.getElementById('symX').classList.toggle('bg-cyan-100', symX);
+            document.getElementById('symX').classList.toggle('text-cyan-800', symX);
+            document.getElementById('symX').classList.toggle('border-cyan-400', symX);
+        }
+
+        function toggleSymY() {
+            symY = !symY;
+            document.getElementById('symY').classList.toggle('bg-cyan-100', symY);
+            document.getElementById('symY').classList.toggle('text-cyan-800', symY);
+            document.getElementById('symY').classList.toggle('border-cyan-400', symY);
+        }
+
+        function setColor(hex) {
+            currentColor = hex;
+            document.getElementById('colorPicker').value = hex;
+            document.getElementById('hexInput').value = hex.toUpperCase();
+            updateRGBDisplayFromHex(hex);
+        }
+
+        document.getElementById('colorPicker').addEventListener('input', (e) => {
+            currentColor = e.target.value;
+            document.getElementById('hexInput').value = currentColor.toUpperCase();
+            updateRGBDisplayFromHex(currentColor);
+        });
+
+        function updateRGBDisplayFromHex(hex) {
+            const r = parseInt(hex.slice(1, 3), 16) || 0;
+            const g = parseInt(hex.slice(3, 5), 16) || 0;
+            const b = parseInt(hex.slice(5, 7), 16) || 0;
+            document.getElementById('editorRgbDisplay').innerText = `RGB: ${r}, ${g}, ${b}`;
+        }
+
+        function drawEditorCanvas() {
+            const cellSize = canvas.width / gridSize;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    if (pixelData[r][c]) {
+                        ctx.fillStyle = pixelData[r][c];
+                        ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+
+            if (document.getElementById('toggleGrid').checked) {
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 1;
+                for (let i = 0; i <= gridSize; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * cellSize, 0);
+                    ctx.lineTo(i * cellSize, canvas.height);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * cellSize);
+                    ctx.lineTo(canvas.width, i * cellSize);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        document.getElementById('toggleGrid').addEventListener('change', drawEditorCanvas);
+
+        function applyPixelToData(r, c, color) {
+            if (r >= 0 && r < gridSize && c >= 0 && c < gridSize) {
+                pixelData[r][c] = color;
+
+                if (symX) {
+                    const mirrorC = gridSize - 1 - c;
+                    pixelData[r][mirrorC] = color;
+                }
+                if (symY) {
+                    const mirrorR = gridSize - 1 - r;
+                    pixelData[mirrorR][c] = color;
+                }
+                if (symX && symY) {
+                    const mirrorC = gridSize - 1 - c;
+                    const mirrorR = gridSize - 1 - r;
+                    pixelData[mirrorR][mirrorC] = color;
+                }
+            }
+        }
+
+        function handlePointerDown(e) {
+            isDrawing = true;
+            const [col, row] = getCanvasCoords(e);
+            startCol = col;
+            startRow = row;
+
+            if (currentTool === 'pencil') {
+                applyPixelToData(row, col, currentColor);
+            } else if (currentTool === 'eraser') {
+                applyPixelToData(row, col, null);
+            } else if (currentTool === 'bucket') {
+                floodFill(row, col, pixelData[row][col], currentColor);
+            } else if (currentTool === 'eyedropper') {
+                if (pixelData[row][col]) {
+                    setColor(pixelData[row][col]);
+                    setTool('pencil');
+                }
+            } else if (currentTool === 'stamp') {
+                applyStamp(row, col, document.getElementById('stampSelect').value);
+            }
+            drawEditorCanvas();
+        }
+
+        function handlePointerMove(e) {
+            updateHoverInfo(e);
+            if (!isDrawing) return;
+
+            const [col, row] = getCanvasCoords(e);
+
+            if (currentTool === 'pencil') {
+                applyPixelToData(row, col, currentColor);
+                drawEditorCanvas();
+            } else if (currentTool === 'eraser') {
+                applyPixelToData(row, col, null);
+                drawEditorCanvas();
+            }
+        }
+
+        function handlePointerUp(e) {
+            if (!isDrawing) return;
+            isDrawing = false;
+
+            const [col, row] = getCanvasCoords(e);
+
+            if (currentTool === 'line') {
+                drawLine(startRow, startCol, row, col, currentColor);
+            } else if (currentTool === 'rect') {
+                drawRect(startRow, startCol, row, col, currentColor);
+            } else if (currentTool === 'circle') {
+                drawCircle(startRow, startCol, row, col, currentColor);
+            }
+
+            saveHistory();
+            drawEditorCanvas();
+        }
+
+        function getCanvasCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const x = (clientX - rect.left) / zoomLevel;
+            const y = (clientY - rect.top) / zoomLevel;
+
+            const scaleX = canvas.width / (rect.width / zoomLevel);
+            const scaleY = canvas.height / (rect.height / zoomLevel);
+
+            const col = Math.floor((x * scaleX) / (canvas.width / gridSize));
+            const row = Math.floor((y * scaleY) / (canvas.height / gridSize));
+
+            return [
+                Math.max(0, Math.min(gridSize - 1, col)),
+                Math.max(0, Math.min(gridSize - 1, row))
+            ];
+        }
+
+        function drawLine(r0, c0, r1, c1, color) {
+            let dx = Math.abs(c1 - c0);
+            let dy = Math.abs(r1 - r0);
+            let sx = (c0 < c1) ? 1 : -1;
+            let sy = (r0 < r1) ? 1 : -1;
+            let err = dx - dy;
+
+            while (true) {
+                applyPixelToData(r0, c0, color);
+                if (c0 === c1 && r0 === r1) break;
+                let e2 = 2 * err;
+                if (e2 > -dy) { err -= dy; c0 += sx; }
+                if (e2 < dx) { err += dx; r0 += sy; }
+            }
+        }
+
+        function drawRect(r0, c0, r1, c1, color) {
+            const minR = Math.min(r0, r1), maxR = Math.max(r0, r1);
+            const minC = Math.min(c0, c1), maxC = Math.max(c0, c1);
+
+            for (let r = minR; r <= maxR; r++) {
+                for (let c = minC; c <= maxC; c++) {
+                    if (r === minR || r === maxR || c === minC || c === maxC) {
+                        applyPixelToData(r, c, color);
+                    }
+                }
+            }
+        }
+
+        function drawCircle(r0, c0, r1, c1, color) {
+            const radius = Math.round(Math.hypot(r1 - r0, c1 - c0));
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    const dist = Math.round(Math.hypot(r - r0, c - c0));
+                    if (dist === radius) {
+                        applyPixelToData(r, c, color);
+                    }
+                }
+            }
+        }
+
+        function applyStamp(r, c, stampType) {
+            const patterns = {
+                'heart': [
+                    [0,1,0,1,0],
+                    [1,1,1,1,1],
+                    [1,1,1,1,1],
+                    [0,1,1,1,0],
+                    [0,0,1,0,0]
+                ],
+                'star': [
+                    [0,0,1,0,0],
+                    [0,1,1,1,0],
+                    [1,1,1,1,1],
+                    [0,1,1,1,0],
+                    [0,1,0,1,0]
+                ],
+                'coin': [
+                    [0,1,1,1,0],
+                    [1,1,1,1,1],
+                    [1,1,1,1,1],
+                    [1,1,1,1,1],
+                    [0,1,1,1,0]
+                ],
+                'robot': [
+                    [1,1,1,1,1],
+                    [1,0,1,0,1],
+                    [1,1,1,1,1],
+                    [1,0,0,0,1],
+                    [1,1,1,1,1]
+                ],
+                'house': [
+                    [0,0,1,0,0],
+                    [0,1,1,1,0],
+                    [1,1,1,1,1],
+                    [1,0,1,0,1],
+                    [1,0,1,0,1]
+                ]
+            };
+
+            const pat = patterns[stampType];
+            if (!pat) return;
+
+            const offset = Math.floor(pat.length / 2);
+            for (let pr = 0; pr < pat.length; pr++) {
+                for (let pc = 0; pc < pat[pr].length; pc++) {
+                    if (pat[pr][pc] === 1) {
+                        applyPixelToData(r + pr - offset, c + pc - offset, currentColor);
+                    }
+                }
+            }
+        }
+
+        function floodFill(startRow, startCol, targetColor, replacementColor) {
+            if (targetColor === replacementColor) return;
+            const queue = [[startRow, startCol]];
+
+            while (queue.length > 0) {
+                const [r, c] = queue.shift();
+                if (r < 0 || r >= gridSize || c < 0 || c >= gridSize) continue;
+                if (pixelData[r][c] === targetColor) {
+                    pixelData[r][c] = replacementColor;
+                    queue.push([r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]);
+                }
+            }
+        }
+
+        canvas.addEventListener('mousedown', handlePointerDown);
+        canvas.addEventListener('mousemove', handlePointerMove);
+        window.addEventListener('mouseup', handlePointerUp);
+
+        canvas.addEventListener('touchstart', (e) => { handlePointerDown(e); e.preventDefault(); }, {passive: false});
+        canvas.addEventListener('touchmove', (e) => { handlePointerMove(e); e.preventDefault(); }, {passive: false});
+        canvas.addEventListener('touchend', (e) => { handlePointerUp(e); });
+
+        function updateHoverInfo(e) {
+            const [col, row] = getCanvasCoords(e);
+            if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+                document.getElementById('hoverCoords').innerText = `X: ${col + 1}, Y: ${row + 1}`;
+                const color = pixelData[row][col] || 'Průhledný';
+                document.getElementById('hoverColorHex').innerText = color;
+                document.getElementById('hoverColorPreview').style.backgroundColor = pixelData[row][col] || 'transparent';
+            }
+        }
+
+        function applyFilter(type) {
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    if (pixelData[r][c]) {
+                        let hex = pixelData[r][c];
+                        let rVal = parseInt(hex.slice(1, 3), 16);
+                        let gVal = parseInt(hex.slice(3, 5), 16);
+                        let bVal = parseInt(hex.slice(5, 7), 16);
+
+                        if (type === 'grayscale') {
+                            let avg = Math.round((rVal + gVal + bVal) / 3);
+                            rVal = gVal = bVal = avg;
+                        } else if (type === 'sepia') {
+                            let tr = Math.min(255, Math.round(0.393 * rVal + 0.769 * gVal + 0.189 * bVal));
+                            let tg = Math.min(255, Math.round(0.349 * rVal + 0.686 * gVal + 0.168 * bVal));
+                            let tb = Math.min(255, Math.round(0.272 * rVal + 0.534 * gVal + 0.131 * bVal));
+                            rVal = tr; gVal = tg; bVal = tb;
+                        } else if (type === 'invert') {
+                            rVal = 255 - rVal;
+                            gVal = 255 - gVal;
+                            bVal = 255 - bVal;
+                        } else if (type === 'brighten') {
+                            rVal = Math.min(255, rVal + 30);
+                            gVal = Math.min(255, gVal + 30);
+                            bVal = Math.min(255, bVal + 30);
+                        } else if (type === 'darken') {
+                            rVal = Math.max(0, rVal - 30);
+                            gVal = Math.max(0, gVal - 30);
+                            bVal = Math.max(0, bVal - 30);
+                        }
+
+                        pixelData[r][c] = `#${rVal.toString(16).padStart(2, '0')}${gVal.toString(16).padStart(2, '0')}${bVal.toString(16).padStart(2, '0')}`;
+                    }
+                }
+            }
+            saveHistory();
+            drawEditorCanvas();
+        }
+
+        function clearCanvas() {
+            pixelData = Array(gridSize).fill().map(() => Array(gridSize).fill(null));
+            saveHistory();
+            drawEditorCanvas();
+        }
+
+        function downloadImage() {
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = gridSize * 16;
+            exportCanvas.height = gridSize * 16;
+            const expCtx = exportCanvas.getContext('2d');
+
+            const cellSize = 16;
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    if (pixelData[r][c]) {
+                        expCtx.fillStyle = pixelData[r][c];
+                        expCtx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+
+            const link = document.createElement('a');
+            link.download = `moje-pixely-${gridSize}x${gridSize}.png`;
+            link.href = exportCanvas.toDataURL('image/png');
+            link.click();
+        }
+
+        /* ========================================================================= */
+        /* LABORATOŘ - RGB, RLE SIMULÁTOR & KALKULÁTOR                               */
+        /* ========================================================================= */
+        function updateRGBMixer() {
+            const r = parseInt(document.getElementById('sliderR').value);
+            const g = parseInt(document.getElementById('sliderG').value);
+            const b = parseInt(document.getElementById('sliderB').value);
+            const a = parseInt(document.getElementById('sliderA').value);
+
+            document.getElementById('valR').innerText = r;
+            document.getElementById('valG').innerText = g;
+            document.getElementById('valB').innerText = b;
+            document.getElementById('valA').innerText = `${a}%`;
+
+            const alphaDec = (a / 100).toFixed(2);
+            const hexR = r.toString(16).padStart(2, '0');
+            const hexG = g.toString(16).padStart(2, '0');
+            const hexB = b.toString(16).padStart(2, '0');
+
+            document.getElementById('rgbHexDisplay').innerText = `#${hexR}${hexG}${hexB}`.toUpperCase();
+            document.getElementById('rgbMixedBox').style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${alphaDec})`;
+
+            document.getElementById('ledR').style.opacity = r / 255;
+            document.getElementById('ledG').style.opacity = g / 255;
+            document.getElementById('ledB').style.opacity = b / 255;
+        }
+
+        /* RLE SIMULÁTOR */
+        let rleRow = ['#ffffff', '#ffffff', '#000000', '#000000', '#000000', '#ef4444', '#ef4444', '#ffffff'];
+        const rleColors = ['#ffffff', '#000000', '#ef4444', '#0284c7', '#22c55e'];
+
+        function initRLE() {
+            const container = document.getElementById('rleGrid');
+            container.innerHTML = '';
+            rleRow.forEach((col, idx) => {
+                const cell = document.createElement('div');
+                cell.className = 'w-10 h-10 cursor-pointer border-r border-slate-200 hover:opacity-80 transition-opacity';
+                cell.style.backgroundColor = col;
+                cell.onclick = () => {
+                    const nextIdx = (rleColors.indexOf(col) + 1) % rleColors.length;
+                    rleRow[idx] = rleColors[nextIdx];
+                    initRLE();
+                };
+                container.appendChild(cell);
+            });
+
+            // Výpočet RLE Zápisu
+            let rleResult = [];
+            let count = 1;
+            for (let i = 0; i < rleRow.length; i++) {
+                if (i < rleRow.length - 1 && rleRow[i] === rleRow[i + 1]) {
+                    count++;
+                } else {
+                    rleResult.push({ count: count, color: rleRow[i] });
+                    count = 1;
+                }
+            }
+
+            const outputEl = document.getElementById('rleOutput');
+            outputEl.innerHTML = '';
+            rleResult.forEach(item => {
+                const tag = document.createElement('span');
+                tag.className = 'px-2 py-1 rounded-lg text-xs border border-slate-300 shadow-sm flex items-center gap-1';
+                tag.innerHTML = `<strong>${item.count}×</strong> <span class="w-3 h-3 rounded-full border border-slate-400 inline-block" style="background:${item.color}"></span>`;
+                outputEl.appendChild(tag);
+            });
+
+            const compressedBytes = rleResult.length * 2;
+            document.getElementById('rleSize').innerText = `${compressedBytes} B`;
+            
+            const savings = Math.max(0, Math.round((1 - (compressedBytes / 8)) * 100));
+            document.getElementById('rleSavings').innerText = `${savings}% úspora místa`;
+        }
+
+        function clearRLE() {
+            rleRow = Array(8).fill('#ffffff');
+            initRLE();
+        }
+
+        function presetRLE(type) {
+            if (type === 'pattern') {
+                rleRow = ['#ffffff', '#ffffff', '#000000', '#000000', '#000000', '#ef4444', '#ef4444', '#ffffff'];
+            } else if (type === 'solid') {
+                rleRow = Array(8).fill('#0284c7');
+            }
+            initRLE();
+        }
+
+        /* KALKULAČKA VELIKOSTI MEMORY */
+        function setResPreset(w, h) {
+            document.getElementById('calcW').value = w;
+            document.getElementById('calcH').value = h;
+            recalcMemory();
+        }
+
+        function recalcMemory() {
+            const w = parseInt(document.getElementById('calcW').value) || 0;
+            const h = parseInt(document.getElementById('calcH').value) || 0;
+            const depth = parseInt(document.getElementById('calcDepth').value) || 24;
+
+            const totalBytes = Math.round((w * h * depth) / 8);
+            const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
+
+            document.getElementById('calcBytesOutput').innerText = `${totalBytes.toLocaleString('cs-CZ')} B`;
+            document.getElementById('calcMbOutput').innerText = `~ ${totalMB} MB`;
+        }
+
+        /* ========================================================================= */
+        /* TEORETICKÝ TAHÁK FILTROVÁNÍ                                               */
+        /* ========================================================================= */
+        function setTheoryFilter(type) {
+            document.querySelectorAll('.tf-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-600');
+            });
+            const activeBtn = document.getElementById(`tf-${type}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+                activeBtn.classList.remove('text-slate-600');
+            }
+
+            document.querySelectorAll('.theory-card').forEach(card => {
+                if (type === 'all') {
+                    card.classList.remove('hidden');
+                } else if (type === 'zs') {
+                    card.classList.toggle('hidden', !card.classList.contains('theory-zs'));
+                } else if (type === 'ss') {
+                    card.classList.toggle('hidden', !card.classList.contains('theory-ss'));
+                }
+            });
+        }
+
+        /* ========================================================================= */
+        /* KVÍZ ZNALOSTÍ (ZŠ A SŠ)                                                  */
+        /* ========================================================================= */
+        const quizData = {
+            'zs': [
+                {
+                    q: "Z jakých slov vznikl název PIXEL?",
+                    options: ["PICture (obrázek) + ELement (prvek)", "Programmed Index X-Element", "Print Extra Large"],
+                    correct: 0,
+                    explain: "Správně! Pixel je zkratkou ze slov Picture Element (obrazový prvek)."
+                },
+                {
+                    q: "Které 3 základní barvy míchá monitor v modelu RGB?",
+                    options: ["Červená, Žlutá, Modrá", "Červená, Zelená, Modrá", "Černá, Bílá, Šedá"],
+                    correct: 1,
+                    explain: "Skvěle! Red (červená), Green (zelená) a Blue (modrá)."
+                },
+                {
+                    q: "Který formát použiješ pro obrázek s PRŮHLEDNÝM pozadím?",
+                    options: ["JPEG / JPG", "PNG", "BMP"],
+                    correct: 1,
+                    explain: "Přesně tak! PNG podporuje průhledný Alpha kanál."
+                },
+                {
+                    q: "Co se stane s rastrovou fotkou při jejím velkém zvětšení?",
+                    options: ["Zůstane dokonale ostrá", "Změní se na vektor", "Uvidíme zubaté pixely (pixelizace)"],
+                    correct: 2,
+                    explain: "Výborně! Tomuto jevu se říká pixelizace."
+                }
+            ],
+            'ss': [
+                {
+                    q: "Jak vypočítáme index pixelu [X,Y] v jednodimenzionálním poli paměti RAM?",
+                    options: ["Index = (Y * Šířka) + X", "Index = X * Y", "Index = (X * Výška) + Y"],
+                    correct: 0,
+                    explain: "Správně! Řádkové adresování paměti se počítá jako (Y * Šířka) + X."
+                },
+                {
+                    q: "Jaký je hlavní rozdíl mezi kompresí RLE a DCT (u JPEG)?",
+                    options: ["RLE je ztrátová, DCT je beztrátová", "RLE je beztrátová (posoupnosti), DCT je ztrátová (kosinová transformace)", "Obě jsou identické"],
+                    correct: 1,
+                    explain: "Přesně tak! RLE pouze nahrazuje opakováni stejných barev, zatímco DCT vypouští vysoké frekvence."
+                },
+                {
+                    q: "Která interpolační metoda zachová při zvětšení Pixel Artu ostré hrany?",
+                    options: ["Bikubická interpolace", "Bilineární interpolace", "Nearest Neighbor (Nejbližší soused)"],
+                    correct: 2,
+                    explain: "Skvěle! Nearest Neighbor neprůměruje okolní barvy, takže zanechá ostré pixely."
+                },
+                {
+                    q: "Jaká je nekomprimovaná velikost 4K fotky (3840×2160) v 24-bit True Color?",
+                    options: ["~ 2.1 MB", "~ 24.8 MB", "~ 100 MB"],
+                    correct: 1,
+                    explain: "Správně! (3840 * 2160 * 24) / 8 = 24 883 200 B ≈ 24.8 MB."
+                }
+            ]
+        };
+
+        let currentQuizLevel = 'zs';
+        let userAnswers = {};
+
+        function setQuizLevel(level) {
+            currentQuizLevel = level;
+            document.querySelectorAll('.ql-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-600');
+            });
+            const activeBtn = document.getElementById(`ql-${level}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
+                activeBtn.classList.remove('text-slate-600');
+            }
+            resetQuiz();
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+            const questions = quizData[currentQuizLevel];
+
+            questions.forEach((q, idx) => {
+                const qEl = document.createElement('div');
+                qEl.className = 'bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-3';
+                
+                let optionsHTML = '';
+                q.options.forEach((opt, optIdx) => {
+                    optionsHTML += `
+                        <label onclick="selectAnswer(${idx}, ${optIdx})" class="quiz-option-${idx} flex items-center gap-3 p-3 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 cursor-pointer transition-all text-xs sm:text-sm font-medium text-slate-700">
+                            <input type="radio" name="q-${idx}" value="${optIdx}" class="text-emerald-600 focus:ring-emerald-500">
+                            <span>${opt}</span>
+                        </label>
+                    `;
+                });
+
+                qEl.innerHTML = `
+                    <p class="font-heading font-bold text-sm sm:text-base text-slate-800 flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 text-xs flex items-center justify-center font-bold">${idx + 1}</span>
+                        ${q.q}
+                    </p>
+                    <div class="space-y-2 pt-1">
+                        ${optionsHTML}
+                    </div>
+                    <div id="explain-${idx}" class="hidden p-3 rounded-xl text-xs font-medium mt-2"></div>
+                `;
+                container.appendChild(qEl);
+            });
+
+            document.getElementById('quizScore').innerText = `Skóre: 0 / ${questions.length}`;
+        }
+
+        function selectAnswer(qIdx, optIdx) {
+            userAnswers[qIdx] = optIdx;
+            const questions = quizData[currentQuizLevel];
+            const q = questions[qIdx];
+            const explainEl = document.getElementById(`explain-${qIdx}`);
+            
+            explainEl.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-800', 'bg-rose-100', 'text-rose-800');
+            
+            if (optIdx === q.correct) {
+                explainEl.classList.add('bg-emerald-100', 'text-emerald-800');
+                explainEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <strong>Správně!</strong> ${q.explain}`;
+            } else {
+                explainEl.classList.add('bg-rose-100', 'text-rose-800');
+                explainEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> <strong>Ajej!</strong> ${q.explain}`;
+            }
+
+            updateScore();
+        }
+
+        function updateScore() {
+            const questions = quizData[currentQuizLevel];
+            let score = 0;
+            Object.keys(userAnswers).forEach(qIdx => {
+                if (userAnswers[qIdx] === questions[qIdx].correct) {
+                    score++;
+                }
+            });
+            document.getElementById('quizScore').innerText = `Skóre: ${score} / ${questions.length}`;
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            renderQuiz();
+        }
+
+        /* ========================================================================= */
+        /* GENERÁTOR TISKOVÝCH PRACOVNÍCH LISTŮ                                      */
+        /* ========================================================================= */
+        function generateWorksheet() {
+            const printWin = window.open('', '_blank');
+            printWin.document.write(`
+                <!DOCTYPE html>
+                <html lang="cs">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Pracovní List - Rastrová Grafika</title>
+                    <style>${document.getElementById('gp-tw').textContent}<\/style>
+                    <style>
+                        body { font-family: 'Inter', sans-serif; }
+                        @media print {
+                            body { padding: 0; margin: 0; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body class="p-8 bg-white text-slate-900">
+                    <div class="no-print mb-6 flex justify-between items-center bg-slate-100 p-4 rounded-xl border border-slate-200">
+                        <span class="text-sm font-bold">Připraveno pro tisk A4</span>
+                        <button onclick="window.print()" class="bg-rose-600 text-white font-bold px-4 py-2 rounded-lg text-sm">Vytisknout na tiskárně</button>
+                    </div>
+
+                    <div class="border-b-2 border-slate-900 pb-4 mb-6 flex justify-between items-end">
+                        <div>
+                            <h1 class="text-2xl font-bold">Pracovní List: Rastrová Grafika &amp; Pixely</h1>
+                            <p class="text-xs text-slate-500">Informatika pre 2. stupeň ZŠ / SŠ</p>
+                        </div>
+                        <div class="text-right text-xs">
+                            <p>Jméno: _______________________</p>
+                            <p>Třída: ________Datum: ________</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6 text-xs">
+                        <div>
+                            <h2 class="font-bold text-sm mb-2">1. Úkol: Kresba v mřížce 8×8 (Vybarvi podle souřadnic)</h2>
+                            <p class="mb-3">Vybarvi černou barvou pixely na pozicích: [2,2], [2,3], [2,6], [2,7], [5,2], [6,3], [6,4], [6,5], [5,6]. Co vzniklo?</p>
+                            <div class="grid grid-cols-8 gap-0 w-48 h-48 border-2 border-slate-800">
+                                ${Array(64).fill().map(() => '<div class="border border-slate-300"></div>').join('')}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h2 class="font-bold text-sm mb-2">2. Úkol: Výpočet datové velikosti</h2>
+                            <p>Spočítej nekomprimovanou velikost obrázku s rozlišením <strong>1000 × 1000 pixelů</strong> v 24-bitové hloubce True Color:</p>
+                            <p class="mt-2 font-mono">Výpočet: ____________________________________________________</p>
+                            <p class="mt-1 font-mono">Výsledek v Bytové jednotce (B/MB): _____________________________</p>
+                        </div>
+
+                        <div>
+                            <h2 class="font-bold text-sm mb-2">3. Úkol: Spojování pojmů</h2>
+                            <div class="grid grid-cols-2 gap-4 border p-3 rounded-lg">
+                                <div>
+                                    <p>A. PNG</p>
+                                    <p>B. JPEG</p>
+                                    <p>C. RGB</p>
+                                    <p>D. DPI</p>
+                                </div>
+                                <div>
+                                    <p>1. Aditivní model pro monitory</p>
+                                    <p>2. Hustota vytištěných bodů na palec</p>
+                                    <p>3. Beztrátová komprese s průhledností</p>
+                                    <p>4. Ztrátová komprese pro fotografie</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWin.document.close();
+        }
+
+        /* INICIALIZACE SPUŠTĚNÍ */
+        window.onload = function() {
+            initEditor();
+            updateRGBMixer();
+            initRLE();
+            recalcMemory();
+            renderQuiz();
+        };
+    </script>
+<!-- gp-ramec:foot --><footer class="gp-foot"><div class="gp-in"><span>Gymnázium Příbram</span><span>Autor: Apolena Knappová</span><span>Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" rel="license noopener">CC BY 4.0</a></span></div></footer><!-- /gp-ramec:foot -->
+</body>
+</html>
