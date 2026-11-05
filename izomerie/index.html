@@ -411,7 +411,10 @@ let SND=store.get('snd',true),AC=null;
 const SPK=['<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>','<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.3 6.5a8 8 0 0 1 0 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>'];
 function tone(f,t0,d,v){const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(v,t0+.012);g.gain.exponentialRampToValueAtTime(.0005,t0+d);o.connect(g).connect(AC.destination);o.start(t0);o.stop(t0+d+.05)}
 function beep(kind){if(!SND)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const t=AC.currentTime;
- if(kind==='end'){[[523.25,0],[659.25,.07],[783.99,.14]].forEach(([f,dt])=>{tone(f,t+dt,1.4,.13);tone(f*2,t+dt,.6,.025)})}
+ if(kind==='end'){/* smutný trombon: tři krátké tóny dolů + dlouhý s vibratem */const fl=AC.createBiquadFilter();fl.type='lowpass';fl.frequency.value=1400;fl.connect(AC.destination);
+  [[392,0,.32],[370,.38,.32],[349.2,.76,.32],[329.6,1.14,1.1]].forEach(([f,dt,d],i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sawtooth';o.frequency.setValueAtTime(f,t+dt);
+   if(i===3){const l=AC.createOscillator(),lg=AC.createGain();l.frequency.value=6;lg.gain.value=8;l.connect(lg).connect(o.frequency);l.start(t+dt+.25);l.stop(t+dt+d+.05)}
+   g.gain.setValueAtTime(0,t+dt);g.gain.linearRampToValueAtTime(.09,t+dt+.04);g.gain.setValueAtTime(.09,t+dt+d-.12);g.gain.linearRampToValueAtTime(0,t+dt+d);o.connect(g).connect(fl);o.start(t+dt);o.stop(t+dt+d+.05)})}
  else{tone(1046.5,t,.22,.16);tone(2093,t,.09,.03)}}catch(e){}}
 addEventListener('pointerdown',()=>{if(!SND)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}},{passive:true});
 function question(){INGAME=true;clearInterval(tmr);const q=S.list[S.i];view(()=>{
