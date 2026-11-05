@@ -348,6 +348,35 @@ canvas.tap{cursor:crosshair;touch-action:manipulation}
 .counts div{flex:1 1 130px}
 .ctl{display:grid;gap:10px}
 .nest{max-width:560px}
+.fcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:14px}
+.fcard{background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;overflow:hidden;display:grid;grid-template-rows:auto 1fr}
+.fcard canvas{width:100%;aspect-ratio:320/110;height:auto}
+.fcard canvas.blk{image-rendering:pixelated}
+.fcard canvas.alpha{background-color:#fff}
+.fbody{padding:12px 14px 14px;display:grid;gap:8px;align-content:start}
+.fhead{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.fhead b{font:800 1.5rem/1 var(--display);color:var(--ink)}
+.fhead span{font:600 .72rem var(--mono);color:var(--muted)}
+.fcard dl{margin:0;display:grid;gap:2px}
+.fcard dt{font-size:.78rem;font-weight:700;margin-top:4px}
+.fcard dd{margin:0;font-size:.93rem}
+.fcard dt.yes{color:var(--k4)}.fcard dt.no{color:var(--k1)}
+.fcard dt.yes::before{content:"✓ "}.fcard dt.no::before{content:"✕ "}
+.textfig{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:16px 28px;align-items:center}
+.textfig .venn{justify-self:end}
+@media (max-width:640px){.textfig{grid-template-columns:1fr}.textfig .venn{justify-self:center}}
+.bitsplit{display:grid;grid-template-columns:minmax(0,540px) minmax(0,1fr);gap:18px 28px;align-items:center}
+.bitsplit .say{margin-bottom:0}
+.bitsplit .cj-row{align-items:center;flex-wrap:nowrap}
+.bitsplit .ctv{width:84px}
+@media (max-width:900px){.bitsplit{grid-template-columns:1fr}}
+.bitgrid .hd{font-size:.76rem;font-weight:600;color:var(--muted);padding-left:8px}
+.bitgrid .hd:first-child{padding-left:0}
+.bitgrid code.t{color:var(--accent);font-weight:600}
+.duo.fillrow{align-items:stretch}
+.fillrow>.ctl{grid-template-rows:auto auto 1fr}
+.pixfill{grid-template-rows:auto 1fr}
+.pixfill .swatch{height:auto;min-height:72px}
 canvas.pst{image-rendering:auto}
 #aa{max-width:520px}
 #chA{max-width:480px}
@@ -369,8 +398,8 @@ figcaption,.cap{font-size:.84rem;color:var(--muted);line-height:1.35}
 .bar{display:grid;grid-template-columns:minmax(84px,auto) minmax(0,1fr) minmax(76px,auto);gap:10px;align-items:center;font-size:.9rem}
 .bar i{display:block;height:16px;border-radius:0 4px 4px 0;background:var(--c,var(--accent));min-width:2px}
 .bar b{font:600 .88rem var(--mono);text-align:right}
-.bitgrid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr)) minmax(4.8rem,auto);gap:2px;align-items:center;max-width:430px}
-.bitgrid button{aspect-ratio:1;border:1px solid var(--line);background:var(--paper);border-radius:3px;padding:0;cursor:pointer;min-width:0;min-height:30px}
+.bitgrid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr)) auto auto;gap:2px;align-items:center;max-width:540px}
+.bitgrid button{aspect-ratio:1;border:1px solid var(--line);background:var(--paper);border-radius:3px;padding:0;cursor:pointer;min-width:0}
 .bitgrid button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink)}
 .bitgrid code{font-size:.74rem;padding-left:8px;white-space:nowrap}
 .bitgrid code.h{color:var(--k2);font-weight:600;padding-left:4px}
@@ -483,12 +512,12 @@ canvas#ed{touch-action:none;cursor:crosshair}
     <div><span class="eyebrow">Kapitola 2</span><h2>Každý obrázek je mřížka barevných políček</h2></div>
     <p>Než se dozvíš, jak se tomu říká, podívej se sám. Zvětšuj obrázek a sleduj, co se stane.</p>
     <div class="box try"><span class="lbl">Vyzkoušej</span>
-      <div class="duo">
-        <figure><canvas id="zoomC" width="320" height="320" class="px tap" aria-label="Zvětšený obrázek hor. Klepnutím vyberete pixel."></canvas><figcaption>Klepni na políčko a uvidíš, co o něm počítač ví.</figcaption></figure>
+      <div class="duo fillrow">
+        <figure><canvas id="zoomC" width="640" height="640" class="px pst tap" aria-label="Zvětšený obrázek hor. Klepnutím vyberete pixel."></canvas><figcaption>Klepni na políčko a uvidíš, co o něm počítač ví.</figcaption></figure>
         <div class="ctl">
           <div class="sl"><label for="zoomS">Přiblížení</label><output id="zoomV">1×</output><input type="range" id="zoomS" min="0" max="100" value="0"></div>
           <dl class="facts" id="zoomF"></dl>
-          <div class="swatch" id="zoomSw" style="height:56px"></div>
+          <div class="fig pixfill"><span class="cap">Vybraný pixel: jedna jediná barva</span><div class="swatch" id="zoomSw"></div></div>
         </div>
       </div>
     </div>
@@ -499,11 +528,12 @@ canvas#ed{touch-action:none;cursor:crosshair}
       <div><dt>Rozlišení</dt><dd>Kolik pixelů má obrázek na šířku a na výšku, třeba 1920 × 1080.</dd></div>
     </dl>
     <div class="box try"><span class="lbl">Obrázek z čísel</span>
-      <p>Název <b>bitmapa</b> je doslova „mapa bitů“. V nejjednodušším obrázku je pixel buď černý (1), nebo bílý (0). Vpravo od mřížky je zápis každého řádku v bitech. Rozsviť políčka tak, aby sedělo všech 8 řádků ze zadání:</p>
-      <p class="target" id="bitsTarget"></p>
-      <div class="bitgrid" id="bits8"></div>
-      <div class="cj-row"><span class="ct" id="bitsCt" data-s="s-ok"></span><p class="say" id="bitsSay"></p></div>
-      <div class="btnrow"><button class="btn" id="bitsNew">Jiný obrázek</button></div>
+      <p>Název <b>bitmapa</b> je doslova „mapa bitů“. V nejjednodušším obrázku je pixel buď černý (1), nebo bílý (0). Klepnutím rozsvěcej políčka. Sloupec Teď ukazuje bity, které máš v řádku, a musí se shodovat se sloupcem Zadání.</p>
+      <div class="bitsplit">
+        <div class="bitgrid" id="bits8"></div>
+        <div class="ctl"><div class="cj-row"><span class="ct" id="bitsCt" data-s="s-ok"></span><p class="say" id="bitsSay"></p></div>
+        <div class="btnrow"><button class="btn" id="bitsNew">Jiný obrázek</button></div></div>
+      </div>
     </div>
     <div class="kq" data-ok="b">
       <p class="q">Co přesně počítač uloží o jednom pixelu?</p>
@@ -519,7 +549,11 @@ canvas#ed{touch-action:none;cursor:crosshair}
       <div class="opts"><button data-v="a">Hnědá, jako když smícháš barvy na paletě.</button><button data-v="b">Černá.</button><button data-v="c">Žlutá.</button></div>
       <div class="why">Světlo se nemíchá jako vodovky. Světla se sčítají, proto se tomu říká <b>aditivní míchání</b>. Ověř si to na mixu níže: červená 255, zelená 255, modrá 0.</div>
     </div>
-    <p>Každý pixel displeje má tři malé zdroje světla: červený, zelený a modrý. Tomu se říká <b>barevný model RGB</b> (Red, Green, Blue). Jas každého se ukládá jako číslo od 0 do 255.</p>
+    <div class="textfig">
+      <div class="ctl"><p>Každý pixel displeje má tři malé zdroje světla: červený, zelený a modrý. Tomu se říká <b>barevný model RGB</b> (Red, Green, Blue). Jas každého se ukládá jako číslo od 0 do 255.</p>
+      <p>Na schématu svítí tři světla do tmy. Kde se překrývají, sčítají se: červená a zelená dají žlutou, červená a modrá purpurovou, zelená a modrá azurovou a všechny tři bílou.</p></div>
+      <div class="venn add"><svg viewBox="0 0 200 180" role="img" aria-label="Červený, zelený a modrý kruh světla se překrývají. V průnicích vzniká žlutá, purpurová, azurová a uprostřed bílá."><circle cx="100" cy="65" r="55" fill="#f00"/><circle cx="68" cy="115" r="55" fill="#0f0"/><circle cx="132" cy="115" r="55" fill="#00f"/></svg></div>
+    </div>
     <div class="box try"><span class="lbl">Namíchej pixel</span>
       <div class="duo">
         <div class="ctl">
@@ -558,8 +592,8 @@ canvas#ed{touch-action:none;cursor:crosshair}
     <div><span class="eyebrow">Kapitola 4</span><h2>Víc pixelů, víc detailů</h2></div>
     <p>Rozlišení říká, kolika pixely je obrázek popsaný. Stejná scéna může mít políček málo, nebo hodně.</p>
     <div class="box try"><span class="lbl">Vyzkoušej</span>
-      <div class="sl"><label for="resS">Počet pixelů na šířku</label><output id="resV"></output><input type="range" id="resS" min="0" max="6" value="2"></div>
-      <canvas id="resC" width="480" height="320" class="px"></canvas>
+      <div class="sl"><label for="resS">Počet pixelů na šířku</label><output id="resV"></output><input type="range" id="resS" min="0" max="7" value="7"></div>
+      <canvas id="resC" width="960" height="640" class="px"></canvas>
       <div class="counts" id="resN"></div>
     </div>
     <div class="kq" data-ok="c">
@@ -607,11 +641,15 @@ canvas#ed{touch-action:none;cursor:crosshair}
       </div>
       <p class="muted" style="font-size:.92rem">Čím si to vysvětluješ? PNG si pamatuje každý pixel přesně a nejlépe mu jdou stejné plochy, proto je u fotky mnohem větší než JPG. JPG cíleně zahazuje detaily, což fotka snese. Kresba by po něm měla kolem písmen šmouhy.</p>
     </div>
-    <div class="tw"><table><thead><tr><th>Formát</th><th>Komprese</th><th>Hodí se na</th><th>Nehodí se na</th></tr></thead><tbody>
-      <tr><td><b>JPG</b></td><td>ztrátová</td><td>fotografie</td><td>text, loga, průhlednost</td></tr>
-      <tr><td><b>PNG</b></td><td>bezztrátová</td><td>snímky obrazovky, loga, průhlednost</td><td>fotky na web (velké soubory)</td></tr>
-      <tr><td><b>GIF</b></td><td>bezztrátová, jen 256 barev</td><td>krátké jednoduché animace</td><td>fotografie</td></tr>
-    </tbody></table></div>
+    <h3>Nejčastější formáty obrázků</h3>
+    <div class="fcards">
+      <article class="fcard" style="--c:var(--k1)"><canvas data-f="jpg" width="320" height="110" aria-hidden="true"></canvas><div class="fbody"><div class="fhead"><b>JPG</b><span>ztrátová</span></div><dl><dt class="yes">Hodí se na</dt><dd>fotografie</dd><dt class="no">Nehodí se na</dt><dd>text, loga, průhlednost</dd></dl></div></article>
+      <article class="fcard" style="--c:var(--k2)"><canvas data-f="png" width="320" height="110" aria-hidden="true"></canvas><div class="fbody"><div class="fhead"><b>PNG</b><span>bezztrátová</span></div><dl><dt class="yes">Hodí se na</dt><dd>snímky obrazovky, loga, průhlednost</dd><dt class="no">Nehodí se na</dt><dd>fotky na web, soubory jsou velké</dd></dl></div></article>
+      <article class="fcard" style="--c:var(--k3)"><canvas data-f="gif" width="320" height="110" aria-hidden="true"></canvas><div class="fbody"><div class="fhead"><b>GIF</b><span>jen 256 barev</span></div><dl><dt class="yes">Hodí se na</dt><dd>krátké jednoduché animace</dd><dt class="no">Nehodí se na</dt><dd>fotografie</dd></dl></div></article>
+      <article class="fcard" style="--c:var(--k4)"><canvas data-f="webp" width="320" height="110" aria-hidden="true"></canvas><div class="fbody"><div class="fhead"><b>WebP</b><span>ztrátová i bezztrátová</span></div><dl><dt class="yes">Hodí se na</dt><dd>obrázky na webu, menší soubory než JPG</dd><dt class="no">Nehodí se na</dt><dd>starší programy ho nemusí otevřít</dd></dl></div></article>
+      <article class="fcard" style="--c:var(--muted)"><canvas data-f="bmp" width="320" height="110" aria-hidden="true"></canvas><div class="fbody"><div class="fhead"><b>BMP</b><span>bez komprese</span></div><dl><dt class="yes">Hodí se na</dt><dd>výuka a jednoduché programy</dd><dt class="no">Nehodí se na</dt><dd>posílání a web, soubory jsou obrovské</dd></dl></div></article>
+      <article class="fcard" style="--c:var(--r)"><canvas data-f="raw" width="320" height="110" aria-hidden="true"></canvas><div class="fbody"><div class="fhead"><b>RAW</b><span>surová data ze snímače</span></div><dl><dt class="yes">Hodí se na</dt><dd>profesionální úpravy fotek</dd><dt class="no">Nehodí se na</dt><dd>rychlé sdílení, potřebuje editor</dd></dl></div></article>
+    </div>
     <div class="box fun game" id="fmtGame"><span class="lbl">Hra: Který formát?</span>
       <div class="gstat"><span id="fRound"></span><span id="fScore"></span></div>
       <div id="fBody"></div>
@@ -626,7 +664,7 @@ canvas#ed{touch-action:none;cursor:crosshair}
       <div class="field"><label>Zdroj obrázku</label><div class="seg" id="fixSrc"><button data-w="640" aria-pressed="true">Web, 640 px</button><button data-w="1080" aria-pressed="false">Sociální síť, 1080 px</button><button data-w="4000" aria-pressed="false">Mobil, 4000 px</button></div></div>
       <div class="field"><label>Šířka papíru</label><div class="seg" id="fixPap"><button data-c="14.8" aria-pressed="false">A5</button><button data-c="21" aria-pressed="false">A4</button><button data-c="29.7" aria-pressed="false">A3</button><button data-c="42" aria-pressed="true">A2</button></div></div>
       <div class="duo">
-        <figure><canvas id="fixC" width="320" height="220" class="px"></canvas><figcaption>Výřez 5 × 3,5 cm vytištěného papíru.</figcaption></figure>
+        <figure><canvas id="fixC" width="640" height="440" class="px pst"></canvas><figcaption>Výřez 5 × 3,5 cm vytištěného papíru.</figcaption></figure>
         <div class="ctl"><ol class="steps" id="fixSteps"></ol><div class="cj-row"><span class="ct" id="fixCt" data-s="s-boo"></span><p class="say" id="fixSay"></p></div></div>
       </div>
     </div>
@@ -901,7 +939,7 @@ canvas#ed{touch-action:none;cursor:crosshair}
     <p><b>Ztrátová komprese</b> jde dál: zahodí to, co lidské oko nepostřehne. JPEG rozdělí obrázek na bloky 8 × 8 pixelů, potlačí v nich jemné detaily a méně si všímá barev než jasu. Tady to dělá opravdový JPEG ve tvém prohlížeči:</p>
     <div class="box try"><span class="lbl">Otoč kvalitou</span>
       <div class="chips" id="jpScene"></div>
-      <div class="sl"><label for="jpS">Kvalita JPEG</label><output id="jpV"></output><input type="range" id="jpS" min="1" max="100" value="30"></div>
+      <div class="sl"><label for="jpS">Kvalita JPEG</label><output id="jpV"></output><input type="range" id="jpS" min="1" max="100" value="92"></div>
       <div class="duo">
         <figure><canvas id="jpC" width="480" height="320" class="px"></canvas><figcaption id="jpCap"></figcaption></figure>
         <figure><canvas id="jpZ" width="240" height="160" class="px"></canvas><figcaption>Výřez zvětšený čtyřikrát. Všimni si bloků a šmouh kolem hran.</figcaption></figure>
@@ -1064,7 +1102,7 @@ canvas#ed{touch-action:none;cursor:crosshair}
     </div>
   </div>
   <div class="panel"><h3>Opravdová velikost souboru</h3>
-    <div class="sl"><label for="labQ">Kvalita JPEG a WebP</label><output id="labQv"></output><input type="range" id="labQ" min="1" max="100" value="75"></div>
+    <div class="sl"><label for="labQ">Kvalita JPEG a WebP</label><output id="labQv"></output><input type="range" id="labQ" min="1" max="100" value="92"></div>
     <div class="duo">
       <figure><canvas id="labJ" width="480" height="320" class="px"></canvas><figcaption>Po kompresi JPEG.</figcaption></figure>
       <figure><canvas id="labE" width="480" height="320" class="px"></canvas><figcaption>Mapa chyb: co JPEG změnil, zesíleno osmkrát. Černá znamená beze změny.</figcaption></figure>
@@ -1377,7 +1415,9 @@ function loadPhoto(k){return new Promise(res=>{const im=new Image();
 function mkC(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
 function scene(k){return scCache[k]||(scCache[k]=SC[k][1]());}
 const fullScene=k=>fullCache[k]||scene(k);
-function put(cv,img){if(cv.width!==img.width)cv.width=img.width;if(cv.height!==img.height)cv.height=img.height;cv.getContext('2d').putImageData(img,0,0);}
+function put(cv,img){if(cv.width!==img.width)cv.width=img.width;if(cv.height!==img.height)cv.height=img.height;cv.getContext('2d').putImageData(img,0,0);
+  /* když je obrázek větší než plocha na stránce, nesmí se zmenšovat po pixelech, jinak by zubatěl */
+  const room=(cv.clientWidth||450)*(devicePixelRatio||1);cv.style.imageRendering=img.width>=Math.min(900,room)?'auto':'';}
 function chipScene(el,def,fn,keys){
   keys=keys||Object.keys(SC);
   el.innerHTML=keys.map(k=>`<button class="chip" data-k="${k}" aria-pressed="${k===def}">${SC[k][0]}</button>`).join('');
@@ -1509,7 +1549,7 @@ function drawPoster(cv,sw){
   const W=cv.width,H=cv.height,x=cv.getContext('2d'),u=W/100;
   x.fillStyle='#0c3f63';x.fillRect(0,0,W,H);
   const iw=W,ih=Math.round(W*2/3),iy=Math.round(H*.26);
-  const s=down(scene('krajina'),sw,Math.round(sw*2/3)),c=mkC(s.width,s.height);c.getContext('2d').putImageData(s,0,0);
+  const s=down(fullScene('krajina'),sw,Math.round(sw*2/3)),c=mkC(s.width,s.height);c.getContext('2d').putImageData(s,0,0);
   x.imageSmoothingEnabled=false;x.drawImage(c,0,iy,iw,ih);
   x.fillStyle='#fff';x.textBaseline='alphabetic';x.textAlign='center';
   x.font=`800 ${15*u}px "Bricolage Grotesque",sans-serif`;x.fillText('LYŽÁK 2027',W/2,14.5*u);
@@ -1518,36 +1558,43 @@ function drawPoster(cv,sw){
   x.font=`400 ${4.4*u}px "IBM Plex Sans",sans-serif`;x.fillText('u vyučujících tělesné výchovy',W/2,H-9*u);
   x.textAlign='start';
 }
-function posters(){drawPoster($('#hookSmall'),480);drawPoster($('#hookBig'),48);$('#cmpB').getContext('2d').putImageData(scene('plochy'),0,0);}
+function fmtCards(){
+  const crop=(k,x,y,w,h,W,H)=>{const F=fullScene(k),c=mkC(F.width,F.height);c.getContext('2d').putImageData(F,0,0);const t=mkC(W,H),q=t.getContext('2d',{willReadFrequently:true});q.imageSmoothingQuality='high';q.drawImage(c,x,y,w,h,0,0,W,H);return q.getImageData(0,0,W,H);};
+  const cv=f=>document.querySelector(`.fcard canvas[data-f="${f}"]`);
+  cv('jpg').getContext('2d').putImageData(crop('krajina',300,70,640,220,320,110),0,0);
+  cv('webp').getContext('2d').putImageData(crop('soumrak',160,130,640,220,320,110),0,0);
+  cv('gif').getContext('2d').putImageData(quant(crop('soumrak',0,60,640,220,320,110),1,true),0,0);
+  {const p=cv('png'),x=p.getContext('2d');p.classList.add('alpha');x.clearRect(0,0,320,110);x.fillStyle='#0c5f8f';x.beginPath();x.arc(160,55,40,0,7);x.fill();x.strokeStyle='#fff';x.lineWidth=9;x.lineCap='round';x.lineJoin='round';x.beginPath();x.moveTo(140,57);x.lineTo(155,72);x.lineTo(182,40);x.stroke();}
+  {const p=cv('bmp'),i=crop('krajina',300,70,640,220,40,14);p.classList.add('blk');put(p,i);}
+  {const p=cv('raw'),i=crop('krajina',300,70,640,220,64,22),d=i.data;p.classList.add('blk');for(let y=0;y<22;y++)for(let x=0;x<64;x++){const o=(y*64+x)*4,c=y%2===0?(x%2===0?0:1):(x%2===0?1:2);for(let k=0;k<3;k++)if(k!==c)d[o+k]=0;}put(p,i);}
+}
+function posters(){fmtCards();drawPoster($('#hookSmall'),480);drawPoster($('#hookBig'),48);$('#cmpB').getContext('2d').putImageData(scene('plochy'),0,0);}
 
-/* přiblížení a inspektor */
+/* přiblížení a inspektor: 1× ukazuje fotku v plném rozlišení, bod na bod */
 (function(){
-  const cv=$('#zoomC'),ctx=cv.getContext('2d'),S=$('#zoomS');let img,sel=[318,62],cx=318,cy=62;
-  const P=320;
+  const cv=$('#zoomC'),ctx=cv.getContext('2d'),S=$('#zoomS'),P=640;let img,c,sel=[636,124],cx=636,cy=124;
   function draw(){
-    img=img||scene('krajina');
-    const z=Math.exp(S.value/100*Math.log(40)),w=P/z,x0=clamp(cx-w/2,0,W0-Math.min(w,W0)),y0=clamp(cy-w/2,0,H0-Math.min(w,H0));
-    const c=mkC(W0,H0);c.getContext('2d').putImageData(img,0,0);
+    if(!img){img=fullScene('krajina');c=mkC(img.width,img.height);c.getContext('2d').putImageData(img,0,0);}
+    const z=Math.exp(S.value/100*Math.log(40)),w=P/z,x0=clamp(cx-w/2,0,Math.max(0,img.width-w)),y0=clamp(cy-w/2,0,Math.max(0,img.height-w));
     ctx.imageSmoothingEnabled=false;ctx.fillStyle='#000';ctx.fillRect(0,0,P,P);ctx.drawImage(c,x0,y0,w,w,0,0,P,P);
     $('#zoomV').textContent=nf(z,z<10?1:0)+'×';
-    const px=z;
-    if(px>=8){ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;ctx.beginPath();
-      const ox=(Math.ceil(x0)-x0)*px,oy=(Math.ceil(y0)-y0)*px;
-      for(let a=ox;a<P;a+=px){ctx.moveTo(Math.round(a)+.5,0);ctx.lineTo(Math.round(a)+.5,P);}
-      for(let a=oy;a<P;a+=px){ctx.moveTo(0,Math.round(a)+.5);ctx.lineTo(P,Math.round(a)+.5);}
+    if(z>=10){ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;ctx.beginPath();
+      const ox=(Math.ceil(x0)-x0)*z,oy=(Math.ceil(y0)-y0)*z;
+      for(let a=ox;a<P;a+=z){ctx.moveTo(Math.round(a)+.5,0);ctx.lineTo(Math.round(a)+.5,P);}
+      for(let a=oy;a<P;a+=z){ctx.moveTo(0,Math.round(a)+.5);ctx.lineTo(P,Math.round(a)+.5);}
       ctx.stroke();
-      ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.strokeRect((sel[0]-x0)*px,(sel[1]-y0)*px,px,px);}
+      ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.strokeRect((sel[0]-x0)*z,(sel[1]-y0)*z,z,z);}
     draw.x0=x0;draw.y0=y0;draw.z=z;
   }
   function info(){
-    const i=(sel[1]*W0+sel[0])*4,d=img.data,[r,g,b]=[d[i],d[i+1],d[i+2]];
+    const i=(sel[1]*img.width+sel[0])*4,d=img.data,[r,g,b]=[d[i],d[i+1],d[i+2]];
     $('#zoomF').innerHTML=`<dt>Sloupec, řádek</dt><dd>${sel[0]}, ${sel[1]}</dd><dt>Červená</dt><dd>${r}</dd><dt>Zelená</dt><dd>${g}</dd><dt>Modrá</dt><dd>${b}</dd>`;
     $('#zoomSw').style.background=`rgb(${r},${g},${b})`;
   }
   lazy.zoom=()=>{draw();info();};
   S.oninput=draw;
   cv.onclick=e=>{const r=cv.getBoundingClientRect(),u=(e.clientX-r.left)/r.width*P,v=(e.clientY-r.top)/r.height*P;
-    sel=[clamp(Math.floor(draw.x0+u/draw.z),0,W0-1),clamp(Math.floor(draw.y0+v/draw.z),0,H0-1)];if(+S.value<20){cx=sel[0];cy=sel[1];S.value=55;}draw();info();};
+    sel=[clamp(Math.floor(draw.x0+u/draw.z),0,img.width-1),clamp(Math.floor(draw.y0+v/draw.z),0,img.height-1)];if(+S.value<65){cx=sel[0];cy=sel[1];S.value=65;}draw();info();};
 })();
 
 /* obrázek z čísel */
@@ -1556,8 +1603,7 @@ function posters(){drawPoster($('#hookSmall'),480);drawPoster($('#hookBig'),48);
   const G=$('#bits8');let t=0,cur=new Array(8).fill(0);
   function draw(){
     const T=PICS[t][1];
-    G.innerHTML=cur.map((v,y)=>[...Array(8)].map((_,x)=>`<button aria-label="Řádek ${y+1}, sloupec ${x+1}" aria-pressed="${!!(v>>(7-x)&1)}" data-y="${y}" data-x="${x}"></button>`).join('')+`<code class="${v===T[y]?'good':''}">${bin(v)}</code>`).join('');
-    $('#bitsTarget').innerHTML=T.map((v,i)=>`<span>${i+1}: ${bin(v)}</span>`).join('');
+    G.innerHTML=`<span class="hd" style="grid-column:1/9">Mřížka</span><span class="hd">Teď</span><span class="hd">Zadání</span>`+cur.map((v,y)=>[...Array(8)].map((_,x)=>`<button aria-label="Řádek ${y+1}, sloupec ${x+1}" aria-pressed="${!!(v>>(7-x)&1)}" data-y="${y}" data-x="${x}"></button>`).join('')+`<code class="${v===T[y]?'good':''}">${bin(v)}</code><code class="t">${bin(T[y])}</code>`).join('');
     const ok=cur.every((v,i)=>v===T[i]);
     ctDraw($('#bitsCt'),ok?'s-win':'s-ok');
     $('#bitsSay').innerHTML=`<b class="who">Čtverák</b>`+(ok?`To je ${PICS[t][0]}! Přesně tak vidí obrázek počítač: 8 bajtů. Každý z nich je jeden řádek.`:`Jednička v zadání je černé políčko, nula bílé. Začni druhým řádkem: <code>${bin(T[1])}</code>.`);
@@ -1592,8 +1638,8 @@ function rgbSliders(ids,fn){
 
 /* rozlišení */
 (function(){
-  const N=[8,16,32,64,128,240,480],S=$('#resS');
-  function run(){const w=N[+S.value],h=Math.round(w*2/3),i=down(scene('krajina'),w,h),c=$('#resC');put(c,i);
+  const N=[8,16,32,64,128,240,480,960],S=$('#resS');
+  function run(){const w=N[+S.value],h=Math.round(w*2/3),i=down(fullScene('krajina'),w,h),c=$('#resC');put(c,i);
     $('#resV').textContent=`${w} × ${h}`;
     $('#resN').innerHTML=`<div><b>${nf(w*h)}</b><span>pixelů celkem</span></div><div><b>${fmtSize(w*h*3)}</b><span>bez komprese</span></div>`;}
   lazy.res=run;S.oninput=run;
@@ -1667,9 +1713,9 @@ runGame({body:'#pBody',r:'#pRound',s:'#pScore',win:'Plakáty jsou zachráněné,
     ctDraw($('#fixCt'),best||ok?'s-win':'s-boo');
     $('#fixSay').innerHTML='<b class="who">Čtverák</b>'+(best?'Výborně, ani lupou mě nenajdeš.':ok?'Na plakát z dálky to stačí. Zblízka je trochu znát, že jsem tady.':'Jsem tu vidět jako dlaždice. Vezmi větší obrázek, nebo menší papír.');
     // výřez 5 cm obsahuje jen tolik obrazových bodů, kolik mu dá hustota; víc než 320 bodů na tenhle náhled nepotřebujeme
-    const g=clamp(Math.round(5/2.54*dpi),4,320),gh=Math.max(3,Math.round(g*.6875)),src=mkC(W0,H0);src.getContext('2d').putImageData(scene('krajina'),0,0);
-    const t=mkC(g,gh),tc=t.getContext('2d');tc.imageSmoothingQuality='high';tc.drawImage(src,150,40,320,220,0,0,g,gh);
-    ctx.imageSmoothingEnabled=false;ctx.drawImage(t,0,0,320,220);
+    const g=clamp(Math.round(5/2.54*dpi),4,640),gh=Math.max(3,Math.round(g*.6875)),F=fullScene('krajina'),src=mkC(F.width,F.height);src.getContext('2d').putImageData(F,0,0);
+    const t=mkC(g,gh),tc=t.getContext('2d');tc.imageSmoothingQuality='high';tc.drawImage(src,300,80,640,440,0,0,g,gh);
+    ctx.imageSmoothingEnabled=false;ctx.drawImage(t,0,0,640,440);
   }
   segPick($('#fixSrc'),d=>{w=+d.w;run();});segPick($('#fixPap'),d=>{c=+d.c;run();});
   lazy.fix=run;
@@ -1687,8 +1733,8 @@ lazy.r4=function(){
    const s=$('#vecS2'),S=$('#vecS');S.oninput=()=>{const z=+S.value,w=40/z,o=20-w/2;c.style.transform=`scale(${z})`;s.setAttribute('viewBox',`${o} ${o} ${w} ${w}`);$('#vecV').textContent=z+'×';};}
   /* barevná hloubka */
   {let k='soumrak';const S=$('#depS'),D=$('#depD');
-   function run(){const n=+S.value,o=quant(scene(k),n,D.checked);put($('#depC'),o);$('#depV').textContent=n;
-     const bp=n*3;$('#depN').innerHTML=`<div><b>${1<<n}</b><span>odstínů na složku</span></div><div><b>${bp}</b><span>bitů na pixel</span></div><div><b>${nf(2**bp)}</b><span>barev celkem</span></div><div><b>${fmtSize(W0*H0*bp/8)}</b><span>bez komprese</span></div>`;}
+   function run(){const n=+S.value,o=quant(fullScene(k),n,D.checked);put($('#depC'),o);$('#depV').textContent=n;
+     const bp=n*3;$('#depN').innerHTML=`<div><b>${1<<n}</b><span>odstínů na složku</span></div><div><b>${bp}</b><span>bitů na pixel</span></div><div><b>${nf(2**bp)}</b><span>barev celkem</span></div><div><b>${fmtSize(o.width*o.height*bp/8)}</b><span>bez komprese</span></div>`;}
    chipScene($('#depScene'),k,v=>{k=v;run();},['soumrak','krajina']);S.oninput=run;D.onchange=run;run();}
   jpegDemo();interp();aaDemo();
 };
