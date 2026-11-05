@@ -347,7 +347,26 @@ canvas.tap{cursor:crosshair;touch-action:manipulation}
 .counts{display:flex;flex-wrap:wrap}
 .counts div{flex:1 1 130px}
 .ctl{display:grid;gap:10px}
-.nest{max-width:560px}
+.nest{max-width:none}
+:root{--k5:#a56f0c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--k5:#e0b35a}}
+:root[data-theme="dark"]{--k5:#e0b35a}
+.resbox{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:start;grid-template-rows:auto 1fr}
+.resbox .nest{grid-column:1;grid-row:1}
+.resbox .resinfo{grid-column:1;grid-row:2;font-size:.95rem}
+.resbox .reslist{grid-column:2;grid-row:1/3}
+.reslist{display:grid;gap:5px}
+.resrow{display:grid;grid-template-columns:5.2rem 6.9rem minmax(0,1fr);gap:1px 10px;align-items:center;text-align:left;border:1px solid var(--line);border-left:5px solid var(--c);border-radius:8px;background:var(--bg);padding:6px 10px;cursor:pointer;transition:background .15s}
+.resrow b{font:800 1rem var(--display)}
+.resrow code{font-size:.8rem;white-space:nowrap}
+.respx{display:grid;grid-template-columns:minmax(0,1fr) 4.6rem;align-items:center;gap:8px;min-width:0}
+.respx .trk{display:block;min-width:0}
+.respx i{display:block;height:10px;border-radius:0 3px 3px 0;background:var(--c);min-width:2px}
+.respx em{font:600 .76rem var(--mono);font-style:normal;white-space:nowrap;text-align:right}
+.resrow small{grid-column:1/-1;font-size:.79rem;color:var(--muted)}
+.resrow:hover{border-color:var(--c)}
+.resrow.on{background:color-mix(in srgb,var(--c) 18%,var(--paper));border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
+@media (max-width:860px){.resbox{grid-template-columns:1fr;grid-template-rows:none}.resbox .nest,.resbox .resinfo,.resbox .reslist{grid-column:1;grid-row:auto}}
 .fcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:14px}
 .fcard{background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;overflow:hidden;display:grid;grid-template-rows:auto 1fr}
 .fcard canvas{width:100%;aspect-ratio:320/110;height:auto}
@@ -392,7 +411,9 @@ figcaption,.cap{font-size:.84rem;color:var(--muted);line-height:1.35}
 .triad b{font:600 1.05rem var(--mono);overflow-wrap:anywhere}
 .triad span{font-size:.74rem;color:var(--muted)}
 .nest{position:relative;width:100%;aspect-ratio:16/9;background:var(--bg);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.nest div{position:absolute;left:0;bottom:0;border:2px solid var(--c);border-left-width:0;border-bottom-width:0;background:color-mix(in srgb,var(--c) 12%,transparent)}
+.nest button{position:absolute;left:0;bottom:0;padding:0;cursor:pointer;border:2px solid var(--c);border-left-width:0;border-bottom-width:0;border-radius:0;background:color-mix(in srgb,var(--c) 9%,transparent);transition:background .15s}
+.nest button.on{background:color-mix(in srgb,var(--c) 42%,transparent);border-width:0 4px 4px 0;border-bottom-width:0;border-top-width:4px}
+.nest button.on span{font-weight:700;color:var(--ink)}
 .nest span{position:absolute;right:clamp(2px,.8vw,6px);top:3px;font:600 clamp(.58rem,2.1vw,.74rem) var(--mono);color:var(--c);white-space:nowrap}
 .bars{display:grid;gap:8px}
 .bar{display:grid;grid-template-columns:minmax(84px,auto) minmax(0,1fr) minmax(76px,auto);gap:10px;align-items:center;font-size:.9rem}
@@ -600,17 +621,12 @@ canvas#ed{touch-action:none;cursor:crosshair}
       <div class="why">Co se při focení neuložilo, v obrázku není. Zvětšení jen roztáhne to, co už tam je. Umělá inteligence umí detaily <i>vymyslet</i>, ale nejsou to skutečné informace ze scény.</div>
     </div>
     <h3>Standardní rozlišení displejů a televizí</h3>
-    <p>Rozlišení displejů se značí zkratkami. Rámečky jsou ve stejném měřítku:</p>
-    <div class="nest" id="nest" aria-label="Porovnání velikosti HD ready, Full HD, 2K, QHD, 4K, 5K a 8K"></div>
-    <div class="tw"><table><thead><tr><th>Název</th><th>Rozlišení</th><th>Pixelů</th><th>Kde se potkáte</th></tr></thead><tbody>
-      <tr><td>HD ready</td><td><code>1280 × 720</code></td><td>0,9 milionu</td><td>levné notebooky, starší televize</td></tr>
-      <tr><td>Full HD</td><td><code>1920 × 1080</code></td><td>2,1 milionu</td><td>běžný monitor, video na YouTube</td></tr>
-      <tr><td>2K</td><td><code>2048 × 1080</code></td><td>2,2 milionu</td><td>digitální kino</td></tr>
-      <tr><td>QHD</td><td><code>2560 × 1440</code></td><td>3,7 milionu</td><td>herní a kancelářské monitory, lepší mobily</td></tr>
-      <tr><td>4K UHD</td><td><code>3840 × 2160</code></td><td>8,3 milionu</td><td>televize, lepší monitory</td></tr>
-      <tr><td>5K</td><td><code>5120 × 2880</code></td><td>14,7 milionu</td><td>monitory pro grafiky a střih videa</td></tr>
-      <tr><td>8K UHD</td><td><code>7680 × 4320</code></td><td>33,2 milionu</td><td>špičkové televize</td></tr>
-    </tbody></table></div>
+    <p>Rozlišení displejů se značí zkratkami. Obdélníky jsou ve stejném měřítku. Vyber řádek nebo obdélník a druhý se zvýrazní.</p>
+    <div class="resbox">
+      <div class="nest" id="nest" role="group" aria-label="Porovnání velikosti rozlišení ve stejném měřítku"></div>
+      <p class="resinfo" id="resInfo" aria-live="polite"></p>
+      <div class="reslist" id="resList" role="group" aria-label="Seznam rozlišení"></div>
+    </div>
     <div class="box fun"><span class="lbl">Pozor na 2K</span><p>Přesně je 2K kinový formát 2048 × 1080. V obchodech se ale tak často označují monitory QHD 2560 × 1440 a někdy i Full HD. U zkratky proto vždy hledej skutečný počet pixelů.</p></div>
     <div class="box tip"><span class="lbl">Megapixel</span><p>Fotoaparáty a mobily uvádějí počet pixelů v <b>megapixelech</b>: 1 Mpx je milion pixelů. Snímek 4000 × 3000 má 12 Mpx. Poměr šířky a výšky se jmenuje <b>poměr stran</b>: televize má obvykle 16 : 9, fotka 4 : 3, mobil na výšku třeba 9 : 19,5.</p></div>
     <div class="links2"><a href="../rozliseni/">Aplikace Rozlišení: formáty videa od 30 řádků po 8K →</a></div>
@@ -1648,8 +1664,17 @@ function rgbSliders(ids,fn){
     $('#resV').textContent=`${w} × ${h}`;
     $('#resN').innerHTML=`<div><b>${nf(w*h)}</b><span>pixelů celkem</span></div><div><b>${fmtSize(w*h*3)}</b><span>bez komprese</span></div>`;}
   lazy.res=run;S.oninput=run;
-  const R=[['8K',7680,4320,'var(--k1)'],['5K',5120,2880,'var(--r)'],['4K',3840,2160,'var(--k3)'],['QHD',2560,1440,'var(--g)'],['2K',2048,1080,'var(--muted)','top:-17px'],['Full HD',1920,1080,'var(--k2)'],['HD ready',1280,720,'var(--k4)']];
-  $('#nest').innerHTML=R.map(([n,w,h,c,st])=>`<div style="width:${w/76.8}%;height:${h/43.2}%;--c:${c}"><span style="${st||''}">${n}</span></div>`).join('');
+  const R=[['8K UHD',7680,4320,'var(--k1)','špičkové televize','8K'],['5K',5120,2880,'var(--r)','monitory pro grafiky a střih videa'],['4K UHD',3840,2160,'var(--k3)','televize, lepší monitory','4K'],['QHD',2560,1440,'var(--k5)','herní a kancelářské monitory, lepší mobily'],['2K',2048,1080,'var(--muted)','digitální kino'],['Full HD',1920,1080,'var(--k2)','běžný monitor, video na YouTube'],['HD ready',1280,720,'var(--k4)','levné notebooky, starší televize']];
+  const FHD=1920*1080,MAX=7680*4320;
+  $('#nest').innerHTML=R.map(([n,w,h,c,,sh],i)=>`<button type="button" data-i="${i}" aria-label="${n}, ${w} × ${h}" style="width:${w/76.8}%;height:${h/43.2}%;--c:${c}"><span${n==='2K'?' style="top:-17px"':''}>${sh||n}</span></button>`).join('');
+  $('#resList').innerHTML=[...R].map((r,i)=>[r,i]).reverse().map(([[n,w,h,c,u],i])=>`<button type="button" class="resrow" data-i="${i}" style="--c:${c}"><b>${n}</b><code>${w} × ${h}</code><span class="respx"><span class="trk"><i style="width:${Math.max(.6,w*h/MAX*100)}%"></i></span><em>${nf(w*h/1e6,1)} Mpx</em></span><small>${u}</small></button>`).join('');
+  function pickRes(i){
+    $$('#nest button,#resList button').forEach(b=>{const on=+b.dataset.i===i;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);});
+    const [n,w,h]=R[i],px=w*h,k=px/FHD;
+    $('#resInfo').innerHTML=`<b>${n}:</b> ${nf(w)} × ${nf(h)} = ${nf(px)} pixelů`+(n==='Full HD'?'':k>1?`, to je ${nf(k,1)}× víc než Full HD.`:`, to je ${nf(k,2)}× tolik co Full HD.`);
+  }
+  ['#nest','#resList'].forEach(q=>{const el=$(q),f=e=>{const b=e.target.closest('[data-i]');if(b)pickRes(+b.dataset.i);};el.addEventListener('click',f);el.addEventListener('pointerover',f);el.addEventListener('focusin',f);});
+  pickRes(5);
 })();
 
 /* velikost */
