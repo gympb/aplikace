@@ -362,9 +362,9 @@ canvas.tap{cursor:crosshair;touch-action:manipulation}
 .fcard dd{margin:0;font-size:.93rem}
 .fcard dt.yes{color:var(--k4)}.fcard dt.no{color:var(--k1)}
 .fcard dt.yes::before{content:"✓ "}.fcard dt.no::before{content:"✕ "}
-.textfig{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:16px 28px;align-items:center}
-.textfig .venn{justify-self:end}
-@media (max-width:640px){.textfig{grid-template-columns:1fr}.textfig .venn{justify-self:center}}
+.mix3{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,220px) minmax(0,1fr);gap:16px 22px;align-items:start}
+.mix3 .venn{padding:6px}
+@media (max-width:860px){.mix3{grid-template-columns:1fr}.mix3 .fig:has(.venn){justify-items:center}}
 .bitsplit{display:grid;grid-template-columns:minmax(0,540px) minmax(0,1fr);gap:18px 28px;align-items:center}
 .bitsplit .say{margin-bottom:0}
 .bitsplit .cj-row{align-items:center;flex-wrap:nowrap}
@@ -549,19 +549,17 @@ canvas#ed{touch-action:none;cursor:crosshair}
       <div class="opts"><button data-v="a">Hnědá, jako když smícháš barvy na paletě.</button><button data-v="b">Černá.</button><button data-v="c">Žlutá.</button></div>
       <div class="why">Světlo se nemíchá jako vodovky. Světla se sčítají, proto se tomu říká <b>aditivní míchání</b>. Ověř si to na mixu níže: červená 255, zelená 255, modrá 0.</div>
     </div>
-    <div class="textfig">
-      <div class="ctl"><p>Každý pixel displeje má tři malé zdroje světla: červený, zelený a modrý. Tomu se říká <b>barevný model RGB</b> (Red, Green, Blue). Jas každého se ukládá jako číslo od 0 do 255.</p>
-      <p>Na schématu svítí tři světla do tmy. Kde se překrývají, sčítají se: červená a zelená dají žlutou, červená a modrá purpurovou, zelená a modrá azurovou a všechny tři bílou.</p></div>
-      <div class="venn add"><svg viewBox="0 0 200 180" role="img" aria-label="Červený, zelený a modrý kruh světla se překrývají. V průnicích vzniká žlutá, purpurová, azurová a uprostřed bílá."><circle cx="100" cy="65" r="55" fill="#f00"/><circle cx="68" cy="115" r="55" fill="#0f0"/><circle cx="132" cy="115" r="55" fill="#00f"/></svg></div>
-    </div>
+    <p>Každý pixel displeje má tři malé zdroje světla: červený, zelený a modrý. Tomu se říká <b>barevný model RGB</b> (Red, Green, Blue). Jas každého se ukládá jako číslo od 0 do 255.</p>
     <div class="box try"><span class="lbl">Namíchej pixel</span>
-      <div class="duo">
+      <p>Na schématu svítí tři světla do tmy a každý jezdec řídí jas jednoho z nich. Kde se světla překrývají, sčítají se: naplno dají červená a zelená žlutou, červená a modrá purpurovou, zelená a modrá azurovou a všechny tři bílou.</p>
+      <div class="mix3">
         <div class="ctl">
           <div class="sl r"><label for="mR">Červená</label><output id="mRv"></output><input type="range" id="mR" min="0" max="255" value="255"></div>
-          <div class="sl g"><label for="mG">Zelená</label><output id="mGv"></output><input type="range" id="mG" min="0" max="255" value="170"></div>
-          <div class="sl b"><label for="mB">Modrá</label><output id="mBv"></output><input type="range" id="mB" min="0" max="255" value="40"></div>
+          <div class="sl g"><label for="mG">Zelená</label><output id="mGv"></output><input type="range" id="mG" min="0" max="255" value="255"></div>
+          <div class="sl b"><label for="mB">Modrá</label><output id="mBv"></output><input type="range" id="mB" min="0" max="255" value="255"></div>
           <div class="chips" id="mChips"></div>
         </div>
+        <div class="fig"><div class="venn add"><svg viewBox="0 0 200 180" role="img" aria-label="Červený, zelený a modrý kruh světla se překrývají. Jas každého kruhu řídí příslušný jezdec."><circle id="mcR" cx="100" cy="65" r="55"/><circle id="mcG" cx="68" cy="115" r="55"/><circle id="mcB" cx="132" cy="115" r="55"/></svg></div><span class="cap">Tři světla ve tmě.</span></div>
         <div class="ctl">
           <div class="fig"><div class="swatch" id="mSw" style="height:64px"></div><span class="cap">Z dálky: výsledná barva pixelu.</span></div>
           <div class="fig"><div class="subpx" id="mSub" style="height:64px"><i></i><i></i><i></i></div><span class="cap">Pod lupou: tři svítící proužky (subpixely).</span></div>
@@ -624,8 +622,10 @@ canvas#ed{touch-action:none;cursor:crosshair}
   </article>
 
   <article class="ch" data-title="Velikost a formáty">
-    <div><span class="eyebrow">Kapitola 5</span><h2>Kolik obrázek váží</h2></div>
-    <p>Když víš, že jeden pixel zabere 3 bajty, spočítáš velikost obrázku sám: <b>šířka × výška × 3</b>. Fotka z mobilu 4000 × 3000 tedy zabere 36 000 000 bajtů, to je <b>36 MB</b>.</p>
+    <div><span class="eyebrow">Kapitola 5</span><h2>Kolik místa obrázek zabere</h2></div>
+    <p>Každý pixel potřebuje 3 bajty: po jednom na červenou, zelenou a modrou. Místo, které obrázek zabere bez komprese, proto spočítáš takto:</p>
+    <p class="result">šířka × výška × 3 bajty</p>
+    <p>Příklad: fotka z mobilu má 4000 × 3000 pixelů, tedy 12 milionů pixelů. Po třech bajtech to je 36 milionů bajtů, neboli <b>36 MB</b>.</p>
     <div class="box try"><span class="lbl">Spočítej si to</span>
       <div class="calc">
         <div class="field"><label for="szW">Šířka (px)</label><input type="number" id="szW" value="1920" min="1" max="20000"></div>
@@ -1626,7 +1626,7 @@ function rgbSliders(ids,fn){
 }
 (function(){
   const sub=[...$('#mSub').children];
-  const m=rgbSliders(['mR','mG','mB'],(r,g,b)=>{$('#mSw').style.background=`rgb(${r},${g},${b})`;sub[0].style.background=`rgb(${r},0,0)`;sub[1].style.background=`rgb(0,${g},0)`;sub[2].style.background=`rgb(0,0,${b})`;});
+  const m=rgbSliders(['mR','mG','mB'],(r,g,b)=>{$('#mSw').style.background=`rgb(${r},${g},${b})`;sub[0].style.background=`rgb(${r},0,0)`;sub[1].style.background=`rgb(0,${g},0)`;sub[2].style.background=`rgb(0,0,${b})`;$('#mcR').setAttribute('fill',`rgb(${r},0,0)`);$('#mcG').setAttribute('fill',`rgb(0,${g},0)`);$('#mcB').setAttribute('fill',`rgb(0,0,${b})`);});
   const C=[['žlutá',255,255,0],['azurová',0,255,255],['purpurová',255,0,255],['bílá',255,255,255],['šedá',128,128,128],['černá',0,0,0]];
   $('#mChips').innerHTML=C.map((c,i)=>`<button class="chip" data-i="${i}">${c[0]}</button>`).join('');
   $('#mChips').onclick=e=>{const b=e.target.closest('[data-i]');if(b)m.set(...C[b.dataset.i].slice(1));};
