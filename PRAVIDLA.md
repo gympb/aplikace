@@ -188,7 +188,7 @@ portfolio/
 
 - Názvy všech složek jsou malá písmena bez diakritiky a mezer, slova se oddělují pomlčkou. Složka práce má tvar `prezdivka_nazev-prace` (mezi přezdívkou a názvem jedno podtržítko).
 - Zobrazované názvy (např. „Binární soustava“, „4A-SEN“) se berou z názvu složky. Název s diakritikou lze doplnit v `portfolio/nazvy.json` (klíč je název složky nebo celá cesta, hodnota zobrazovaný název). Žádné další soubory s údaji o práci se nepíšou.
-- **Autoři jsou uvedeni jen přezdívkou nebo iniciály.** Celá jména žáků se v portfoliu a v pracích nepoužívají.
+- **Autoři jsou uvedeni přezdívkou nebo iniciály, celým jménem jen s jejich souhlasem.** Při celém jméně je v názvu složky jméno bez diakritiky (`jan-novak_prevodnik`) a zobrazovaný tvar s diakritikou je v `portfolio/nazvy.json` (klíč `jan-novak`).
 - Práce nahrává vyučující, ověří, že splňuje pravidla z bodu 8, a **zodpovídá za její obsah**. Na žádost autora nebo zákonného zástupce se práce stáhne.
 - Platí totéž co pro aplikace: žádné cizí zdroje, žádná analytika, žádné odesílání dat.
 - **Jednotný rámec.** Každá zveřejněná práce má nahoře odkaz „← Zpět do portfolia“ (na složku tématu) a dole patičku „Gymnázium Příbram · Autor: přezdívka · Licence CC BY 4.0“. Rámec je v práci označen komentáři `gp-ramec` (styl, pruh, patička) a při úpravě se nahrazuje, ne zdvojuje. Fonty se berou ze sdíleného `assets/fonty/fonty.css` (od složky práce `../../../../../../assets/fonty/fonty.css`), ne z internetu.
