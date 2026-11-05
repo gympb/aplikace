@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Izomerie s Vondrysem</title>
-<meta name="description" content="Soutěžní hra na určování izomerie: konstituční izomery, cis/trans, enantiomery, diastereomery a konfigurace R/S na otočných 3D modelech.">
+<meta name="description" content="Soutěžní hra na určování izomerie: konstituční izomery, Z/E (cis/trans), enantiomery, diastereomery a konfigurace R/S na otočných 3D modelech.">
 <meta name="author" content="Zdeněk Vondrák">
 <meta name="theme-color" content="#20262F">
 <style>
@@ -199,7 +199,7 @@ const T={
  chain:{s:'Řetězová',n:'Řetězová',d:'jiné větvení řetězce',g:'k'},
  pos:{s:'Polohová',n:'Polohová',d:'skupina na jiném místě',g:'k'},
  func:{s:'Funkční',n:'Funkční (skupinová)',d:'jiná charakteristická skupina',g:'k'},
- cistrans:{s:'cis / trans',n:'Geometrická (cis/trans, Z/E)',d:'na dvojné vazbě nebo v cyklu',g:'s'},
+ cistrans:{s:'Z/E (cis/trans)',n:'Geometrická Z/E (cis/trans)',d:'na dvojné vazbě nebo v cyklu',g:'s'},
  enant:{s:'Enantiomery',n:'Enantiomery',d:'zrcadlové obrazy',g:'s'},
  diast:{s:'Diastereomery',n:'Diastereomery',d:'stereoizomery, které nejsou zrcadlové',g:'s'},
 };
@@ -212,8 +212,8 @@ const Q=[
  {a:'leu',b:'ile',r:'chain',e:'Leucin i isoleucin mají C₆H₁₃NO₂. Liší se větvením postranního řetězce (isobutyl × sec-butyl), proto jde o řetězovou izomerii. Isoleucin má navíc druhé stereocentrum.'},
  {a:'ala',b:'bala',r:'pos',e:'Aminoskupina je jednou na C2 (α-alanin), podruhé na C3 (β-alanin). Stejný řetězec i skupiny, jiná poloha = polohová izomerie. β-alanin je součástí koenzymu A.'},
  {a:'glc',b:'fru',r:'func',e:'Obě C₆H₁₂O₆. Glukosa je aldosa (aldehydická skupina –CHO), fruktosa ketosa (ketoskupina C=O uvnitř řetězce). Jiná charakteristická skupina = funkční izomerie.'},
- {a:'mal',b:'fum',r:'cistrans',e:'Kyselina maleinová je cis (Z), fumarová trans (E). Kolem dvojné vazby se nedá otáčet. Fumarová je meziprodukt citrátového cyklu, maleinová v těle nevzniká.'},
- {a:'ole',b:'ela',r:'cistrans',e:'Olejová kyselina (olivový olej) má dvojnou vazbu cis, elaidová trans. Trans-mastné kyseliny vznikají při částečném ztužování tuků a zvyšují riziko aterosklerózy.'},
+ {a:'mal',b:'fum',r:'cistrans',e:'Kyselina maleinová je Z (cis), fumarová E (trans). Kolem dvojné vazby se nedá otáčet. Fumarová je meziprodukt citrátového cyklu, maleinová v těle nevzniká.'},
+ {a:'ole',b:'ela',r:'cistrans',e:'Olejová kyselina (olivový olej) má dvojnou vazbu Z (cis), elaidová E (trans). Trans-mastné kyseliny vznikají při částečném ztužování tuků a zvyšují riziko aterosklerózy.'},
  {a:'ala',b:'dala',r:'enant',m:'mirror',e:'L-alanin (S) a D-alanin (R) jsou zrcadlové obrazy, které nelze ztotožnit = enantiomery. Bílkoviny tvoří L-aminokyseliny, D-alanin najdeme v buněčné stěně bakterií.'},
  {a:'ala',b:'ala_b',r:'same',m:'rot',e:'Chyták! Obě molekuly jsou L-alanin (S), jen jinak nakreslené a natočené. Zkuste je ve 3D natočit stejně: překryjí se.'},
  {a:'llac',b:'dlac',r:'enant',m:'mirror',e:'Kyselina L-mléčná (S) vzniká ve svalech při anaerobní glykolýze, D-mléčná (R) hlavně při bakteriálním kvašení. Jsou to zrcadlové obrazy = enantiomery.'},
@@ -301,7 +301,7 @@ function view(fn,wide){clearViewers();app.innerHTML='';app.className=wide?'wide'
 
 /* ---------- maskot ---------- */
 const rnd=a=>a[Math.random()*a.length|0];
-const TIPS=['Izomery mají stejný souhrnný vzorec, ale jinou strukturu.','Nejdřív spočítej atomy! Jiný souhrnný vzorec = nejsou izomery.','Natoč obě molekuly stejně. Když se dají přeložit přes sebe, je to stejná látka.','Enantiomery jsou zrcadlové obrazy, které nejdou ztotožnit. Jako levá a pravá ruka.','Diastereomery jsou stereoizomery, které nejsou zrcadlové.','Chirální uhlík nese čtyři různé substituenty.','Mezo-forma má stereocentra, ale vnitřní rovinu souměrnosti. Není chirální.','Cis/trans izomerie potřebuje dvojnou vazbu nebo kruh, který brání otáčení.','R/S: nejnižší prioritu (často H) natoč dozadu a jdi 1 → 2 → 3.','Po směru hodinových ručiček je R (rectus), proti směru S (sinister).','Prioritu určuje protonové číslo: O > N > C > H.','D/L u cukrů se řídí OH na posledním chirálním uhlíku ve Fischerově projekci.','α a β anomery glukosy se liší jen polohou OH na C1.','Epimery se liší konfigurací na jediném stereocentru, třeba glukosa a galaktosa (C4).','Bílkoviny stavíme z L-aminokyselin, i když vypadají jako S.','Thalidomid: jeden enantiomer tlumil nevolnost, druhý poškozoval plod.'];
+const TIPS=['Izomery mají stejný souhrnný vzorec, ale jinou strukturu.','Nejdřív spočítej atomy! Jiný souhrnný vzorec = nejsou izomery.','Natoč obě molekuly stejně. Když se dají přeložit přes sebe, je to stejná látka.','Enantiomery jsou zrcadlové obrazy, které nejdou ztotožnit. Jako levá a pravá ruka.','Diastereomery jsou stereoizomery, které nejsou zrcadlové.','Chirální uhlík nese čtyři různé substituenty.','Mezo-forma má stereocentra, ale vnitřní rovinu souměrnosti. Není chirální.','Z/E (cis/trans) izomerie potřebuje dvojnou vazbu nebo kruh, který brání otáčení.','R/S: nejnižší prioritu (často H) natoč dozadu a jdi 1 → 2 → 3.','Po směru hodinových ručiček je R (rectus), proti směru S (sinister).','Prioritu určuje protonové číslo: O > N > C > H.','D/L u cukrů se řídí OH na posledním chirálním uhlíku ve Fischerově projekci.','α a β anomery glukosy se liší jen polohou OH na C1.','Epimery se liší konfigurací na jediném stereocentru, třeba glukosa a galaktosa (C4).','Bílkoviny stavíme z L-aminokyselin, i když vypadají jako S.','Thalidomid: jeden enantiomer tlumil nevolnost, druhý poškozoval plod.'];
 let MT=0;
 function mascot(kind,ms){const m=document.getElementById('mw');if(!m||hd.classList.contains('cm'))return;
  m.classList.remove('roll','blink','spark','tilt','lookl','lookr','lookup');void m.offsetWidth;m.classList.add(kind);setTimeout(()=>m.classList.remove(kind),ms||1300)}
@@ -430,7 +430,7 @@ function tahak(){view(()=>{
   <div><b>funkční (skupinová)</b> – jiná charakteristická skupina <span class="ex">glukosa × fruktosa</span> <span class="ex">ethanol × dimethylether</span></div>
   <div><b>tautomerie</b> – přesun vodíku a dvojné vazby, tautomery jsou v rovnováze <span class="ex">keto- × enol-</span></div></div></div>
  <div class="node"><b>Stereoizomerie (prostorová)</b><p>stejné pořadí atomů, jiné prostorové uspořádání</p><div class="sub">
-  <div><b>geometrická (cis/trans, Z/E)</b> – na dvojné vazbě nebo v kruhu <span class="ex">kys. maleinová × fumarová</span></div>
+  <div><b>geometrická Z/E (cis/trans)</b> – na dvojné vazbě nebo v kruhu <span class="ex">kys. maleinová × fumarová</span></div>
   <div><b>enantiomery</b> – zrcadlové obrazy, nelze je ztotožnit; liší se otáčením roviny polarizovaného světla <span class="ex">L- × D-alanin</span></div>
   <div><b>diastereomery</b> – stereoizomery, které nejsou zrcadlové; mají různé fyzikální vlastnosti <span class="ex">glukosa × galaktosa</span><br>
    – <b>epimery</b>: liší se na jediném stereocentru · <b>anomery</b>: liší se na anomerním uhlíku (α × β)</div>
