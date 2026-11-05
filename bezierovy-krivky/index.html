@@ -194,7 +194,7 @@ select{font-size:14px;border:1px solid var(--line);background:var(--surface);bor
   #about{height:100%;min-height:0;overflow-y:auto}
   footer{grid-area:foot;max-width:none;font-size:12px}
 }
-@media (min-width:941px) and (max-width:1300px){
+@media (min-width:941px) and (max-width:1460px){
   .tabs button{padding:8px 11px 7px}
 }
 @media (max-width:940px){
@@ -229,6 +229,7 @@ select{font-size:14px;border:1px solid var(--line);background:var(--surface);bor
   <button class="t-b" role="tab" data-mode="build" aria-selected="true">Konstrukce</button>
   <button class="adv t-a" role="tab" data-mode="render" aria-selected="false">Vykreslení<span class="plus" title="Tato část může obsahovat učivo nad rámec přiřazených ročníků">PLUS</span></button>
   <button class="t-h" role="tab" data-mode="chain" aria-selected="false">Spojování</button>
+  <button class="adv t-h" role="tab" data-mode="spline" aria-selected="false">Spline<span class="plus" title="Tato část může obsahovat učivo nad rámec přiřazených ročníků">PLUS</span></button>
   <button class="adv t-a" role="tab" data-mode="svg" aria-selected="false">Zápis SVG<span class="plus" title="Tato část může obsahovat učivo nad rámec přiřazených ročníků">PLUS</span></button>
   <button class="t-b" role="tab" data-mode="game" aria-selected="false">Výzva</button>
   <button class="t-h" role="tab" data-mode="about" aria-selected="false">Jak to funguje</button>
@@ -384,6 +385,45 @@ stroke();</pre>
       </section>
     </div>
 
+    <div data-for="spline" hidden>
+      <section>
+        <h2>Co je spline</h2>
+        <p class="plus-note"><b>PLUS</b> značí obsah nad rámec učiva gymnázia. Tato záložka je určena zájemcům o matematiku a počítačovou grafiku.</p>
+        <p>Spline je křivka složená z krátkých úseků, které na sebe samy plynule navazují. Ty zadáš jen řadu bodů a pravidlo se postará o hladké napojení.</p>
+      </section>
+      <section>
+        <h2>Druh spline</h2>
+        <div class="btns" id="spKinds">
+          <button class="btn" data-kind="b">B-spline</button>
+          <button class="btn" data-kind="cr">Catmull-Rom</button>
+        </div>
+        <p id="spNote"></p>
+      </section>
+      <section>
+        <h2>Řídicí body</h2>
+        <div class="btns">
+          <button class="btn" id="spAdd">Přidat bod</button>
+          <button class="btn" id="spDel">Odebrat bod</button>
+        </div>
+        <p id="spInfo" aria-live="polite"></p>
+      </section>
+      <section>
+        <h2>Zobrazit</h2>
+        <div class="checks" style="grid-template-columns:1fr">
+          <label><input type="checkbox" id="spBez" checked>Bézierovy úseky</label>
+          <label><input type="checkbox" id="spPoly" checked>Řídicí polygon</label>
+          <label><input type="checkbox" id="spCmp">Jedna Bézierova křivka přes všechny body</label>
+        </div>
+        <p>Klepni na bod a uvidíš, které úseky ovlivňuje. Při zapnutém porovnání sleduj, že Bézierova křivka se při tažení změní celá.</p>
+      </section>
+      <section>
+        <h2>Vztah k Bézierově křivce</h2>
+        <p>Každý úsek kubické spline je kubická Bézierova křivka. Čtverečky a modrá kolečka jsou její body Q<sub>0</sub> až Q<sub>3</sub>. Úsek B-spline z bodů A, B, C, D má:</p>
+        <div class="formula" id="spForm"></div>
+        <div class="btns" style="margin-top:9px"><button class="btn" id="spToSvg">Rozebrat zápis</button></div>
+      </section>
+    </div>
+
     <div data-for="chain" hidden>
       <section>
         <h2>Složená křivka</h2>
@@ -500,6 +540,13 @@ stroke();</pre>
         <li><b>Rasterizace.</b> Obrazovka je mřížka pixelů. Pro každý pixel v okolí čáry se spočítá, jak velkou jeho část čára překrývá, a podle toho dostane barvu. Tomu se říká vyhlazování.</li>
       </ol>
       <p>Programátor to obvykle nepíše sám. V prohlížeči stačí zavolat <code>bezierCurveTo()</code> a předat mu řídicí body. Ostatní zařídí grafická knihovna.</p>
+      <h2>Spline a její vztah k Bézierově křivce<span class="plus" title="Tato část může obsahovat učivo nad rámec přiřazených ročníků">PLUS</span></h2>
+      <p>Spline je křivka složená z krátkých polynomiálních úseků, které na sebe plynule navazují. Slovo pochází z loďařství a technického kreslení: spline byla ohebná lišta, kterou kreslíř přidržel závažími a podle ní narýsoval hladkou křivku. Matematický pojem zavedl v roce 1946 Isaac Schoenberg.</p>
+      <p>Hlavní výhoda je místní řízení. U jedné Bézierovy křivky ovlivňuje každý bod celý tvar a s počtem bodů roste stupeň polynomu. U kubické spline zůstává stupeň 3 při libovolném počtu bodů a jeden bod mění jen několik sousedních úseků.</p>
+      <p>Spline a Bézierova křivka nejsou soupeři. Každý úsek kubické spline lze přesně zapsat jako kubickou Bézierovu křivku. Rozdíl je v tom, co zadáváš. U řetězu Bézierových úseků zadáváš všechny body sám a o hladké napojení se musíš postarat. U spline zadáš jen řídicí body a Bézierovy body se z nich dopočítají:</p>
+      <div class="show-f"><i>Q</i><sub>0</sub> = (<i>A</i> + 4<i>B</i> + <i>C</i>)/6,&ensp; <i>Q</i><sub>1</sub> = (2<i>B</i> + <i>C</i>)/3,&ensp; <i>Q</i><sub>2</sub> = (<i>B</i> + 2<i>C</i>)/3,&ensp; <i>Q</i><sub>3</sub> = (<i>B</i> + 4<i>C</i> + <i>D</i>)/6</div>
+      <p>Tady <i>A</i>, <i>B</i>, <i>C</i>, <i>D</i> jsou čtyři po sobě jdoucí řídicí body kubické B-spline. Díky tomu navazují úseky nejen směrem a rychlostí, ale i křivostí. Catmull-Romova spline se počítá jinak: prochází přímo zadanými body, zato křivost v uzlech skáče.</p>
+      <p>Převod se používá běžně. SVG žádný příkaz pro spline nemá, takže kreslicí programy spline ukládají jako řadu příkazů C. Vztah platí i opačně: Bézierova křivka je zvláštní případ B-spline. Zobecněním obou jsou křivky NURBS, se kterými pracují programy pro konstrukci.</p>
       </div>
       <h2>Co platí pro každou Bézierovu křivku</h2>
       <ul>
@@ -549,7 +596,7 @@ stroke();</pre>
     </div>
   </article>
 </main>
-<footer>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 4. 11. 2026</footer>
+<footer>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs">CC BY 4.0</a> · Aktualizace: 5. 11. 2026</footer>
 </div>
 
 <script>
@@ -597,6 +644,8 @@ const state={level:"basic",mode:"build",t:0,playing:false,sel:null,drag:null};
 const build={pts:[],reveal:3,preset:null,show:{poly:true,cons:true,hull:false,tan:false,ticks:false,comb:false}};
 const render_={step:"samples",n:8,px:16,aa:true,adaptive:false};
 const NS=[1,2,3,4,6,8,12,16,24,32,48,64];
+const spline={pts:pts([[100,430],[230,150],[370,470],[500,130],[640,480],[770,170],[900,410]]),kind:"b",bez:true,poly:true,cmp:false};
+const SPMAX=10;
 const chain={nodes:[],closed:false,fill:false,sel:null,preset:null};
 const game={sharp:0,free:2,target:[],user:[],revealed:false,solved:false,streak:0,score:0};
 
@@ -662,7 +711,7 @@ function drawAxes(){const S=view.s,tip=px(17),sx=100*S<44?200:100,sy=100*S<24?20
   dot(P(0,0),5.5,INK);}
 function draw(){if(state.mode==="about")return;paper();
   if(axesOn()&&!(state.mode==="render"&&render_.step==="pixels"))drawAxes();
-  if(state.mode==="build")drawBuild();else if(state.mode==="render")drawRender();else if(state.mode==="svg")drawSvg();else if(state.mode==="chain")drawChain();else drawGame();}
+  if(state.mode==="build")drawBuild();else if(state.mode==="render")drawRender();else if(state.mode==="svg")drawSvg();else if(state.mode==="spline")drawSpline();else if(state.mode==="chain")drawChain();else drawGame();}
 
 function drawBuild(){const p=build.pts,n=p.length-1,t=state.t,s=build.show,L=casteljau(p,t);
   if(s.hull){const h=hull(p);ctx.beginPath();h.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.closePath();ctx.fillStyle=TH.hullF;ctx.fill();line(TH.hullL,1.5);}
@@ -684,6 +733,28 @@ function drawComb(p){const d1=deriv(p),d2=d1.length>1?deriv(d1):null;if(!d2)retu
   for(let i=0;i<=140;i++){const t=i/140,q=bez(p,t),v=bez(d1,t),a=bez(d2,t),sp=Math.hypot(v.x,v.y);if(sp<1)continue;
     const k=(v.x*a.y-v.y*a.x)/(sp*sp*sp),l=clamp(k*14000,-150,150),tip=P(q.x-v.y/sp*l,q.y+v.x/sp*l);tips.push(tip);ctx.moveTo(q.x,q.y);ctx.lineTo(tip.x,tip.y);}
   line("rgba(111,59,176,.35)",1);polyline(tips,"rgba(111,59,176,.8)",1.5);}
+
+/* Spline: každý úsek se počítá a kreslí jako kubická Bézierova křivka */
+function splineSegs(){const p=spline.pts,n=p.length,bs=spline.kind==="b",k=bs?2:1,idx=[...Array(k).fill(0),...p.map((_,i)=>i),...Array(k).fill(n-1)],S=[],mix=(w,D,...q)=>P(q.reduce((v,c,i)=>v+w[i]*c.x,0)/D,q.reduce((v,c,i)=>v+w[i]*c.y,0)/D);
+  for(let i=0;i+3<idx.length;i++){const ids=idx.slice(i,i+4),[a,b,c,d]=ids.map(j=>p[j]);
+    S.push({ids,q:bs?[mix([1,4,1],6,a,b,c),mix([2,1],3,b,c),mix([1,2],3,b,c),mix([1,4,1],6,b,c,d)]:[clone(b),P(b.x+(c.x-a.x)/6,b.y+(c.y-a.y)/6),P(c.x-(d.x-b.x)/6,c.y-(d.y-b.y)/6),clone(c)]});}
+  return S;}
+function drawSpline(){const p=spline.pts,S=splineSegs(),sel=state.sel;
+  if(spline.poly)polyline(p,TH.soft,1.4,[7,6]);
+  if(spline.cmp){curvePath(p);line(TH.ok,2.4,[9,7]);}
+  if(sel!==null)S.forEach(s=>{if(s.ids.includes(sel)){curvePath(s.q);line(TH.hl,13);}});
+  S.forEach(s=>{curvePath(s.q);line(PEN,4);});
+  if(spline.bez){S.forEach(s=>{polyline([s.q[0],s.q[1]],TH.softA,1.3);polyline([s.q[3],s.q[2]],TH.softA,1.3);dot(s.q[1],4,PC[0]);dot(s.q[2],4,PC[0]);});
+    S.forEach((s,i)=>[...(i?[]:[s.q[0]]),s.q[3]].forEach(q=>{const r=px(4.5);ctx.fillStyle=INK;ctx.fillRect(q.x-r,q.y-r,2*r,2*r);}));}
+  p.forEach((q,i)=>{dot(q,9,PC[i%PC.length]);if(sel===i){ctx.beginPath();ctx.arc(q.x,q.y,px(14),0,7);line(PC[i%PC.length],2);}label("P"+SUB[i],q,PC[i%PC.length]);});}
+function updateSpline(){const n=spline.pts.length,S=splineSegs(),sel=state.sel!==null&&state.sel<n?state.sel:null,w=(k,a,b,c)=>k===1?a:k<5?b:c;state.sel=sel;
+  $$("#spKinds button").forEach(b=>b.classList.toggle("on",b.dataset.kind===spline.kind));
+  $("#spNote").textContent=spline.kind==="b"?"Křivka zadanými body obvykle neprochází, jen se k nim přimyká. Úseky navazují směrem, rychlostí i křivostí.":"Křivka prochází všemi zadanými body. Navazuje směrem a rychlostí, křivost v uzlech skáče.";
+  const hit=sel===null?0:S.filter(s=>s.ids.includes(sel)).length;
+  $("#spInfo").innerHTML=`${n} ${w(n,"bod","body","bodů")}, ${S.length} ${w(S.length,"úsek","úseky","úseků")}, stupeň stále 3.`+(sel===null?"":` Bod P<sub>${sel}</sub> ovlivňuje ${hit} z ${S.length} úseků.`);
+  $("#spForm").innerHTML="Q<sub>0</sub> = (A + 4B + C)/6<br>Q<sub>1</sub> = (2B + C)/3<br>Q<sub>2</sub> = (B + 2C)/3<br>Q<sub>3</sub> = (B + 4C + D)/6";
+  $("#spAdd").disabled=n>=SPMAX;$("#spDel").disabled=n<=4;render();}
+function splineD(){const S=splineSegs(),r=v=>Math.round(v),q=S[0].q;return `M${r(q[0].x)} ${r(q[0].y)} `+S.map(s=>`C${r(s.q[1].x)} ${r(s.q[1].y)} ${r(s.q[2].x)} ${r(s.q[2].y)} ${r(s.q[3].x)} ${r(s.q[3].y)}`).join(" ");}
 
 /* Zápis SVG: čtení cesty, výpočet bodů, rozbor */
 const svgS={cmds:[],sel:1,err:""};
@@ -895,13 +966,15 @@ function scoreGame(){const samp=L=>{const g=gsegs(L),c=Math.ceil(80/g.length),o=
   $$("#gameLevels button").forEach(b=>b.classList.toggle("on",game.sharp?+b.dataset.sharp===game.sharp:+b.dataset.free===game.free));render();}
 
 /* Ovládání ukazatelem */
-function hitList(){if(state.mode==="svg"){const r=[];svgS.cmds.forEach((c,ci)=>c.pts.forEach((p,pi)=>r.push({q:p.q,kind:"s",ci,pi})));return r;}
+function hitList(){if(state.mode==="spline")return spline.pts.map((q,i)=>({q,kind:"sp",i})).reverse();
+  if(state.mode==="svg"){const r=[];svgS.cmds.forEach((c,ci)=>c.pts.forEach((p,pi)=>r.push({q:p.q,kind:"s",ci,pi})));return r;}
   if(state.mode==="build"||state.mode==="render")return build.pts.map((q,i)=>({q,kind:"p",i})).reverse();
   if(state.mode==="game")return game.user.map((q,i)=>({q,kind:"g",i})).slice(1,-1);
   const r=[];chain.nodes.forEach((n,i)=>r.push({q:n,kind:"n",i}));chain.nodes.forEach((n,i)=>{for(const k of["hi","ho"])if(handleVisible(i,k))r.push({q:n[k],kind:k,i});});return r;}
 function hit(w){const R=px(26);let best=null,bd=R;for(const h of hitList()){const d=Math.hypot(h.q.x-w.x,h.q.y-w.y);if(d<bd-px(2)){bd=d;best=h;}}return best;}
 function moveTo(h,x,y){x=clamp(x,0,W);y=clamp(y,0,H);
   if(h.kind==="p"){build.pts[h.i]=P(x,y);if(build.preset){build.preset=null;$("#presetNote").textContent="";markPresets();}updateBuild();if(state.mode==="render")updateRender();render();}
+  else if(h.kind==="sp"){spline.pts[h.i]=P(x,y);updateSpline();}
   else if(h.kind==="s"){const c=svgS.cmds[h.ci],p=c.pts[h.pi],bx=c.rel?c.p0.x:0,by=c.rel?c.p0.y:0;x=Math.round(x);y=Math.round(y);
     if(p.ax==="x")c.args[p.i]=x-bx;else if(p.ax==="y")c.args[p.i]=y-by;else{c.args[p.i]=x-bx;c.args[p.i+1]=y-by;}
     resolveD(svgS.cmds);svgS.err="";$("#svgNote").textContent="";updateSvg();}
@@ -910,7 +983,7 @@ function moveTo(h,x,y){x=clamp(x,0,W);y=clamp(y,0,H);
   else{const n=chain.nodes[h.i];n[h.kind]=P(x,y);aligned(n,h.kind);chain.preset=null;updateChain();}}
 cv.addEventListener("pointerdown",e=>{if(e.button)return;const w=toWorld(e),h=hit(w);cv.focus({preventScroll:true});
   if(h){state.drag={...h,ox:h.q.x-w.x,oy:h.q.y-w.y};cv.setPointerCapture(e.pointerId);
-    if(h.kind==="s"){svgS.sel=h.ci;updateSvg();}else if(h.kind==="n"||h.kind==="hi"||h.kind==="ho"){chain.sel=h.i;updateChain();}else state.sel=h.i;render();}
+    if(h.kind==="sp"){state.sel=h.i;updateSpline();}else if(h.kind==="s"){svgS.sel=h.ci;updateSvg();}else if(h.kind==="n"||h.kind==="hi"||h.kind==="ho"){chain.sel=h.i;updateChain();}else state.sel=h.i;render();}
   else if(state.mode==="chain"&&w.x>=0&&w.x<=W&&w.y>=0&&w.y<=H)addNode(w);
   else if(state.mode==="chain"){chain.sel=null;updateChain();}});
 cv.addEventListener("pointermove",e=>{const w=toWorld(e);if(state.drag){const d=state.drag;moveTo(d,w.x+d.ox,w.y+d.oy);}else cv.style.cursor=hit(w)?"grab":state.mode==="chain"?"crosshair":"default";});
@@ -918,9 +991,10 @@ const endDrag=()=>{state.drag=null;};cv.addEventListener("pointerup",endDrag);cv
 cv.addEventListener("dblclick",e=>{if(state.mode!=="build")return;const w=toWorld(e),h=hit(w);if(h)delPoint(h.i);else addPoint(w);});
 cv.addEventListener("keydown",e=>{const m=state.mode;
   if(e.key===" "){e.preventDefault();togglePlay();return;}
-  if(/^[1-8]$/.test(e.key)){const i=+e.key-1;if((m==="build"||m==="render")&&i<build.pts.length)state.sel=i;else if(m==="game"&&i>0&&i<game.user.length-1)state.sel=i;else if(m==="chain"&&i<chain.nodes.length){chain.sel=i;updateChain();}render();return;}
+  if(/^[1-8]$/.test(e.key)){const i=+e.key-1;if((m==="build"||m==="render")&&i<build.pts.length)state.sel=i;else if(m==="spline"&&i<spline.pts.length){state.sel=i;updateSpline();}else if(m==="game"&&i>0&&i<game.user.length-1)state.sel=i;else if(m==="chain"&&i<chain.nodes.length){chain.sel=i;updateChain();}render();return;}
   const dir={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(!dir)return;
   const st=e.shiftKey?2:10;let h=null;
+  if(m==="spline"&&state.sel!==null)h={kind:"sp",i:state.sel,q:spline.pts[state.sel]};
   if((m==="build"||m==="render")&&state.sel!==null)h={kind:"p",i:state.sel,q:build.pts[state.sel]};
   if(m==="game"&&state.sel!==null)h={kind:"g",i:state.sel,q:game.user[state.sel]};
   if(m==="chain"&&chain.sel!==null)h={kind:"n",i:chain.sel,q:chain.nodes[chain.sel]};
@@ -951,6 +1025,13 @@ $("#delNode").onclick=()=>{if(chain.sel===null)return;chain.nodes.splice(chain.s
 $("#closed").onchange=e=>{chain.closed=e.target.checked;chain.preset=null;updateChain();};
 $("#fill").onchange=e=>{chain.fill=e.target.checked;updateChain();};
 $("#copySvg").onclick=async e=>{const o=$("#svgOut"),b=e.target;try{await navigator.clipboard.writeText(o.value);}catch{o.select();document.execCommand("copy");}b.textContent="Zkopírováno";setTimeout(()=>b.textContent="Kopírovat",1400);};
+$("#spKinds").onclick=e=>{const k=e.target.dataset.kind;if(k){spline.kind=k;updateSpline();}};
+$("#spAdd").onclick=()=>{const p=spline.pts;if(p.length>=SPMAX)return;const a=p[p.length-2],b=p[p.length-1];p.push(P(clamp(b.x+60,30,W-30),clamp(a.y,30,H-30)));for(let i=0;i<p.length;i++)p[i]=P(70+860*i/(p.length-1),p[i].y);state.sel=null;updateSpline();};
+$("#spDel").onclick=()=>{if(spline.pts.length>4){spline.pts.pop();state.sel=null;updateSpline();}};
+$("#spBez").onchange=e=>{spline.bez=e.target.checked;render();};
+$("#spPoly").onchange=e=>{spline.poly=e.target.checked;render();};
+$("#spCmp").onchange=e=>{spline.cmp=e.target.checked;render();};
+$("#spToSvg").onclick=()=>{loadD(splineD(),"Tvoje spline zapsaná jako řada kubických úseků C. SVG žádný příkaz pro spline nemá.");setMode("svg");};
 $("#gameLevels").onclick=e=>{const f=+e.target.dataset.free,v=+e.target.dataset.sharp;if(f){game.free=f;game.sharp=0;newGame();}else if(v){game.sharp=v;newGame();}};
 $("#newGame").onclick=newGame;
 $("#reveal").onclick=()=>{game.revealed=true;scoreGame();};
@@ -979,16 +1060,16 @@ function setLevel(l){state.level=l;document.body.dataset.level=l;
   $$(".lvl button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.level===l));
   try{localStorage.setItem("bezier-uroven",l);}catch{}
   $("#t").setAttribute("aria-label",adv()?"Parametr t":"Postup po křivce");
-  if(!adv()&&(state.mode==="render"||state.mode==="svg"))setMode("build");
+  if(!adv()&&["render","svg","spline"].includes(state.mode))setMode("build");
   const bp=PRESETS.find(p=>p.id===build.preset),cp=CHAINS.find(p=>p.id===chain.preset);
   if(bp)$("#presetNote").textContent=noteOf(bp);if(cp)$("#chainNote").textContent=noteOf(cp);
   layout();rebuildWeights();setT(state.t);updateChain();drawCar();render();}
 $$(".lvl button").forEach(b=>b.onclick=()=>setLevel(b.dataset.level));
-function setMode(m){state.mode=m;document.body.className="t-"+({build:"b",game:"b",render:"a",svg:"a",chain:"h",about:"h"})[m];state.sel=null;state.drag=null;if(state.playing)togglePlay();
+function setMode(m){state.mode=m;document.body.className="t-"+({build:"b",game:"b",render:"a",svg:"a",chain:"h",spline:"h",about:"h"})[m];state.sel=null;state.drag=null;if(state.playing)togglePlay();
   $$("[role=tab]").forEach(b=>b.setAttribute("aria-selected",b.dataset.mode===m));
   $$("#panel>div").forEach(d=>d.hidden=d.dataset.for!==m);
-  const ab=m==="about";$("#stage").hidden=$("#panel").hidden=ab;$("#about").hidden=!ab;$("#tbar").hidden=m==="game"||m==="svg";
-  if(!ab){layout();if(m==="build"){updateBuild();}else if(m==="render")updateRender();else if(m==="svg")updateSvg();else if(m==="chain")updateChain();else if(!game.target.length)newGame();else scoreGame();render();}}
+  const ab=m==="about";$("#stage").hidden=$("#panel").hidden=ab;$("#about").hidden=!ab;$("#tbar").hidden=m==="game"||m==="svg"||m==="spline";
+  if(!ab){layout();if(m==="build"){updateBuild();}else if(m==="render")updateRender();else if(m==="spline")updateSpline();else if(m==="svg")updateSvg();else if(m==="chain")updateChain();else if(!game.target.length)newGame();else scoreGame();render();}}
 $$("[role=tab]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 new ResizeObserver(()=>{layout();if(state.mode==="build")drawBern();draw();}).observe(sheet);
 
