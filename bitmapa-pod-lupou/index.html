@@ -511,7 +511,7 @@ canvas#ed{touch-action:none;cursor:crosshair}
   <div class="levels">
     <button class="lv l1" data-go="r1"><span class="mini ct" data-s="s-ok"></span><small>kurz</small><b>Začátečník</b><span>Základy: pixel, RGB, rozlišení, velikost souboru a tisk. S maskotem Čtverákem a hrou.</span></button>
     <button class="lv l4" data-go="r4"><small>kurz</small><b>Pokročilý</b><span>Barevná hloubka, displeje, DPI, výpočty, komprese, formáty, procvičování a test.</span></button>
-    <button class="lv lp" data-go="pro"><small>příručka</small><b>Profesionál<span class="plus" title="Tato část může obsahovat učivo nad rámec přiřazených ročníků">PLUS</span></b><span>Vzorkování, gama, konvoluce, jak uvnitř funguje JPEG, BMP a PNG, snímač a web.</span></button>
+    <button class="lv lp" data-go="pro"><small>příručka</small><b>Profesionál<span class="plus" title="Tato část může obsahovat učivo nad rámec přiřazených ročníků">PLUS</span></b><span>Vzorkování, gama, konvoluce, jak uvnitř funguje BMP a PNG, snímač a web.</span></button>
     <div class="toolcol">
       <button class="lv tool" data-go="lab"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M7 7h3v3H7zM10 10h3v3h-3z" fill="currentColor"/></svg><small>nástroj pro všechny úrovně</small><b>Laboratoř</b><span>Vlastní obrázek, JPEG, kalkulačky</span></button>
       <button class="lv tool" data-go="tahak"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 11h7M9 15h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><small>nástroj pro všechny úrovně</small><b>Tahák</b><span>Pojmy, vzorce a tabulky</span></button>
@@ -1162,7 +1162,7 @@ canvas#ed{touch-action:none;cursor:crosshair}
         <div class="why">Displej potřebuje pro každý pixel konkrétní hodnoty. 12 Mpx v paměti obvykle zabere 36 až 48 MB.</div></div>
       <div class="qres"><div class="cj-row"><span class="ct" data-s="s-win"></span><div class="say"><b class="who">Čtverák</b><span class="score"></span><p class="qsay"></p></div></div>
         <div class="box tip"><span class="lbl">Co si odnášíš</span><ul class="check" style="list-style:disc"><li>Bitmapa vzniká vzorkováním, kvantováním a kódováním.</li><li>Velikost bez komprese = šířka × výška × bity na pixel / 8.</li><li>PPI = úhlopříčka v pixelech / úhlopříčka v palcích. Pixely = palce × DPI.</li><li>RLE a PNG obraz zachovají, JPEG část informací zahodí a ztráty se sčítají.</li><li>Formát vybírej podle obsahu: fotka, kresba, průhlednost, další úpravy.</li></ul></div>
-        <div class="links2"><a href="#lab" data-go="lab">Zkus to na vlastním obrázku v Laboratoři →</a><a href="#profesional" data-go="pro">Co je uvnitř JPEG? Příručka Profesionál →</a></div>
+        <div class="links2"><a href="#lab" data-go="lab">Zkus to na vlastním obrázku v Laboratoři →</a><a href="#profesional" data-go="pro">Pokračuj v příručce Profesionál →</a></div>
         <div><button class="btn qreset">Zkusit test znovu</button></div></div>
     </div>
     <div class="box try"><span class="lbl">Praktický úkol</span>
@@ -1344,27 +1344,54 @@ canvas#ed{touch-action:none;cursor:crosshair}
   <div class="ptoc" id="ptoc"></div>
 </section>
 
-<section id="pSample"><div><h2>Pixel není čtvereček</h2></div>
-  <p>Pixel je <b>bodový vzorek</b> signálu, ne plocha. Čtvereček je jen způsob, jakým se vzorek zobrazí: na displeji má tvar subpixelů, při tisku kapek. Alvy Ray Smith, spoluzakladatel Pixaru, to v roce 1995 shrnul v memu <i>A Pixel Is Not A Little Square</i>. Odlišení je praktické: kdo chápe pixel jako čtverec, snadno dojde k metodě „nejbližší soused“ a nechtěným artefaktům.</p>
-  <p>Podle <b>vzorkovací věty</b> lze signál obnovit, jen když nejvyšší frekvence v něm je nižší než polovina vzorkovací frekvence. Co je jemnější, se nevytratí, ale <b>přeloží se na falešný nízkofrekvenční vzor</b>. Tomu se říká aliasing, u obrazu moiré.</p>
+<section id="pSample"><div><h2>Proč se pixely při zmenšení nesmějí jen vynechat</h2></div>
+  <p><b>Proč to tady je:</b> zmenšování je jedna z nejčastějších operací s obrázky, dělá se při každém náhledu a každé fotce na webu. Nejsnazší postup, vzít každý n-tý pixel, ale do obrázku přidá vzory, které v něm nikdy nebyly. Stejný jev znáte z běžného života: proužkovaná košile se v televizi vlní, fotka monitoru má duhové pruhy a kola auta ve filmu se zdánlivě točí pozpátku. Říká se mu <b>aliasing</b>, u obrazu <b>moiré</b>.</p>
+  <h3>Pixel je vzorek, ne čtvereček</h3>
+  <p>Pixel je jedna hodnota změřená v jednom místě. Co se děje mezi dvěma pixely, soubor neví. Čtvereček je jen způsob, jak vzorek zobrazit. Alvy Ray Smith, spoluzakladatel Pixaru, to v roce 1995 shrnul v textu <i>A Pixel Is Not A Little Square</i>.</p>
+  <h3>Dva vzorky na jeden kmit</h3>
+  <p>Střídání světlého a tmavého pruhu je kmit. Aby vzorky kmit zachytily, musí na něj připadnout <b>víc než dva</b>: aspoň jeden na světlý a jeden na tmavý pruh. To říká <b>vzorkovací věta</b>. Když je vzorků méně, proloží se jimi úplně jiná, pomalejší vlna. Vyzkoušejte to: počet vzorků je pevně 12, hranice je tedy 6 kmitů.</p>
   <div class="panel">
-    <div class="sl"><label for="moS">Zmenšení</label><output id="moV"></output><input type="range" id="moS" min="1" max="8" step="1" value="3"></div>
-    <div class="duo">
-      <figure><canvas id="moA" width="240" height="240" class="px"></canvas><figcaption>Každý n-tý pixel: bez předfiltru. Objevují se falešné kruhy.</figcaption></figure>
-      <figure><canvas id="moB" width="240" height="240" class="px"></canvas><figcaption>Průměr z oblasti: předfiltr falešné kruhy výrazně potlačí.</figcaption></figure>
-    </div>
+    <div class="sl"><label for="wvS">Kmitů ve skutečném signálu</label><output id="wvV"></output><input type="range" id="wvS" min="1" max="11" step="0.5" value="9"></div>
+    <canvas id="wvC" width="640" height="160" class="px pst" role="img" aria-label="Skutečná vlna, vzorky a vlna, kterou vzorky ukazují"></canvas>
+    <div class="legend"><span style="--k:var(--muted)"><i></i>skutečný signál</span><span style="--k:var(--accent)"><i></i>12 vzorků</span><span style="--k:var(--k1)"><i></i>co vzorky ukazují</span></div>
+    <p class="note" id="wvT"></p>
   </div>
-  <p>Před zmenšením obrázku proto vždy filtrujte. <code>drawImage</code> s výchozím <code>imageSmoothingQuality</code> při silném zmenšení filtruje slabě, u velkých poměrů zmenšujte po krocích.</p>
+  <h3>Totéž na obrázku</h3>
+  <p>Předloha má 960 × 960 pixelů a jsou v ní soustředné kruhy, které směrem k okraji houstnou. Po zmenšení na 120 × 120 už nejjemnější pruhy nemají na pixelu místo. Posuňte zmenšení a porovnejte oba postupy.</p>
+  <div class="panel">
+    <div class="sl"><label for="moS">Zmenšení</label><output id="moV"></output><input type="range" id="moS" min="1" max="8" step="1" value="7"></div>
+    <div class="duo">
+      <figure><canvas id="moO" width="240" height="240" class="px pst"></canvas><figcaption>Výřez předlohy od okraje: jen jemné pruhy, žádné kruhy navíc.</figcaption></figure>
+      <figure><canvas id="moA" width="240" height="240" class="px"></canvas><figcaption><b>Každý n-tý pixel:</b> z pruhů vznikly falešné kruhy po celé ploše. V předloze nejsou.</figcaption></figure>
+      <figure><canvas id="moB" width="240" height="240" class="px"></canvas><figcaption><b>Průměr z oblasti:</b> příliš jemné pruhy splynuly do šedé, což je správně.</figcaption></figure>
+    </div>
+    <p>Šedá plocha není chyba. Detail menší než nový pixel zobrazit nejde, poctivý výsledek je jeho průměrná hodnota. Slabé zbytky kruhů vpravo ukazují, že prostý průměr není dokonalý, kvalitnější filtry jako bikubický nebo Lanczos je potlačí ještě víc.</p>
+  </div>
+  <h3>Co z toho plyne v praxi</h3>
+  <ul class="check" style="list-style:disc">
+    <li>Před zmenšením musí jemné detaily zmizet, tedy obraz se zprůměruje. Tomu se říká <b>předfiltr</b>. Teprve potom se vzorkuje.</li>
+    <li>V editoru zvolte při zmenšení bikubickou metodu nebo Lanczos, ne nejbližšího souseda.</li>
+    <li>V prohlížeči <code>drawImage</code> ve výchozím nastavení počítá jen z malého okolí a při zmenšení na méně než polovinu kvalita klesá. Zapněte vyšší kvalitu, nebo zmenšujte po krocích na polovinu.</li>
+  </ul>
+  <pre class="code">ctx.imageSmoothingEnabled = true;
+ctx.imageSmoothingQuality = 'high';
+ctx.drawImage(foto, 0, 0, sirka, vyska);</pre>
 </section>
 
-<section id="pGamma"><div><h2>Gama: hodnoty pixelu nejsou světlo</h2></div>
-  <p>Zrak vnímá jas nelineárně, proto se hodnoty ukládají v nelineárním kódování sRGB. Hodnota 128 není polovina světla, ale jen asi 21 % světla hodnoty 255. Průměrování přímo v sRGB je proto chybné: zmenšení jemného černobílého vzoru ztmaví obraz.</p>
+<section id="pGamma"><div><h2>Gama: hodnota pixelu není množství světla</h2></div>
+  <p><b>Proč to tady je:</b> každý program, který obrázky zmenšuje, rozmazává nebo prolíná, počítá průměry hodnot pixelů. Kdo nezná gamu, počítá je špatně. Zmenšené fotky pak tmavnou a přechody mezi barvami jsou špinavé, a chyba se špatně hledá, protože kód vypadá správně.</p>
+  <h3>Odkud se to bere</h3>
+  <p>Oko rozliší mnohem víc tmavých odstínů než světlých. Kdyby se osm bitů rozdělilo rovnoměrně podle množství světla, ve stínech by byly vidět pásy a ve světlech by se odstíny plýtvaly. Proto se hodnoty ukládají nerovnoměrně, v kódování <b>sRGB</b>: tmavým odstínům připadne víc čísel.</p>
+  <p>Hodnota pixelu proto <b>není úměrná světlu</b>. Polovina stupnice, 128, vyzáří jen asi 21 % světla hodnoty 255. Skutečná polovina světla odpovídá hodnotě asi 188.</p>
+  <h3>Ověřte si to okem</h3>
+  <p>Střídání černých a bílých řádků vyzařuje v průměru přesně polovinu světla. Odstupte nebo přimhuřte oči a porovnejte pruhy se šedou vedle nich.</p>
   <div class="panel">
     <div class="duo">
-      <figure><canvas id="gaA" width="240" height="120" class="px"></canvas><figcaption>Vlevo střídání černých a bílých řádků. Vpravo šedá 128. Přimhuřte oči: pole nesedí.</figcaption></figure>
-      <figure><canvas id="gaB" width="240" height="120" class="px"></canvas><figcaption>Stejné řádky a šedá 188, tedy skutečná polovina světla.</figcaption></figure>
+      <figure><canvas id="gaA" width="240" height="120" class="px"></canvas><figcaption>Řádky a šedá 128, kterou by dal prostý průměr: šedá je znatelně tmavší.</figcaption></figure>
+      <figure><canvas id="gaB" width="240" height="120" class="px"></canvas><figcaption>Řádky a šedá 188, skutečná polovina světla: obě pole splývají.</figcaption></figure>
     </div>
   </div>
+  <p><b>Co z toho plyne:</b> před průměrováním hodnoty převeďte na lineární, spočítejte výsledek a převeďte zpět.</p>
   <pre class="code">// sRGB → lineární hodnota (c od 0 do 1)
 linear = c &lt;= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
 // lineární → sRGB
@@ -1373,6 +1400,7 @@ srgb = l &lt;= 0.0031308 ? 12.92 * l : 1.055 * l ** (1 / 2.4) - 0.055
 </section>
 
 <section id="pKernel"><div><h2>Konvoluce: filtry jsou jedna operace</h2></div>
+  <p><b>Proč to tady je:</b> každý editor má filtry Rozostření, Doostření a Hledání hran a na první pohled jde o různé funkce. Ve skutečnosti je to jediná operace s jinými čísly. Stejně funguje i předfiltr z první kapitoly příručky a první vrstvy neuronových sítí, které rozpoznávají obraz. Kdo ji pochopí, umí si napsat vlastní filtr.</p>
   <p>Rozmazání, doostření i hledání hran jsou táž operace s jinou maticí: nová hodnota pixelu je vážený součet okolí. Matici můžete přepisovat.</p>
   <div class="panel">
     <div class="chips" id="keTpl"></div>
@@ -1384,31 +1412,8 @@ srgb = l &lt;= 0.0031308 ? 12.92 * l : 1.055 * l ** (1 / 2.4) - 0.055
   </div>
 </section>
 
-<section id="pJpeg"><div><h2>Jak funguje JPEG uvnitř</h2></div>
-  <ol class="steps">
-    <li><b>RGB → YCbCr.</b> Oddělí se jas (Y) a dvě barevné složky: <code>Y = 0,299 R + 0,587 G + 0,114 B</code></li>
-    <li><b>Podvzorkování barev.</b> Oko má pro barvu nižší rozlišení než pro jas, varianta 4:2:0 ukládá Cb a Cr v poloviční šířce i výšce. Data se tím sníží o polovinu.</li>
-    <li><b>DCT.</b> Bloky 8 × 8 se převedou z pixelů na 64 koeficientů: jak moc je v bloku kterého vzoru, od plochy po jemný detail.</li>
-    <li><b>Kvantování.</b> Koeficienty se vydělí tabulkou a zaokrouhlí. Tady vzniká ztráta. Vysoké frekvence končí jako nuly.</li>
-    <li><b>Entropické kódování.</b> Klikaté čtení bloku seskupí nuly, následuje RLE a Huffmanovo kódování.</li>
-  </ol>
-  <div class="panel"><h3>Jeden blok 8 × 8</h3>
-    <div class="chips" id="dcTpl"></div>
-    <div class="sl"><label for="dcS">Síla kvantování</label><output id="dcV"></output><input type="range" id="dcS" min="1" max="100" value="30"></div>
-    <div class="duo">
-      <figure><canvas id="dcA" width="8" height="8" class="px" style="max-width:200px"></canvas><figcaption>Původní blok (jas).</figcaption></figure>
-      <figure><div class="dct" id="dcG"></div><figcaption id="dcT"></figcaption></figure>
-      <figure><canvas id="dcB" width="8" height="8" class="px" style="max-width:200px"></canvas><figcaption>Blok po zpětné DCT.</figcaption></figure>
-    </div>
-  </div>
-  <div class="panel"><h3>Podvzorkování barev</h3>
-    <label class="chk"><input type="checkbox" id="chC" checked> Použít 4:2:0</label>
-    <canvas id="chA" width="120" height="48" class="px"></canvas>
-    <p class="muted" style="font-size:.9rem">Červený text na modré: jas se téměř nemění, celá informace je v barvě. Proto u takových kombinací bývá text po kompresi JPEG „rozpitý“. Na fotografii ten samý zásah nevidíte.</p>
-  </div>
-</section>
-
 <section id="pBmp"><div><h2>BMP bajt po bajtu</h2></div>
+  <p><b>Proč to tady je:</b> BMP je nejjednodušší běžný formát, proto je na něm vidět, co všechno soubor kromě pixelů obsahuje a proč nejde jen „zapsat barvy za sebou“. Hodí se to každému, kdo bude soubory číst nebo opravovat vlastním programem. Stejné principy, tedy hlavička, pořadí bajtů a zarovnání, se vracejí v každém dalším formátu.</p>
   <p>BMP je nejsnazší formát k prozkoumání ručně. Tady je celý soubor obrázku 3 × 2 pixely. Klepnutím na pixel změňte jeho barvu a sledujte, které bajty se ve výpisu změní.</p>
   <div class="panel">
     <div class="rle" id="bmG" style="grid-template-columns:repeat(3,48px);max-width:160px"></div>
@@ -1424,11 +1429,13 @@ srgb = l &lt;= 0.0031308 ? 12.92 * l : 1.055 * l ** (1 / 2.4) - 0.055
 </section>
 
 <section id="pPng"><div><h2>PNG uvnitř</h2></div>
+  <p><b>Proč to tady je:</b> PNG ukazuje, jak funguje bezztrátová komprese v praxi a proč je jeden formát u kresby výborný a u fotky slabý. Díky tomu odhadnete, kdy se vyplatí soubor ukládat jinak, a pochopíte, proč některé programy po uložení do PNG vytvoří několikanásobně větší soubor.</p>
   <p>Soubor začíná osmibajtovým podpisem <code>89 50 4E 47 0D 0A 1A 0A</code>, po němž následují bloky: délka, typ, data a kontrolní součet CRC. Povinné jsou <code>IHDR</code>, <code>IDAT</code> a <code>IEND</code>.</p>
   <p>Před kompresí se každý řádek <b>filtruje</b>: místo hodnoty se ukládá rozdíl proti sousedům (filtry None, Sub, Up, Average, Paeth). Plynulé přechody se tak změní na malá čísla, která <b>DEFLATE</b> (LZ77 a Huffman) umí dobře sbalit. Proto se PNG počítačové grafice daří a šumu z fotoaparátu ne: šum nejde předvídat.</p>
 </section>
 
 <section id="pAlpha"><div><h2>Alfa kanál a skládání</h2></div>
+  <p><b>Proč to tady je:</b> kdykoli se obrázek skládá s pozadím, tedy u log, ikon, titulků ve videu nebo prvků webu, počítá se s alfa kanálem. Špatně zvolený způsob uložení dělá kolem průhledných okrajů tmavý lem, který se bez znalosti rozdílu těžko vysvětluje.</p>
   <p>Výsledek překrytí popisuje operátor over. Při <b>nepremultiplikované</b> alfě (straight) jsou barvy uložené zvlášť, při <b>premultiplikované</b> jsou už vynásobené alfou. Filtrování se musí dělat na premultiplikovaných hodnotách, jinak kolem průhledných okrajů vzniká tmavý nebo barevný lem.</p>
   <pre class="code">// straight
 out_rgb = src_rgb * src_a + dst_rgb * (1 - src_a)
@@ -1440,6 +1447,7 @@ out_rgb = src_rgb + dst_rgb * (1 - src_a)</pre>
 </section>
 
 <section id="pSensor"><div><h2>Snímač a RAW</h2></div>
+  <p><b>Proč to tady je:</b> digitální fotka nevzniká přímo ve třech barvách, jak by se zdálo. Pochopení snímače vysvětluje, co je RAW, proč se z něj dá zachránit víc než z hotové fotky a proč megapixely neznamenají totéž co počet barevných bodů.</p>
   <p>Snímač fotoaparátu měří jen intenzitu světla. Barvu zachytí <b>Bayerova maska</b>: nad každým bodem je červený, zelený, nebo modrý filtr, zelených je polovina. Plnobarevný obraz se dopočítává z okolí (demosaicing). RAW ukládá stav před tímto krokem a většinou 12 nebo 14 bitů na bod, proto v něm jde posouvat expozici a vyvážení bílé.</p>
   <div class="panel"><div class="duo">
     <figure><canvas id="baA" width="60" height="40" class="px"></canvas><figcaption>Co vidí snímač: jeden kanál na bod.</figcaption></figure>
@@ -1448,6 +1456,7 @@ out_rgb = src_rgb + dst_rgb * (1 - src_a)</pre>
 </section>
 
 <section id="pWeb"><div><h2>Bitmapy na webu a v kódu</h2></div>
+  <p><b>Proč to tady je:</b> většina bitmap dnes končí na webu. Tady se dříve vysvětlené pojmy mění v konkrétní rozhodnutí: kolik pixelů poslat, v jakém formátu a co před zveřejněním odstranit.</p>
   <ul class="check">
     <li><b>Hustota displeje:</b> CSS pixel není fyzický pixel. Na mobilu s <code>devicePixelRatio = 3</code> potřebuje obrázek šířky 300 CSS px 900 skutečných pixelů.</li>
     <li><b>Výběr velikosti:</b> atributy <code>srcset</code> a <code>sizes</code> nechají prohlížeč zvolit soubor. <code>&lt;picture&gt;</code> nabídne AVIF a WebP s JPEG jako zálohou.</li>
@@ -2117,9 +2126,19 @@ $('#tahakTisk').onclick=()=>{let opened=false;const m=()=>{opened=true;};addEven
 /* ========== PROFESIONÁL ========== */
 lazy.pro=function(){
   $('#ptoc').innerHTML=$$('.v-pro section[id] h2').map(h=>`<a class="chip" href="#${h.closest('section').id}">${esc(h.textContent)}</a>`).join('');
+  /* aliasing: 12 vzorků a vlna */
+  {const c=$('#wvC'),x=c.getContext('2d'),S=$('#wvS'),W=640,H=160,M=20,pos=t=>M+t*(W-2*M),y=v=>H/2-v*(H/2-18);
+   const tok=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+   function wave(f,col,w){x.strokeStyle=col;x.lineWidth=w;x.beginPath();for(let i=0;i<=600;i++){const t=i/600,v=Math.sin(2*Math.PI*f*t);i?x.lineTo(pos(t),y(v)):x.moveTo(pos(t),y(v));}x.stroke();}
+   function run(){const f=+S.value,al=f>6?f-12:f;x.clearRect(0,0,W,H);wave(f,tok('--muted'),1.5);if(f>6)wave(al,tok('--k1'),3.5);else wave(f,tok('--k1'),3.5);
+     x.fillStyle=tok('--accent');for(let i=0;i<=12;i++){const t=i/12;x.beginPath();x.arc(pos(t),y(Math.sin(2*Math.PI*f*t)),6,0,7);x.fill();}
+     $('#wvV').textContent=nf(f,1);
+     $('#wvT').innerHTML=f<6?`Na jeden kmit připadá ${nf(12/f,1)} vzorku. Tvar vlny je zachycený správně.`:f===6?'Přesně hranice: dva vzorky na kmit. Podle toho, kam vzorky padnou, může vlna úplně zmizet.':`Na jeden kmit připadá jen ${nf(12/f,1)} vzorku. Skutečná vlna má ${nf(f,1)} kmitů, ale vzorky vypadají jako pomalá vlna s ${nf(12-f,1)} kmity. Ta v signálu vůbec není.`;}
+   S.oninput=run;run();}
   /* moiré */
   {const M=960,d=new Uint8ClampedArray(M*M*4);for(let y=0;y<M;y++)for(let x=0;x<M;x++){const r2=(x-M/2)**2+(y-M/2)**2,v=127.5+127.5*Math.cos(Math.PI*r2/(M*1.02)),i=(y*M+x)*4;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;}
    const src=new ImageData(d,M,M),run=()=>{const f=+$('#moS').value+1,w=Math.round(M/f);put($('#moA'),nearest(src,w,w));put($('#moB'),down(src,w,w));$('#moV').textContent=`${f}× (${w} × ${w} px)`;};
+   {const c=mkC(M,M);c.getContext('2d').putImageData(src,0,0);$('#moO').getContext('2d').drawImage(c,0,360,240,240,0,0,240,240);}
    $('#moS').oninput=run;run();}
   /* gama */
   {const dr=(c,g)=>{const dpr=devicePixelRatio||1,cw=c.parentElement.clientWidth||240,W=Math.round(cw*dpr),H=Math.round(120*dpr);c.width=W;c.height=H;c.style.width=W/dpr+'px';c.style.height=H/dpr+'px';c.style.imageRendering='auto';
@@ -2136,28 +2155,6 @@ lazy.pro=function(){
    $('#keTpl').innerHTML=Object.keys(T).map(k=>`<button class="chip" data-k="${k}">${k}</button>`).join('');
    $('#keTpl').onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;T[b.dataset.k].forEach((v,i)=>inp[i].value=v);run();};
    T['Doostření'].forEach((v,i)=>inp[i].value=v);run();}
-  /* DCT */
-  {const QT=[16,11,10,16,24,40,51,61,12,12,14,19,26,58,60,55,14,13,16,24,40,57,69,56,14,17,22,29,51,87,80,62,18,22,37,56,68,109,103,77,24,35,55,64,81,104,113,92,49,64,78,87,103,121,120,101,72,92,95,98,112,100,103,99];
-   const rn=mkRng(5),B={'Plocha':()=>150,'Přechod':(x,y)=>60+x*14+y*10,'Hrana':(x)=>x<4?40:220,'Čára':(x,y)=>Math.abs(x-y)<1?20:230,'Šum':()=>rn()*255};
-   let blk=[];const C=[...Array(8)].map((_,u)=>[...Array(8)].map((_,x)=>Math.cos((2*x+1)*u*Math.PI/16)*(u?.5:Math.SQRT1_2*.5)));
-   const gr=(cv,a)=>{const x=cv.getContext('2d'),im=x.createImageData(8,8);a.forEach((v,i)=>{const c=clamp(v);im.data[i*4]=im.data[i*4+1]=im.data[i*4+2]=c;im.data[i*4+3]=255;});x.putImageData(im,0,0);};
-   function dct(a){const o=new Float64Array(64);for(let v=0;v<8;v++)for(let u=0;u<8;u++){let s=0;for(let y=0;y<8;y++)for(let x=0;x<8;x++)s+=(a[y*8+x]-128)*C[u][x]*C[v][y];o[v*8+u]=s;}return o;}
-   function idct(f){const o=new Float64Array(64);for(let y=0;y<8;y++)for(let x=0;x<8;x++){let s=0;for(let v=0;v<8;v++)for(let u=0;u<8;u++)s+=f[v*8+u]*C[u][x]*C[v][y];o[y*8+x]=s+128;}return o;}
-   function run(){const s=+$('#dcS').value/25,F=dct(blk),Q=F.map((v,i)=>Math.round(v/(QT[i]*s))),R=idct(Q.map((v,i)=>v*QT[i]*s));
-     gr($('#dcA'),[...blk]);gr($('#dcB'),[...R]);$('#dcV').textContent=nf(s,2)+'×';
-     let nz=0;$('#dcG').innerHTML=[...Q].map(v=>{if(v)nz++;const a=Math.min(1,Math.abs(v)/20);return `<i style="background:color-mix(in srgb,var(--accent) ${v?20+a*70:0}%,var(--bg));color:${v?'var(--ink)':'var(--muted)'}">${v}</i>`;}).join('');
-     $('#dcT').textContent=`Kvantované koeficienty. Nenulových: ${nz} z 64.`;}
-   const set=k=>{blk=[...Array(64)].map((_,i)=>B[k](i%8,i>>3));run();};
-   $('#dcTpl').innerHTML=Object.keys(B).map(k=>`<button class="chip" data-k="${k}">${k}</button>`).join('');
-   $('#dcTpl').onclick=e=>{const b=e.target.closest('[data-k]');if(b)set(b.dataset.k);};$('#dcS').oninput=run;set('Hrana');}
-  /* podvzorkování */
-  {const W=120,H=48,c=mkC(W,H),x=c.getContext('2d',{willReadFrequently:true});x.fillStyle='rgb(30,40,200)';x.fillRect(0,0,W,H);x.fillStyle='rgb(235,40,40)';x.font='800 34px "Bricolage Grotesque",sans-serif';x.textBaseline='middle';x.fillText('ŘEŠ',8,26);
-   const src=x.getImageData(0,0,W,H),run=()=>{const S=src.data,d=new Uint8ClampedArray(S);
-     if($('#chC').checked){const Y=new Float32Array(W*H),Cb=new Float32Array(W*H),Cr=new Float32Array(W*H);
-       for(let i=0;i<W*H;i++){const r=S[i*4],g=S[i*4+1],b=S[i*4+2];Y[i]=.299*r+.587*g+.114*b;Cb[i]=-.1687*r-.3313*g+.5*b;Cr[i]=.5*r-.4187*g-.0813*b;}
-       for(let y=0;y<H;y+=2)for(let u=0;u<W;u+=2){const ix=[y*W+u,y*W+u+1,(y+1)*W+u,(y+1)*W+u+1].filter(i=>i<W*H&&(i%W)>=u);let a=0,b=0;ix.forEach(i=>{a+=Cb[i];b+=Cr[i];});a/=ix.length;b/=ix.length;
-         ix.forEach(i=>{d[i*4]=Y[i]+1.402*b;d[i*4+1]=Y[i]-.34414*a-.71414*b;d[i*4+2]=Y[i]+1.772*a;});}}
-     put($('#chA'),new ImageData(d,W,H));};$('#chC').onchange=run;run();}
   /* BMP */
   {const PAL=[[255,0,0],[0,255,0],[0,0,255],[255,255,255],[0,0,0],[242,184,7]],px=[0,1,2,3,4,5],SEC={sig:['Podpis BM','var(--k1)'],fh:['Hlavička souboru','var(--k3)'],dib:['Hlavička obrázku','var(--k2)'],pix:['Pixely (BGR)','var(--k4)'],pad:['Zarovnání','var(--muted)']};
    let hi=-1;
