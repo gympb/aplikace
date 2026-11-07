@@ -415,6 +415,7 @@ function beep(kind){if(!SND)return;try{AC=AC||new (window.AudioContext||window.w
   [[392,0,.32],[370,.38,.32],[349.2,.76,.32],[329.6,1.14,1.1]].forEach(([f,dt,d],i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sawtooth';o.frequency.setValueAtTime(f,t+dt);
    if(i===3){const l=AC.createOscillator(),lg=AC.createGain();l.frequency.value=6;lg.gain.value=8;l.connect(lg).connect(o.frequency);l.start(t+dt+.25);l.stop(t+dt+d+.05)}
    g.gain.setValueAtTime(0,t+dt);g.gain.linearRampToValueAtTime(.09,t+dt+.04);g.gain.setValueAtTime(.09,t+dt+d-.12);g.gain.linearRampToValueAtTime(0,t+dt+d);o.connect(g).connect(fl);o.start(t+dt);o.stop(t+dt+d+.05)})}
+ else if(kind==='ok'){/* stejný zvuk správné odpovědi jako v Názvosloví */[[880,0],[1108.73,.08],[1318.51,.16]].forEach(([f,d])=>[[f,.26],[f*2,.06]].forEach(([fr,v])=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=fr;g.gain.setValueAtTime(.0001,t+d);g.gain.linearRampToValueAtTime(v,t+d+.005);g.gain.exponentialRampToValueAtTime(.0001,t+d+.32);o.connect(g);g.connect(AC.destination);o.start(t+d);o.stop(t+d+.35)}))}
  else{tone(1046.5,t,.22,.16);tone(2093,t,.09,.03)}}catch(e){}}
 addEventListener('pointerdown',()=>{if(!SND)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}},{passive:true});
 function question(){INGAME=true;clearInterval(tmr);const q=S.list[S.i];view(()=>{
@@ -475,7 +476,7 @@ function question(){INGAME=true;clearInterval(tmr);const q=S.list[S.i];view(()=>
   fbw.innerHTML='';fbw.append(fbBox(okk?'ok':(cls==='half'?'half':'ko'),okk?(pts===2?'Výborně! +2 body':'Správně! +1 bod'):'Správně je: '+right,q.e,okk));
   nx.innerHTML='';const last=S.i>=S.list.length-1;
   nx.append(h('button',{cls:'btn',on:{click:()=>{S.i++;S.turn=(S.turn+1)%S.teams.length;last?end():question()}}},last?'Výsledky':'Další otázka →'));
-  if(okk)confetti(S.o.solo?30:60)}
+  if(okk){confetti(S.o.solo?30:60);beep('ok');try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}}}
 },true);FW=innerWidth;FH=innerHeight;fitMol(true)}
 function fbBox(cls,title,text,happy){if(cls==='ko')boom();const img=h('img',{src:cls==='ko'?BOOM:cls==='half'?LAB:MASC,alt:'',cls:cls==='ko'?'acc':''});if(happy)setTimeout(()=>img.classList.add('hop'),30);return h('div',{cls:'fb '+cls},img,h('div',{},h('b',{},title),h('p',{},text)))}
 function boom(){const o=h('div',{cls:'boom'},h('div',{cls:'bw'},h('img',{src:BOOM,alt:'Vondrys po nehodě v laboratoři'}),h('b',{},'BUM!')));o.addEventListener('click',()=>o.remove());document.body.append(o);setTimeout(()=>o.remove(),1500)}
