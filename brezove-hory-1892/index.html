@@ -453,10 +453,6 @@ details.adv-warn p{margin:8px 0 0}
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path id="fs-in" d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5"/><path id="fs-out" hidden d="M8 3v5H3M17 8h-5V3M12 17v-5h5M3 12h5v5"/></svg>
           <span class="lbl" id="fullscreen-lbl">Celá obrazovka</span>
         </button>
-        <button class="iconbtn" id="sound" aria-pressed="true" title="Zvukové potvrzení kliknutí">
-          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M9.4 3.1A1 1 0 0 1 10 4v12a1 1 0 0 1-1.7.7L4.6 13H2a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h2.6l3.7-3.7a1 1 0 0 1 1.1-.2z"/><path id="snd-waves" d="M13.8 6.2a1 1 0 0 1 1.4 0 5.5 5.5 0 0 1 0 7.6 1 1 0 1 1-1.4-1.4 3.5 3.5 0 0 0 0-4.8 1 1 0 0 1 0-1.4z"/><path id="snd-off" hidden d="M12.3 7.3a1 1 0 0 1 1.4 0L15 8.6l1.3-1.3a1 1 0 1 1 1.4 1.4L16.4 10l1.3 1.3a1 1 0 0 1-1.4 1.4L15 11.4l-1.3 1.3a1 1 0 0 1-1.4-1.4l1.3-1.3-1.3-1.3a1 1 0 0 1 0-1.4z"/></svg>
-          <span class="lbl" id="sound-lbl">Zvuk kliknutí</span>
-        </button>
       </div>
     </div>
     <nav class="tabs" role="tablist" aria-label="Části aplikace">
@@ -1171,29 +1167,6 @@ const save = (() => {
     clear: () => { d = {}; try { localStorage.removeItem(KEY); } catch (e) {} }
   };
 })();
-
-/* ==================== zvuk: jen tiché cvaknutí jako potvrzení kliknutí ==================== */
-let actx = null;
-let soundOn = save.get('sound', true);
-function clickSound() {
-  if (!soundOn) return;
-  try {
-    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
-    if (actx.state === 'suspended') actx.resume();
-    const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
-    o.type = 'triangle'; o.frequency.setValueAtTime(1400, t); o.frequency.exponentialRampToValueAtTime(900, t + .027);
-    g.gain.setValueAtTime(.1, t); g.gain.exponentialRampToValueAtTime(.0001, t + .045);
-    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + .07);
-  } catch (e) {}
-}
-document.addEventListener('click', e => { if (e.target.closest('button')) clickSound(); }, true);
-function renderSound() {
-  $('sound').setAttribute('aria-pressed', String(soundOn));
-  $('snd-waves').hidden = !soundOn; $('snd-off').hidden = soundOn;
-  $('sound-lbl').textContent = soundOn ? 'Zvuk kliknutí' : 'Bez zvuku';
-  $('sound').title = soundOn ? 'Vypnout zvukové potvrzení kliknutí' : 'Zapnout zvukové potvrzení kliknutí';
-}
-$('sound').addEventListener('click', () => { soundOn = !soundOn; save.set('sound', soundOn); renderSound(); clickSound(); });
 
 /* ==================== celá obrazovka pro celou aplikaci ==================== */
 const fsSupported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
@@ -2987,7 +2960,6 @@ $('reset-all').addEventListener('click', () => {
   if (!confirm('Vymazat prozkoumaná místa, postup v příběhu a výsledky kvízu v tomto prohlížeči?')) return;
   save.clear(); location.reload();
 });
-renderSound();
 buildMap(); selectLoc('marie', true);
 renderAdv();
 buildQuiz(); renderLex(); renderShafts(); renderWater();
