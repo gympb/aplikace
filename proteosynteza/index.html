@@ -240,6 +240,7 @@ input.t{width:100%;padding:11px 12px;font:inherit;font-size:20px;font-weight:700
 .seq{word-break:break-all;letter-spacing:.03em;font-weight:600}body{overflow-wrap:break-word}
 .gkg>*{min-width:0}.p2 svg{max-width:100%;height:auto}
 @media (pointer:coarse){.chip,.dot,.back{min-height:40px}.q .tb .chip{height:40px}.scrub input[type=range]{height:40px}}
+.cellw{margin:10px 0 0;border:1px solid var(--bd);border-radius:14px;padding:6px;background:#fff}.chip.on{background:var(--hd);color:#fff;border-color:var(--hd)}.chip.dn{background:var(--okb);border-color:var(--ok);color:var(--ok);cursor:default}
 </style>
 </head>
 <body>
@@ -734,7 +735,9 @@ const QS=[
  {q:'<b>Nepřekrývavý kód.</b> Přelož mRNA <span class="seq" style="white-space:nowrap;word-break:normal">AUGGCUUCAAAGUAA</span>. Pak si představ, že by se kód překrýval a ribozom by se posouval jen o jednu bázi (AUG, UGG, GGC…). Kolik aminokyselin by se změnilo, kdyby se v takovém kódu změnila jediná báze?',
   h:'Ribozom čte mRNA po trojicích, které se nepřekrývají a nejsou mezi nimi mezery: AUG GCU UCA AAG UAA → Met–Ala–Ser–Lys. Každá báze tak patří jen jednomu kodónu a bodová mutace změní nejvýš jednu aminokyselinu. Při překryvu by jedna báze ležela ve třech kodónech zároveň.',kod:1},
  {q:'<b>Univerzální kód.</b> Bakterie s vloženým lidským genem dokážou vyrábět lidský inzulin. Která vlastnost genetického kódu to umožňuje? A proč se do bakterie nevkládá přímo úsek lidské DNA, ale jeho kopie bez intronů?',
-  h:'Téměř všechny organismy čtou stejné kodóny jako stejné aminokyseliny, takže bakteriální ribozom přeloží lidskou mRNA správně. Výjimky jsou vzácné (např. v mitochondriích kóduje UGA tryptofan místo stopu). Bakterie ale nemají spliceozom, introny by nevystřihly.',kod:1}
+  h:'Téměř všechny organismy čtou stejné kodóny jako stejné aminokyseliny, takže bakteriální ribozom přeloží lidskou mRNA správně. Výjimky jsou vzácné (např. v mitochondriích kóduje UGA tryptofan místo stopu). Bakterie ale nemají spliceozom, introny by nevystřihly.',kod:1},
+ {q:'<b>Bádej: cesta mRNA z jádra.</b> Molekula mRNA je obrovská (stovky až tisíce nukleotidů), přesto se z jádra dostane k ribozomům. Kudy a jak? Proč nemůže projít jaderným obalem prostou difuzí? A co se stane s pre-mRNA, která ještě nebyla sestřižena?',
+  h:'Jaderný obal tvoří dvě membrány a prostupují jím <b>jaderné póry</b>, velké bílkovinné komplexy. mRNA nejde sama: je obalená proteiny a exportní receptory ji pórem aktivně provedou, za spotřeby energie. Jako „propustka“ slouží čepička, poly(A) konec a proteiny, které na mRNA zůstanou po sestřihu. Nesestřižená pre-mRNA se v jádře zadrží a rozloží.'}
 ];
 
 /* ---------- maskot ---------- */
@@ -947,9 +950,41 @@ function viewOrder(){
 }
 
 /* ---------- otázky ---------- */
+/* ---------- kde v buňce ---------- */
+const CELLP=[
+ {k:'T',n:'Transkripce',ok:{jadro:'Ano. Gen je uložen v DNA v jádře, a proto se tam přepisuje do pre-mRNA.',mito:'Také správně! Mitochondrie mají vlastní DNA a přepisují ji samy. Gen z animace je ale v jádře.'},ko:'Tady DNA s genem není. Kde je v eukaryotní buňce uložena většina DNA?'},
+ {k:'S',n:'Sestřih pre-mRNA',ok:{jadro:'Ano. Spliceozomy pracují v jádře. Ven se dostane jen hotová, sestřižená mRNA.'},ko:'Sestřih musí proběhnout dřív, než mRNA opustí místo, kde vznikla.'},
+ {k:'C',n:'Čepička a poly(A) konec',ok:{jadro:'Ano. Obě úpravy proběhnou v jádře, ještě před exportem mRNA.'},ko:'Čepička a poly(A) konec jsou pro mRNA „propustkou“ ven. Kde je tedy musí dostat?'},
+ {k:'L',n:'Translace',ok:{cyt:'Ano. Volné ribozomy v cytoplazmě tvoří hlavně proteiny pro cytoplazmu, jádro a mitochondrie.',er:'Ano. Ribozomy na drsném ER tvoří proteiny do membrán a proteiny, které buňka vylučuje.',mito:'Také správně! Mitochondrie mají vlastní ribozomy. Většinu proteinů ale tvoří ribozomy v cytoplazmě.'},ko:'Tady translace neprobíhá. V jadérku se ribozomy jen skládají. Kde ribozomy pracují?'}];
+const RN={jadro:'jádro',cyt:'cytoplazma',er:'drsné ER',mito:'mitochondrie'};
+function cellTask(){
+ const done={};let sel=null;
+ const rib=(x,y)=>'<circle cx="'+x+'" cy="'+y+'" r="3" fill="#a8743f"/>';
+ const free=[[40,110],[60,170],[90,200],[250,215],[300,110],[330,70],[350,140],[270,60],[210,30],[60,80],[365,190],[120,215]].map(p=>rib(p[0],p[1])).join('');
+ const er=[0,1,2].map(i=>{const r=74+i*13;return '<path d="M'+(150+r*Math.cos(-0.9)).toFixed(1)+' '+(120+r*Math.sin(-0.9)).toFixed(1)+' A'+r+' '+r+' 0 0 1 '+(150+r*Math.cos(0.9)).toFixed(1)+' '+(120+r*Math.sin(0.9)).toFixed(1)+'" fill="none" stroke="#c98f8f" stroke-width="5" stroke-linecap="round"/>'+[-0.8,-0.5,-0.2,0.1,0.4,0.7].map(a=>rib(150+(r+4)*Math.cos(a),120+(r+4)*Math.sin(a))).join('')}).join('');
+ const svgS='<svg viewBox="0 0 400 250" style="width:100%;height:auto;display:block;touch-action:manipulation" font-family="Outfit,Arial,sans-serif">'
+  +'<g data-r="cyt" style="cursor:pointer"><ellipse cx="200" cy="125" rx="192" ry="117" fill="#fdf6e3" stroke="#b9a77c" stroke-width="3"/>'+free+'</g>'
+  +'<g data-r="er" style="cursor:pointer"><path d="M218 64 A88 88 0 0 1 218 176" fill="none" stroke="transparent" stroke-width="44"/>'+er+'</g>'
+  +'<g data-r="mito" style="cursor:pointer"><ellipse cx="318" cy="190" rx="44" ry="21" fill="#f6c9a8" stroke="#c9733f" stroke-width="2.5"/><path d="M286 190q6-12 12 0t12 0 12 0 12 0 12 0 12 0" fill="none" stroke="#c9733f" stroke-width="2"/></g>'
+  +'<g data-r="jadro" style="cursor:pointer"><circle cx="150" cy="120" r="60" fill="#ece5f8" stroke="#7c3aed" stroke-width="5" stroke-dasharray="26 5"/><circle cx="150" cy="120" r="52" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="20 11"/><circle cx="138" cy="112" r="17" fill="#c9b7ef"/><path d="M118 140q10-8 20 0t20 0 20 0" fill="none" stroke="#9b7fd6" stroke-width="2"/></g>'
+  +'<g font-size="13" font-style="italic" fill="#4b4f57" pointer-events="none"><text x="150" y="158" text-anchor="middle">jádro</text><text x="138" y="116" text-anchor="middle" font-size="10">jadérko</text><text x="262" y="34" text-anchor="middle">drsné ER</text><text x="318" y="161" text-anchor="middle">mitochondrie</text><text x="196" y="228" text-anchor="middle">cytoplazma s ribozomy</text></g></svg>';
+ const wrap=h('div',{cls:'cellw',html:svgS});
+ const fb=h('div'),log=h('div');
+ const chips=h('div',{cls:'tbar'},CELLP.map(p=>h('button',{cls:'chip','data-k':p.k,on:{click:()=>{if(done[p.k])return;sel=p;draw()}}},p.n)));
+ function draw(){chips.querySelectorAll('button').forEach(b=>{const k=b.dataset.k;b.classList.toggle('on',sel&&sel.k===k);b.classList.toggle('dn',!!done[k]);b.innerHTML=(done[k]?'✓ ':'')+CELLP.find(p=>p.k===k).n+(done[k]?' → '+RN[done[k]]:'')})}
+ wrap.addEventListener('click',e=>{const g=e.target.closest('[data-r]');if(!g)return;const r=g.dataset.r;fb.innerHTML='';
+  if(!sel){fb.append(h('p',{cls:'mut',style:'margin:8px 0 0'},'Nejdřív vyber děj nahoře, pak klepni do buňky.'));return}
+  const ok=sel.ok[r];
+  if(ok){done[sel.k]=r;log.append(h('p',{style:'margin:6px 0 0',html:'<b>'+sel.n+' → '+RN[r]+':</b> '+ok}));sel=null;draw();
+   if(Object.keys(done).length===CELLP.length){fb.append(h('div',{cls:'fb ok',style:'margin:10px 0 0'},h('img',{src:MASC,alt:'',cls:'hop'}),h('div',{},h('b',{},'Hotovo!'),h('p',{},'U eukaryot jsou transkripce a translace oddělené jaderným obalem. Jak se ale velká molekula mRNA dostane z jádra ven? Na to se zaměř v poslední bádací otázce.'))));mood('spark',900)}}
+  else fb.append(h('div',{cls:'fb ko',style:'margin:10px 0 0'},h('img',{src:BOOM,alt:'',cls:'acc'}),h('div',{},h('b',{},sel.n+' tady ne'),h('p',{},sel.ko))))});
+ draw();
+ return h('div',{cls:'card q'},h('h3',{},h('span',{cls:'n'},'★'),h('span',{},'Kde v eukaryotní buňce probíhá? Vyber děj a klepni na místo v buňce, kde probíhá.')),chips,wrap,fb,log);
+}
 function viewQs(){
  const ans=store.get('ans',{});
  app.append(backBtn(),h('h2',{},'Otázky a úkoly'),h('p',{cls:'mut',style:'margin:-4px 2px 12px;font-size:15px'},'Odpovědi si piš sem, zůstanou uložené jen v tomto prohlížeči. Nápovědu si otevři, až když si nevíš rady.'),
+  cellTask(),
   ...QS.map((q,i)=>{const hint=h('div',{cls:'hint',hidden:'',html:'<b>Nápověda:</b> '+q.h});const sv=h('span',{cls:'saved'},'Uloženo');let tt;
    const ta=h('textarea',{placeholder:'Tvoje odpověď…','aria-label':'Odpověď na otázku '+(i+1)});ta.value=ans[i]||'';
    ta.addEventListener('input',()=>{ans[i]=ta.value;store.set('ans',ans);sv.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>sv.classList.remove('on'),1200)});
