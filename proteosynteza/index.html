@@ -1017,7 +1017,7 @@ function build2D(seq){
   const cUp=bbY(k0+2)>0;const O=add('O',A[C].x,A[C].y+(cUp?1:-1));B.push([C,O,2]);
   A[N].bb=1;
   const t=AA3D[seq[i]];const sg=up?1:-1;const map={};
-  t.a2.forEach((a,q)=>{map[q]=add(a[0],A[CA].x+a[1],A[CA].y+sg*a[2])});
+  (seq[i]==='P'?[['C',-0.866,0.5],['C',-0.692,1.485],['C',0.174,0.985]]:t.a2).forEach((a,q)=>{map[q]=add(a[0],A[CA].x+a[1],A[CA].y+sg*a[2])});
   t.b2.forEach(b=>{const r=v=>v==='CA'?CA:v==='N'?N:map[v];B.push([r(b[0]),r(b[1]),b[2],b[3]!=null?A[CA].x+b[3]:null,b[4]!=null?A[CA].y+sg*b[4]:null])});
   if(i===n-1){const OX=add('O',(k0+3)*.866,bbY(k0+3));B.push([C,OX,1]);A[OX].term=1}
   if(i===0)A[N].nterm=1;
@@ -1035,6 +1035,8 @@ function build2D(seq){
  B.forEach(b=>{const a=A[b[0]],c=A[b[1]];let x1=X(a.x),y1=Y(a.y),x2=X(c.x),y2=Y(c.y);
   const dx=x2-x1,dy=y2-y1;[x1,y1]=shrink(b[0],x1,y1,dx,dy);[x2,y2]=shrink(b[1],x2,y2,-dx,-dy);
   const col=b[5]?'#D7262E':'#1F2329',w=b[5]?3.4:2;
+  if(b[2]===2&&b[3]==null&&(deg[b[0]]===2&&A[b[0]].lab||deg[b[1]]===2&&A[b[1]].lab)){const L=Math.hypot(dx,dy),nx=-dy/L,ny=dx/L,o=3.2;
+   [o,-o].forEach(k=>{s+='<line x1="'+(x1+nx*k).toFixed(1)+'" y1="'+(y1+ny*k).toFixed(1)+'" x2="'+(x2+nx*k).toFixed(1)+'" y2="'+(y2+ny*k).toFixed(1)+'" stroke="#1F2329" stroke-width="2" stroke-linecap="round"/>'});return}
   s+='<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="'+col+'" stroke-width="'+w+'" stroke-linecap="round"/>';
   if(b[2]===2){const L=Math.hypot(dx,dy),nx=-dy/L,ny=dx/L;let off=5.5;
    if(b[3]!=null){const cx=X(b[3]),cy=Y(b[4]);const mx=(x1+x2)/2,my=(y1+y2)/2;if((cx-mx)*nx+(cy-my)*ny<0)off=-off;
