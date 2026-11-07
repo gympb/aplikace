@@ -254,22 +254,15 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
 @media (max-width:640px){.hero-stats{display:none}}
 
 
-/* témata kolem kurzoru: po najetí na pole obíhají a obměňují se, klepnutím se vloží do hledání */
-.search{position:relative;align-items:center}
-.vond{display:flex;padding:0 8px 0 4px;transition:transform .25s}
-.vond.wave{animation:vondwave 2.4s ease-in-out infinite}
-@keyframes vondwave{0%,70%,100%{transform:rotate(0)}78%{transform:rotate(-12deg)}86%{transform:rotate(10deg)}94%{transform:rotate(-6deg)}}
-.vond-bub{position:absolute;right:8px;bottom:calc(100% + 8px);background:var(--on-brand);color:var(--brand);font:600 13px var(--f-body);padding:5px 10px;white-space:nowrap;pointer-events:none}
-.vond-bub::after{content:"";position:absolute;right:14px;top:100%;border:6px solid transparent;border-top-color:var(--on-brand)}
-.search.has-text .vond{display:none}
-#orbit{position:fixed;inset:0;pointer-events:none;z-index:40}
-.ot{position:absolute;left:0;top:0;background:var(--on-brand);color:var(--brand);font-family:var(--f-body);border:0;padding:3px 10px;cursor:pointer;white-space:nowrap;pointer-events:auto;opacity:0;transition:opacity .4s ease;will-change:transform}
-.ot.in{opacity:1}
-.ot:hover{background:#FFFFFF;color:var(--on-brand);outline:2px solid var(--on-brand)}
-.tpanel{display:flex;flex-wrap:wrap;gap:6px 8px}
-.tpanel[hidden]{display:none}
-.tpanel .ot{position:static;opacity:1;font-size:.9rem}
-@media (prefers-reduced-motion:reduce){.vond.wave{animation:none}.ot{transition:none}}
+
+/* pás s tématy pod oranžovým pruhem */
+.topic-band{background:var(--brand);color:var(--on-brand);padding:14px 0 16px}
+.topic-band[hidden]{display:none}
+.tb-h{font:700 12px var(--f-display);letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+.trow{position:relative;height:38px;overflow:hidden;-webkit-mask-image:linear-gradient(to right,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(to right,transparent,#000 5%,#000 95%,transparent)}
+.tt{position:absolute;left:0;top:50%;font-family:var(--f-body);color:var(--on-brand);background:none;border:0;border-bottom:1.5px dotted rgba(17,17,17,.5);padding:1px 3px;cursor:pointer;white-space:nowrap;will-change:transform}
+.tt:hover{background:var(--on-brand);color:var(--brand);border-bottom-color:var(--on-brand)}
+@media (max-width:560px){.trow{height:34px}}
 </style>
 </head>
 <body>
@@ -290,7 +283,7 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
   <div class="bar-top">
     <div class="search">
       <label for="q">Hledat aplikaci</label>
-      <input id="q" type="search" placeholder="Hledat podle názvu nebo tématu, např. šifra" autocomplete="off"><span class="vond" id="vond" aria-hidden="true"><svg viewBox="0 0 40 40" width="34" height="34"><g stroke="#2a1e14" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 22q-2-15 11-15t11 15q0 11-11 11T9 22z" fill="#ecb896"/><path d="M11 12q3-8 10-5 6-3 9 6" fill="none"/><circle cx="15" cy="20" r="1.8" fill="#2a1e14" stroke="none"/><circle cx="25" cy="20" r="1.8" fill="#2a1e14" stroke="none"/><path d="M20 20q-4 6 0 8h3" fill="none"/><path d="M14 30q6 3 12 0" fill="none"/></g></svg></span><span class="vond-bub" id="vond-bub" hidden></span>
+      <input id="q" type="search" placeholder="Hledat podle názvu nebo tématu, např. šifra" autocomplete="off">
     </div>
     <div class="seg seg-bar" role="group" aria-label="Způsob zobrazení katalogu"><button type="button" class="v-subj" aria-pressed="true">Podle předmětů</button><button type="button" class="v-all" aria-pressed="false">Hromada</button></div>
     <button class="chip mobchip" id="f-mob" aria-pressed="false" aria-label="Jen pro mobil" title="Zobrazit jen aplikace optimalizované pro použití na mobilu"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="4" y="1.5" width="8" height="13" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 12.3h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="lbl">Jen pro mobil</span></button>
@@ -299,8 +292,12 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
     <div class="chips" role="group" aria-label="Předmět (opětovným klepnutím výběr zrušíte)"><span id="f-subj" class="chips"></span></div>
     <div class="chips grades" role="group" aria-label="Ročník (opětovným klepnutím výběr zrušíte)"><span id="f-grade" class="chips"></span></div>
   </div>
-  <div class="tpanel" id="tpanel" hidden></div>
 </div></div></div>
+
+<section class="topic-band" id="topic-band" aria-label="Témata" hidden><div class="in">
+  <div class="tb-h">Hledat podle témat</div>
+  <div class="rows" aria-hidden="true"><div class="trow"></div><div class="trow"></div></div>
+</div></section>
 
 <main class="cat"><div class="in">
   <div class="cat-head"><h2 class="sr">Katalog aplikací</h2>
@@ -444,6 +441,7 @@ function toResults(){
   if(top<off||top>innerHeight*.6) scrollTo({top:scrollY+top-off,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
 }
 function render(){
+  tbSync();
   const q=norm(f.q.trim());
   document.querySelectorAll('.v-subj').forEach(b=>b.setAttribute('aria-pressed',String(VIEW==='subj')));document.querySelectorAll('.v-all').forEach(b=>b.setAttribute('aria-pressed',String(VIEW==='all')));
   $('back').hidden=!(VIEW==='subj'&&f.s!=='Vše');
@@ -499,109 +497,67 @@ fetch('katalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.sta
   $('grid').innerHTML='<div class="empty">Katalog se nepodařilo načíst. Soubor katalog.json se načítá jen přes webový server, ne z disku. Otevřete stránku na adrese aplikace.gympb.cz, nebo ji spusťte lokálně příkazem <code>python3 -m http.server</code>.</div>';
 });
 $('q').oninput=e=>{f.q=e.target.value;render();};
-// témata kolem kurzoru: po najetí myší na vyhledávací pole kolem kurzoru obíhá 12 témat a postupně se obměňují
-const TOP={on:false,items:[],pool:[],cx:0,cy:0,tx:0,ty:0,ang:0,hover:false,raf:0,swap:0,layer:null};
-const TOUCH=matchMedia('(hover: none)').matches, CALM=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const topSize=n=>({1:.85,2:1,3:1.2,4:1.4}[n]||1.6);
-function topPool(){
+// pás s tématy: pod oranžovým pruhem pomalu plují zleva doprava náhodně seřazená témata (po vyčerpání se zamíchají znovu, takže se ukážou všechna)
+const TB={queue:[],pool:[],key:'',rows:[],raf:0,last:0,hover:false,timer:0};
+const TB_CALM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const tbSize=n=>({1:.85,2:1,3:1.15,4:1.3}[n]||1.45);
+function tbPool(){
   const m=new Map();
   APPS.filter(a=>(!f.m||a.zarizeni==='mobil')&&(f.s==='Vše'||a.predmet.includes(f.s))&&(f.g==='Vše'||expand(a.rocnik).has(f.g)))
     .forEach(a=>(a.temata||[]).forEach(t=>{const k=norm(t);const e=m.get(k);if(e)e.n++;else m.set(k,{t,k,n:1});}));
   return [...m.values()];
 }
-function topPick(pool,skip,count){
-  const out=[],items=pool.filter(x=>!skip.has(x.k));
-  while(out.length<count&&items.length){
-    let r=Math.random()*items.reduce((s,x)=>s+x.n+1,0),i=0;
-    while(r>items[i].n+1){r-=items[i].n+1;i++;}
-    out.push(items.splice(i,1)[0]);
+function tbNext(){
+  if(!TB.queue.length){
+    TB.queue=[...TB.pool];
+    for(let i=TB.queue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[TB.queue[i],TB.queue[j]]=[TB.queue[j],TB.queue[i]];}
   }
-  return out;
+  return TB.queue.pop();
 }
-function topFill(el,x){el.textContent=x.t;el.dataset.k=x.k;el.dataset.t=x.t;el.style.fontSize=topSize(x.n)+'rem';el.style.fontWeight=x.n>=3?700:500;}
-function topChoose(el){
-  topStop();$('tpanel').hidden=true;
-  f.q=el.dataset.t;$('q').value=f.q;$('q').closest('.search').classList.add('has-text');
-  try{localStorage.setItem('gymplikace-temata','1');}catch(e){}
-  render();toResults();
+function tbItem(row,x){
+  const t=tbNext(),b=document.createElement('button');
+  b.type='button';b.className='tt';b.tabIndex=-1;b.textContent=t.t;b.dataset.t=t.t;
+  b.style.fontSize=tbSize(t.n)+'rem';b.style.fontWeight=t.n>=3?700:500;
+  b.onclick=()=>{f.q=t.t;$('q').value=t.t;render();toResults();};
+  row.el.appendChild(b);
+  return {el:b,x,w:b.offsetWidth};
 }
-function topBtn(x){
-  const b=document.createElement('button');b.type='button';b.className='ot';b.tabIndex=-1;
-  topFill(b,x);b.onclick=()=>topChoose(b);
-  b.onpointerenter=()=>{TOP.hover=true;};b.onpointerleave=()=>{TOP.hover=false;};
-  return b;
+function tbPlace(o){o.el.style.transform=`translate(${o.x.toFixed(1)}px,-50%)`;}
+function tbFill(row){
+  const W=row.el.clientWidth,gap=24;
+  if(!row.items.length){
+    let cursor=W+gap;
+    while(cursor>-120){const o=tbItem(row,0);o.x=cursor-gap-o.w;row.items.unshift(o);cursor=o.x;}
+  }
+  while(row.items.length&&row.items[0].x-gap>-120){const o=tbItem(row,0);o.x=row.items[0].x-gap-o.w;row.items.unshift(o);}
+  row.items.forEach(tbPlace);
 }
-function topStart(x,y){
-  if(TOP.on||f.q.trim()||TOUCH||CALM||!APPS.length)return;
-  const pool=topPool();if(pool.length<3)return;
-  TOP.on=true;TOP.pool=pool;TOP.cx=TOP.tx=x;TOP.cy=TOP.ty=y;TOP.hover=false;
-  let layer=$('orbit');if(!layer){layer=document.createElement('div');layer.id='orbit';layer.setAttribute('aria-hidden','true');document.body.appendChild(layer);}
-  layer.innerHTML='';
-  TOP.items=topPick(pool,new Set(),12).map((x,i)=>{
-    const el=topBtn(x);layer.appendChild(el);
-    const inner=i<5;
-    return {el,ring:inner?0:1,idx:inner?i:i-5,cnt:inner?5:7};
-  });
-  requestAnimationFrame(()=>TOP.items.forEach(o=>o.el.classList.add('in')));
-  TOP.swap=setInterval(topSwap,2400);
-  const b=$('vond-bub');b.hidden=true;$('vond').classList.remove('wave');
-  TOP.raf=requestAnimationFrame(topFrame);
+function tbFrame(ts){
+  const dt=Math.min(.05,(ts-(TB.last||ts))/1000);TB.last=ts;
+  if(!TB.hover&&!document.hidden){
+    TB.rows.forEach(row=>{
+      const W=row.el.clientWidth;
+      row.items.forEach(o=>{o.x+=row.speed*dt;});
+      while(row.items.length&&row.items[row.items.length-1].x>W+40){row.items.pop().el.remove();}
+      tbFill(row);
+    });
+  }
+  TB.raf=requestAnimationFrame(tbFrame);
 }
-function topStop(){
-  if(!TOP.on)return;TOP.on=false;TOP.hover=false;clearInterval(TOP.swap);cancelAnimationFrame(TOP.raf);
-  const layer=$('orbit');if(layer){const els=[...layer.children];els.forEach(e=>e.classList.remove('in'));setTimeout(()=>{if(!TOP.on)layer.innerHTML='';},420);}
+function tbSync(){
+  const key=[f.m,f.s,f.g].join('|');if(key===TB.key)return;TB.key=key;
+  const band=$('topic-band');TB.pool=tbPool();TB.queue=[];
+  band.hidden=TB.pool.length<3;if(band.hidden)return;
+  if(!TB.rows.length){
+    const els=band.querySelectorAll('.trow');
+    TB.rows=[...els].map((el,i)=>({el,items:[],speed:i?19:27}));
+    band.querySelector('.rows').onpointerenter=()=>{TB.hover=true;};
+    band.querySelector('.rows').onpointerleave=()=>{TB.hover=false;};
+  }
+  TB.rows.forEach(r=>{r.el.innerHTML='';r.items=[];tbFill(r);});
+  if(TB_CALM){clearInterval(TB.timer);TB.timer=setInterval(()=>{if(TB.hover)return;TB.rows.forEach(r=>{r.el.innerHTML='';r.items=[];tbFill(r);});},7000);}
+  else if(!TB.raf)TB.raf=requestAnimationFrame(tbFrame);
 }
-function topSwap(){
-  if(!TOP.on||TOP.hover||!TOP.items.length)return;
-  const o=TOP.items[Math.floor(Math.random()*TOP.items.length)];
-  const shown=new Set(TOP.items.map(i=>i.el.dataset.k));
-  const [x]=topPick(TOP.pool,shown,1);if(!x)return;
-  o.el.classList.remove('in');
-  setTimeout(()=>{if(!TOP.on)return;topFill(o.el,x);o.el.classList.add('in');},420);
-}
-function topFrame(){
-  if(!TOP.on)return;
-  if(!TOP.hover){TOP.cx+=(TOP.tx-TOP.cx)*.07;TOP.cy+=(TOP.ty-TOP.cy)*.07;TOP.ang+=.0045;}
-  const W=innerWidth,H=innerHeight;
-  TOP.items.forEach(o=>{
-    const rx=o.ring?240:125, ry=o.ring?105:52, dir=o.ring?-1:1;
-    const a=dir*TOP.ang+o.idx*2*Math.PI/o.cnt+(o.ring?.6:0);
-    const w=o.el.offsetWidth,h=o.el.offsetHeight;
-    let x=TOP.cx+rx*Math.cos(a)-w/2,y=TOP.cy+ry*Math.sin(a)-h/2;
-    x=Math.max(6,Math.min(W-w-6,x));y=Math.max(6,Math.min(H-h-6,y));
-    o.el.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`;
-  });
-  TOP.raf=requestAnimationFrame(topFrame);
-}
-// statický seznam pod polem: pro dotyk a pro uživatele s omezeným pohybem
-function topPanel(){
-  const p=$('tpanel');if(!(TOUCH||CALM)||f.q.trim()||!APPS.length)return;
-  const pool=topPool();if(pool.length<3)return;
-  p.innerHTML='';topPick(pool,new Set(),12).forEach(x=>{const b=topBtn(x);b.onpointerdown=e=>e.preventDefault();p.appendChild(b);});
-  p.hidden=false;
-  clearInterval(TOP.swap);
-  TOP.pool=pool;
-  TOP.swap=setInterval(()=>{if(p.hidden)return;const els=[...p.children];const shown=new Set(els.map(e=>e.dataset.k));const [x]=topPick(pool,shown,1);if(x)topFill(els[Math.floor(Math.random()*els.length)],x);},3500);
-}
-(function(){
-  const q=$('q'),box=q.closest('.search'),bub=$('vond-bub'),vond=$('vond');
-  let used=false;try{used=!!localStorage.getItem('gymplikace-temata');}catch(e){}
-  const hint=()=>{if(used||q.value.trim()){bub.hidden=true;vond.classList.remove('wave');return;}
-    bub.textContent=TOUCH?'Klepni sem a nabídnu témata':'Najeď sem a nabídnu témata';bub.hidden=false;if(!CALM)vond.classList.add('wave');};
-  hint();
-  box.addEventListener('mouseenter',e=>{if(!TOUCH)topStart(e.clientX,e.clientY);});
-  document.addEventListener('mousemove',e=>{
-    if(!TOP.on)return;TOP.tx=e.clientX;TOP.ty=e.clientY;
-    if(TOP.hover)return;
-    const r=box.getBoundingClientRect(),mx=280,my=190;
-    if(e.clientX<r.left-mx||e.clientX>r.right+mx||e.clientY<r.top-my||e.clientY>r.bottom+my)topStop();
-  });
-  addEventListener('scroll',()=>topStop(),{passive:true});
-  q.addEventListener('input',()=>{topStop();$('tpanel').hidden=true;box.classList.toggle('has-text',!!q.value.trim());hint();});
-  q.addEventListener('focus',()=>{topStop();topPanel();});
-  q.addEventListener('blur',()=>{$('tpanel').hidden=true;});
-  q.addEventListener('keydown',e=>{if(e.key==='Escape')topStop();});
-})();
 
 document.querySelectorAll('.v-subj').forEach(b=>b.onclick=()=>setView('subj'));document.querySelectorAll('.v-all').forEach(b=>b.onclick=()=>setView('all'));
 $('back').onclick=e=>{e.preventDefault();setSubject('Vše');};
