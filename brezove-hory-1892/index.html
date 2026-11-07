@@ -1,0 +1,2234 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Březové Hory 1892</title>
+<meta name="description" content="Interaktivní výuková aplikace o Březových Horách a Příbrami v roce 1892: schematická mapa dolů, hornických institucí a kostelů, časová osa březohorské důlní katastrofy z 31. května 1892, textová adventura, slovník a kvíz.">
+<meta name="author" content="Ivo Bešťák, Gymnázium Příbram">
+<meta property="og:title" content="Březové Hory 1892">
+<meta property="og:description" content="Stříbrné doly pod Příbramí a největší důlní neštěstí v českých dějinách.">
+<meta property="og:image" content="nahled.png">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+/* Layout: tmavý dřevěný rám, uvnitř pergamenové listy; nahoře lišta s měšcem a záložky, pod nimi obsah záložky */
+:root{
+  --wood:#1b1009; --wood-2:#2b190d; --wood-line:#6e4b26;
+  --parch:#f3e6c6; --parch-2:#e8d4a6; --parch-3:#d8bd85; --parch-line:#b3925e;
+  --ink:#24170b; --ink-2:#5a4128; --muted:#7a6040;
+  --red:#7d1d1d; --red-soft:#f0d6cc; --gold:#c9a24b; --gold-hi:#f2d27a;
+  --good:#2f6b3a; --good-soft:#d9e8cf; --bad:#8a2323; --bad-soft:#f1d2c9; --water:#2f5f72; --water-soft:#cfe0e2;
+  --f-display:"Cinzel",Georgia,serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-hand:"Almendra",Georgia,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.55 var(--f-body);
+  background:var(--wood) radial-gradient(ellipse at 50% 0%,#3a2312 0%,var(--wood) 70%) fixed}
+a{color:var(--red)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold-hi);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* --- horní lišta --- */
+.top{background:linear-gradient(180deg,var(--wood-2),var(--wood));border-bottom:2px solid var(--wood-line);position:sticky;top:0;z-index:30;box-shadow:0 6px 18px rgba(0,0,0,.55)}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:8px}
+.back{font:600 14px var(--f-body);color:#cdb88f;text-decoration:none}
+.back:hover{color:var(--gold-hi)}
+.hud{display:flex;align-items:center;gap:10px}
+.purse{display:flex;align-items:center;gap:8px;background:#0e0804;border:1px solid var(--gold);border-radius:999px;padding:4px 12px 4px 6px;color:var(--parch)}
+.coin{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:700 12px var(--f-display);color:#2a1a08;
+  background:radial-gradient(circle at 35% 30%,#fff3c4,#e2b84f 55%,#9c7424);border:1px solid #f6e0a0}
+.purse b{font:700 16px var(--f-display);color:var(--gold-hi)}
+.purse small{display:block;font:600 10px/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:#bfa26a}
+.rank{color:#e8d6ad;font:600 13px/1.2 var(--f-body);text-align:right}
+.rank small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#a88a57}
+.iconbtn{min-height:40px;min-width:40px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;
+  background:#120a05;border:1px solid var(--wood-line);color:#e8d6ad;cursor:pointer;padding:0 10px;font-size:14px}
+.iconbtn:hover{border-color:var(--gold)}
+.iconbtn svg{width:18px;height:18px}
+@media (max-width:620px){.rank{display:none}.iconbtn .lbl{display:none}}
+
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-top:2px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;min-height:44px;padding:0 14px;border:0;border-bottom:3px solid transparent;background:none;color:#b9a27a;cursor:pointer;
+  font:700 13px var(--f-display);letter-spacing:.04em;white-space:nowrap;border-radius:6px 6px 0 0}
+.tab:hover{color:var(--parch);background:rgba(255,255,255,.04)}
+.tab[aria-selected="true"]{color:var(--gold-hi);border-bottom-color:var(--gold);background:rgba(201,162,75,.12)}
+
+/* --- záhlaví stránky --- */
+.hero{padding-block:26px 18px;color:var(--parch)}
+.eyebrow{font:600 12px/1.3 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+h1,h2,h3{font-family:var(--f-display);letter-spacing:.03em;margin:0;text-wrap:balance}
+h1{font-size:clamp(30px,6vw,52px);line-height:1.05;color:#f8ecd0;margin-top:6px}
+.lede{max-width:70ch;margin:10px 0 0;color:#d9c49b;font-family:var(--f-hand);font-style:italic;font-size:18px}
+
+/* --- pergamen --- */
+main{padding-bottom:40px}
+.sheet{position:relative;background:linear-gradient(135deg,var(--parch) 0%,var(--parch-2) 60%,var(--parch-3) 100%);border:3px double #5a381b;border-radius:10px;
+  box-shadow:inset 0 0 50px rgba(110,70,25,.28),0 14px 30px rgba(0,0,0,.6);padding:clamp(16px,3vw,30px);margin-bottom:22px}
+.sheet::before{content:"";position:absolute;inset:6px;border:1px dashed rgba(110,75,41,.3);border-radius:6px;pointer-events:none}
+.sheet-head{border-bottom:1px solid rgba(90,56,27,.3);padding-bottom:12px;margin-bottom:18px}
+.sheet-head h2{font-size:clamp(20px,3vw,27px);margin-top:4px}
+.sheet-head p{margin:6px 0 0;color:var(--ink-2);max-width:78ch}
+.kicker{font:700 11px/1.2 var(--f-body);letter-spacing:.13em;text-transform:uppercase;color:var(--red)}
+.note{font-size:14px;color:var(--ink-2);background:rgba(90,56,27,.08);border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 6px 6px 0}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr))}
+.card{background:rgba(255,250,235,.45);border:1px solid rgba(90,56,27,.28);border-radius:8px;padding:14px 16px}
+.card h3{font-size:17px;margin-bottom:6px}
+.card p{margin:0 0 8px}
+.card p:last-child{margin-bottom:0}
+.tag{display:inline-block;font:700 10px/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;padding:4px 7px;border-radius:4px;background:rgba(125,29,29,.12);color:var(--red);border:1px solid rgba(125,29,29,.25)}
+.btn{min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #3d240f;background:#3a210d;color:#f6e6c2;cursor:pointer;font:700 14px var(--f-display);letter-spacing:.03em;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{background:#52300f}
+.btn.ghost{background:transparent;color:var(--ink);border-color:rgba(90,56,27,.45)}
+.btn.ghost:hover{background:rgba(90,56,27,.1)}
+
+/* --- mapa --- */
+.map-tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{min-height:40px;padding:0 12px;border-radius:999px;border:1px solid rgba(90,56,27,.4);background:rgba(255,250,235,.5);cursor:pointer;font:600 14px var(--f-body);color:var(--ink)}
+.chip[aria-pressed="true"]{background:#3a210d;color:#f6e6c2;border-color:#3a210d}
+.found{font:600 14px var(--f-body);color:var(--ink-2)}
+.map{position:relative;width:100%;aspect-ratio:1000/680;border:2px solid #5a381b;border-radius:8px;overflow:hidden;background:#efe1bd;box-shadow:inset 0 0 30px rgba(110,70,25,.25)}
+.map svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pin{position:absolute;transform:translate(-50%,-50%);width:var(--pin,34px);height:var(--pin,34px);border-radius:50%;padding:0;cursor:pointer;display:grid;place-items:center;
+  border:2px solid #f6e6c2;background:var(--c,#3a210d);color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.45);transition:transform .15s}
+.pin svg{width:55%;height:55%;position:static}
+.pin:hover,.pin:focus-visible{transform:translate(-50%,-50%) scale(1.15);z-index:5}
+.pin.seen{border-color:var(--gold-hi)}
+.pin[aria-current="true"]{box-shadow:0 0 0 4px var(--gold-hi),0 2px 8px rgba(0,0,0,.5);z-index:4}
+.pin .lab{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#1b1009;color:#f6e6c2;
+  font:600 12px var(--f-body);padding:3px 7px;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .15s}
+.pin:hover .lab,.pin:focus-visible .lab{opacity:1}
+.pin.dim{opacity:.25}
+@media (max-width:700px){.pin{width:26px;height:26px;border-width:1.5px}}
+@media (hover:none){.pin .lab{display:none}}
+.map-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:13px;color:var(--ink-2)}
+.map-legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--c);border:1.5px solid #f6e6c2;box-shadow:0 0 0 1px rgba(0,0,0,.3)}
+.loc-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.loc-list button{min-height:40px;padding:0 12px;border-radius:8px;border:1px solid rgba(90,56,27,.35);background:rgba(255,250,235,.45);cursor:pointer;font:600 14px var(--f-body);display:inline-flex;align-items:center;gap:8px}
+.loc-list button[aria-current="true"]{background:#3a210d;color:#f6e6c2}
+.loc-list button .dot{flex:0 0 auto}
+.loc-list button.seen::after{content:"✓";color:var(--good);font-weight:700}
+.loc-list button[aria-current="true"].seen::after{color:var(--gold-hi)}
+
+.detail-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(90,56,27,.3);padding-bottom:12px;margin-bottom:16px}
+.detail-head h2{font-size:clamp(20px,3vw,26px)}
+.badge{font:700 13px var(--f-body);padding:6px 12px;border-radius:999px;background:#5d4a33;color:#f3e6c6}
+.badge.new{background:var(--good);color:#fff}
+.c-hist{border-top:3px solid #5a381b}
+.c-1403{border-top:3px solid var(--red)}
+.c-zaj{border-top:3px solid var(--gold)}
+.c-dnes{border-top:3px solid #4f6b2f}
+.hint{margin-top:14px}
+
+/* mapa: záhlaví s filtry a mapa tvoří jeden pergamen */
+.map-top{margin-bottom:0;border-bottom:0;border-radius:10px 10px 0 0;padding-bottom:4px}
+.map-top::before{bottom:-6px;border-bottom:0;border-radius:6px 6px 0 0}
+.map-sheet{border-top:0;border-radius:0 0 10px 10px;padding-top:8px;margin-bottom:22px}
+@media (min-width:1024px){.map-sheet{margin-bottom:0}}
+.map-sheet::before{top:-6px;border-top:0;border-radius:0 0 6px 6px}
+.map-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.fs-open,.fs-close{min-height:38px;padding:0 12px;font-size:13px}
+.fs-close{display:none}
+
+/* režim celé obrazovky: jen mapa a podrobnosti */
+body.exploring{overflow:hidden}
+.map-layout.explore{position:fixed;inset:0;z-index:100;margin:0;overflow:auto;
+  padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));
+  background:var(--wood) radial-gradient(ellipse at 50% 0%,#3a2312 0%,var(--wood) 70%)}
+.explore .fs-open{display:none}
+.explore .fs-close{display:inline-flex}
+
+/* PC: záhlaví přes celou šířku, pod ním mapa celá na obrazovce a vpravo detail místa se samostatným posouváním */
+@media (min-width:1024px){
+  .map-layout{display:grid;grid-template-columns:auto minmax(340px,1fr);grid-template-areas:"top top" "map detail";gap:14px 20px;margin-bottom:22px}
+  .map-layout.explore{overflow:hidden;align-content:start}
+  .map-top{grid-area:top;padding:10px 20px 10px;border-bottom:3px double #5a381b;border-radius:10px}
+  .map-top::before{bottom:6px;border-bottom:1px dashed rgba(110,75,41,.3);border-radius:6px}
+  .map-sheet{border-top:3px double #5a381b;border-radius:10px}
+  .map-sheet::before{top:6px;border-top:1px dashed rgba(110,75,41,.3);border-radius:6px}
+  .map-top .sheet-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-bottom:8px;margin-bottom:8px}
+  .map-top .sheet-head h2{font-size:20px;margin:0}
+  .map-top .sheet-head p{display:none}
+  .map-top .map-tools{margin-bottom:0}
+  .map-top .chip{min-height:34px;padding:0 12px;font-size:13px}
+  .map-sheet{grid-area:map;padding:14px 20px}
+  .map-sheet .map-legend{margin-top:8px}
+  .map-sheet .loc-list{display:none}
+  .detail-wrap{grid-area:detail;position:relative;min-width:0}
+  .detail-wrap > .sheet{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;padding:18px 20px;margin:0}
+  .detail-wrap .grid.g3{grid-template-columns:1fr;gap:10px}
+  .detail-wrap .detail-head{position:sticky;top:-18px;z-index:2;margin:-18px -20px 14px;padding:14px 20px 12px;
+    background:linear-gradient(135deg,var(--parch),var(--parch-2));border-radius:8px 8px 0 0}
+  .detail-wrap .detail-head h2{font-size:22px}
+  .hero{padding-block:14px 12px}
+  h1{font-size:clamp(28px,3.4vw,40px)}
+}
+
+/* simulátor přes celou obrazovku: lišta nahoře, pod ní tři sloupce s vlastním posouváním */
+.sim-fs{display:flex;gap:8px;align-items:center}
+.sim-sheet .fs-close{display:none}
+.sim-sheet.explore .fs-open{display:none}
+.sim-sheet.explore .fs-close{display:inline-flex}
+.sim-sheet.explore{position:fixed;inset:0;z-index:100;margin:0;border-radius:0;overflow:auto;
+  padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.sim-sheet.explore .sheet-head{padding-bottom:8px;margin-bottom:8px;align-items:center!important}
+.sim-sheet.explore .sheet-head p{display:none}
+.sim-sheet.explore .sheet-head h2{font-size:22px}
+.sim-sheet.explore > details{margin-bottom:8px!important;padding-block:4px}
+.sim-sheet.explore .history{max-height:none}
+@media (min-width:1024px){
+  .sim-sheet.explore{display:flex;flex-direction:column;overflow:hidden}
+  .sim-sheet.explore .sheet-head,.sim-sheet.explore > details{flex:0 0 auto}
+  .sim-sheet.explore .sim{flex:1 1 auto;min-height:0;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);align-items:stretch;gap:14px}
+  .sim-sheet.explore .sim > .card{overflow-y:auto;min-height:0;overscroll-behavior:contain;padding:12px 14px}
+  .sim-sheet.explore fieldset{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;margin-bottom:8px}
+  .sim-sheet.explore fieldset > legend{grid-column:1/-1}
+  .sim-sheet.explore fieldset > .wide{grid-column:1/-1}
+  .sim-sheet.explore .field{margin-bottom:8px}
+  .sim-sheet.explore .field select{font-size:14px;min-height:38px;padding:4px 6px}
+  .sim-sheet.explore .sim-actions{position:sticky;bottom:-12px;margin:10px -14px -12px;padding:10px 14px 12px;flex-wrap:nowrap;
+    background:#efe0bb;border-top:1px solid rgba(90,56,27,.3);z-index:2}
+  .sim-sheet.explore .sim-actions .btn:first-child{flex:1 1 auto}
+  .sim-sheet.explore .meter{margin-bottom:8px}
+}
+
+/* fotografie místa */
+.photo-link{min-height:40px;padding:0 12px;border-radius:8px;border:1px solid #4f6b2f;background:rgba(79,107,47,.1);color:#33481c;
+  font:600 14px var(--f-body);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.photo-link:hover{background:rgba(79,107,47,.2)}
+.photo-link[hidden]{display:none}
+.lightbox{position:fixed;inset:0;z-index:300;background:rgba(10,6,3,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;cursor:zoom-out}
+.lightbox[hidden]{display:none}
+.lightbox img{max-width:100%;max-height:calc(100vh - 110px);object-fit:contain;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.lb-cap{color:#d9c49b;font-size:13px;text-align:center;max-width:900px;margin:0;cursor:auto}
+.lb-cap a{color:#f2d27a}
+.lb-close{position:absolute;top:12px;right:16px;min-height:40px}
+
+/* --- politika --- */
+.timeline{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.timeline li{display:grid;grid-template-columns:150px 1fr;gap:12px;background:rgba(255,250,235,.4);border-left:4px solid var(--red);padding:10px 14px;border-radius:0 6px 6px 0}
+.timeline b{font-family:var(--f-display)}
+@media (max-width:560px){.timeline li{grid-template-columns:1fr;gap:2px}}
+
+/* --- cesta stříbra --- */
+.phases{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:18px}
+@media (max-width:900px){.phases{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:480px){.phases{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.phase{min-height:56px;text-align:left;padding:8px 10px;border-radius:8px;border:1px solid rgba(90,56,27,.35);background:rgba(255,250,235,.4);cursor:pointer}
+.phase small{display:block;font:700 10px/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.phase span{font:700 13px/1.2 var(--f-display)}
+.phase[aria-selected="true"]{background:#3a210d;color:#f6e6c2;border-color:#3a210d}
+.phase[aria-selected="true"] small{color:var(--gold)}
+.phase-body{display:grid;grid-template-columns:220px 1fr;gap:22px;align-items:center}
+@media (max-width:640px){.phase-body{grid-template-columns:1fr}}
+.phase-art{width:100%;max-width:220px;aspect-ratio:1;justify-self:center;background:#170f08;border:2px solid #3a2414;border-radius:10px;overflow:hidden}
+.phase-art svg{width:100%;height:100%;display:block}
+.phase-body h3{font-size:clamp(19px,2.6vw,24px);margin:6px 0 8px}
+
+/* --- simulátor --- */
+.sim{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
+@media (max-width:980px){.sim{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.sim .log{grid-column:1/-1}}
+@media (max-width:640px){.sim{grid-template-columns:minmax(0,1fr)}}
+.field{display:grid;gap:4px;margin-bottom:12px}
+.field label,.field .lbl2{font-weight:600;font-size:14px}
+.field select,.field input[type=number]{min-height:40px;width:100%;padding:6px 8px;border:1px solid rgba(90,56,27,.45);border-radius:6px;background:#fbf5e4;color:var(--ink);font:15px var(--f-body)}
+.field input[type=range]{width:100%;accent-color:#7a4b1d;min-height:32px}
+.range-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.range-row b{color:var(--ink);font-size:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cal{display:flex;gap:16px;background:#1b1009;color:#f3e6c6;border-radius:8px;padding:8px 14px;font-size:14px}
+.cal small{display:block;font:700 10px/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:#bfa26a}
+.cal b{font-family:var(--f-display)}
+.meter{margin-bottom:12px}
+.meter .row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+.bar{height:10px;border-radius:999px;background:rgba(90,56,27,.18);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px;transition:width .3s}
+.ledger{margin-top:12px;border-top:1px solid rgba(90,56,27,.3);padding-top:10px;font-size:14px;display:grid;gap:4px}
+.ledger div{display:flex;justify-content:space-between;gap:10px}
+.ledger .sum{border-top:1px solid rgba(90,56,27,.3);padding-top:6px;margin-top:4px;font-weight:700}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+.log .entry{border-radius:8px;padding:12px 14px;border:1px solid rgba(90,56,27,.3);background:rgba(255,250,235,.45)}
+.log .entry.good{background:var(--good-soft);border-color:#9fc08e}
+.log .entry.bad{background:var(--bad-soft);border-color:#d79c8e}
+.log .entry.water{background:var(--water-soft);border-color:#8fb4bb}
+.log .entry h3{font-size:16px;margin:4px 0 6px}
+.log .entry p{margin:0 0 6px;font-size:15px}
+.history{list-style:none;margin:10px 0 0;padding:0;font-size:13px;color:var(--ink-2);display:grid;gap:3px;max-height:150px;overflow:auto}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+fieldset{border:1px solid rgba(90,56,27,.3);border-radius:8px;padding:6px 12px 2px;margin:0 0 12px;min-width:0}
+legend{font:700 14px var(--f-display);padding:0 6px}
+.hint2{display:block;font-size:12px;line-height:1.35;color:var(--muted)}
+.hint2.warn{color:var(--bad);font-weight:700}
+.check{display:flex;gap:8px;align-items:center;min-height:40px;font-weight:600;font-size:14px;margin-bottom:8px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:#7a4b1d;flex:0 0 auto}
+.statgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:12px}
+.stat{background:rgba(90,56,27,.09);border-radius:6px;padding:6px 8px}
+.stat small{display:block;font:700 10px/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat b{font-family:var(--f-display);font-size:15px}
+.flags{display:flex;flex-wrap:wrap;gap:4px}
+.risks .meter{margin-bottom:6px}
+.risks .bar{height:7px}
+.choices{display:grid;gap:8px;margin-top:10px}
+.choices:empty{display:none}
+.choice{min-height:48px;text-align:left;padding:8px 12px;border-radius:8px;border:2px solid #4a2e15;background:#2a180b;color:#f6e6c2;cursor:pointer;font:600 15px/1.3 var(--f-body)}
+.choice small{display:block;font-weight:400;font-size:13px;color:#d9c49b;margin-top:2px}
+.choice:hover{border-color:var(--gold)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.history{max-height:260px}
+.sim-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.sim-actions .btn:first-child{flex:1 1 220px}
+
+/* --- tabulky --- */
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{background:#3a210d;color:#f3e6c6;text-align:left;font:700 13px var(--f-display);padding:8px 10px}
+.tbl td{padding:8px 10px;border-bottom:1px solid rgba(90,56,27,.2);vertical-align:top}
+.tbl-wrap{overflow-x:auto}
+
+/* --- kvíz --- */
+.quiz{max-width:860px;margin:0 auto}
+.q-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.q-step{font:700 14px var(--f-display);background:#1b1009;color:var(--gold-hi);padding:6px 12px;border-radius:6px}
+.q-title{font-size:clamp(18px,2.6vw,23px);margin:8px 0 16px;line-height:1.3}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px}
+.opt{min-height:52px;text-align:left;display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;border:2px solid #4a2e15;background:#2a180b;color:#f6e6c2;cursor:pointer;font:15px/1.4 var(--f-body)}
+.opt:hover:not(:disabled){border-color:var(--gold)}
+.opt .k{flex:0 0 auto;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#120a05;border:1px solid #7a5a32;font:700 12px var(--f-display);color:var(--gold-hi)}
+.opt.ok{background:#1f4a26;border-color:#7fc28a}
+.opt.ko{background:#5c1717;border-color:#e08a7c}
+.opt.off{opacity:.45}
+.opt:disabled{cursor:default}
+.feedback{margin-top:16px;border-radius:8px;padding:14px 16px;border:1px solid}
+.feedback.ok{background:var(--good-soft);border-color:#9fc08e}
+.feedback.ko{background:var(--bad-soft);border-color:#d79c8e}
+.feedback h3{font-size:17px;margin-bottom:6px}
+.feedback .act{display:flex;justify-content:flex-end;margin-top:10px}
+.results{text-align:center;padding:16px 0}
+.seal{width:80px;height:80px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;color:var(--gold-hi);font:700 30px var(--f-display);
+  background:radial-gradient(circle,#a82424 0%,#751414 70%,#460909 100%);border:2px solid #4a0d0d;box-shadow:0 4px 10px rgba(0,0,0,.5)}
+.results .title{display:inline-block;margin:6px 0 12px;padding:8px 22px;border-radius:999px;background:rgba(125,29,29,.12);border:1px solid rgba(125,29,29,.3);font:700 20px var(--f-display)}
+
+/* --- slovník --- */
+.search{position:relative;max-width:360px;width:100%}
+.search input{width:100%;min-height:44px;padding:8px 12px 8px 36px;border:1px solid rgba(90,56,27,.45);border-radius:8px;background:#fbf5e4;font:15px var(--f-body);color:var(--ink)}
+.search svg{position:absolute;left:10px;top:12px;width:18px;height:18px;color:var(--muted)}
+.lex .card h3{font-size:16px;margin:6px 0 4px}
+.lex .card p{font-size:15px}
+
+/* --- patička --- */
+footer{color:#bba57c;font-size:14px;padding:22px 0 36px;border-top:1px solid #3a2414;margin-top:10px}
+footer p{margin:0 0 6px}
+footer a{color:#e8d6ad}
+.toast{position:fixed;left:50%;bottom:20px;z-index:200;transform:translateX(-50%) translateY(20px);opacity:0;background:#1b1009;color:var(--gold-hi);border:1px solid var(--gold);
+  padding:8px 16px;border-radius:999px;font:700 14px var(--f-display);pointer-events:none;transition:opacity .25s,transform .25s;z-index:50}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ==================== Březové Hory 1892: úpravy palety a nové části ==================== */
+/* Rám je místo dřeva uhelně šedý a železný, listy zůstávají papírové (jednotný vzhled se sesterskou aplikací Kutná Hora 1403). */
+:root{
+  --wood:#121110; --wood-2:#1f1d1a; --wood-line:#5b544a;
+  --red:#7a2a1c; --gold:#b9a06a; --gold-hi:#e9d394;
+}
+body{background:var(--wood) radial-gradient(ellipse at 50% 0%,#2b2925 0%,var(--wood) 70%) fixed}
+
+/* --- čísla katastrofy --- */
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px;margin:0 0 18px}
+.num{background:#1d1b18;color:#f3e6c6;border-radius:8px;padding:12px 14px;border:1px solid #4a443b}
+.num b{display:block;font:700 30px/1.1 var(--f-display);color:var(--gold-hi)}
+.num span{font-size:14px;color:#d6c7a3}
+.timeline li.key b{color:var(--red)}
+.src{font-size:14px;color:var(--ink-2)}
+.src a{color:var(--ink-2)}
+
+/* --- textová adventura --- */
+.adv{max-width:900px;margin:0 auto}
+.adv-hud{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;background:#1d1b18;color:#efe2c2;
+  border-radius:8px;padding:10px 14px;margin-bottom:16px;border:1px solid #4a443b}
+.adv-hud .clock{font:700 20px var(--f-display);color:var(--gold-hi);letter-spacing:.04em}
+.adv-hud small{display:block;font:600 11px/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:#a99a7a}
+.smoke{flex:1 1 200px;max-width:320px}
+.smoke .bar{height:10px;border-radius:999px;background:#3a3530;overflow:hidden;margin-top:6px}
+.smoke .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8d8579,#4a4540);transition:width .5s}
+.adv-place{font:600 13px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+.adv h3.adv-title{font:700 clamp(22px,3vw,28px)/1.2 var(--f-display);margin:0 0 12px;color:var(--ink)}
+.adv-text p{margin:0 0 12px;font-size:17px;line-height:1.6}
+.adv-text p.speech{padding-left:14px;border-left:3px solid var(--parch-line);font-style:italic}
+.adv-choices{display:grid;gap:10px;margin:18px 0 6px}
+.adv-choice{min-height:52px;text-align:left;display:flex;gap:12px;align-items:center;padding:10px 14px;border-radius:8px;border:2px solid #3e3a33;
+  background:#24211d;color:#f6e6c2;cursor:pointer;font:16px/1.35 var(--f-body)}
+.adv-choice:hover{border-color:var(--gold)}
+.adv-choice .k{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#120f0c;border:1px solid #6d6455;font:700 13px var(--f-display);color:var(--gold-hi)}
+.adv-fact{margin-top:18px}
+.adv-fact summary{cursor:pointer;font-weight:700;color:var(--ink-2);min-height:40px;display:flex;align-items:center}
+.adv-fact .note{margin-top:6px}
+.adv-end{border-radius:8px;padding:14px 16px;margin:16px 0 0;border:1px solid}
+.adv-end.ok{background:var(--good-soft);border-color:#9fc08e}
+.adv-end.bad{background:#e6e0d6;border-color:#a59c8c}
+.adv-end.mid{background:var(--water-soft);border-color:#8fb0b8}
+.adv-end h4{margin:0 0 6px;font:700 18px var(--f-display)}
+.adv-end p{margin:0 0 8px}
+.adv-endings{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.adv-endings span{font-size:13px;padding:4px 10px;border-radius:999px;border:1px dashed #9c8a68;color:var(--muted)}
+.adv-endings span.got{border-style:solid;background:#fbf5e4;color:var(--ink)}
+.adv-warn{background:#fbf5e4;border:1px solid var(--parch-line);border-radius:8px;padding:12px 14px;margin:0 0 16px;font-size:15px}
+.adv-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.memorial{text-align:center;font:italic 16px var(--f-hand);color:var(--ink-2);margin:6px 0 0}
+
+/* --- katastrofa: obsah a seznamy --- */
+.kat-nav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.kat-nav a{font:600 14px var(--f-body);padding:6px 12px;border-radius:999px;border:1px solid var(--parch-line);background:#fbf5e4;color:var(--ink);text-decoration:none;min-height:36px;display:inline-flex;align-items:center}
+.kat-nav a:hover{border-color:var(--red)}
+.kat-h{margin:26px 0 12px;font-size:21px;scroll-margin-top:110px}
+.plist{margin:8px 0 0;padding-left:18px}
+.plist li{margin:0 0 6px;font-size:15px}
+.src-list li{font-size:15px}
+.pin.approx{border-style:dashed}
+.pin.edge{opacity:.85}
+.note.pos{margin:10px 0 0;font-size:14px}
+/* --- adventura: doplňky --- */
+details.adv-warn summary{cursor:pointer;font-weight:700;min-height:32px}
+details.adv-warn p{margin:8px 0 0}
+.adv-hud .chap{font:700 15px var(--f-display);color:#efe2c2}
+.adv-items{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 14px}
+.adv-items span{font-size:13px;padding:4px 10px;border-radius:999px;background:#fbf5e4;border:1px solid var(--parch-line);color:var(--ink)}
+.adv-items span.who{background:var(--good-soft);border-color:#9fc08e}
+.adv-dizzy{font-style:italic;color:var(--bad);margin:12px 0 0}
+.adv-choice.dizzy span:last-child{filter:blur(.4px);letter-spacing:.02em}
+.adv-confirm{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.adv-actions .btn:disabled{opacity:.4;cursor:default}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <a class="back" href="../">← Všechny školní aplikace</a>
+      <div class="hud">
+        <button class="iconbtn" id="sound" aria-pressed="true" title="Zvukové potvrzení kliknutí">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M9.4 3.1A1 1 0 0 1 10 4v12a1 1 0 0 1-1.7.7L4.6 13H2a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h2.6l3.7-3.7a1 1 0 0 1 1.1-.2z"/><path id="snd-waves" d="M13.8 6.2a1 1 0 0 1 1.4 0 5.5 5.5 0 0 1 0 7.6 1 1 0 1 1-1.4-1.4 3.5 3.5 0 0 0 0-4.8 1 1 0 0 1 0-1.4z"/><path id="snd-off" hidden d="M12.3 7.3a1 1 0 0 1 1.4 0L15 8.6l1.3-1.3a1 1 0 1 1 1.4 1.4L16.4 10l1.3 1.3a1 1 0 0 1-1.4 1.4L15 11.4l-1.3 1.3a1 1 0 0 1-1.4-1.4l1.3-1.3-1.3-1.3a1 1 0 0 1 0-1.4z"/></svg>
+          <span class="lbl" id="sound-lbl">Zvuk kliknutí</span>
+        </button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Části aplikace">
+      <button class="tab" role="tab" id="t-mapa" aria-controls="p-mapa">Mapa 1892</button>
+      <button class="tab" role="tab" id="t-katastrofa" aria-controls="p-katastrofa">31. května 1892</button>
+      <button class="tab" role="tab" id="t-adventura" aria-controls="p-adventura">Odpolední šichta</button>
+      <button class="tab" role="tab" id="t-slovnik" aria-controls="p-slovnik">Slovník</button>
+      <button class="tab" role="tab" id="t-kviz" aria-controls="p-kviz">Kvíz</button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Dějepis · Geografie · regionální dějiny Příbramska</div>
+    <h1>Březové Hory 1892</h1>
+  </div>
+
+<main>
+<!-- ==================== MAPA ==================== -->
+<section id="p-mapa" role="tabpanel" aria-labelledby="t-mapa">
+<div class="map-layout" id="map-layout">
+  <div class="sheet map-top">
+    <div class="sheet-head">
+      <div class="kicker">Schematická mapa · měřítko přibližné</div>
+      <h2>Březové Hory a Příbram roku 1892</h2>
+      <p>Klikni na značku nebo na název místa pod mapou. Polohy dolů a kostelů vycházejí ze souřadnic a ze vzdáleností uváděných po katastrofě; místa s přerušovaným okrajem značky mají polohu jen přibližnou. Čárkovaně je naznačeno, kudy se podzemím šířil kouř.</p>
+    </div>
+    <div class="map-tools">
+      <div class="filters" role="group" aria-label="Filtr míst" id="filters"></div>
+      <div class="map-right">
+        <span class="found">Prozkoumáno <b id="found">0</b> z <span id="total">0</span></span>
+        <button class="btn ghost fs-open" id="fs-open" type="button" title="Mapa a podrobnosti přes celou obrazovku">⛶ Celá obrazovka</button>
+        <button class="btn fs-close" id="fs-close" type="button" title="Zavřít (Esc)">✕ Zavřít</button>
+      </div>
+    </div>
+  </div>
+  <div class="sheet map-sheet">
+    <div class="map" id="map">
+      <svg viewBox="0 0 1000 680" role="img" aria-labelledby="map-title map-desc" id="map-svg">
+        <title id="map-title">Schematická mapa Březových Hor a Příbrami roku 1892</title>
+        <desc id="map-desc">Hornický městys Březové Hory leží na vyvýšenině západně od údolí Litavky, Příbram na východ od něj. Kolem Březových Hor stojí šachty dolů Marie, Císař František Josef I. (Ševčinský), Vojtěch, Anna a Prokop, severněji doly Ferdinand a Lill, jižně Drkolnov. Na kopci východně od příbramského náměstí stojí Svatá Hora. Stříbrná huť stojí asi 4 km severně u Lhoty.</desc>
+        <defs>
+          <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><line x1="0" y1="0" x2="0" y2="9" stroke="#c9ad74" stroke-width="1"/></pattern>
+          <pattern id="slope" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)"><line x1="0" y1="0" x2="0" y2="7" stroke="#8a6c3e" stroke-width="1.1" opacity=".55"/></pattern>
+          <marker id="arr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7a5a32"/></marker>
+        </defs>
+        <rect width="1000" height="680" fill="#efe1bd"/>
+        <rect width="1000" height="680" fill="url(#hatch)" opacity=".35"/>
+
+        <!-- vyvýšenina Březových Hor (rudní pásmo) -->
+        <path d="M150 300 C 140 200 220 120 320 110 C 420 102 470 160 470 230 C 470 290 420 330 380 360 C 340 400 330 470 270 500 C 200 530 160 460 150 400 Z" fill="#e3cf9f" stroke="#b39a68" stroke-width="2"/>
+        <path d="M150 300 C 140 200 220 120 320 110 C 420 102 470 160 470 230" fill="none" stroke="url(#slope)" stroke-width="16" opacity=".7"/>
+
+        <!-- Svatá Hora -->
+        <ellipse cx="830" cy="340" rx="78" ry="60" fill="#dcc596" stroke="#a88a58" stroke-width="2"/>
+        <path d="M752 340 C 760 300 800 280 830 280 C 870 280 900 300 908 340" fill="none" stroke="url(#slope)" stroke-width="14" opacity=".8"/>
+
+        <!-- Litavka -->
+        <path id="litavka" d="M268 680 C 300 600 340 500 368 410 C 384 360 400 330 414 312 C 432 286 452 262 470 230 C 495 170 515 90 535 0" fill="none" stroke="#4d7f8f" stroke-width="10" stroke-linecap="round"/>
+        <path d="M268 680 C 300 600 340 500 368 410 C 384 360 400 330 414 312 C 432 286 452 262 470 230 C 495 170 515 90 535 0" fill="none" stroke="#a9cdd6" stroke-width="2" stroke-dasharray="10 12" stroke-linecap="round"/>
+        <path id="litavka-label" d="M300 610 C 318 560 334 520 346 480" fill="none"/>
+        <text font-family="Almendra, Georgia, serif" font-style="italic" font-size="17" fill="#2f5f72"><textPath href="#litavka-label">Litavka</textPath></text>
+        <!-- Příbramský potok -->
+        <path d="M1000 215 C 930 235 860 262 790 282 C 740 296 690 300 620 300 C 540 300 470 305 414 312" fill="none" stroke="#4d7f8f" stroke-width="6" stroke-linecap="round"/>
+        <path id="potok-label" d="M560 296 C 600 296 640 296 690 292" fill="none"/>
+        <text font-family="Almendra, Georgia, serif" font-style="italic" font-size="14" fill="#2f5f72"><textPath href="#potok-label">Příbramský potok</textPath></text>
+
+        <!-- cesty -->
+        <g fill="none" stroke="#a5875a" stroke-width="5" stroke-linecap="round" opacity=".9">
+          <path d="M305 372 C 400 352 500 312 580 284 C 640 262 680 248 708 240"/>
+          <path d="M716 248 C 760 278 795 306 820 328"/>
+          <path d="M705 230 C 690 160 650 80 625 0"/>
+          <path d="M290 380 C 200 400 100 430 0 452"/>
+          <path d="M300 384 C 292 470 280 560 268 640"/>
+          <path d="M705 240 C 780 230 880 205 1000 190"/>
+        </g>
+        <g font-family="Almendra, Georgia, serif" font-style="italic" font-size="15" fill="#7a5a32">
+          <text x="18" y="440" transform="rotate(-12 18 440)">k Bohutínu</text>
+          <text x="880" y="186" transform="rotate(-8 880 186)">do Prahy</text>
+          <text x="486" y="320" transform="rotate(-20 486 320)">Březohorská silnice</text>
+          <text x="740" y="315" transform="rotate(36 740 315)">krytá schodiště</text>
+          <text x="660" y="62" transform="rotate(64 660 62)">k Lhotě</text>
+        </g>
+
+        <!-- podzemní spojení dolů, kterým se šířil kouř (schematicky) -->
+        <g fill="none" stroke="#6a6158" stroke-width="3" stroke-dasharray="3 7" stroke-linecap="round" opacity=".85">
+          <path d="M227 330 L 284 388"/>
+          <path d="M227 330 L 356 311"/>
+          <path d="M284 388 L 356 311"/>
+          <path d="M356 311 L 405 268"/>
+          <path d="M318 225 L 405 268"/>
+          <path d="M318 225 L 356 311"/>
+        </g>
+        <text x="20" y="602" font-family="Almendra, Georgia, serif" font-style="italic" font-size="14" fill="#5e564c">··· šíření kouře podzemím 31. 5. 1892 (schematicky)</text>
+
+        <!-- haldy u dolů -->
+        <g fill="#8d7450" stroke="#5e4728" stroke-width="1.2">
+          <path d="M196 342 l12-16 12 16z"/><path d="M254 404 l11-15 11 15z"/><path d="M366 330 l10-13 10 13z"/>
+          <path d="M418 288 l11-15 11 15z"/><path d="M294 244 l11-15 11 15z"/><path d="M332 158 l9-12 9 12z"/>
+          <path d="M552 60 l10-13 10 13z"/><path d="M280 670 l9-12 9 12z"/>
+        </g>
+
+        <!-- zástavba Březových Hor -->
+        <g fill="#c4a774" stroke="#8a6b3d" stroke-width="1.2">
+          <rect x="300" y="390" width="22" height="14"/><rect x="345" y="380" width="20" height="14"/><rect x="258" y="350" width="18" height="13"/>
+          <rect x="330" y="335" width="18" height="13"/><rect x="235" y="380" width="18" height="13"/><rect x="355" y="440" width="22" height="14"/>
+          <rect x="300" y="440" width="18" height="13"/><rect x="380" y="290" width="16" height="12"/><rect x="270" y="300" width="16" height="12"/>
+        </g>
+        <rect x="292" y="352" width="44" height="28" fill="#d8bf8b" stroke="#8a6b3d" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="175" y="104" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="22" font-weight="700" fill="#6b4f2c" letter-spacing="3">BŘEZOVÉ HORY</text>
+        <text x="175" y="124" text-anchor="middle" font-family="Almendra, Georgia, serif" font-style="italic" font-size="15" fill="#7a5a32">hornický městys</text>
+
+        <!-- zástavba Příbrami -->
+        <g fill="#c4a774" stroke="#8a6b3d" stroke-width="1.2">
+          <rect x="650" y="225" width="26" height="16"/><rect x="740" y="215" width="24" height="15"/><rect x="745" y="255" width="22" height="15"/>
+          <rect x="640" y="262" width="22" height="15"/><rect x="700" y="270" width="24" height="15"/><rect x="660" y="320" width="22" height="15"/>
+          <rect x="610" y="240" width="20" height="14"/><rect x="770" y="240" width="20" height="14"/><rect x="725" y="190" width="20" height="14"/>
+          <rect x="600" y="330" width="20" height="14"/><rect x="705" y="330" width="22" height="14"/>
+        </g>
+        <rect x="680" y="222" width="48" height="34" fill="#d8bf8b" stroke="#8a6b3d" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="760" y="160" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="26" font-weight="700" fill="#6b4f2c" letter-spacing="3">PŘÍBRAM</text>
+        <text x="760" y="180" text-anchor="middle" font-family="Almendra, Georgia, serif" font-style="italic" font-size="15" fill="#7a5a32">královské horní město</text>
+        <text x="830" y="422" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="17" font-weight="700" fill="#6b4f2c" letter-spacing="2">SVATÁ HORA</text>
+
+        <!-- šipky k místům mimo výřez -->
+        <g fill="none" stroke="#7a5a32" stroke-width="1.6" marker-end="url(#arr)">
+          <path d="M650 50 L 650 26"/><path d="M450 50 L 450 26"/><path d="M40 470 L 18 470"/>
+        </g>
+
+        <!-- měřítko -->
+        <g transform="translate(840 650)" font-family="Source Sans 3, sans-serif" font-size="13" fill="#5e4728">
+          <path d="M0 0h116M0 -5v10M58 -3v6M116 -5v10" stroke="#5e4728" stroke-width="2"/>
+          <text x="58" y="-10" text-anchor="middle">500 m (přibližně)</text>
+        </g>
+
+        <!-- růžice -->
+        <g transform="translate(950 80)">
+          <circle r="28" fill="#f6ead0" stroke="#8a6b3d" stroke-width="1.5"/>
+          <polygon points="0,-38 7,-8 0,0 -7,-8" fill="#7a2a1c"/><polygon points="0,38 7,8 0,0 -7,8" fill="#5c3d1d"/>
+          <polygon points="-38,0 -8,-7 0,0 -8,7" fill="#5c3d1d"/><polygon points="38,0 8,-7 0,0 8,7" fill="#5c3d1d"/>
+          <text y="-44" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="15" font-weight="700" fill="#7a2a1c">S</text>
+        </g>
+      </svg>
+      <div id="pins"></div>
+    </div>
+    <div class="map-legend" id="legend"></div>
+    <div class="loc-list" id="loc-list" aria-label="Seznam míst"></div>
+  </div>
+
+  <div class="detail-wrap">
+  <div class="sheet" id="detail" aria-live="polite" tabindex="-1">
+    <div class="detail-head">
+      <div>
+        <div class="kicker" id="d-cat"></div>
+        <h2 id="d-name"></h2>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="badge" id="d-badge"></span>
+      </div>
+    </div>
+    <div class="grid g3">
+      <div class="card c-hist"><h3>Historie</h3><p id="d-hist"></p></div>
+      <div class="card c-1403"><h3>V roce 1892</h3><p id="d-1892"></p></div>
+      <div class="card c-zaj"><h3>Zajímavost</h3><p id="d-zaj"></p></div>
+      <div class="card c-dnes" id="d-dnes-card"><h3>Dnes</h3><p id="d-dnes"></p><button type="button" class="photo-link" id="d-photo-btn">📷 Zobrazit fotografii</button></div>
+    </div>
+    <p class="note pos" id="d-pos" hidden></p>
+    <p class="note hint"><b>K zamyšlení:</b> <span id="d-tip"></span></p>
+  </div>
+  </div>
+</div>
+</section>
+
+<!-- ==================== KATASTROFA ==================== -->
+<section id="p-katastrofa" role="tabpanel" aria-labelledby="t-katastrofa" hidden>
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="kicker">Úterý 31. května 1892</div>
+      <h2>Požár v dole Marie</h2>
+      <p>Největší důlní neštěstí v dějinách českých zemí a ve své době nejhorší neštěstí v rudném hornictví na světě. Oheň vznikl v dole Marie, ale většina obětí zemřela jinde: kouř s jedovatým oxidem uhelnatým pronikl spojenými chodbami do sousedních dolů.</p>
+    </div>
+    <nav class="kat-nav" aria-label="Obsah">
+      <a href="#k-prubeh">Průběh</a><a href="#k-doly">Doly</a><a href="#k-lide">Kdo byl kdo</a><a href="#k-zachrana">Záchranáři</a><a href="#k-soud">Vyšetřování a soud</a><a href="#k-pomoc">Pomoc a pohřby</a><a href="#k-tisk">Dobový tisk a prameny</a>
+    </nav>
+    <div class="nums">
+      <div class="num"><b>835</b><span>mužů sfárala odpolední šichta do zasažených dolů</span></div>
+      <div class="num"><b>319</b><span>mrtvých: 314 horníků v dole a 5 záchranářů</span></div>
+      <div class="num"><b>522</b><span>vyneseno živých, z toho 39 v bezvědomí</span></div>
+      <div class="num"><b>285–289</b><span>vdov (podle pramene)</span></div>
+      <div class="num"><b>742–961</b><span>sirotků (podle pramene a toho, kdo se počítal)</span></div>
+    </div>
+
+    <h3 class="kat-h" id="k-prubeh">Průběh hodinu po hodině</h3>
+    <ol class="timeline">
+      <li><b>Kolem 4.00</b><span>Ranní šichta sfárá. Horníci Emanuel Kříž, Václav Havelka, Jan Kadlec a Alois Nosek pracují na 29. patře dolu Marie, asi 955 m pod povrchem. Těžba se tu nevede, přestavují se sklípky (zásobníky na rudu) u šachty.</span></li>
+      <li><b>Dopoledne</b><span>Kříž si vymění knot v kahanu a doutnající zbytek odhodí. Ten propadne mřížkou do sklípku asi 10 m pod nimi, kde leží odřezky výdřevy a dřevo nasáklé olejem z lan a stoupacího stroje. Muži čtvrt hodiny pozorují, zda se něco nevzňalo. Nic nevidí.</span></li>
+      <li><b>11.00–12.10</b><span>Strážce František Pučálka otevře vrata ke stoupacímu stroji a ranní šichta vyfárává. Teplota na 29. patře je 24,16 °C, stejná jako na povrchu. Přirozený tah vzduchu v šachtě proto skoro nefunguje.</span></li>
+      <li class="key"><b>Kolem 13.00</b><span>Nejméně hodinu po odhození knotu vzplane sklípek a od něj výdřeva šachty. Celé náraziště 29. patra je v plamenech. Oheň stoupá šachtou vzhůru.</span></li>
+      <li class="key"><b>Kolem 13.30</b><span>Horníci Josef Sladovník, Josef Ječmen a Josef Hrubý sfárávají na odpolední šichtu, na 27. patře cítí kouř a na 29. vidí plameny. Vrátí se a ohlásí požár vrchnímu hornímu správci Hugu Gröglerovi.</span></li>
+      <li><b>Kolem 14.00</b><span>Gröglerova písemná zpráva odchází poslem do Příbrami a dál telegrafem. Kouř zaplní důl Císař František Josef I. (350 m od Marie) a ten se stává nepřístupným. Prázdná klec se odtud vrátí jen s klobouky mužů, kteří z ní vypadli.</span></li>
+      <li class="key"><b>Kolem 14.30</b><span>Kouř dorazí do dolu Vojtěch (550 m). Mnoho horníků zde čeká u šachty na klec.</span></li>
+      <li><b>Kolem 15.00</b><span>Kouř dorazí na 28. patro dolu Prokop (600 m). Většina mužů z Prokopu uniká přes důl Anna (820 m), který se stává hlavní základnou záchrany. Jeho těžní stroj i stoupací stroj běží bez přestávky.</span></li>
+      <li><b>Odpoledne</b><span>Vedení nechá do dolu Marie pouštět vodu ze čtyř hydrantů a hasičské stříkačky. Profesor Karel Balling a závodní lékař Josef Rosol prý s hašením vodou nesouhlasili. Vznikající pára a kouř se tlačí do chodeb a tah vzduchu se zastaví. V jedné štole se pálí sláma a dřevěné uhlí, aby se tah obnovil, bez velkého účinku.</span></li>
+      <li><b>18.00–19.00</b><span>Záchranné skupiny hledají omámené horníky. Umírá pět záchranářů. Hlavní záchrana prvního dne končí.</span></li>
+      <li class="key"><b>1. června, 1.00</b><span>Okresní hejtman baron Weber z Ebenhofu nechává záchranné pokusy zastavit: plyn už pronikl i do Anny a záchranářů umírá víc, než kolik se jich daří zachránit. Požár je v noci uhašen.</span></li>
+      <li class="key"><b>1. června, kolem 13.00</b><span>Z dolu Císař František Josef I. se ozve 28 signálních úderů. Dole jsou ještě živí lidé. Když k nim dorazí klec, nikoho živého už nenajdou.</span></li>
+      <li><b>2. června</b><span>Záchranáři najdou živé hormistra Štefana a horníka Rudlera. Horník Jan Soukup přežil v dole Marie zhruba 40 hodin. Do Příbrami přijíždí ministr orby hrabě Julius Falkenhayn, poslanci T. G. Masaryk, Blažej Mixa a Josef Kaizl. Začínají hromadné pohřby.</span></li>
+      <li><b>8. června</b><span>Místodržitel hrabě František Thun předává pozůstalým dar císaře Františka Josefa I. ve výši 10 000 zlatých.</span></li>
+      <li><b>9. června</b><span>Vyprošťování těl končí, nahoru jich bylo dopraveno 307. V příbramské nemocnici umírá otrávený horník Václav Krátký.</span></li>
+      <li><b>13. června</b><span>Horník Václav Havelka, který v neštěstí ztratil dva bratry, jde k okresnímu soudu v Příbrami a uvede Kříže jako pravděpodobného původce požáru. Všichni čtyři muži z 29. patra jsou zatčeni.</span></li>
+      <li><b>24. června</b><span>Obnovena běžná těžba rudy, se změněnými směnami 6–14, 14–22 a 22–6 hodin.</span></li>
+      <li><b>2.–3. července</b><span>Soud v Praze, viz níže.</span></li>
+      <li><b>22. září</b><span>V dole Marie mezi 18. a 19. patrem nalezli poslední oběť, dělníka, který opravoval stoupací stroj.</span></li>
+      <li><b>1893–1894</b><span>Důl Marie je obnoven, náraziště a hlavní chodby dostanou elektrické osvětlení. Stoupací stroj slouží po opravě až do roku 1912.</span></li>
+    </ol>
+
+    <h3 class="kat-h" id="k-doly">Pět zasažených dolů</h3>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Důl</th><th>Vzdálenost od Marie</th><th>Hloubka šachty</th><th>Kouř dorazil</th><th>Těla nalezená do 7. června</th></tr></thead>
+      <tbody>
+        <tr><td>Marie</td><td>ohnisko požáru</td><td>asi 1 110 m, 32 pater</td><td>kolem 13.00</td><td>vyprošťována později (nejvíc těl na 17. patře)</td></tr>
+        <tr><td>Císař František Josef I. (Ševčinský)</td><td>350 m</td><td>991 m</td><td>kolem 14.00</td><td>129</td></tr>
+        <tr><td>Vojtěch</td><td>550 m</td><td>1 099 m</td><td>kolem 14.30</td><td>130</td></tr>
+        <tr><td>Prokop</td><td>600 m</td><td>909 m</td><td>kolem 15.00</td><td>většina mužů unikla přes Annu</td></tr>
+        <tr><td>Anna</td><td>820 m</td><td>942 m</td><td>v noci</td><td>45</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note" style="margin-top:12px">Počty mrtvých po dolech se v pramenech liší. F. Pošepný uvádí těla nalezená do 7. června (tabulka), jiné zdroje uvádějí 100 mrtvých ze 161 mužů v dole Císař František Josef I., 85 nebo 95 ze 174 ve Vojtěchu a 45 z asi 320 v Anně. Mezi mrtvými byli 3 dozorci, 1 zástupce dozorce, 267 lamačů, 3 tesaři, 5 báňských učňů, 7 kočích, 17 vozačů a 17 nakladačů. V dole zahynulo i 9 koní.</p>
+
+    <h3 class="kat-h" id="k-lide">Kdo byl kdo v roce 1892</h3>
+    <div class="grid g2 people" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">
+      <div class="card"><span class="tag">Horní ředitelství a správa dolů</span>
+        <ul class="plist">
+          <li><b>Jan Novák</b>, c. k. vrchní horní rada (dvorní rada), přednosta horního ředitelství v Příbrami</li>
+          <li><b>Hugo Grögler</b>, vrchní horní správce; vedl záchranu a sfáral šestkrát (v některých textech „Gröger“)</li>
+          <li><b>Vojtěch Čáp</b>, správce dolu Marie</li>
+          <li><b>rada Langer</b>, <b>rada Onderka</b>, <b>Suchý</b>, <b>ing. Mayer</b>, úředníci přítomní u záchrany</li>
+          <li><b>důlní rada Vajc</b>, promluvil na hromadném pohřbu</li>
+          <li><b>hormistři Štefan, Hemlhaker a Sojka</b>; hormistr Štefan byl 2. června nalezen živý</li>
+          <li><b>František Pučálka</b>, strážce u stoupacího stroje v dole Marie</li>
+        </ul></div>
+      <div class="card"><span class="tag">Horní akademie a lékaři</span>
+        <ul class="plist">
+          <li><b>prof. Karel Balling</b>, hutník a chemik, počítal objem vzniklých plynů</li>
+          <li><b>prof. Josef Hrabák</b> a <b>prof. Gustav Ziegelheim</b>, soudní znalci</li>
+          <li><b>prof. Kirschner</b>, učitel báňských učňů</li>
+          <li><b>MUDr. Josef Rosol</b>, závodní lékař; <b>MUDr. Volf</b>, okresní lékař, a devět dalších lékařů; lékárník <b>Baborovský</b></li>
+          <li><b>MUDr. A. Kříž</b> zveřejnil ve Vídni lékařská pozorování z katastrofy</li>
+        </ul></div>
+      <div class="card"><span class="tag">Stát a politika</span>
+        <ul class="plist">
+          <li><b>baron Weber z Ebenhofu</b>, okresní hejtman; nařídil zastavit záchranu v noci a pohřbívat do hromadných hrobů</li>
+          <li><b>komisař Hainz</b></li>
+          <li><b>hrabě František Thun</b>, místodržitel v Čechách</li>
+          <li><b>hrabě Julius Falkenhayn</b>, ministr orby (pod něj patřily státní doly)</li>
+          <li><b>T. G. Masaryk</b>, <b>Blažej Mixa</b> a <b>Josef Kaizl</b>, poslanci říšské rady</li>
+          <li><b>Karel Heil</b>, starosta Příbrami; s Mixou vydal výzvu ke sbírce</li>
+          <li><b>kníže Bedřich Schwarzenberg</b></li>
+        </ul></div>
+      <div class="card"><span class="tag">Horníci</span>
+        <ul class="plist">
+          <li><b>Emanuel Kříž</b> z Oseče, <b>Václav Havelka</b> z Orlova, <b>Jan Kadlec</b> z Příbrami, <b>Alois Nosek</b> z Havírny: ranní šichta na 29. patře</li>
+          <li><b>Josef Sladovník</b>, <b>Josef Ječmen</b>, <b>Josef Hrubý</b>: první spatřili oheň</li>
+          <li><b>Jan Soukup</b>, <b>horník Rudler</b>: přežili v dole do druhého dne</li>
+          <li><b>Popelka, Korejs, Šelf, Werner, Chvála</b>: báňští učni, kteří zahynuli</li>
+        </ul></div>
+    </div>
+    <p class="note" style="margin-top:12px">Jména jsou uvedena tak, jak je uvádějí pozdější zpracování (Valta, Velfl, Schenk). Pravopis se u některých liší, například Grögler a Gröger, Heil a Hail.</p>
+
+    <h3 class="kat-h" id="k-zachrana">Záchranáři</h3>
+    <p>Na záchranu sfárávaly desítky dobrovolníků, horníků i hasičů. Měli jen šátky a houby namočené v octě, před sestupem dostali rum, kávu a slaninu. Spotřebovalo se 1 116 lahví rumu a 144 litrů octa. Lékaři později pouštěli dolů jen odpočaté muže. Dýchací přístroje, jaké by je ochránily před oxidem uhelnatým, neměli.</p>
+    <div class="card" style="margin:12px 0"><span class="tag">Zahynuli při záchraně</span>
+      <p style="margin-top:8px"><b>Antonín Pešek</b> (dozorce, sfáral čtyřikrát), <b>Augustin Žlutický</b> (tesař, cvičitel hasičů), <b>Adolf Schöffel</b>, <b>Josef Vondruška</b> (tesaři) a <b>František Sláma</b>. Jejich jména nese mramorová deska odhalená 18. května 1893 v kostele sv. Vojtěcha.</p></div>
+    <p class="src">Dále se uvádějí například Karel Khun, Dominik Beroušek, Leopold Bouška, Václav Brůžek, Karel Weigert, Matěj Dražan, Alois Vávra, August Stočes, Kašpar Lukeš, Leopold Karas, František Štěpán, František Kafka, Josef Češka, Václav Brož, Antonín Dvořáček a Josef Aksamit. Vyznamenání udělil císař 21. srpna 1892: záchranáři dostali stříbrné záslužné kříže, dozorci stříbrné kříže s korunou.</p>
+
+    <h3 class="kat-h" id="k-soud">Vyšetřování a soud</h3>
+    <p>Pro soud vypracovali posudek profesoři příbramské horní akademie Josef Hrabák (těžní stroje) a Gustav Ziegelheim (důlní měřictví). Pochybovali, že by odhozený knot mohl takový požár způsobit, a hlavní příčinu viděli v selhání větrání při stejné teplotě v dole a na povrchu. Podle dobových citací napsali, že zde „není vědomého neb nevědomého původce“.</p>
+    <p>Zemský trestní soud v Praze přesto 2.–3. července 1892 ve čtyřčlenném senátu odsoudil všechny čtyři muže z 29. patra. Obhajovali je dr. Černohorský a dr. Podlipský, kteří tvrdili, že muži neporušili žádný platný předpis.</p>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Obžalovaný</th><th>Trest</th></tr></thead>
+      <tbody>
+        <tr><td>Emanuel Kříž</td><td>3 roky těžkého žaláře</td></tr>
+        <tr><td>Jan Kadlec</td><td>2 roky</td></tr>
+        <tr><td>Václav Havelka</td><td>18 měsíců</td></tr>
+        <tr><td>Alois Nosek</td><td>3 měsíce</td></tr>
+      </tbody>
+    </table></div>
+    <p style="margin-top:10px">Tresty byly zostřeny posty a tvrdým ložem. O Křížově osudu se prameny rozcházejí: podle ředitele Hornického muzea Josefa Velfla byl asi po roce a půl omilostněn císařem, vrátil se domů a pracoval v lese. Starší tradice tvrdí, že zemřel ve vězení.</p>
+    <p class="note">Ministerstvo orby vydalo o neštěstí zprávu a odpovídalo na dotazy v parlamentu. Původní vyšetřovací spisy a soudní akta jsou uloženy v archivech (sbírka o katastrofě je v Hornickém muzeu Příbram). Tato aplikace vychází z jejich pozdějších zpracování, ne přímo z originálů.</p>
+
+    <h3 class="kat-h" id="k-pomoc">Pomoc pozůstalým a pohřby</h3>
+    <div class="grid g2" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">
+      <div class="card"><span class="tag">Sbírky</span><p style="margin-top:8px">Císař věnoval 10 000 zlatých. Do konce června se ve sbírkách sešlo přes 204 000 zlatých. Přispěli místodržitel Thun, poslanec Masaryk, vídeňský magistrát, zaměstnanci Ringhoffera v Praze, Spolek hnědouhelného průmyslu v Halle, vrchní horní úřad ve Vratislavi i čeští vystěhovalci v USA. Pěvecký spolek Hlahol uspořádal koncert na Žofíně. Horníci z pruského Horního Slezska poslali 3 867 marek jako vánoční dar.</p></div>
+      <div class="card"><span class="tag">Pohřby</span><p style="margin-top:8px">Podle nařízení okresního hejtmana z 1. června se mrtví pohřbívali do hromadných hrobů. Na příbramský hřbitov 153 mužů (do dvou hromadných hrobů 78 a 40), na březohorský 145. Další byli pohřbeni v Bohutíně, Slivici, Třebsku, Pečicích a Rožmitále pod Třemšínem. Nad veřejnými budovami a šachtami visely černé prapory.</p></div>
+      <div class="card"><span class="tag">Náklady a škody</span><p style="margin-top:8px">Mimořádné výdaje závodu (mzdy záchranářů, pohřby, dezinfekce, větrání) činily asi 111 700 zlatých. Celkové škody se odhadovaly na 2 miliony zlatých.</p></div>
+      <div class="card"><span class="tag">Pomníky</span><p style="margin-top:8px">Ministerstvo orby 9. února 1893 objednalo dva 6,5 m vysoké litinové obelisky s hrobkami z komárovských železáren. Nápis začíná slovy „Památce horníků příbramského závodu“. Na nádvoří dolu Marie stojí od roku 1997 pomník vdovám a sirotkům.</p></div>
+    </div>
+
+    <h3 class="kat-h" id="k-tisk">Dobový tisk a prameny</h3>
+    <p>Zprávu přinesly téměř všechny české deníky i mnoho zahraničních listů. První zprávy se lišily: 1. června se odhadovalo 250 mrtvých a až 600 lidí pohřešovaných, mluvilo se o blesku i o úmyslném založení ohně.</p>
+    <ul class="plist src-list">
+      <li><b>Národní politika</b>, 1. 6. 1892, s. 1: „Včerejší hrozná katastrofa v dolech příbramských“; 2. 6. 1892, s. 2–4: „Hrozná katastrofa v dolech příbramských“</li>
+      <li><b>Národní listy</b>, 2. 6. 1892, s. 3: „Děsná katastrofa v dolech příbramských“</li>
+      <li><b>Horymír</b> (Příbram), č. 26, 25. 6. 1892</li>
+      <li><b>Wiener Medizinische Presse</b> 1892: lékařská pozorování MUDr. A. Kříže z příbramského požáru</li>
+      <li><b>F. Pošepný</b> (1892): odborný článek o dějišti katastrofy s plánem dolů, výškami ústí šachet a prvními počty (807 sfáralo, 475 vyfáralo, 332 pohřešovaných)</li>
+      <li><b>Rakouský hornický odborný časopis</b> 1892: zpráva o sbírce hornoslezských horníků (uvádí 286 vdov a 742 sirotků)</li>
+      <li><b>Der Brand der Silber-Bergwerke in Příbram</b> (Vídeň 1892), anonymní brožura</li>
+    </ul>
+    <p style="margin-top:12px"><b>Pozdější zpracování:</b> F. Cajthaml-Liberté, <i>Požár v dolech příbramských dne 31. května 1892</i> (1932); A. Parma v Báňském světě (1932); K. Valta, <i>Důlní katastrofa na Březových Horách roku 1892</i> (1946); J. Schenk a P. Vitouš, <i>Požár na příbramských dolech 1892</i> (1972); G. W. Schenk v časopise Der Anschnitt (1972); V. Ježek, <i>Smutné vzpomínání</i> (1992); J. Bambas, <i>Březohorský rudní revír</i> (1990); studie Josefa Velfla a Romana Makaria.</p>
+    <p class="src" style="margin-top:10px">Podle: <a href="https://www.bergbaumuseum.de/fileadmin/forschung/zeitschriften/der-anschnitt/1972/1972-02/anschnitt-2-1972-schenk-grubenunglueck.pdf" target="_blank" rel="noopener">G. W. Schenk, Der Anschnitt 1972</a> · <a href="https://opac.geologie.ac.at/ais312/dokumente/posepny_1892_schauplatz.pdf" target="_blank" rel="noopener">F. Pošepný 1892</a> · <a href="https://cs.wikinews.org/wiki/Katastrofa_na_p%C5%99%C3%ADbramsk%C3%A9m_dole_Marie_dorostla_d%C4%9Bsn%C3%BDch_rozm%C4%9Br%C5%AF" target="_blank" rel="noopener">Wikizprávy podle tisku z 1.–2. 6. 1892</a> · <a href="https://zsdnp.cz/images/images/clanky/dulni-katastrofa.pdf" target="_blank" rel="noopener">J. Velfl</a> · <a href="https://podzemi.solvayovylomy.cz/cteni/Pribram1/47.htm" target="_blank" rel="noopener">Po stopách slávy a utrpení</a> · <a href="https://muzeum.mineral.cz/hornictvi/brezove-hory/pozar.php" target="_blank" rel="noopener">Březohorský rudní revír</a> · <a href="https://podzemi.solvayovylomy.cz/podzemi/nestesti/04.htm" target="_blank" rel="noopener">Podzemí Solvayovy lomy</a> · <a href="https://www.denik.cz/z_domova/dulni-katastrofa-dul-marie-brezove-hory-pribramsko.html" target="_blank" rel="noopener">Deník</a></p>
+
+    <div class="grid g2" style="margin-top:20px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">
+      <div class="card"><span class="tag">Proč tolik obětí</span><h3 style="margin-top:8px">Tichý zabiják</h3><p>Shořelo asi 390–400 m³ dřeva a vzniklo přes 600 000 m³ plynů, hlavně oxidu uhelnatého. Ten nemá barvu ani zápach a způsobuje zmatenost a bezvědomí. Otrávení horníci bloudili a padali do šachet a komínů. Kouř, který bylo cítit, byl jen varováním; zabíjel plyn, který cítit nebyl.</p></div>
+      <div class="card"><span class="tag">Co se změnilo</span><h3 style="margin-top:8px">Záchranná služba</h3><p>Katastrofa ukázala, že bez dýchacích přístrojů nemůže záchrana v zakouřeném dole fungovat. Urychlila vývoj dýchacích a sebezáchranných přístrojů a vznik organizované báňské záchranné služby.</p></div>
+    </div>
+    <p class="memorial">Zdař Bůh. Památce 319 horníků a záchranářů.</p>
+  </div>
+</section>
+
+<!-- ==================== ADVENTURA ==================== -->
+<section id="p-adventura" role="tabpanel" aria-labelledby="t-adventura" hidden>
+  <div class="sheet adv">
+    <div class="sheet-head">
+      <div class="kicker">Textová adventura</div>
+      <h2>Odpolední šichta</h2>
+    </div>
+    <details class="adv-warn" id="adv-warn" open>
+      <summary>Než začneš</summary>
+      <p>Příběh se odehrává během skutečné tragédie, při které zemřelo 319 lidí. Jan Mašek, jeho rodina, kamarádi a druzi na šichtě jsou <b>smyšlení</b>. Okolnosti, časy, čísla a skutečné osoby vycházejí z dobových zpráv a pozdějších zpracování; u každého kroku si můžeš rozbalit, co je historicky doložené.</p>
+      <p>Neexistuje jediná „správná“ cesta. Horníci tehdy rozhodovali v kouři, bez informací a bez dýchacích přístrojů. Čas běží s každým rozhodnutím, oxid uhelnatý působí, i když ho necítíš, a věci, které si ráno vezmeš, mohou odpoledne rozhodnout. Příběh má 12 různých konců.</p>
+    </details>
+    <div class="adv-hud" id="adv-hud">
+      <div><small>Kapitola</small><span class="chap" id="adv-chap"></span></div>
+      <div><small>Čas</small><span class="clock" id="adv-clock">10.30</span></div>
+      <div class="smoke"><small id="adv-feel-l">Jak se cítíš</small><div class="bar"><i id="adv-feel"></i></div></div>
+      <div><small>Konce</small><b id="adv-found">0</b> z <span id="adv-total">0</span></div>
+    </div>
+    <div class="adv-items" id="adv-items" aria-label="Co máš u sebe"></div>
+    <div aria-live="polite">
+      <p class="adv-place" id="adv-place"></p>
+      <h3 class="adv-title" id="adv-title"></h3>
+      <div class="adv-text" id="adv-text"></div>
+      <div id="adv-endbox"></div>
+      <p class="adv-dizzy" id="adv-dizzy" hidden>Myšlenky se ti pletou a nevíš, co je správné.</p>
+      <div class="adv-choices" id="adv-choices"></div>
+    </div>
+    <details class="adv-fact" id="adv-fact-wrap"><summary>Co je historicky doložené</summary><p class="note" id="adv-fact"></p></details>
+    <div class="adv-actions">
+      <button class="btn ghost" id="adv-back" type="button">← Krok zpět</button>
+      <button class="btn ghost" id="adv-restart" type="button">Začít znovu</button>
+      <span class="adv-confirm" id="adv-confirm" hidden>Opravdu začít od začátku? <button class="btn" id="adv-yes" type="button">Ano</button> <button class="btn ghost" id="adv-no" type="button">Ne</button></span>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SLOVNÍK ==================== -->
+<section id="p-slovnik" role="tabpanel" aria-labelledby="t-slovnik" hidden>
+  <div class="sheet">
+    <div class="sheet-head" style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:flex-end">
+      <div><div class="kicker">Slovník pojmů (<span id="lex-count"></span>)</div><h2>Hornická řeč na Březových Horách</h2></div>
+      <label class="search"><span style="position:absolute;left:-9999px">Hledat pojem</span>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg>
+        <input type="search" id="lex-q" placeholder="Hledat (např. šichta, fárat, patro)">
+      </label>
+    </div>
+    <div class="grid g3 lex" id="lex"></div>
+  </div>
+</section>
+
+<!-- ==================== KVÍZ ==================== -->
+<section id="p-kviz" role="tabpanel" aria-labelledby="t-kviz" hidden>
+  <div class="sheet quiz">
+    <div class="sheet-head q-meta">
+      <div><div class="kicker">Ověř si znalosti</div><h2>Březohorská zkouška</h2></div>
+      <span class="q-step" id="q-step" hidden></span>
+    </div>
+    <div id="q-setup">
+      <p style="margin:0 0 14px">Otázky pokrývají místa na mapě, průběh katastrofy i pojmy ze slovníku. Vyber téma a délku zkoušky.</p>
+      <div style="font-weight:700;margin-bottom:6px">Téma</div>
+      <div class="filters" id="q-topics" role="group" aria-label="Téma kvízu" style="margin-bottom:16px"></div>
+      <div style="font-weight:700;margin-bottom:6px">Délka</div>
+      <div class="filters" id="q-lengths" role="group" aria-label="Délka kvízu" style="margin-bottom:18px"></div>
+      <button class="btn" id="q-start" type="button">Začít zkoušku</button>
+      <p class="note" style="margin-top:16px">Správně zodpovězeno alespoň jednou: <b id="q-paid">0</b> z <span id="q-all"></span> otázek.</p>
+    </div>
+    <div id="q-play" hidden>
+      <div class="kicker" id="q-cat"></div>
+      <h3 class="q-title" id="q-title"></h3>
+      <div class="opts" id="q-opts"></div>
+      <div class="feedback" id="q-fb" hidden aria-live="polite">
+        <h3 id="q-fb-title"></h3>
+        <p id="q-fb-text" style="margin:0"></p>
+        <div class="act"><button class="btn" id="q-next" type="button">Další otázka →</button></div>
+      </div>
+    </div>
+    <div class="results" id="q-results" hidden>
+      <div class="seal" aria-hidden="true">⚒</div>
+      <h3 style="font-size:24px">Zkouška dokončena</h3>
+      <div class="title" id="q-rank"></div>
+      <p id="q-sum" style="max-width:560px;margin:0 auto 16px"></p>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn" id="q-again" type="button">Nové otázky</button>
+        <button class="btn ghost" id="q-back" type="button">Změnit téma</button>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <p>Mapa je schematická a nezachycuje přesnou polohu ani měřítko. Podzemní spojení dolů je naznačeno jen přibližně.</p>
+  <p>Pro další studium: <a href="https://www.muzeum-pribram.cz/" target="_blank" rel="noopener">Hornické muzeum Příbram</a> (Ševčinský důl, důl Marie a Vojtěch, naučná stezka o katastrofě), <a href="https://www.poznejpribram.cz/" target="_blank" rel="noopener">Poznej Příbram</a>.</p>
+  <p>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" target="_blank" rel="noopener">CC BY 4.0</a> · Aktualizace: 7. 11. 2026 · <button class="iconbtn" id="reset-all" type="button" style="min-height:32px;font-size:13px">Vymazat postup</button></p>
+</footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Fotografie">
+  <button type="button" class="btn lb-close" id="lb-close">✕ Zavřít</button>
+  <img id="lb-img" alt="">
+  <p class="lb-cap" id="lb-cap"></p>
+</div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ==================== uložený postup (jen v tomto prohlížeči) ==================== */
+const KEY = 'brezove-hory-1892';
+const save = (() => {
+  let d = {};
+  try { d = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { d = {}; }
+  return {
+    get: (k, def) => (k in d ? d[k] : def),
+    set: (k, v) => { d[k] = v; try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} },
+    clear: () => { d = {}; try { localStorage.removeItem(KEY); } catch (e) {} }
+  };
+})();
+
+/* ==================== zvuk: jen tiché cvaknutí jako potvrzení kliknutí ==================== */
+let actx = null;
+let soundOn = save.get('sound', true);
+function clickSound() {
+  if (!soundOn) return;
+  try {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(1400, t); o.frequency.exponentialRampToValueAtTime(900, t + .027);
+    g.gain.setValueAtTime(.1, t); g.gain.exponentialRampToValueAtTime(.0001, t + .045);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + .07);
+  } catch (e) {}
+}
+document.addEventListener('click', e => { if (e.target.closest('button')) clickSound(); }, true);
+function renderSound() {
+  $('sound').setAttribute('aria-pressed', String(soundOn));
+  $('snd-waves').hidden = !soundOn; $('snd-off').hidden = soundOn;
+  $('sound-lbl').textContent = soundOn ? 'Zvuk kliknutí' : 'Bez zvuku';
+  $('sound').title = soundOn ? 'Vypnout zvukové potvrzení kliknutí' : 'Zapnout zvukové potvrzení kliknutí';
+}
+$('sound').addEventListener('click', () => { soundOn = !soundOn; save.set('sound', soundOn); renderSound(); clickSound(); });
+
+let toastT;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+
+/* ==================== záložky ==================== */
+const TABS = ['mapa', 'katastrofa', 'adventura', 'slovnik', 'kviz'];
+function showTab(name, focus) {
+  if (!TABS.includes(name)) name = 'mapa';
+  for (const t of TABS) {
+    const on = t === name, b = $('t-' + t);
+    b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
+    $('p-' + t).hidden = !on;
+  }
+  if (name !== 'mapa') closeExplore();
+  if (name === 'mapa') fitMap();
+  if (focus) $('t-' + name).focus();
+  $('t-' + name).scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  const h = name === 'mapa' ? '' : '#' + name;
+  if (location.hash !== h) history.replaceState(null, '', h || location.pathname + location.search);
+}
+TABS.forEach(t => $('t-' + t).addEventListener('click', () => showTab(t)));
+document.querySelector('.tabs').addEventListener('keydown', e => {
+  const d = { ArrowRight: 1, ArrowLeft: -1 }[e.key]; if (!d) return;
+  const cur = TABS.findIndex(t => $('t-' + t).getAttribute('aria-selected') === 'true');
+  showTab(TABS[(cur + d + TABS.length) % TABS.length], true); e.preventDefault();
+});
+addEventListener('hashchange', () => showTab(location.hash.slice(1)));
+
+/* ==================== MAPA ==================== */
+const CATS = {
+  doly:      { label: 'Doly a štoly', color: '#3b3b3b' },
+  upravy:    { label: 'Úprava rudy a huť', color: '#8a5a1e' },
+  instituce: { label: 'Hornické instituce', color: '#7a2a1c' },
+  kostely:   { label: 'Kostely a poutní místa', color: '#6a4a8a' },
+  zivot:     { label: 'Život horníků', color: '#4f6b2f' },
+  pamet:     { label: 'Hřbitovy', color: '#2f5f72' }
+};
+const ICONS = {
+  shaft: '<path d="M4 18 10 3l6 15M6.5 12h7M8 8h4M10 3v15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/>',
+  fire: '<path d="M10 2c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 1.5.8 2.5 2 3-1-3 0-6 1-8.5z" fill="currentColor"/>',
+  adit: '<path d="M3 17V10a7 7 0 0 1 14 0v7M7 17v-6a3 3 0 0 1 6 0v6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>',
+  mill: '<circle cx="8" cy="11" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 5.5v11M2.5 11h11M14 4v13M17 4v13" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+  smelter: '<path d="M3 18V9l4-3v3l4-3v3l4-3V3h2v15z" fill="currentColor"/>',
+  anvil: '<path d="M3 7h11c0 2 1.5 3 3 3v2H12l1 4H6l1-4H5C4 12 3 10 3 7z" fill="currentColor"/>',
+  church: '<path d="M10 2v3M8.5 3.5h3M5 18V10l5-4 5 4v8z M8.5 18v-4h3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+  abbey: '<path d="M10 2v4M8 4h4M3 18V11l7-4 7 4v7z M8.5 18v-4h3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+  office: '<path d="M2 18h16M3 8h14L10 3zM5 8v8M8.5 8v8M11.5 8v8M15 8v8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+  school: '<path d="M1 8l9-4 9 4-9 4zM5 10v4c3 2 7 2 10 0v-4M18 8v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+  hall: '<path d="M3 18V8h14v10M10 8V3M8 5h4M6 11h2v3H6zM12 11h2v3h-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+  house: '<path d="M3 18V9l7-6 7 6v9zM8 18v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>',
+  cross: '<path d="M10 2v16M5 7h10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>'
+};
+/* Polohy: x, y na mapě 1000 × 680. Doly Vojtěch, Anna, Ševčinský, Lill, Ferdinand, Drkolnov, kostely a Svatá Hora jsou
+   přepočtené z dnešních souřadnic, důl Marie ze vzdáleností uváděných po katastrofě. „approx“ = poloha jen přibližná,
+   „edge“ = místo leží mimo výřez mapy a značka ukazuje jen směr. */
+const LOCS = [
+  /* --- doly a štoly --- */
+  { id: 'marie', name: 'Důl Marie', cat: 'doly', icon: 'fire', x: 227, y: 330,
+    hist: 'Šachta Marie se začala hloubit roku 1822 na Mariánské žíle, aby ulehčila sousednímu Vojtěchu. Roku 1884 přesáhla hloubku 1 000 m a roku 1892 měla 32 pater a asi 1 110 m. Od roku 1853 tu jezdil stoupací stroj, podle Hornického muzea první v Rakousku-Uhersku.',
+    y1892: '31. května tu na 29. patře, asi 955 m pod povrchem, vznikl požár. Hořel sklípek s odřezky dřeva a od něj výdřeva šachty nasáklá olejem z lan a stoupacího stroje. Shořelo asi 400 m³ dřeva v délce přes 500 m. Obě klece se po přetavení lan zřítily do šachty.',
+    zaj: 'Šachta měla průřez asi 2 × 6 m a sloužila jako výdušná: odváděla vzduch z dolů Císař František Josef I. a Vojtěch. Proto se oheň tak rychle šířil vzhůru. Obnova trvala do roku 1894.',
+    dnes: 'Důl patří Hornickému muzeu Příbram, návštěvníci mohou projet Mariánskou štolu. Na nádvoří stojí od roku 1997 pomník vdovám a sirotkům.',
+    tip: 'Proč byla Marie, kde oheň vznikl, pro záchranu méně důležitá než Anna, nejvzdálenější z pěti dolů?' },
+  { id: 'sevcin', name: 'Důl Císař František Josef I. (Ševčinský)', cat: 'doly', icon: 'shaft', x: 284, y: 388,
+    hist: 'Šachta se začala hloubit roku 1813 jako Ševčinská, později nesla jméno císaře Františka Josefa I. Roku 1892 měla hloubku 991 m. Měla dvoupatrové klece, takže najednou vezla dvakrát víc lidí. Šachetní budova je z roku 1879, cáchovna (šichtovna) z roku 1880.',
+    y1892: 'Ležela jen 350 m od Marie, a kouř sem dorazil první, kolem 14. hodiny. Prázdná klec se vrátila nahoru jen s klobouky. Do 7. června odtud vynesli 129 těl. 1. června kolem 13. hodiny se z hlubin ozvalo 28 signálních úderů, záchranáři ale přišli pozdě.',
+    zaj: 'Šachtou Císař František Josef I. normálně vstupoval do dolů čerstvý vzduch, protože její ústí leželo nejníž (528 m n. m.). Kouř sem pronikl nečekaně.',
+    dnes: 'Hlavní areál Hornického muzea Příbram, největšího hornického muzea v Česku. Zastávka naučné stezky o katastrofě.',
+    tip: 'Proč se dnes říká „Ševčinský důl“, a ne „důl Císař František Josef I.“?' },
+  { id: 'vojtech', name: 'Důl Vojtěch', cat: 'doly', icon: 'shaft', x: 356, y: 311,
+    hist: 'Šachta Vojtěch se začala hloubit roku 1779. Dne 8. května 1875 dosáhla jako první na světě svislé hloubky 1 000 m na 30. patře, s jediným těžním lanem. Oslavy v září 1875 navštívil ministr Colloredo-Mansfeld a odborníci z celé Evropy. Roku 1892 byla hluboká 1 099 m.',
+    y1892: 'Kouř sem dorazil kolem 14.30. Mnoho mužů čekalo u šachty na klec, jiní nevěřili, že hoří. Do 7. června odtud vynesli 130 těl, nejvíc ze všech dolů.',
+    zaj: 'V kilometrové hloubce byla laboratoř pro fyzikální pokusy. Navštívili ji Jan Neruda (1878), Joachim Barrande v den svých 80. narozenin (1879), arcivévoda Rainer (1885) a Emil Holub (1888).',
+    dnes: 'Součást Hornického muzea Příbram s parním strojem a vyhlídkovou věží. Těžba na Březových Horách skončila roku 1978 a podzemí bylo zatopeno.',
+    tip: 'Rok 1875 byl chvílí slávy, rok 1892 největší tragédií. Jak spolu souvisí rekordní hloubka a nebezpečí?' },
+  { id: 'anna', name: 'Důl Anna', cat: 'doly', icon: 'shaft', x: 405, y: 268,
+    hist: 'Šachta Anna se začala hloubit roku 1789. Roku 1892 byla hluboká 942 m a jako Marie měla stoupací stroj. S Vojtěchem ji spojuje asi 750 m dlouhá chodba tzv. vodního patra.',
+    y1892: 'Anna byla od Marie nejdál (820 m), a proto zůstala nejdéle bez kouře. Stala se hlavní základnou záchrany: klec i stoupací stroj jezdily bez přestávky a utíkala sem většina mužů z Prokopu a Vojtěcha. Plyn sem pronikl až v noci; do 7. června odtud vynesli 45 těl.',
+    zaj: 'Podle odhadů se během odpoledne dostalo na povrch asi 240 mužů klecí a 200 stoupacím strojem, většinou právě na Anně.',
+    dnes: 'Areál Hornického muzea s parním těžním strojem z roku 1914. Odtud vede podzemní trasa Prokopskou štolou a vodní patro.',
+    tip: 'Najdi na mapě, jak daleko leží Anna od Marie. Proč byla vzdálenost tak důležitá?' },
+  { id: 'prokop', name: 'Důl Prokop', cat: 'doly', icon: 'shaft', x: 318, y: 225, approx: true,
+    hist: 'Šachta Prokop se začala hloubit roku 1832. Roku 1892 byla hluboká 909 m. Jméno nese po sv. Prokopovi, patronovi horníků.',
+    y1892: 'Kouř dorazil na 28. patro kolem 15. hodiny. Většina mužů z Prokopu stačila utéct přes důl Anna.',
+    zaj: 'Prokop sloužil jako výdušná šachta pro Annu a Vojtěch. Roku 1875 se z jeho haldy střílelo z hmoždířů na oslavu kilometrové hloubky Vojtěcha.',
+    dnes: 'Prokopskou štolou jezdí důlní vláček Hornického muzea.',
+    tip: 'Poloha šachty je na mapě jen přibližná. Zkus ji dohledat na mapě Hornického muzea.' },
+  { id: 'ferdinand', name: 'Důl Ferdinand', cat: 'doly', icon: 'shaft', x: 319, y: 140,
+    hist: 'Šachta Ferdinand na tzv. černojamském ložisku severně od Březových Hor se začala hloubit roku 1820. Roku 1866 nahradila dřevěné kolo zděná šachetní budova.',
+    y1892: 'Ležela stranou zasažených dolů a požár se jí netýkal.',
+    zaj: 'Černojamské ložisko s doly Ferdinand, Lill a Jarošovka tvořilo samostatnou část revíru severně od hlavních březohorských dolů.',
+    tip: 'Proč se rudní revír skládal z několika ložisek, a ne z jednoho velkého dolu?' },
+  { id: 'lill', name: 'Důl Lill', cat: 'doly', icon: 'shaft', x: 538, y: 40,
+    hist: 'Šachta Lill se začala hloubit roku 1857 na černojamském ložisku, asi 1,4 km severovýchodně od Vojtěcha. Pracovala do roku 1902.',
+    y1892: 'Ležela daleko od požářiště. Ruda z Lillu se upravovala v městském prádle u Příbrami.',
+    zaj: 'Odtud pocházejí vzácné minerály, některé byly poprvé popsány právě tady. Traduje se, že odsud putovala ruda Marii Curie-Skłodowské, archivní doklad pro to ale nebyl nalezen.',
+    dnes: 'Část haldy dolu Lill je přenesena do areálu Hornického muzea.',
+    tip: 'Jak bys ověřil(a), zda je zajímavá historka doložená?' },
+  { id: 'drkolnov', name: 'Důl Drkolnov', cat: 'doly', icon: 'shaft', x: 268, y: 655,
+    hist: 'Důl otevřený roku 1836 se původně jmenoval August, podle knížete Augusta Longina Lobkowicze. Jméno Drkolnov má podle skladu, který tu kdysi stál.',
+    y1892: 'Drkolnov ležel jižně od Březových Hor, mimo zasaženou oblast. Koncem 19. století tu v podzemí čerpalo vodu ocelové vodní kolo o průměru asi 12 m.',
+    zaj: 'Vodní kola v podzemí čerpala vodu dlouho před nástupem parních a elektrických čerpadel.',
+    dnes: 'Vodní kolo o průměru 12,4 m je přístupné s průvodcem Hornického muzea.',
+    tip: 'Jak se do podzemí dostala voda, která kolo poháněla, a kam pak odtékala?' },
+  { id: 'stola', name: 'Dědičná štola císaře Josefa II.', cat: 'doly', icon: 'adit', x: 450, y: 18, edge: true,
+    hist: 'Odvodňovací štola začala vznikat kolem roku 1789 za vlády Josefa II. Hlavní štola měří 14,9 km, se všemi odbočkami 21,9 km. Vede od Bohutína přes Vysokou Pec, Drkolnov a Březové Hory až k ústí u Trhových Dušníků.',
+    y1892: 'Štola odváděla vodu z horních pater všech dolů, takže se nemusela čerpat stroji. Roku 1859 byl dokončen průraz mezi doly František a Řimbaba.',
+    zaj: 'Podle starého horního práva měl majitel dědičné štoly nárok na podíl z výnosu dolů, které odvodňovala. Odtud její jméno.',
+    dnes: 'Kulturní památka od roku 1973. Ústí leží asi 2,6 km severně od Vojtěcha.',
+    tip: 'Ústí štoly je mimo výřez mapy. Proč musí odvodňovací štola ústit níž, než leží doly?' },
+  { id: 'rimbaba', name: 'Důl Řimbaba', cat: 'doly', icon: 'shaft', x: 14, y: 470, edge: true,
+    hist: 'Šachta Řimbaba (Seegen Gottes) na skalnatém hřbetu nad údolím Litavky u Bohutína se začala hloubit roku 1843. Dosáhla hloubky 270 m.',
+    y1892: 'Důl pracoval, roku 1885 dostal parní těžní stroj. Ruda šla do úpravny v Bohutíně. Uzavřen byl roku 1900.',
+    zaj: 'Bohutínské ložisko bylo bohaté na antimonové rudy; slavná je tzv. Antimonitová žíla.',
+    dnes: 'Na šachtě stojí vyhlídková věž.',
+    tip: 'Důl leží asi 3 km jihozápadně, mimo výřez mapy.' },
+  /* --- úprava rudy a huť --- */
+  { id: 'pradla-anna', name: 'Annenská prádla (úpravna)', cat: 'upravy', icon: 'mill', x: 452, y: 232, approx: true,
+    hist: 'Úpravna pod haldou dolu Anna. Roku 1879 tu stálo prádlo, mačkadlo a puchýrna. Koncem 19. století měla 42 úpravnických strojů, 30 drtičů a 76 stoup se 120 tlouky.',
+    y1892: 'Ruda z Anny a Vojtěcha se tu drtila, třídila a prala. Těžké zrnka galenitu klesala ke dnu, lehká hlušina odtékala s vodou.',
+    zaj: 'Úpravny potřebovaly hodně vody, proto stály u potoků a rybníků. Odpadní kal se ukládal do kalojemů nad Litavkou.',
+    tip: 'Proč se ruda musela upravit, než se poslala do hutě?' },
+  { id: 'pradla-vojtech', name: 'Vojtěšská prádla (úpravna)', cat: 'upravy', icon: 'mill', x: 405, y: 335, approx: true,
+    hist: 'Úpravna u dolu Vojtěch. Roku 1879 tu stálo prádlo, mačkadlo a puchýrna.',
+    y1892: 'Pracovala spolu s Annenskou úpravnou. Obě fungovaly do roku 1904, pak zůstala jen Vojtěšská.',
+    zaj: '„Prádlo“ je úpravna, kde se rozdrcená ruda „pere“ ve vodě: těžké rudní minerály se oddělí od lehké hlušiny.',
+    tip: 'Najdi ve slovníku rozdíl mezi rudou, minerálem a hlušinou.' },
+  { id: 'hut', name: 'Stříbrná huť u Lhoty', cat: 'upravy', icon: 'smelter', x: 650, y: 18, edge: true,
+    hist: 'Huť na soutoku Litavky a Obecnického potoka u Lhoty, asi 4 km severně od Příbrami. Navrhl ji královský horní a hutní úředník Jan Antonín Alis; stavba začala 10. dubna 1786 a skončila roku 1793. Huť zpracovávala hlavně rudu z Vojtěcha.',
+    y1892: 'Huť měla vysoké šachtové pece (od 1860–1862), od roku 1869 částečně topila koksem. Od roku 1877 rafinovala olovo Pattinsonovým způsobem a v letech 1886–1888 přibyla továrna na olověné výrobky. Stříbro šlo do mincovny ve Vídni.',
+    zaj: 'V 80. a 90. letech 19. století vyrobila příbramská huť přes 90 % stříbra celé monarchie.',
+    dnes: 'Na stejném místě pracují Kovohutě Příbram, dnes hlavně recyklací olova.',
+    tip: 'Huť leží mimo výřez mapy. Proč stála u vody a daleko od náměstí?' },
+  { id: 'kovarny', name: 'Kovárny a strojní dílny', cat: 'upravy', icon: 'anvil', x: 250, y: 425, approx: true,
+    hist: 'Kovárny a strojnické dílny vznikly v letech 1867–1868 na staré haldě, pod místem, kde dříve stál starší šichtamt. Kovárny na Březových Horách měly 13 výhní.',
+    y1892: 'Kováři ostřili a kalili vrtáky a želízka, opravovali vozíky, kování a součásti strojů.',
+    zaj: 'Podle kováren se dodnes jmenuje ulice Pod Kovárnami. Přes ni vede most důlní železnice Hornického muzea.',
+    tip: 'Kolik vrtáků asi musela kovárna nabrousit pro 5 000 horníků?' },
+  /* --- instituce --- */
+  { id: 'sichtamt', name: 'Šichtamt', cat: 'instituce', icon: 'house', x: 392, y: 228, approx: true,
+    hist: 'Šichtamt (šichtovna) byl úřad a budova, kde se horníci hlásili na směnu, vedly se záznamy o práci a vyplácely mzdy. Vedl ho šichtmistr. Nejslavnějším šichtmistrem byl Jan Antonín Alis, který působil na Březových Horách od 70. let 18. století.',
+    y1892: 'Každý den se tu zapisovaly stovky jmen. Seznamy z přihlašování na šichtu ukazovaly, kdo je právě v dole.',
+    zaj: 'Jan Antonín Alis prosadil stavbu nové huti a rozvoj Vojtěchu. Po něm se jmenuje dnešní náměstí na Březových Horách.',
+    dnes: 'Budova označovaná jako Šichtamt stojí v areálu Hornického muzea u kostela sv. Prokopa.',
+    tip: 'Proč bylo po katastrofě tak důležité vědět, kdo se ráno hlásil na šichtu?' },
+  { id: 'reditelstvi', name: 'Horní ředitelství', cat: 'instituce', icon: 'office', x: 722, y: 232,
+    hist: 'Empírová budova na východní straně dnešního náměstí T. G. Masaryka vznikla v letech 1844–1847 pro c. k. vrchní horní úřad, horní úřad a horní soud. Pak sloužila jako horní ředitelství, odkud se řídily státní doly a hutě na Příbramsku.',
+    y1892: 'Přednostou ředitelství byl c. k. vrchní horní rada Jan Novák. Sem došla kolem 14. hodiny poslem písemná zpráva od vrchního horního správce Hugo Gröglera. Po neštěstí nad budovou visel černý prapor. Roky 1868–1891 byly pro příbramské doly nejziskovější.',
+    zaj: 'Roku 1875 tu vítali stovky odborníků z celého světa na oslavách kilometrové hloubky. Roku 1889 tu pobýval arcivévoda František Ferdinand.',
+    dnes: 'Budova patří městu Příbram. Je zastávkou naučné stezky o katastrofě.',
+    tip: 'Kdo podle tebe nesl za bezpečnost v dolech největší odpovědnost: horník, správce dolu, nebo úřad?' },
+  { id: 'akademie', name: 'Horní akademie', cat: 'instituce', icon: 'school', x: 765, y: 280, approx: true,
+    hist: 'Hornická škola vznikla v Příbrami v polovině 19. století a od roku 1865 nesla název horní akademie. Roku 1894 dostala vysokoškolská práva, od roku 1904 se jmenovala Vysoká škola báňská. Po druhé světové válce se přestěhovala do Ostravy.',
+    y1892: 'Profesoři Josef Hrabák a Gustav Ziegelheim vypracovali soudní posudek o příčině požáru. Profesor Karel Balling počítal objem vzniklých plynů a podle jednoho pramene nesouhlasil s hašením vodou.',
+    zaj: 'Dnešní VŠB – Technická univerzita Ostrava se hlásí k příbramským kořenům.',
+    tip: 'Umístění na mapě je přibližné. Zkus dohledat, kde akademie v Příbrami sídlila.' },
+  { id: 'radnice', name: 'Radnice Příbram', cat: 'instituce', icon: 'hall', x: 688, y: 205, approx: true,
+    hist: 'Novorenesanční radnici postavil v letech 1889–1891 architekt Vojtěch Ignác Ullmann.',
+    y1892: 'Zbrusu nová radnice. Starosta Karel Heil vydal spolu s poslancem Blažejem Mixou výzvu ke sbírce pro pozůstalé.',
+    zaj: 'Roku 1886 bylo v Příbrami založeno muzeum, předchůdce dnešního Hornického muzea.',
+    tip: 'Co prozrazují velké stavby z 80. a 90. let 19. století o tehdejším bohatství města?' },
+  /* --- kostely --- */
+  { id: 'sv-prokop', name: 'Kostel sv. Prokopa', cat: 'kostely', icon: 'church', x: 360, y: 266,
+    hist: 'Na místě dřevěné zvonice vznikla v letech 1724–1733 kaple sv. Prokopa, patrona horníků. Roku 1879 byla přestavěna na pseudorománský kostel s hranolovou věží.',
+    y1892: 'V letech 1879–1889 byl jediným kostelem rychle rostoucích Březových Hor a cílem hornických průvodů. Konala se tu i mše na oslavu kilometrové hloubky Vojtěcha roku 1875.',
+    zaj: 'Původní zvon z roku 1580 je v Hornickém muzeu. V kostele je rokokový boční oltář sv. Barbory, další patronky horníků.',
+    dnes: 'Stojí v sousedství areálu Hornického muzea. Slouží obnovené Prokopské pouti.',
+    tip: 'Sv. Prokop i sv. Barbora jsou patroni horníků. Najdeš v Příbrami další stopy hornické zbožnosti?' },
+  { id: 'sv-vojtech', name: 'Kostel sv. Vojtěcha', cat: 'kostely', icon: 'church', x: 318, y: 366,
+    hist: 'Novorenesanční trojlodní kostel s věží v průčelí vznikl v letech 1886–1889 podle návrhu architekta Bedřicha Münzbergera. Je největší stavbou bývalého horního města Březové Hory.',
+    y1892: 'Kostel je tři roky starý. Konaly se tu zádušní obřady za mrtvé horníky.',
+    zaj: '18. května 1893 tu byla odhalena mramorová deska se jmény pěti záchranářů, kteří zahynuli: Antonín Pešek, Augustin Žlutický, Adolf Schöffel, Josef Vondruška a František Sláma.',
+    dnes: 'Stojí na náměstí J. A. Alise a je kulturní památkou. Konají se v něm vzpomínkové koncerty k výročí.',
+    tip: 'Proč se památka záchranářům umístila do kostela, a ne k dolu?' },
+  { id: 'sv-jakub', name: 'Kostel sv. Jakuba Většího', cat: 'kostely', icon: 'church', x: 690, y: 258,
+    hist: 'Hlavní farní kostel Příbrami. Dnešní podobu věže se čtyřmi novogotickými věžičkami dostal roku 1869.',
+    y1892: 'Kolem kostela býval do roku 1786 hřbitov. Pak se začalo pohřbívat na novém hřbitově na Panské louce.',
+    zaj: 'Rušení hřbitovů kolem kostelů uvnitř měst patřilo k reformám Josefa II.',
+    tip: 'Kde se pohřbívalo ve tvém městě a kdy se hřbitov přestěhoval?' },
+  { id: 'svata-hora', name: 'Svatá Hora', cat: 'kostely', icon: 'abbey', x: 826, y: 335,
+    hist: 'Poutní místo na kopci nad Příbramí. Od roku 1647 ho spravovali jezuité a nechali postavit barokní areál podle plánů Carla Luraga. Od roku 1861 do roku 2025 o něj pečovali redemptoristé.',
+    y1892: 'Nejvýznamnější mariánské poutní místo v Čechách, s krytými schodišti z města. Mezi poutníky byly i hornické rodiny.',
+    zaj: 'Svatá Hora a Březové Hory leží na opačných stranách Příbrami. Duchovní „hora“ a pracovní „hory“ (doly) lemují město z obou stran.',
+    dnes: 'Bazilika Nanebevzetí Panny Marie patří k nejnavštěvovanějším památkám Středočeského kraje.',
+    tip: 'Slovo „hory“ v názvu Březové Hory neznamená kopce, ale doly. Jaká další místní jména mají stejný původ?' },
+  /* --- život horníků --- */
+  { id: 'domek', name: 'Hornický domek', cat: 'zivot', icon: 'house', x: 335, y: 425, approx: true,
+    hist: 'Malý roubený nebo zděný domek ze 17. století v dnešní Havířské ulici. Takové domky si stavěli horníci na Březových Horách po staletí, často s políčkem a chlévem.',
+    y1892: 'Ve stejně skromných domcích žily rodiny většiny obětí. Po katastrofě zůstaly v mnoha z nich vdovy s dětmi.',
+    zaj: 'Horníci si přivydělávali drobnou prací doma, například výrobou hraček a loutek.',
+    dnes: 'Expozice Hornického muzea o životě hornické rodiny a lidových řemeslech.',
+    tip: 'Jak by se změnil život rodiny, která přišla o otce i nejstaršího syna?' },
+  /* --- hřbitovy --- */
+  { id: 'hrbitov-bh', name: 'Březohorský hřbitov', cat: 'pamet', icon: 'cross', x: 195, y: 455, approx: true,
+    hist: 'Hřbitov byl založen roku 1879 a vysvěcen v říjnu téhož roku spolu s přestavěným kostelem sv. Prokopa. Do dnešní podoby byl rozšířen roku 1907.',
+    y1892: 'Sem bylo pohřbeno 145 obětí, do dvou hromadných hrobů. Mnoho mrtvých nešlo poznat; rodiny je hledaly podle prstenů, řetízků nebo zbytků oděvu.',
+    zaj: 'Roku 1893 tu ministerstvo orby postavilo 6,5 m vysoký litinový obelisk z komárovských železáren s hrobkou.',
+    dnes: 'Hromadné hroby se zachovaly. Odtud začíná naučná stezka o katastrofě a konají se tu pietní akty k 31. květnu.',
+    tip: 'Jak se dnes připomínají oběti velkých neštěstí? Liší se to od roku 1893?' },
+  { id: 'hrbitov-pb', name: 'Příbramský hřbitov', cat: 'pamet', icon: 'cross', x: 640, y: 400, approx: true,
+    hist: 'Hřbitov na Panské louce byl otevřen 26. ledna 1786, kdy se přestalo pohřbívat u kostela sv. Jakuba. Místo předtím sloužilo jako nouzové morové pohřebiště.',
+    y1892: 'Sem bylo pohřbeno 153 obětí, většina do dvou hromadných hrobů se 78 a 40 muži. Zápach spáleniště, těl a chlorového vápna se nesl městem a část obyvatel ze strachu před nákazou odešla.',
+    zaj: 'Hromadné hroby z roku 1892 jsou dnes překryté běžnými hroby. Druhý obelisk z roku 1893 stojí i tady.',
+    dnes: 'Konečná zastávka naučné stezky o katastrofě.',
+    tip: 'Umístění hřbitova na mapě je jen přibližné. Dohledej, kde leží Panská louka.' }
+];
+
+const FOTO = window.FOTO_DATA || {};
+function renderPhoto(id) { $('d-photo-btn').hidden = !FOTO[id]; }
+function openLightbox() {
+  const f = FOTO[currentLoc]; if (!f) return;
+  $('lb-img').src = f.src; $('lb-img').alt = f.popis;
+  $('lb-cap').innerHTML = `${esc(f.popis)}. Foto: ${esc(f.autor)} · <a href="${esc(f.licUrl)}" target="_blank" rel="noopener">${esc(f.lic)}</a> · <a href="${esc(f.zdroj)}" target="_blank" rel="noopener">zdroj</a>`;
+  $('lightbox').hidden = false; $('lb-close').focus({ preventScroll: true });
+}
+function closeLightbox() {
+  if ($('lightbox').hidden) return false;
+  $('lightbox').hidden = true; $('d-photo-btn').focus({ preventScroll: true }); return true;
+}
+$('d-photo-btn').addEventListener('click', openLightbox);
+$('lightbox').addEventListener('click', e => { if (!e.target.closest('a')) closeLightbox(); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && closeLightbox()) e.stopImmediatePropagation(); }, true);
+
+const seen = new Set(save.get('seen', []));
+let filter = 'all', currentLoc = null;
+function buildMap() {
+  $('total').textContent = LOCS.length;
+  const f = $('filters');
+  const mk = (key, label) => `<button class="chip" type="button" data-f="${key}" aria-pressed="${key === filter}">${esc(label)}</button>`;
+  f.innerHTML = mk('all', 'Vše') + Object.entries(CATS).map(([k, c]) => mk(k, c.label)).join('');
+  f.addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; filter = b.dataset.f; renderMap(); });
+  $('legend').innerHTML = Object.values(CATS).map(c => `<span><i class="dot" style="--c:${c.color}"></i>${esc(c.label)}</span>`).join('');
+  $('pins').innerHTML = LOCS.map(l => `<button class="pin${l.approx ? ' approx' : ''}${l.edge ? ' edge' : ''}" type="button" data-id="${l.id}" style="left:${l.x / 10}%;top:${l.y / 6.8}%;--c:${CATS[l.cat].color}" aria-label="${esc(l.name)}">
+      <svg viewBox="0 0 20 20" aria-hidden="true">${ICONS[l.icon]}</svg><span class="lab">${esc(l.name)}</span></button>`).join('');
+  $('pins').addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) selectLoc(b.dataset.id); });
+  $('loc-list').innerHTML = LOCS.map(l => `<button type="button" data-id="${l.id}"><i class="dot" style="--c:${CATS[l.cat].color}"></i>${esc(l.name)}</button>`).join('');
+  $('loc-list').addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) selectLoc(b.dataset.id); });
+}
+function renderMap() {
+  document.querySelectorAll('#filters .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === filter)));
+  for (const l of LOCS) {
+    const show = filter === 'all' || l.cat === filter;
+    const pin = document.querySelector(`.pin[data-id="${l.id}"]`);
+    pin.classList.toggle('dim', !show); pin.tabIndex = show ? 0 : -1;
+    pin.classList.toggle('seen', seen.has(l.id));
+    pin.setAttribute('aria-current', String(l.id === currentLoc));
+    const li = document.querySelector(`#loc-list [data-id="${l.id}"]`);
+    li.hidden = !show; li.classList.toggle('seen', seen.has(l.id));
+    li.setAttribute('aria-current', String(l.id === currentLoc));
+  }
+  $('found').textContent = seen.size;
+}
+const DESKTOP = matchMedia('(min-width:1024px)');
+function fitMap() {
+  const map = $('map'), layout = $('map-layout'), sheet = map.closest('.sheet');
+  if (!DESKTOP.matches || $('p-mapa').hidden) { map.style.cssText = ''; layout.style.gridTemplateColumns = ''; return; }
+  const fixed = layout.classList.contains('explore');
+  const cs = getComputedStyle(sheet), lcs = getComputedStyle(layout);
+  const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+  const innerW = layout.clientWidth - parseFloat(lcs.paddingLeft) - parseFloat(lcs.paddingRight);
+  const detMin = fixed ? Math.max(440, Math.round(innerW * .3)) : 360;
+  const maxW = innerW - detMin - 20 - padX;
+  map.style.width = maxW + 'px'; map.style.height = '1px';
+  const sr = sheet.getBoundingClientRect(), mr = map.getBoundingClientRect();
+  const availH = innerHeight - (sr.top + (fixed ? 0 : scrollY)) - (mr.top - sr.top) - (sr.bottom - mr.bottom) - (fixed ? 10 : 14);
+  const w = Math.max(420, Math.min(maxW, availH * 1000 / 680));
+  layout.style.gridTemplateColumns = `${Math.round(w + padX)}px minmax(${detMin}px,1fr)`;
+  map.style.width = w + 'px'; map.style.height = (w * 680 / 1000) + 'px';
+  map.style.setProperty('--pin', Math.round(Math.max(24, Math.min(34, w / 24))) + 'px');
+}
+function openExplore() {
+  $('map-layout').classList.add('explore'); document.body.classList.add('exploring');
+  try { const pr = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {}
+  fitMap(); $('fs-close').focus({ preventScroll: true });
+}
+function closeExplore() {
+  if (!$('map-layout').classList.contains('explore')) return;
+  $('map-layout').classList.remove('explore'); document.body.classList.remove('exploring');
+  try { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {}
+  fitMap(); $('fs-open').focus({ preventScroll: true });
+}
+$('fs-open').addEventListener('click', openExplore);
+$('fs-close').addEventListener('click', closeExplore);
+addEventListener('keydown', e => { if (e.key === 'Escape') closeExplore(); });
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) { if (closeLightbox()) { fitMap(); return; } closeExplore(); } else fitMap();
+});
+addEventListener('resize', fitMap);
+DESKTOP.addEventListener('change', fitMap);
+if (document.fonts) document.fonts.ready.then(fitMap);
+function selectLoc(id, silent) {
+  const l = LOCS.find(x => x.id === id); if (!l) return;
+  currentLoc = id;
+  const first = !silent && !seen.has(id);
+  if (first) { seen.add(id); save.set('seen', [...seen]); if (seen.size === LOCS.length) toast('Prozkoumal(a) jsi všechna místa'); }
+  $('d-cat').textContent = CATS[l.cat].label;
+  $('d-name').textContent = l.name;
+  renderPhoto(id);
+  $('d-hist').textContent = l.hist; $('d-1892').textContent = l.y1892; $('d-zaj').textContent = l.zaj; $('d-tip').textContent = l.tip;
+  $('d-dnes').textContent = l.dnes || ''; $('d-dnes').hidden = !l.dnes;
+  $('d-dnes-card').hidden = !l.dnes && !FOTO[l.id];
+  const b = $('d-badge');
+  if (first) { b.textContent = 'Nové místo'; b.className = 'badge new'; }
+  else if (seen.has(id)) { b.textContent = 'Prozkoumáno'; b.className = 'badge'; }
+  else { b.textContent = 'Ukázka · klikni na další místa'; b.className = 'badge'; }
+  $('d-pos').hidden = !(l.approx || l.edge);
+  $('d-pos').textContent = l.edge ? 'Leží mimo výřez mapy, značka ukazuje směr' : 'Poloha na mapě je přibližná';
+  renderMap();
+  $('detail').scrollTop = 0;
+  if (!silent && !DESKTOP.matches) $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ==================== ADVENTURA: Odpolední šichta ==================== */
+/* Stav: m = minuty od půlnoci 31. 5. 1892 (může přesáhnout 24 h), otr = otrava oxidem uhelnatým (0–100),
+   items = věci u sebe, f = příznaky (rozhodnutí, druzi), zone = kde právě jsi.
+   Uzel: { ch, zone, place, title, text (pole nebo funkce stavu), fact, choices, end }
+   Volba: { t, to (uzel nebo funkce stavu), add (minuty nebo funkce), if (funkce stavu), set, give, take } */
+const ADV_START = 10 * 60 + 30;
+const hm = (h, m) => h * 60 + m;
+/* kdy dorazil kouř do jednotlivých míst a jak rychle při plném zakouření přibývá otravy za minutu */
+const ZONES = {
+  povrch:   { a: Infinity, k: 0 },
+  vojtech:  { a: hm(14, 30), k: 1.7 },
+  chodba:   { a: hm(15, 5), k: 0.9 },
+  anna:     { a: hm(23, 30), k: 0.9 },
+  komin:    { a: hm(14, 40), k: 0.02 },
+  zachrana: { a: 0, k: 0.75 },
+  hlubina:  { a: 0, k: 1.5 }
+};
+const smokeAt = (z, m) => { const Z = ZONES[z]; if (!Z || !isFinite(Z.a)) return 0; return Math.max(0, Math.min(1, (m - Z.a) / 35)) * Z.k; };
+const has = (s, i) => s.items.includes(i);
+const F = (s, k) => !!s.f[k];
+const ITEMS = {
+  kahan: 'Kahan', hodinky: 'Otcovy hodinky', voda: 'Láhev s vodou', krida: 'Křída', kladivko: 'Signální kladívko',
+  satek: 'Mokrý šátek', ocet: 'Houba s octem'
+};
+const ENDINGS = {
+  domu:      { title: 'Domů', kind: 'ok' },
+  anna:      { title: 'Vodní chodbou na Annu', kind: 'ok' },
+  spolu:     { title: 'Strejda Šustr', kind: 'ok' },
+  ucen:      { title: 'Vašek', kind: 'ok' },
+  zachranar: { title: 'Záchranář', kind: 'ok' },
+  signal:    { title: 'Dvacet osm úderů', kind: 'mid' },
+  komin:     { title: 'Dvě noci v komíně', kind: 'mid' },
+  padl:      { title: 'Šestý záchranář', kind: 'bad' },
+  nevera:    { title: 'Ještě jeden hunt', kind: 'bad' },
+  pad:       { title: 'Pád', kind: 'bad' },
+  tma:       { title: 'Ve tmě', kind: 'bad' },
+  otrava:    { title: 'Tichý plyn', kind: 'bad' }
+};
+const SUMMARY = 'Skutečnost: 31. května 1892 zemřelo v dolech Marie, Císař František Josef I., Vojtěch, Prokop a Anna 319 lidí, z toho pět záchranářů. Živých bylo vyneseno 522 mužů, 39 z nich v bezvědomí. Zůstalo kolem 285 vdov a stovky sirotků.';
+const toAnna = s => s.f.znalost || s.f.sustr || s.f.brabec;
+
+const ADV = {
+  /* ---------- 1. Ráno ---------- */
+  r_start: { ch: '1. Ráno', zone: 'povrch', place: 'Březové Hory, domek pod haldou', title: 'Úterý 31. května 1892',
+    text: [
+      'Probudí tě slunce přes záclonu. Je teplo jako v létě, i když je teprve konec května. Z kuchyně je cítit cibule a slyšíš, jak máma škrábe brambory.',
+      'Jmenuješ se Jan Mašek, je ti sedmnáct a jsi vozač na dole Vojtěch. Tlačíš hunty s rudou od porubu ke koňské dráze. Otec byl lamač; před třemi lety ho v dole zavalil kus skály. Od té doby jsi s mámou živitel rodiny. Sestře Aničce je devět.',
+      'Odpolední šichta začíná v poledne. Do té doby máš ještě chvíli.'
+    ],
+    fact: 'Směny na příbramských dolech se střídaly ve 4, 12 a 20 hodin, takže odpolední šichta pracovala od poledne do osmi večer. V pěti zasažených dolech jich 31. května sfáralo 835. Jan Mašek a jeho rodina jsou smyšlení.',
+    choices: [{ t: 'Vstát a jít do kuchyně', to: 'r_hub', add: 10 }] },
+  r_hub: { ch: '1. Ráno', zone: 'povrch', place: 'Březové Hory, domek pod haldou', title: 'Kuchyně',
+    text: s => [
+      'Máma stojí u plotny, Anička na lavici počítá na břidlicové tabulce. Na skříni tiká budík, který se předbíhá, a ve skříňce leží otcovy kapesní hodinky.',
+      s.items.length > 1 ? 'Do kapes sis už uložil: ' + s.items.filter(i => i !== 'kahan').map(i => ITEMS[i].toLowerCase()).join(', ') + '.' : 'Kahan máš vyčištěný od včerejška a visí u dveří.',
+      F(s, 'najedl') ? 'Po polévce je ti dobře.' : 'Žaludek ti připomíná, že jsi ještě nejedl.'
+    ],
+    fact: 'Hornické rodiny na Březových Horách žily většinou v malých domcích, často s políčkem a kozou. Jeden z nejstarších hornických domků ze 17. století je dnes součástí Hornického muzea Příbram.',
+    choices: [
+      { t: 'Vzít si otcovy hodinky ze skříňky', to: 'r_hodinky', add: 3, if: s => !has(s, 'hodinky') },
+      { t: 'Natočit si plechovou láhev vody ze studny', to: 'r_hub', add: 5, give: 'voda', if: s => !has(s, 'voda') },
+      { t: 'Poprosit Aničku o kousek křídy', to: 'r_anicka', add: 5, if: s => !has(s, 'krida') },
+      { t: 'Sníst s mámou polévku', to: 'r_obed', add: 20, if: s => !F(s, 'najedl') },
+      { t: 'Vzít kahan a vyrazit k dolu Vojtěch', to: 'r_cesta', add: 5 }
+    ] },
+  r_hodinky: { ch: '1. Ráno', zone: 'povrch', place: 'Březové Hory, domek pod haldou', title: 'Otcovy hodinky',
+    text: [
+      'Hodinky jsou těžké a mosazné, na víčku mají vyrytá zkřížená kladívka. Otec je dostal od závodu za dvacet let práce. Natáhneš je a přiložíš k uchu. Tikají.',
+      'Máma se na tebe podívá a nic neřekne. Pak jen kývne.'
+    ],
+    fact: 'V podzemí bez denního světla se čas snadno ztrácí. Kdo měl hodinky, věděl, jak dlouho už je v dole. V tomto příběhu s hodinkami uvidíš přesný čas, bez nich jen odhad.',
+    give: 'hodinky',
+    choices: [{ t: 'Zpátky do kuchyně', to: 'r_hub', add: 2 }] },
+  r_anicka: { ch: '1. Ráno', zone: 'povrch', place: 'Březové Hory, domek pod haldou', title: 'Anička',
+    text: [
+      'Anička ti ulomí kousek křídy a zvážně ho podá. „Ale nakreslíš mi koně. Fukse. Slibuješ?“',
+      'Slíbíš. Křídou se v dole píšou značky na výdřevu a na vozíky. Kousek se vždycky hodí.'
+    ],
+    fact: 'Od roku 1869 platila v Rakousku-Uhersku povinná školní docházka od 6 do 14 let. Hornické děti chodily do škol na Březových Horách a v Příbrami. Mezi oběťmi katastrofy bylo pět báňských učňů.',
+    give: 'krida',
+    choices: [{ t: 'Zpátky ke stolu', to: 'r_hub', add: 2 }] },
+  r_obed: { ch: '1. Ráno', zone: 'povrch', place: 'Březové Hory, domek pod haldou', title: 'Polévka',
+    text: [
+      'Bramboračka je hustá a máma do ní dala i kousek uzeného. Mluví o penězích: podpora z bratrské pokladny po otci je malá a tvá mzda je to hlavní, z čeho žijí.',
+      { s: '„Dávej na sebe pozor, Jeníku. Jednoho už mi hora vzala.“' }
+    ],
+    fact: 'Bratrská pokladna byla společný fond horníků. Platili do ní horníci i závod a vyplácela se z ní podpora nemocným, zraněným, vdovám a sirotkům. Po katastrofě to nestačilo, a proto se konaly velké sbírky.',
+    choices: [
+      { t: 'Slíbit mámě, že budeš opatrný', to: 'r_hub', add: 2, set: 'najedl slib' },
+      { t: 'Zasmát se, že hora je jako tvůj dům', to: 'r_hub', add: 2, set: 'najedl' }
+    ] },
+  r_cesta: { ch: '1. Ráno', zone: 'povrch', place: 'Březové Hory', title: 'Cesta k dolu',
+    text: [
+      'Na ulici potkáváš další muže s kahany a plechovými krabičkami. Nad haldami se tetelí vzduch. Od Marie je slyšet rachot těžního stroje.',
+      'K Vojtěchu vedou dvě cesty: kolem náměstí a nového kostela, nebo zkratkou přes haldu u dolu Marie.'
+    ],
+    fact: 'Doly Marie, Císař František Josef I., Vojtěch, Anna a Prokop ležely jen několik set metrů od sebe, kolem dnešního náměstí J. A. Alise. Podzemí bylo propojené chodbami.',
+    choices: [
+      { t: 'Jít přes náměstí kolem kostela sv. Vojtěcha', to: 'r_namesti', add: 15 },
+      { t: 'Vzít to zkratkou přes haldu u Marie', to: 'r_marie', add: 12 }
+    ] },
+  r_namesti: { ch: '1. Ráno', zone: 'povrch', place: 'Březové Hory, náměstí', title: 'U nového kostela',
+    text: [
+      'Kostel sv. Vojtěcha je teprve tři roky hotový a omítka ještě svítí. Na schodech sedí Vašek Řezáč od sousedů, patnáctiletý báňský učeň. První týden fárá na Vojtěch.',
+      { s: '„Jeníku! Můžu jít s tebou? Předák mě dal k vám na patro a já tam neznám ani cestu k šachtě.“' }
+    ],
+    fact: 'Báňští učni se učili hornickému řemeslu přímo v dole a chodili do hornické školy. Při katastrofě zahynulo pět učňů: Popelka, Korejs, Šelf, Werner a Chvála. Vašek Řezáč je smyšlený.',
+    choices: [
+      { t: 'Vzít Vaška s sebou a slíbit, že na něj dohlédneš', to: 'r_sichtovna', add: 10, set: 'ucen' },
+      { t: 'Říct mu, ať se drží předáka', to: 'r_sichtovna', add: 8 }
+    ] },
+  r_marie: { ch: '1. Ráno', zone: 'povrch', place: 'Halda u dolu Marie', title: 'Ranní šichta z Marie',
+    text: [
+      'Z Marie právě vyfárává ranní šichta. Muži jsou zpocení a šedí prachem. Jeden z nich, Toník Kubát, se kdysi učil s tvým otcem.',
+      { s: '„Na devětadvacátým se přestavujou sklípky. Samý dřevo, odřezky, prach. Dneska tam bylo dusno jak v pekárně.“' }
+    ],
+    fact: 'Na 29. patře dolu Marie, asi 955 m hluboko, se 31. května netěžilo, přestavovaly se sklípky (zásobníky na rudu). Ranní šichta vyfárávala mezi 11.00 a 12.10 stoupacím strojem. Toník Kubát je smyšlený.',
+    choices: [
+      { t: 'Zeptat se ho, jestli se nebojí ohně', to: 'r_marie2', add: 5 },
+      { t: 'Pozdravit a pospíchat dál', to: 'r_sichtovna', add: 10 }
+    ] },
+  r_marie2: { ch: '1. Ráno', zone: 'povrch', place: 'Halda u dolu Marie', title: 'V hoře nehoří',
+    text: [
+      'Toník se zasměje. „Ohně? V hoře? To je samá voda a kámen. Kdo kdy slyšel, že by v Příbrami hořelo v dole?“',
+      'Má pravdu. Nikdo to nepamatuje.'
+    ],
+    fact: 'Rudné doly se považovaly za méně ohrožené požárem než uhelné, protože v nich není uhelný prach ani metan. V Příbrami nikdo nepamatoval požár v dole. I proto mnoho horníků zprávám o ohni zprvu nevěřilo.',
+    choices: [{ t: 'Pokračovat k Vojtěchu', to: 'r_sichtovna', add: 10 }] },
+
+  /* ---------- 2. Šichta ---------- */
+  r_sichtovna: { ch: '2. Šichta', zone: 'povrch', place: 'Důl Vojtěch, šichtovna', title: 'Čtení jmen',
+    text: s => [
+      'V šichtovně je dusno a voní tu tabák. Předák Kratochvíl čte ze seznamu jména a každý odpoví „zde“. U zdi se opírá strejda Šustr, starý havíř, který fárá přes třicet let.',
+      F(s, 'ucen') ? 'Vašek se tě drží jako stín.' : '',
+      { s: '„Mašek, k Fuksovi jako vždycky? Nebo chceš dneska na náraziště ke kladívku? Potřebuju tam někoho s dobrým sluchem,“ ptá se Kratochvíl.' }
+    ],
+    fact: 'Na začátku šichty se horníci hlásili a zapisovali. Šichtovna (z něm. Schichtamt) byla budova, kde se vedly záznamy o práci a mzdách. Předák Kratochvíl a strejda Šustr jsou smyšlení.',
+    choices: [
+      { t: 'Ke Fuksovi, jako vždycky', to: 'r_farani', add: 15, set: 'vozac' },
+      { t: 'Na náraziště k signálnímu kladívku', to: 'r_farani', add: 15, set: 'narazec', give: 'kladivko' },
+      { t: 'Koupit si před šachtou rohlík od bábinky', to: 'r_sichtovna', add: 5, set: 'najedl', if: s => !F(s, 'najedl') }
+    ] },
+  r_farani: { ch: '2. Šichta', zone: 'povrch', place: 'Důl Vojtěch, šachta', title: 'Dolů do hory',
+    text: s => [
+      'Klec cinkne o zarážky. Strážce otevře vrata, vstoupíte, zavře. Zazvoní signál a podlaha se propadne. Uši zalehnou, vzduch voní mokrým kamenem a olejem.',
+      'Vojtěch je nejhlubší důl na světě; už sedmnáct let sahá přes kilometr. Ty fáráš „jen“ na 24. patro.',
+      F(s, 'ucen') ? 'Vašek tě drží za rukáv a nedýchá.' : ''
+    ],
+    fact: 'Důl Vojtěch dosáhl 8. května 1875 jako první na světě svislé hloubky 1 000 m. Roku 1892 byl hluboký asi 1 099 m. Do dolů Vojtěch a Císař František Josef I. se fáralo klecí a po žebřících, stoupací stroj měly doly Marie a Anna.',
+    choices: [{ t: 'Vystoupit na 24. patře', to: 'r_patro', add: 20 }] },
+  r_patro: { ch: '2. Šichta', zone: 'vojtech', place: 'Důl Vojtěch, 24. patro', title: 'Náraziště',
+    text: s => [
+      'Na náraziští svítí kahany. Kočí Brabec už zapřahá Fukse do vláčku huntů. Fuks je starý hnědák, který v dole žije čtvrtým rokem a cestu zná líp než ty.',
+      F(s, 'narazec') ? 'Kratochvíl ti podá signální kladívko a ukáže na železnou desku u šachty: „Ty znamení znáš. Pomalu a zřetelně.“' : 'Bereš si první hunt a vyrážíš do chodby k porubům.'
+    ],
+    fact: 'Koně tahali v podzemí vozíky po vodorovných chodbách a měli tam i stáje. Signály úderů kladívkem domlouvala obsluha u šachty s těžním strojníkem nahoře. Kočí Brabec a kůň Fuks jsou smyšlení.',
+    choices: [{ t: 'Pustit se do práce', to: 'w1', add: 5 }] },
+
+  /* ---------- 3. Práce ---------- */
+  w1: { ch: '3. Práce', zone: 'vojtech', place: 'Důl Vojtěch, 24. patro', title: 'Hunty',
+    text: s => F(s, 'narazec') ? [
+      'Stojíš u šachty a dáváš znamení. Hunty s rudou jedou nahoru, prázdné dolů. Za hodinu máš otlačenou dlaň a v uších ti zní cinkání.',
+      'Mezi nakládáním vidíš, jak Brabec s Fuksem přivážejí další vláček.'
+    ] : [
+      'Hunt má přes půl tuny. Na rovince se tlačí dobře, v zatáčce u výhybky se musíš opřít celou vahou. Kolejnice jsou ze dřeva okovaného železem.',
+      'Můžeš tlačit opatrně, nebo zrychlit, aby se ti hunty víc počítaly.'
+    ],
+    fact: 'Ruda se z porubů dopravovala ručně v huntech, na hlavních chodbách koňmi a nakonec klecí k povrchu. Za šichtu se počítala odvedená práce. Mezi oběťmi bylo 17 vozačů a 17 nakladačů.',
+    choices: [
+      { t: 'Pracovat pečlivě', to: 'w2', add: 40 },
+      { t: 'Spěchat, ať je víc huntů', to: 'w2', add: 30, set: 'koleno', if: s => !F(s, 'narazec') }
+    ] },
+  w2: { ch: '3. Práce', zone: 'vojtech', place: 'Důl Vojtěch, porub', title: 'Žíla',
+    text: s => [
+      F(s, 'koleno') ? 'U výhybky ti hunt přimáčkl koleno ke stěně. Bolí, ale chodit se dá.' : 'U porubu si zrovna dává pauzu strejda Šustr.',
+      'Šustr posvítí kahanem na stěnu. Ve světle se zatřpytí šedý pruh s kostičkami jako ocel. „Vidíš? Galenit, olovo. A v něm stříbro. Pro tohle sem lezem.“',
+      { s: '„A pamatuj si, mladej: kdyby se v hoře něco stalo, nečekej u šachty jak ovce. Starou vodní chodbou se dojde až na Annu. Jdi proti tahu vzduchu a podél vody.“' }
+    ],
+    fact: 'Březohorské ložisko tvořily rudní žíly s galenitem (sulfidem olova) obsahujícím stříbro, se sfaleritem a s antimonovými minerály. Hlavní byla Vojtěšská žíla. Doly Vojtěch a Anna spojovala asi 750 m dlouhá chodba tzv. vodního patra; právě přes Annu se 31. května zachránila většina mužů.',
+    choices: [
+      { t: 'Zapamatovat si Šustrovu radu', to: 'w3', add: 20, set: 'znalost' },
+      { t: 'Kývnout a vrátit se k práci', to: 'w3', add: 10 }
+    ] },
+  w3: { ch: '3. Práce', zone: 'vojtech', place: 'Důl Vojtěch, hlavní chodba', title: 'Suchá výdřeva',
+    text: [
+      'Na hlavní chodbě je dnes nezvykle teplo a vzduch stojí. Plamen kahanu se nehýbe. Výdřeva u stropu je suchá a popraskaná, z trámů se sype jemný prach.',
+      'Brabec si utírá čelo. „Dneska netáhne. Venku je asi stejně teplo jako tady dole.“'
+    ],
+    fact: '31. května 1892 bylo na 29. patře dolu Marie 24,16 °C, stejně jako na povrchu. Bez rozdílu teplot přestal fungovat přirozený tah vzduchu v šachtách. Znalci to později označili za hlavní důvod, proč se kouř rozšířil.',
+    choices: [
+      { t: 'Ohlásit suchou výdřevu předákovi', to: 'w4', add: 15, set: 'hlaseno' },
+      { t: 'Mávnout rukou, to je normální', to: 'w4', add: 5 }
+    ] },
+  w4: { ch: '3. Práce', zone: 'vojtech', place: 'Důl Vojtěch, náraziště', title: 'Svačina',
+    text: s => [
+      F(s, 'najedl') ? 'Sedneš si na trám a rozbalíš chleba. Je ti dobře.' : 'Nemáš co jíst. Ruce se ti trochu třesou a v hlavě máš lehko.',
+      F(s, 'ucen') ? 'Vašek si přisedne a ptá se, co znamenají údery kladívka u šachty.' : 'Kolem sedí horníci a vtipkují o vedru.',
+      F(s, 'hlaseno') ? 'Kratochvíl ti kývne: „Tu výdřevu dám zítra vyměnit.“' : ''
+    ],
+    fact: 'Horníci pracovali osmihodinové směny a v podzemí jedli, co si přinesli. Pití vody bylo v teplých hlubinách zásadní.',
+    choices: [
+      { t: 'Naučit Vaška hlavní signály', to: 'w5', add: 15, set: 'vasekZna', if: s => F(s, 'ucen') },
+      { t: 'Dojíst a pokračovat v práci', to: 'w5', add: 15 }
+    ] },
+  w5: { ch: '3. Práce', zone: 'vojtech', place: 'Důl Vojtěch, 24. patro', title: 'Odpoledne se vleče',
+    text: ['Vozíš další hunty. Fuks frká a tahá za uzdu víc než obvykle. Brabec ho hladí po krku.'],
+    fact: 'Kouř dorazil do dolu Císař František Josef I. kolem 14.00 a do dolu Vojtěch kolem 14.30.',
+    choices: [{ t: 'Pracovat dál', to: 'k_kour', add: s => Math.max(5, hm(14, 32) - s.m) }] },
+
+  /* ---------- 4. Kouř ---------- */
+  k_kour: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, 24. patro', title: 'Něco je cítit',
+    text: [
+      'Fuks zvedne hlavu a začne frkat. Ve vzduchu je cítit spálenina, jako když se doma připálí dřevo v kamnech.',
+      'Chodbou přibíhá tahač z vedlejšího porubu: „Na Marii hoří! A na Františku Josefovi je kouř!“',
+      'Starší horníci se smějí. „Na Marii? Kdo kdy slyšel, aby v Příbrami hořelo v hoře.“'
+    ],
+    fact: 'Mnoho horníků zprávám o požáru nevěřilo a nedbalo ani příkazů dozorců. Kouř s oxidem uhelnatým se přitom šířil z dolu Marie podzemím do dolů Císař František Josef I. (kolem 14.00), Vojtěch (kolem 14.30) a Prokop (kolem 15.00).',
+    choices: [
+      { t: 'Nevěřit a pracovat dál', to: 'k_nevera', add: 20 },
+      { t: 'Najít strejdu Šustra', to: 'k_sustr', add: 5 },
+      { t: 'Běžet do porubu varovat ostatní', to: 'k_varovat', add: 10 },
+      { t: 'Běžet do konírny za Brabcem', to: 'k_konirna', add: 8 },
+      { t: 'Běžet hned k šachtě', to: 'k_naraziste', add: 5 }
+    ] },
+  k_nevera: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, 24. patro', title: 'Ještě chvíli',
+    text: [
+      'Dotlačíš hunt k dráze a vracíš se pro další. Kouře je víc. Štípe v očích a v krku. Bolí tě hlava.',
+      'Odněkud volá strejda Šustr: „Jano! Nech toho! Tohle není svačina, to je kouř!“'
+    ],
+    fact: 'Oxid uhelnatý nemá barvu ani zápach. Kouř, který horníci cítili, byl jen varováním. Plyn sám způsoboval bolest hlavy, zmatenost a nakonec bezvědomí.',
+    choices: [
+      { t: 'Jít za Šustrem', to: 'k_sustr', add: 5 },
+      { t: 'Dotlačit ještě jeden hunt, ať se šichta počítá', to: 'k_nevera2', add: 15 }
+    ] },
+  k_nevera2: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, 24. patro', title: 'Těžké nohy',
+    text: ['Hunt je najednou dvakrát těžší. Opřeš se o něj. Nohy máš jako z olova a je ti jedno, jestli se šichta počítá.'],
+    fact: 'Otrava oxidem uhelnatým zbavuje vůle a úsudku. Otrávení lidé si často chtějí „jen chvíli odpočinout“.',
+    choices: [
+      { t: 'Vzchopit se a jít k šachtě', to: 'k_naraziste', add: 10 },
+      { t: 'Sednout si na chvíli', to: 'end_nevera' }
+    ] },
+  k_sustr: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, porub', title: 'Šustr',
+    text: s => [
+      'Šustr už má kabát na sobě. „Je to od Marie, jde to přes Františka k nám. U šachty bude stovka lidí a klec bere jen pár najednou.“',
+      { s: toAnna(s) ? '„Vodní chodba na Annu. Proti tahu, podél vody. Půjdeš se mnou?“' : '„Znám cestu na Annu, starou vodní chodbou. Je dlouhá, ale tam táhne čerstvej vzduch. Půjdeš se mnou?“' },
+      F(s, 'ucen') && !F(s, 'vasek') ? 'Vzpomeneš si na Vaška. Je někde v porubu.' : ''
+    ],
+    fact: 'Většina mužů z dolu Prokop a mnoho mužů z Vojtěcha se zachránila přes důl Anna, kde těžní i stoupací stroj běžely celé odpoledne. Anna se stala hlavní základnou záchrany.',
+    choices: [
+      { t: 'Jít se Šustrem vodní chodbou k Anně', to: 'c_start', add: 5, set: 'sustr znalost' },
+      { t: 'Jít se Šustrem k šachtě', to: 'k_naraziste', add: 8, set: 'sustr' },
+      { t: 'Poslat Šustra napřed a běžet pro Vaška', to: 'k_varovat', add: 5, set: 'znalost', if: s => F(s, 'ucen') && !F(s, 'vasek') }
+    ] },
+  k_varovat: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, porub', title: 'Varování',
+    text: s => [
+      'V porubu duní kladiva. Křičíš, že hoří. Dva muži odhodí nářadí a utíkají, třetí se jen zasměje a dál buší do skály.',
+      F(s, 'ucen') ? 'Vašek sedí na hromadě rudy a kašle. Oči má vyděšené. „Jeníku, já nevím, kudy…“' : 'Kouř se valí od stropu. Je čas jít.'
+    ],
+    fact: 'Horníci se navzájem varovali, ale ne všichni uvěřili. Mezi mrtvými bylo 267 lamačů, kteří pracovali přímo na porubech, nejdál od šachet.',
+    choices: [
+      { t: 'Vzít Vaška za ruku a běžet k šachtě', to: 'k_naraziste', add: 8, set: 'vasek varoval', if: s => F(s, 'ucen') },
+      { t: 'Vzít Vaška vodní chodbou k Anně', to: 'c_start', add: 5, set: 'vasek varoval', if: s => F(s, 'ucen') && F(s, 'znalost') },
+      { t: 'Ještě jednou křičet na toho, kdo nevěří', to: 'k_varovat2', add: 5, if: s => !F(s, 'varoval2') },
+      { t: 'Běžet k šachtě', to: 'k_naraziste', add: 8, set: 'varoval' }
+    ] },
+  k_varovat2: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, porub', title: 'Muž s kladivem',
+    text: ['Chytíš muže za rameno. Otočí se a vidíš, že má skelný pohled. Nerozumí ti. Táhneš ho chodbou, ale po pár krocích se vytrhne a vrávorá zpátky do porubu.'],
+    fact: 'Lidé otrávení oxidem uhelnatým často jednali nesmyslně. Záchranáři později nacházeli muže, kteří se vraceli k práci nebo bloudili.',
+    set: 'varoval2',
+    choices: [{ t: 'Nechat ho a jít', to: 'k_varovat', add: 3 }] },
+  k_konirna: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, podzemní konírna', title: 'Koně',
+    text: [
+      'V konírně jsou čtyři koně. Frkají a tlučou kopyty do přepážek. Brabec se snaží odvázat Fukse.',
+      { s: '„Pomoz mi, mladej! Tyhle koně znají vodní chodbu na Annu líp než já. Nenechám je tu.“' }
+    ],
+    fact: 'Kočí se snažili dostat koně z dolu. Podle vzpomínek kočí Nesveda vyvedl přes Annu několik mužů, jeho kůň ale zahynul. V dole zemřelo devět koní a mezi oběťmi bylo sedm kočích.',
+    choices: [
+      { t: 'Pomoct Brabcovi s koňmi', to: 'k_kone', add: 15, set: 'kone' },
+      { t: 'Říct mu, ať nechá koně a jde', to: 'k_brabec', add: 5 }
+    ] },
+  k_brabec: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, podzemní konírna', title: 'Brabec',
+    text: ['Brabec zavrtí hlavou. „Bez nich nejdu. Ty si jdi. Šachta je tamtudy.“'],
+    fact: 'Koně byli pro důl cenní a kočí k nim měli blízký vztah. Někteří zůstali u koní příliš dlouho.',
+    choices: [
+      { t: 'Zůstat a pomoct mu', to: 'k_kone', add: 10, set: 'kone' },
+      { t: 'Odejít k šachtě', to: 'k_naraziste', add: 5 }
+    ] },
+  k_kone: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, chodba u konírny', title: 'Fuks',
+    text: [
+      'Fuks se vzpírá, ale nakonec jde za Brabcem. Dva koně se vytrhnou a zmizí v kouři. Brabec zaklení a otře si oči.',
+      { s: '„Vodní chodba na Annu. Proti tahu. Jdeš?“' }
+    ],
+    fact: 'Vyprošťování uhynulých koní z dolů patřilo po katastrofě k nejtěžším pracím.',
+    choices: [
+      { t: 'Jít s Brabcem a Fuksem k Anně', to: 'c_start', add: 5, set: 'brabec znalost' },
+      { t: 'Nechat je a běžet k šachtě', to: 'k_naraziste', add: 10 }
+    ] },
+  k_naraziste: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, náraziště 24. patra', title: 'U šachty',
+    text: s => [
+      'U šachty se tlačí desítky mužů. Kahany v dýmu svítí jako přes mléko. Někdo buší kladivem signály nahoru, někdo se modlí, někdo nadává.',
+      F(s, 'vasek') ? 'Vašek se tě drží oběma rukama.' : '',
+      F(s, 'sustr') && !F(s, 'sustrNesen') && !F(s, 'sustrOpusten') ? 'Šustr si najednou sedne na zem. Lapá po dechu a nedokáže vstát.' : '',
+      s.otr >= 40 ? 'Bolí tě hlava a chvílemi nevíš, jak dlouho tu stojíš.' : ''
+    ],
+    fact: 'U šachet se tísnily stovky mužů. Klec vezla jen omezený počet lidí najednou a každá jízda nahoru a zpět trvala minuty. Kdo čekal příliš dlouho, otrávil se.',
+    choices: [
+      { t: 'Pomoct Šustrovi', to: 'k_pomoc', add: 3, if: s => F(s, 'sustr') && !F(s, 'sustrNesen') && !F(s, 'sustrOpusten') },
+      { t: 'Postavit se do fronty na klec', to: s => (s.m <= hm(15, 0) || (F(s, 'signaly') && s.m <= hm(15, 15))) ? 'k_klec' : 'k_prazdna', add: 10 },
+      { t: 'Dávat znamení kladívkem, ať klec jezdí rychleji', to: 'k_signal', add: 8, if: s => has(s, 'kladivko') && !F(s, 'signaly') },
+      { t: 'Lézt nahoru po žebřících (fahrtách)', to: 'l1', add: 5 },
+      { t: 'Jít vodní chodbou k Anně', to: 'c_start', add: 5, if: toAnna },
+      { t: 'Vylézt do komína nad patrem', to: 'm_komin', add: 8 },
+      { t: 'Namočit šátek ve vodním příkopu a dát si ho přes ústa', to: 'k_satek', add: 3, if: s => !has(s, 'satek') },
+      { t: 'Napsat křídou vzkaz domů', to: 'k_vzkaz', add: 5, if: s => has(s, 'krida') && s.otr >= 35 && !F(s, 'vzkaz') }
+    ] },
+  k_satek: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, náraziště', title: 'Mokrý šátek',
+    text: [
+      'Studená voda trochu uleví očím i krku. Dýchá se ti, jako by bylo líp.',
+      'Jenže je to klam. Šátek zachytí saze a kouř, který štípe, ale plyn, který zabíjí, jím projde.'
+    ],
+    fact: 'Záchranáři měli roku 1892 jen šátky a houby namočené v octě. Proti oxidu uhelnatému je to nechránilo. Pět záchranářů zahynulo. Teprve dýchací přístroje se zásobou kyslíku umožnily bezpečnou záchranu.',
+    give: 'satek',
+    choices: [{ t: 'Zpátky k šachtě', to: 'k_naraziste', add: 2 }] },
+  k_vzkaz: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, náraziště', title: 'Vzkaz',
+    text: [
+      'Vytáhneš Aniččinu křídu a na prkno od výdřevy napíšeš velkými písmeny pár slov pro mámu a Aničku. Ruka se ti třese.',
+      'Pod to nakreslíš koně. Moc se nepovede, ale je to Fuks.'
+    ],
+    fact: 'Umírající horníci psali vzkazy rodinám na skálu, na prkna nebo na krabičky od rozbušek. Loučili se, prosili o odpuštění a o zaplacení dluhů. Ze skutečných vzkazů tu necitujeme; patří rodinám obětí.',
+    set: 'vzkaz',
+    choices: [{ t: 'Zpátky k šachtě', to: 'k_naraziste', add: 2 }] },
+  k_signal: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, náraziště', title: 'Kladívko',
+    text: [
+      'Protlačíš se k železné desce. Ostatní buší jeden přes druhého a nahoře tomu nemůže nikdo rozumět. Okřikneš je, odstrčíš ruku vedle sebe a dáš jasné, pomalé znamení.',
+      'Za chvíli lano ožije. Klec jede.'
+    ],
+    fact: 'Signály údery byly v dole hlavním „telefonem“. Domluvený počet úderů říkal strojníkovi, co má s klecí udělat. Zmatené bušení mohlo provoz klece zdržet.',
+    set: 'signaly',
+    choices: [{ t: 'Zpátky do fronty', to: 'k_naraziste', add: 2 }] },
+  k_pomoc: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, náraziště', title: 'Strejda Šustr',
+    text: [
+      'Klekneš si k Šustrovi. „Jano… nech mě. Běž,“ šeptá. Je těžký a sám nevstane.',
+      'Nad patrem je úzký komín, odkud občas zavane chladnější vzduch. Fronta ke kleci se skoro nehýbe.'
+    ],
+    fact: 'Horníci vynášeli otrávené druhy na zádech, někteří za cenu vlastního života. Ze 69 mužů vynesených v bezvědomí jich lékaři umělým dýcháním oživili zhruba polovinu.',
+    choices: [
+      { t: 'Táhnout ho do fronty na klec', to: s => s.m <= hm(15, 5) ? 'k_klec' : 'k_prazdna', add: 12, set: 'sustrNesen' },
+      { t: 'Táhnout ho vodní chodbou k Anně', to: 'c_start', add: 10, set: 'sustrNesen', if: toAnna },
+      { t: 'Vytáhnout ho do komína', to: 'm_komin', add: 15, set: 'sustrNesen' },
+      { t: 'Nechat ho a zachránit sebe', to: 'k_naraziste', add: 0, set: 'sustrOpusten' }
+    ] },
+  k_klec: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, šachta', title: 'Klec',
+    text: s => [
+      'Klec dosedne. Lidé se do ní cpou, strážce křičí, že víc se nevejde. Někdo tě strčí dovnitř.',
+      [F(s, 'vasek') ? 'Vtáhneš Vaška za sebou.' : '', F(s, 'sustrNesen') ? 'Dva muži ti pomohou vtáhnout Šustra.' : ''].join(' '),
+      'Signál, škubnutí, a klec stoupá. Dlouhé minuty ve tmě a kouři, pak chladnější vzduch.'
+    ],
+    fact: 'Do 15. hodiny se z Vojtěcha podařilo vyvézt část čekajících mužů. Pak se situace u šachty zhoršila.',
+    choices: [{ t: 'Nahoru', to: 'p_vojtech', add: 12 }] },
+  k_prazdna: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, šachta', title: 'Klec nejede',
+    text: [
+      'Čekáte a čekáte. Lano se nehýbe. Někdo buší do desky, nahoře neodpovídají. Pak klec přece jen sjede, ale je jí málo a lidí moc.',
+      'Muži kolem tebe padají na kolena. Někteří usínají vestoje.'
+    ],
+    fact: 'V dole Císař František Josef I. se prázdná klec vrátila nahoru jen s klobouky mužů, kteří z ní vypadli. Kolem 14.30 tam záchranné pokusy ustaly. Ve Vojtěchu zemřelo podle pramenů 85 až 130 mužů.',
+    choices: [
+      { t: 'Čekat dál', to: s => s.otr < 60 ? 'k_klec' : 'end_otrava', add: 20 },
+      { t: 'Lézt po žebřících', to: 'l1', add: 5 },
+      { t: 'Jít vodní chodbou k Anně', to: 'c_start', add: 5, if: toAnna },
+      { t: 'Vylézt do komína', to: 'm_komin', add: 8 }
+    ] },
+
+  /* ---------- žebříky ---------- */
+  l1: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, žebříky v šachtě', title: 'Fahrty',
+    text: ['Žebříky vedou šachtou nahoru, po každých několika metrech je odpočívadlo. Nad tebou lezou další muži a kape z nich pot. Kouř stoupá šachtou s vámi.'],
+    fact: 'Fahrty, tedy žebříky v šachtě, byly nejpomalejší cestou na povrch. Z hloubky stovek metrů se lezlo hodinu i déle. Šachta byla zároveň cestou kouře.',
+    choices: [
+      { t: 'Lézt bez zastavení', to: 'l2', add: s => F(s, 'koleno') ? 20 : 15 },
+      { t: 'Odpočinout si na odpočívadle', to: 'l2', add: 25 },
+      { t: 'Vrátit se dolů', to: 'k_naraziste', add: 10 }
+    ] },
+  l2: { ch: '4. Kouř', zone: 'vojtech', place: 'Důl Vojtěch, žebříky v šachtě', title: 'Ruce',
+    text: s => [
+      s.otr >= 65 ? 'Příčky se ti před očima rozmazávají. Ruce nechtějí poslouchat.' : 'Ruce tě pálí, ale lezeš.',
+      'Nad tebou se zastaví muž. „Nemůžu… nemůžu dál.“ Jeho boty ti visí nad hlavou.'
+    ],
+    fact: 'Podle svědectví se otrávení muži na žebřících zastavovali a padali. Pády v šachtách byly jednou z příčin smrti.',
+    choices: [
+      { t: 'Podepřít ho ramenem a strkat nahoru', to: s => s.otr >= 75 ? 'end_pad' : 'l3', add: 15, set: 'pomohlZebrik' },
+      { t: 'Protáhnout se kolem něj', to: s => s.otr >= 80 ? 'end_pad' : 'l3', add: 10 }
+    ] },
+  l3: { ch: '4. Kouř', zone: 'chodba', place: 'Důl Vojtěch, žebříky v šachtě', title: 'Výš',
+    text: ['Vzduch je trochu chladnější. Odněkud shora slyšíš hlasy a vidíš světlo. Ještě pár odpočívadel.'],
+    fact: 'Čím výš, tím slabší byl kouř, ale síly docházely.',
+    choices: [{ t: 'Poslední příčky', to: s => s.otr >= 85 ? 'end_pad' : 'p_vojtech', add: 15 }] },
+
+  /* ---------- 5. Vodní chodba k Anně ---------- */
+  c_start: { ch: '5. Vodní chodba', zone: 'chodba', place: 'Spojovací chodba Vojtěch–Anna', title: 'Vodní patro',
+    text: s => [
+      'Chodba je nízká a úzká. Pod roštem šumí voda. ' + [F(s, 'sustrNesen') ? 'Šustra táhneš za sebou, jeho ruku máš přes rameno.' : F(s, 'sustr') ? 'Šustr jde před tebou, tiše a jistě.' : '', F(s, 'brabec') ? 'Brabec vede Fukse za uzdu.' : '', F(s, 'vasek') ? 'Vašek se drží tvého opasku.' : ''].join(' '),
+      has(s, 'kahan') ? 'Kahan dává malý kruh světla.' : 'Nemáš světlo. Jdeš po hmatu.',
+      'Po pár desítkách metrů se chodba dělí. Po pravé straně vedou kolejnice, vlevo teče voda v příkopu. Na tváři cítíš slabý tah vzduchu zepředu.'
+    ],
+    fact: 'Doly Vojtěch a Anna spojuje asi 750 m dlouhá chodba vodního patra (Wasserlauf) z 16.–19. století. Voda v ní poháněla kola, která čerpala vodu a pohybovala stroji. Dnes je to prohlídková trasa Hornického muzea Příbram.',
+    choices: [
+      { t: 'Jít proti tahu vzduchu, podél vody', to: 'c_kolo', add: 12 },
+      { t: 'Jít po kolejích', to: 'c_koleje', add: 10 },
+      { t: 'Jít tam, kam vzduch táhne', to: 'c_dym', add: 10 }
+    ] },
+  c_koleje: { ch: '5. Vodní chodba', zone: 'chodba', place: 'Spojovací chodba', title: 'Výhybka',
+    text: ['Kolejnice se větví. Vlevo vede stará chodba do vytěženého porubu, vpravo slyšíš šum vody a vrzání dřeva.'],
+    fact: 'Staré doly byly bludištěm chodeb, komínů a vytěžených porubů. Ve tmě a kouři se snadno zabloudilo.',
+    choices: [
+      { t: 'Vlevo do starého porubu', to: 'c_slepa', add: 15 },
+      { t: 'Vpravo za zvukem vody', to: 'c_kolo', add: 10 }
+    ] },
+  c_dym: { ch: '5. Vodní chodba', zone: 'vojtech', place: 'Chodba ke staré šachtě', title: 'Kouř zhoustne',
+    text: ['Tah vzduchu sílí, ale s ním i kouř. Jdeš tam, kam proudí vzduch do šachty a ven z dolu, a nese tě to přímo do dýmu.'],
+    fact: 'Čerstvý vzduch vstupoval do dolů níže položenými šachtami a vystupoval výše položenými (Prokop, Marie). Kdo šel ve směru proudění, šel za kouřem; proti proudu se dalo dojít k čerstvějšímu vzduchu.',
+    choices: [
+      { t: 'Otočit se a jít proti tahu', to: 'c_kolo', add: 15 },
+      { t: 'Pokračovat, třeba je za tím šachta', to: 'c_tma', add: 15, take: 'kahan' }
+    ] },
+  c_slepa: { ch: '5. Vodní chodba', zone: 'chodba', place: 'Starý porub', title: 'Slepý konec',
+    text: ['Chodba končí hromadou hlušiny. Kahan zaprská, plamen se zmenší na modrou kuličku.'],
+    fact: 'Plamen kahanu reagoval na nedostatek kyslíku, ale oxid uhelnatý jím odhalit nešel. Proto se později do dolů nosily zvláštní lampy a přístroje.',
+    choices: [
+      { t: 'Rychle zpátky', to: 'c_kolo', add: 15 },
+      { t: 'Hledat průlez v hlušině', to: 'c_tma', add: 15, take: 'kahan' }
+    ] },
+  c_tma: { ch: '5. Vodní chodba', zone: 'chodba', place: 'Někde v podzemí', title: 'Tma',
+    text: ['Kahan zhasl. Tma je úplná, jaká na povrchu nikdy není. Slyšíš jen svůj dech, kapání vody a vzdálené hučení.'],
+    fact: 'Bez světla se v dole dalo orientovat jen po hmatu: po kolejnici, podél vodního příkopu nebo po stěně. Mnoho mrtvých se našlo mimo hlavní cesty.',
+    choices: [
+      { t: 'Najít kolejnici a hmatat podél ní', to: 'c_hlas', add: 25 },
+      { t: 'Volat o pomoc', to: s => F(s, 'brabec') || s.otr < 50 ? 'c_hlas' : 'c_ticho', add: 10 },
+      { t: 'Sednout si a čekat', to: 'end_tma' }
+    ] },
+  c_ticho: { ch: '5. Vodní chodba', zone: 'chodba', place: 'Někde v podzemí', title: 'Nikdo',
+    text: ['Voláš, dokud tě nebolí hrdlo. Nikdo neodpovídá.'],
+    fact: 'Záchranáři hledali živé podle hlasů a klepání. Ozvěna v chodbách ale mohla zvuk zkreslit.',
+    choices: [
+      { t: 'Hmatat podél stěny', to: 'c_hlas', add: 25 },
+      { t: 'Zůstat sedět', to: 'end_tma' }
+    ] },
+  c_hlas: { ch: '5. Vodní chodba', zone: 'chodba', place: 'Vodní patro', title: 'Světlo',
+    text: s => [
+      'Najednou světlo. Skupina mužů s jediným kahanem. ' + (F(s, 'brabec') ? 'Vpředu jde Brabec s Fuksem.' : 'Vede je kočí s koněm, který jde jistě, jako by cestu znal.'),
+      { s: '„Pojď s náma, na Annu. Drž se koně za ocas.“' }
+    ],
+    fact: 'Skupiny horníků vedené zkušenými muži nebo kočími s koňmi se podle vzpomínek dostaly k Anně. Kůň v podzemí znal své trasy.',
+    choices: [{ t: 'Přidat se', to: 'c_kolo', add: 10, give: 'kahan' }] },
+  c_kolo: { ch: '5. Vodní chodba', zone: 'chodba', place: 'Komora vodního kola', title: 'Vodní kolo',
+    text: s => [
+      'Chodba se rozšíří do vysoké komory. Obří dřevěné kolo se pomalu otáčí a voda z něj šplouchá. Vzduch je tu chladnější a čistší.',
+      'U stěny leží muž. Dýchá, ale nereaguje. Na kabátě má číslo z Prokopu.',
+      F(s, 'sustrNesen') || F(s, 'vasek') ? 'Máš už s sebou někoho, o koho se staráš.' : ''
+    ],
+    fact: 'V komorách vodních kol se zachovaly zbytky dřevěných hřídelů. Kola poháněla čerpadla a těžní zařízení dávno před parními stroji. Muž z Prokopu je smyšlený.',
+    choices: [
+      { t: 'Vzít muže s sebou', to: 'c_anna', add: 25, set: 'nesl' },
+      { t: 'Nechat ho tu a slíbit si, že pro něj pošleš záchranáře', to: 'c_anna', add: 12, set: 'slib2' }
+    ] },
+  c_anna: { ch: '5. Vodní chodba', zone: 'chodba', place: 'Důl Anna, náraziště', title: 'Anna',
+    text: s => [
+      'Náraziště Anny je plné lidí, ale je tu světlo a vzduch se dá dýchat. Klec jezdí bez přestávky a vedle šachty se rytmicky zvedají a klesají tyče stoupacího stroje.',
+      F(s, 'nesl') ? 'Muže z Prokopu od tebe převezmou dva horníci s nosítky.' : ''
+    ],
+    fact: 'Důl Anna zůstal nejdéle bez kouře. Jeho těžní stroj i stoupací stroj běžely celé odpoledne. Podle odhadů se nahoru dostalo asi 240 mužů klecí a 200 stoupacím strojem, většinou právě na Anně.',
+    choices: [
+      { t: 'Stoupacím strojem', to: s => s.otr >= 70 ? 'a_fk_zle' : 'a_fk', add: 5 },
+      { t: 'Čekat na klec', to: 'a_klec', add: 15 }
+    ] },
+  a_fk: { ch: '5. Vodní chodba', zone: 'chodba', place: 'Důl Anna, stoupací stroj', title: 'Stoupací stroj',
+    text: s => [
+      'Dvě dlouhé tyče se stupínky se střídavě pohybují nahoru a dolů. Postavíš se na stupínek, tyč tě vyveze o pár metrů a ve chvíli, kdy se zastaví, přestoupíš na stupínek druhé tyče. A znovu. A znovu.',
+      F(s, 'vasek') ? 'Vašek váhá. Nikdy na stroji nejel.' : ''
+    ],
+    fact: 'Stoupací stroj (Fahrkunst) šetřil horníkům síly při fárání. Vyžadoval ale soustředění: kdo přestoupil ve špatnou chvíli, mohl spadnout.',
+    choices: [
+      { t: 'Jet s Vaškem a hlídat každé přestoupení', to: 'p_anna', add: 25, if: s => F(s, 'vasek') },
+      { t: 'Jet a soustředit se', to: 'p_anna', add: 20 }
+    ] },
+  a_fk_zle: { ch: '5. Vodní chodba', zone: 'chodba', place: 'Důl Anna, stoupací stroj', title: 'Rytmus',
+    text: ['Tyče se hýbou nahoru a dolů a ty nedokážeš poznat, kdy se zastaví. Hlava ti třeští.'],
+    fact: 'Otrávení muži nedokázali správně přestupovat. Někteří ze stoupacího stroje spadli.',
+    choices: [
+      { t: 'Přesto nastoupit', to: 'end_pad' },
+      { t: 'Ustoupit a čekat na klec', to: 'a_klec', add: 15 }
+    ] },
+  a_klec: { ch: '5. Vodní chodba', zone: 'chodba', place: 'Důl Anna, šachta', title: 'Klec na Anně',
+    text: ['Strážce tě postrčí do klece. Někdo vedle tebe se modlí nahlas. Klec stoupá dlouho, ale stoupá.'],
+    fact: 'Těžní strojníci na Anně řídili stroj bez přestávky celé odpoledne a noc.',
+    choices: [{ t: 'Nahoru', to: 'p_anna', add: 12 }] },
+
+  /* ---------- komín ---------- */
+  m_komin: { ch: '6. Komín', zone: 'komin', place: 'Komín nad 24. patrem', title: 'Do komína',
+    text: s => [
+      F(s, 'sustrNesen') ? 'Vytáhneš Šustra o pár metrů výš do úzkého komína. Dýchá těžce, ale dýchá.' : 'Vylezeš o pár metrů výš do úzkého komína.',
+      'Kouř tudy zrovna netáhne. Pod tebou se valí dým a hlasy u šachty postupně utichají.'
+    ],
+    fact: 'Komín je strmé důlní dílo spojující dvě úrovně uvnitř dolu. Horník Jan Soukup přečkal katastrofu v komíně nad ostatními a byl zachráněn až po zhruba 40 hodinách.',
+    choices: [
+      { t: 'Zůstat zticha a šetřit síly', to: 'm_noc', add: 180 },
+      { t: 'Ťukat kamenem do potrubí', to: 'm_noc', add: 180, set: 'tukal' }
+    ] },
+  m_noc: { ch: '6. Komín', zone: 'komin', place: 'Komín', title: 'Noc',
+    text: s => [
+      'Kahan dávno zhasl. Nevíš, jestli je den nebo noc' + (has(s, 'hodinky') ? ', ale otcovy hodinky tikají a ručičky můžeš nahmatat pod sklíčkem.' : '.'),
+      'Máš žízeň, jazyk se ti lepí na patro. ' + (F(s, 'sustrNesen') ? 'Šustr vedle tebe mumlá ze spaní.' : '')
+    ],
+    fact: 'Přeživší v dole čekali na záchranu bez světla, vody a jídla. Pomoc v noci nepřicházela: okresní hejtman v 1.00 záchranu přerušil, protože plyn pronikl už i do dolu Anna.',
+    choices: [
+      { t: 'Napít se a dát i Šustrovi', to: 'm_rano', add: 600, take: 'voda', set: 'sdilel', if: s => has(s, 'voda') && F(s, 'sustrNesen') },
+      { t: 'Napít se z láhve', to: 'm_rano', add: 600, take: 'voda', if: s => has(s, 'voda') },
+      { t: 'Olizovat vlhkou skálu', to: 'm_rano', add: 600 }
+    ] },
+  m_rano: { ch: '6. Komín', zone: 'komin', place: 'Komín', title: '1. června',
+    text: ['Odněkud zdaleka, z jiného dolu, slyšíš údery. Pomalu je počítáš: dvacet osm. Pak ticho.'],
+    fact: '1. června kolem 13. hodiny se z dolu Císař František Josef I. ozvalo 28 signálních úderů. Záchranáři k těm lidem dorazili pozdě.',
+    choices: [
+      { t: 'Slézt dolů a zkusit dojít k šachtě', to: s => s.otr >= 45 ? 'end_otrava' : 'm_nalezen', add: 60, zone: 'vojtech' },
+      { t: 'Čekat a ťukat', to: 'm_nalezen', add: 900 }
+    ] },
+  m_nalezen: { ch: '6. Komín', zone: 'komin', place: 'Komín', title: 'Světlo',
+    text: ['Oslepí tě světlo kahanu. „Tady! Tady je někdo živý!“'],
+    fact: '2. června záchranáři našli živé hormistra Štefana a horníka Rudlera. Byli vzkříšeni a přežili.',
+    choices: [{ t: 'Dál', to: 'end_komin' }] },
+
+  /* ---------- 7. Povrch ---------- */
+  p_vojtech: { ch: '7. Na povrchu', zone: 'povrch', place: 'Důl Vojtěch, povrch', title: 'Na světle',
+    text: s => [
+      'Denní světlo bodá do očí. Kašleš, zvracíš, kolena se ti podlomí. Kolem šachetní budovy stojí stovky lidí: ženy, děti, horníci z jiných dolů, hasiči.',
+      F(s, 'slib') ? 'Máma se protlačí davem. Neřekne nic, jen tě drží.' : 'V davu zahlédneš mámu. Utíká k tobě.',
+      'U šachty volá muž v úřednické uniformě: „Potřebujeme dobrovolníky na Annu! Kdo zná patra?“'
+    ],
+    fact: 'Před doly se shromáždily tisíce lidí z Březových Hor, Příbrami i okolních vesnic. Černé prapory brzy visely nad šachtami i nad budovou horního ředitelství.',
+    enter: s => { s.f.vyjel = true; },
+    choices: [
+      { t: 'Hledat mezi vynesenými své druhy', to: 'p_hledani', add: 30, if: s => !F(s, 'hledal') },
+      { t: 'Přihlásit se jako dobrovolník', to: 'z_start', add: 20 },
+      { t: 'Jít s mámou domů', to: s => endHome(s) }
+    ] },
+  p_anna: { ch: '7. Na povrchu', zone: 'povrch', place: 'Důl Anna, povrch', title: 'Na Anně',
+    text: s => [
+      'Na dvoře dolu Anna leží na plachtách desítky mužů. Lékaři je kříšením umělým dýcháním, nosiči běhají s nosítky. Pod šachetní budovou se skládají sudy s octem a bedny rumu.',
+      F(s, 'vasek') ? 'Vašek si sedne na zem a rozpláče se. Je živý.' : '',
+      'Vrchní horní správce Hugo Grögler, celý černý od sazí, rozděluje muže do skupin. Hledá dobrovolníky.'
+    ],
+    fact: 'Anna byla hlavní základnou záchrany. Pracovali tu závodní lékař MUDr. Josef Rosol, okresní lékař MUDr. Volf a devět dalších lékařů. Grögler sfáral šestkrát a nakonec ho vynesli v bezvědomí.',
+    enter: s => { s.f.vyjel = true; s.f.pres_annu = true; },
+    choices: [
+      { t: 'Hledat mezi vynesenými své druhy', to: 'p_hledani', add: 30, if: s => !F(s, 'hledal') },
+      { t: 'Přihlásit se jako dobrovolník', to: 'z_start', add: 10 },
+      { t: 'Jít domů', to: s => endHome(s) }
+    ] },
+  p_hledani: { ch: '7. Na povrchu', zone: 'povrch', place: 'Mezi vynesenými', title: 'Hledání',
+    text: s => [
+      'Procházíš mezi plachtami. Tváře jsou šedé a rty zvláštně růžové.',
+      F(s, 'sustrNesen') ? 'Strejda Šustr leží na nosítkách a zvedne ruku na pozdrav.' : F(s, 'sustr') ? 'Strejda Šustr sedí na bedně a kouří. „Dobrý, mladej.“' : 'Šustra nikde nevidíš.',
+      F(s, 'brabec') ? 'Brabec stojí u ohrady a hladí Fukse. Kůň se třese, ale žije.' : F(s, 'kone') ? 'Brabce nikde nevidíš. Někdo říká, že zůstal dole s koňmi.' : 'Brabce nikde nevidíš.',
+      F(s, 'ucen') && !F(s, 'vasek') ? 'Vaška nikde nevidíš. Jeho máma běhá mezi nosítky a volá jeho jméno.' : ''
+    ],
+    fact: 'Rodiny hledaly své blízké mezi vynesenými a později mezi mrtvými. Mnoho těl se nedalo poznat; rodiny je poznávaly podle prstenů, řetízků nebo zbytků oděvu.',
+    set: 'hledal',
+    choices: [
+      { t: 'Přihlásit se jako dobrovolník', to: 'z_start', add: 10 },
+      { t: 'Jít domů', to: s => endHome(s) }
+    ] },
+
+  /* ---------- 8. Záchrana ---------- */
+  z_start: { ch: '8. Záchrana', zone: 'povrch', place: 'Důl Anna, záchranná stanice', title: 'Dobrovolníci',
+    text: [
+      'Dostaneš houbu namočenou v octě, hrnek černé kávy, kus slaniny a lok rumu. Lékař tvrdí, že alkohol pomáhá proti otravě. Nikdo to neví jistě.',
+      'Vedle tebe se připravuje dozorce, který už sfáral třikrát. Má zarudlé oči a třesou se mu ruce, ale jde znovu.'
+    ],
+    fact: 'Záchranáři dostávali kávu, slaninu a rum; spotřebovalo se 1 116 lahví rumu a 144 litrů octa. Dozorce Antonín Pešek sfáral čtyřikrát, třikrát vynesl živé a při čtvrtém sestupu zahynul.',
+    give: 'ocet',
+    choices: [
+      { t: 'Sfárat s první skupinou', to: 'z1', add: 15 },
+      { t: 'Zůstat nahoře a nosit raněné', to: 'z_nahore', add: 60 }
+    ] },
+  z_nahore: { ch: '8. Záchrana', zone: 'povrch', place: 'Důl Anna, povrch', title: 'Nosítka',
+    text: ['Nosíš raněné od klece k lékařům. Lékaři zvedají mužům ruce nad hlavu a zase je tlačí na hrudník. Někteří se rozkašlou a otevřou oči. Jiní ne.'],
+    fact: 'Ze 69 mužů vynesených v bezvědomí se podařilo umělým dýcháním oživit asi 30.',
+    choices: [
+      { t: 'Přece jen sfárat', to: 'z1', add: 10 },
+      { t: 'Pomáhat nahoře do noci', to: 'z_noc', add: 240 }
+    ] },
+  z1: { ch: '8. Záchrana', zone: 'zachrana', place: 'Důl Anna, chodby k Vojtěchu', title: 'První sestup',
+    text: s => [
+      'Chodby jsou plné kouře. Kahany svítí na metr. Naslepo hmatáte po zemi.',
+      F(s, 'slib2') ? 'U vodního kola najdeš muže z Prokopu, kterého jsi tu nechal. Dýchá. Odneseš ho.' : 'Narazíte na tři muže, kteří sedí opření o stěnu jako by spali. Jednoho z nich zvedneš na záda.'
+    ],
+    fact: 'Záchranáři se nedostali hlouběji než přibližně na 21. patro. Hledali omámené horníky a vynášeli je na zádech.',
+    enter: s => { if (s.f.slib2) s.f.nasel = true; },
+    choices: [{ t: 'Vynést ho nahoru', to: 'z2', add: 30 }] },
+  z2: { ch: '8. Záchrana', zone: 'povrch', place: 'Důl Anna, povrch', title: 'Lékař',
+    text: ['Nahoře se ti podlomí nohy. Lékař ti zvedne víčko a zavrtí hlavou. „Dolů zas až za hodinu. Odpočatej.“'],
+    fact: 'Lékaři později omezili sestupy jen na odpočaté muže. Kdo sfáral otrávený znovu, riskoval život.',
+    choices: [
+      { t: 'Odpočinout a pak sfárat znovu', to: 'z3', add: 60 },
+      { t: 'Vyklouznout lékaři a sfárat hned', to: 'z3', add: 5, set: 'neodpocaty' },
+      { t: 'Zůstat nahoře do noci', to: 'z_noc', add: 200 }
+    ] },
+  z3: { ch: '8. Záchrana', zone: 'zachrana', place: 'Důl Anna, hlubší patra', title: 'Druhý sestup',
+    text: ['Dozorce vás vede hlouběji. Kouř je hustší než předtím. Na rozcestí se zastaví a ukáže do tmy: „Tam jich bude víc. Kdo jde se mnou?“'],
+    fact: 'Pět záchranářů zahynulo: dozorce Antonín Pešek, tesaři Augustin Žlutický, Adolf Schöffel a Josef Vondruška a František Sláma.',
+    choices: [
+      { t: 'Jít s ním hlouběji', to: s => (s.otr >= 45 || F(s, 'neodpocaty')) ? 'end_padl' : 'z_hloubka', add: 25, zone: 'hlubina' },
+      { t: 'Vrátit se s těmi, které jste našli', to: 'z_noc', add: 30 }
+    ] },
+  z_hloubka: { ch: '8. Záchrana', zone: 'hlubina', place: 'Hluboké patro', title: 'Hlouběji',
+    text: ['Najdete dva muže, jeden ještě sténá. Táhnete je zpátky. Dozorce jde poslední a pak už nejde vůbec. Vynesou ho jiní.'],
+    fact: 'Antonín Pešek zahynul při čtvrtém sestupu. Jeho jméno je na mramorové desce v kostele sv. Vojtěcha.',
+    choices: [{ t: 'Nahoru', to: 'z_noc', add: 30 }] },
+  z_noc: { ch: '8. Záchrana', zone: 'povrch', place: 'Důl Anna, noc', title: 'Noc',
+    text: ['Je hluboká noc. U šachty se objeví okresní hejtman baron Weber z Ebenhofu a nechá záchranné pokusy zastavit. Plyn už pronikl i do Anny a záchranářů umírá víc, než kolik se jich daří zachránit.'],
+    fact: '1. června v 1.00 okresní hejtman nařídil záchranu přerušit. Ráno se pokusy obnovily, ale kouř stále bránil postupu.',
+    choices: [
+      { t: 'Jít domů', to: 'end_zachranar' },
+      { t: 'Zůstat u šachty do rána', to: 'z_rano', add: 720 }
+    ] },
+  z_rano: { ch: '8. Záchrana', zone: 'povrch', place: 'Důl Anna, 1. června', title: 'Dvacet osm úderů',
+    text: ['Kolem poledne přiběhne posel od Františka Josefa: z hlubiny se ozvalo dvacet osm úderů. Dole někdo žije. Hledají se muži do klece.'],
+    fact: '1. června kolem 13. hodiny se z dolu Císař František Josef I. ozvalo 28 signálních úderů. Když záchranáři dorazili, nikoho živého už nenašli.',
+    choices: [
+      { t: 'Hlásit se do klece', to: 'end_signal', add: 60 },
+      { t: 'Zůstat u Anny', to: 'end_zachranar' }
+    ] },
+
+  /* ---------- konce ---------- */
+  end_domu: { end: 'domu', ch: 'Konec', place: 'Březové Hory, večer', title: 'Domů',
+    text: s => [
+      'Večer sedíš doma u stolu. Máma tě drží za ruku a nepustí. Z oken sousedů je slyšet pláč.',
+      F(s, 'ucen') && !F(s, 'vasek') ? 'U Řezáčů se nesvítí. Vašek se ze šichty nevrátil.' : '',
+      F(s, 'kone') && !F(s, 'brabec') ? 'Brabec a Fuks zůstali dole.' : '',
+      has(s, 'krida') ? 'Než usneš, nakreslíš Aničce na tabulku koně. Fukse.' : '',
+      'Za dva dny půjdeš na březohorský hřbitov. Rakví je tolik, že se pohřbívá od rána do večera do hromadných hrobů.'
+    ] },
+  end_anna: { end: 'anna', ch: 'Konec', place: 'Březové Hory, večer', title: 'Vodní chodbou na Annu',
+    text: s => [
+      'Šustrova rada ti zachránila život. Vodní chodba, proti tahu a podél vody.',
+      F(s, 'brabec') ? 'Brabec s Fuksem došli s tebou. Fuks je jeden z mála koní, kteří ten den z dolu vyšli.' : '',
+      'Doma tě máma objímá tak dlouho, že ti začne být teplo. Zítra se na Annu vrátíš: hledat ty, kteří tu cestu neznali.'
+    ] },
+  end_spolu: { end: 'spolu', ch: 'Konec', place: 'Březové Hory, večer', title: 'Strejda Šustr',
+    text: [
+      'Šustr přežil. Lékaři ho na dvoře kříšili skoro hodinu. Večer k vám přijde jeho žena a dlouho nic neříká, jen máme podá ruku.',
+      'O pár týdnů později ti Šustr přinese svou starou hornickou kápi. „Ať tě hora zná,“ řekne. Víc o tom nemluví.'
+    ] },
+  end_ucen: { end: 'ucen', ch: 'Konec', place: 'Březové Hory, večer', title: 'Vašek',
+    text: [
+      'Vašek se ze šichty vrátil. Jeho máma ti políbí ruce a ty nevíš, kam se dívat.',
+      'Pět báňských učňů takové štěstí nemělo. Vašek se vyučí, ale do dolu už nikdy nesfárá.'
+    ] },
+  end_zachranar: { end: 'zachranar', ch: 'Konec', place: 'Důl Anna', title: 'Záchranář',
+    text: s => [
+      'Přežil jsi a vynášel jsi druhé. ' + (F(s, 'nasel') ? 'Muž z Prokopu, kterého jsi nechal u vodního kola a pak pro něj sám sfáral, přežil.' : ''),
+      'Pět záchranářů, kteří ten den sfárali stejně jako ty, se nevrátilo. 21. srpna 1892 dostanou záchranáři od císaře stříbrné záslužné kříže; i ty mezi nimi.'
+    ] },
+  end_signal: { end: 'signal', ch: 'Konec', place: 'Důl Císař František Josef I.', title: 'Dvacet osm úderů',
+    text: [
+      'Klec sjíždí tak rychle, jak to strojník dovolí. Dole je ticho. Muži, kteří dávali znamení, leží u šachty. Pozdě.',
+      'Na ty údery nezapomeneš do konce života. Někdy v noci je počítáš znovu: dvacet osm.'
+    ] },
+  end_komin: { end: 'komin', ch: 'Konec', place: 'Důl Vojtěch, 2. června', title: 'Dvě noci v komíně',
+    text: s => [
+      'Vynášejí tě nahoru na nosítkách. Je 2. června a venku prší.',
+      F(s, 'sustrNesen') ? (F(s, 'sdilel') ? 'Šustra vynesli hned po tobě. Napil se z tvé láhve a vydržel. Žije.' : 'Šustra už nevzbudili. Zemřel tiše vedle tebe, někdy v noci.') : '',
+      'Patříš k několika málo mužům, kteří přežili v dole do druhého dne.'
+    ] },
+  end_padl: { end: 'padl', ch: 'Konec', place: 'Důl Anna', title: 'Šestý záchranář',
+    text: [
+      'V kouři se ti podlomí kolena. Houba s octem ti vypadne z ruky. Dozorce tě ještě zkusí táhnout, ale sám už nemůže.',
+      'Jan Mašek se z druhého sestupu nevrátil. Ve skutečnosti zahynulo při záchraně pět mužů. Šli dolů znovu, i když věděli, co tam je.'
+    ] },
+  end_nevera: { end: 'nevera', ch: 'Konec', place: 'Důl Vojtěch', title: 'Ještě jeden hunt',
+    text: [
+      'Opřeš se o hunt. Jen na chvíli, než se ti přestane točit hlava. Kahan v ruce je čím dál těžší.',
+      'Jan Mašek se ze šichty nevrátil. Jako mnoho skutečných horníků toho dne nevěřil, že v hoře může hořet, dokud nebylo pozdě.'
+    ] },
+  end_pad: { end: 'pad', ch: 'Konec', place: 'Šachta', title: 'Pád',
+    text: [
+      'Příčka nebo stupínek ujede, ruka sklouzne. Pak už je jen tma.',
+      'Jan Mašek se ze šichty nevrátil. Mnoho horníků se toho dne dostalo až k šachtě, ale otráveni oxidem uhelnatým se nedokázali udržet.'
+    ] },
+  end_tma: { end: 'tma', ch: 'Konec', place: 'Podzemí', title: 'Ve tmě',
+    text: [
+      'Sedneš si ke stěně. Tma je teplá a tichá. Myslíš na mámu a na Aničku a na koně, kterého jsi jí slíbil nakreslit.',
+      'Jana Maška našli záchranáři až po několika dnech, daleko od hlavních cest.'
+    ] },
+  end_otrava: { end: 'otrava', ch: 'Konec', place: 'Podzemí', title: 'Tichý plyn',
+    text: s => [
+      'Hlava už nebolí. Je ti teplo a jedno. Usneš, ani nevíš kdy.',
+      'Jan Mašek se ze šichty nevrátil. Oxid uhelnatý zabil většinu z 319 obětí, tiše a bez varování.',
+      F(s, 'vzkaz') ? 'Prkno se vzkazem a nakresleným koněm našli záchranáři o týden později a předali ho mámě.' : ''
+    ] }
+};
+function endHome(s) {
+  if (F(s, 'vasek')) return 'end_ucen';
+  if (F(s, 'sustrNesen') && !F(s, 'sustrOpusten')) return 'end_spolu';
+  if (F(s, 'pres_annu')) return 'end_anna';
+  return 'end_domu';
+}
+
+const advNew = () => ({ node: 'r_start', m: ADV_START, otr: 0, items: ['kahan'], f: {}, hist: [] });
+let adv;
+try { adv = Object.assign(advNew(), save.get('adv2', {})); if (!ADV[adv.node]) adv = advNew(); } catch (e) { adv = advNew(); }
+const advEndings = new Set(save.get('advEndings2', []).filter(k => ENDINGS[k]));
+const clockStr = m => { const d = Math.floor(m / 1440), r = m % 1440; return (d ? (d === 1 ? '1. 6. ' : '2. 6. ') : '') + `${Math.floor(r / 60)}.${String(r % 60).padStart(2, '0')}`; };
+function roughTime(m) {
+  if (m >= 2 * 1440) return '2. června';
+  if (m >= 1440) return m - 1440 < hm(12, 0) ? '1. června ráno' : '1. června odpoledne';
+  if (m < hm(11, 45)) return 'dopoledne';
+  if (m < hm(12, 30)) return 'kolem poledne';
+  if (m < hm(17, 0)) return 'odpoledne';
+  if (m < hm(21, 0)) return 'podvečer';
+  return 'noc';
+}
+const FEEL = [[80, 'Na pokraji bezvědomí'], [60, 'Zmatenost, slabost'], [35, 'Točí se ti hlava'], [15, 'Bolí tě hlava'], [0, 'Cítíš se dobře']];
+function applyFlags(s, set) { if (set) set.split(' ').forEach(k => { s.f[k] = true; }); }
+function passTime(s, minutes, zone) {
+  for (let i = 0; i < minutes; i++) {
+    s.otr += smokeAt(zone, s.m + i);
+    if (zone === 'povrch') s.otr = Math.max(0, s.otr - 0.3);
+  }
+  s.m += minutes; s.otr = Math.min(100, s.otr);
+}
+function enterNode(s) {
+  const n = ADV[s.node];
+  if (n.give && !has(s, n.give)) s.items.push(n.give);
+  applyFlags(s, n.set);
+  if (n.enter) n.enter(s);
+}
+function renderAdv() {
+  const s = adv, n = ADV[s.node] || ADV.r_start;
+  $('adv-chap').textContent = n.ch || '';
+  $('adv-clock').textContent = has(s, 'hodinky') ? clockStr(s.m) : roughTime(s.m);
+  const feel = FEEL.find(([min]) => s.otr >= min);
+  $('adv-feel').style.width = Math.max(4, s.otr) + '%';
+  $('adv-feel').style.background = s.otr >= 60 ? 'linear-gradient(90deg,#c26a5a,#8a2323)' : s.otr >= 15 ? 'linear-gradient(90deg,#d8b45a,#b07a2c)' : 'linear-gradient(90deg,#8fbf8a,#4f8a4a)';
+  $('adv-feel-l').textContent = feel[1];
+  $('adv-items').innerHTML = s.items.map(i => `<span>${esc(ITEMS[i])}</span>`).join('') +
+    ['vasek', 'sustr', 'brabec'].filter(k => F(s, k) && !(k === 'sustr' && F(s, 'sustrOpusten'))).map(k => `<span class="who">${{ vasek: 'Vašek', sustr: 'Šustr', brabec: 'Brabec a Fuks' }[k]}</span>`).join('');
+  $('adv-place').textContent = n.place; $('adv-title').textContent = n.title;
+  const text = (typeof n.text === 'function' ? n.text(s) : n.text).filter(p => p);
+  $('adv-text').innerHTML = text.map(p => typeof p === 'object' ? `<p class="speech">${esc(p.s)}</p>` : `<p>${esc(p)}</p>`).join('');
+  $('adv-fact-wrap').hidden = !n.fact; $('adv-fact').textContent = n.fact || ''; $('adv-fact-wrap').open = false;
+  const dizzy = !n.end && s.otr >= 60;
+  $('adv-dizzy').hidden = !dizzy;
+  if (n.end) {
+    const e = ENDINGS[n.end];
+    const isNew = !advEndings.has(n.end);
+    advEndings.add(n.end); save.set('advEndings2', [...advEndings]);
+    if (isNew) toast('Nový konec: ' + e.title);
+    $('adv-endbox').innerHTML = `<div class="adv-end ${e.kind}"><h4>Konec: ${esc(e.title)}</h4><p>${esc(SUMMARY)}</p>
+      <p class="src">Nalezené konce:</p><div class="adv-endings">${Object.entries(ENDINGS).map(([k, v]) => `<span class="${advEndings.has(k) ? 'got' : ''}">${advEndings.has(k) ? esc(v.title) : '?'}</span>`).join('')}</div></div>`;
+    $('adv-choices').innerHTML = `<button class="adv-choice" type="button" data-restart="1"><span class="k">↺</span><span>Zkusit jinou cestu</span></button>`;
+  } else {
+    $('adv-endbox').innerHTML = '';
+    let ch = n.choices.map((c, i) => [c, i]).filter(([c]) => !c.if || c.if(s));
+    if (dizzy) ch = shuffle(ch);
+    $('adv-choices').innerHTML = ch.map(([c, i], j) => `<button class="adv-choice${dizzy ? ' dizzy' : ''}" type="button" data-c="${i}"><span class="k">${j + 1}</span><span>${esc(c.t)}</span></button>`).join('');
+  }
+  $('adv-back').disabled = !s.hist.length;
+  $('adv-found').textContent = advEndings.size; $('adv-total').textContent = Object.keys(ENDINGS).length;
+  try { save.set('adv2', s); } catch (e) {}
+}
+function advChoose(i) {
+  const s = adv, n = ADV[s.node], c = n.choices[i]; if (!c) return;
+  const snap = JSON.parse(JSON.stringify(Object.assign({}, s, { hist: [] })));
+  s.hist.push(snap); if (s.hist.length > 40) s.hist.shift();
+  const add = typeof c.add === 'function' ? c.add(s) : (c.add || 0);
+  passTime(s, add, c.zone || n.zone || 'povrch');
+  applyFlags(s, c.set);
+  if (c.give && !has(s, c.give)) s.items.push(c.give);
+  if (c.take) s.items = s.items.filter(x => x !== c.take);
+  let to = typeof c.to === 'function' ? c.to(s) : c.to;
+  if (s.otr >= 100 && !(ADV[to] && ADV[to].end)) to = 'end_otrava';
+  s.node = to; enterNode(s);
+  renderAdv();
+  const top = $('adv-hud').getBoundingClientRect().top;
+  if (top < 0 || top > innerHeight * .6) $('adv-hud').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function advBack() {
+  const prev = adv.hist.pop(); if (!prev) return;
+  const hist = adv.hist; adv = Object.assign(prev, { hist }); renderAdv();
+}
+function advRestart() { adv = advNew(); $('adv-confirm').hidden = true; renderAdv(); }
+$('adv-choices').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.restart) advRestart(); else advChoose(+b.dataset.c);
+});
+$('adv-back').addEventListener('click', advBack);
+$('adv-restart').addEventListener('click', () => { if (adv.node === 'r_start') return; $('adv-confirm').hidden = false; $('adv-yes').focus(); });
+$('adv-yes').addEventListener('click', advRestart);
+$('adv-no').addEventListener('click', () => { $('adv-confirm').hidden = true; });
+
+/* ==================== SLOVNÍK ==================== */
+const LEX = [
+  /* geologie a suroviny */
+  ['Minerál (nerost)', 'Geologie', 'Přírodní látka s určitým chemickým složením a pravidelnou vnitřní stavbou, například galenit, křemen nebo kalcit. Z minerálů se skládají horniny i rudy.'],
+  ['Hornina', 'Geologie', 'Přírodní směs minerálů tvořící zemskou kůru, například břidlice nebo droba. Březohorské žíly procházejí břidlicemi a drobami.'],
+  ['Ruda', 'Geologie', 'Hornina nebo směs minerálů, ze které se vyplatí získávat kov. Zda je něco ruda, záleží i na ceně kovu a na technice: když stříbro zlevnilo, chudé rudy přestaly být rudou.'],
+  ['Žíla', 'Geologie', 'Puklina v hornině vyplněná minerály, které se do ní vysrážely z horkých roztoků. Žíla může být tenká jako papír i několik metrů mocná. Hlavní žílou Březových Hor byla Vojtěšská žíla.'],
+  ['Ložisko', 'Geologie', 'Místo, kde je nahromaděno tolik užitkové suroviny, že se vyplatí ji těžit. Příbramský revír tvořila ložiska březohorské, bohutínské, černojamské a další.'],
+  ['Žilovina', 'Geologie', 'Minerály, které vyplňují žílu spolu s rudou, ale kov z nich nezískáváme, například siderit, kalcit, křemen nebo baryt.'],
+  ['Hlušina', 'Geologie', 'Vytěžená hornina bez užitečného obsahu. Sypala se na haldy u dolů.'],
+  ['Galenit', 'Geologie', 'Sulfid olova (PbS), šedý kovově lesklý minerál, který se láme do kostiček. Hlavní ruda Březových Hor; obsahoval stříbro, a proto se z něj získávalo olovo i stříbro.'],
+  ['Sfalerit', 'Geologie', 'Sulfid zinku (ZnS), hnědý až černý minerál. V březohorských žilách byl hojný; v 19. století se zinek z něj zprvu využíval málo.'],
+  ['Stříbrné rudy', 'Geologie', 'Minerály bohaté na stříbro, například pyrargyrit (rubínově červený), tetraedrit a vzácně ryzí stříbro. Většina stříbra však byla „schovaná“ v galenitu.'],
+  ['Antimon', 'Geologie', 'Křehký stříbrolesklý polokov (značka Sb). Na Příbramsku se vyskytoval v minerálech jako antimonit, boulangerit nebo diaforit, hojně hlavně u Bohutína (Antimonitová žíla). Přidával se do slitin olova, například do písma pro tiskárny.'],
+  ['Co se těžilo', 'Geologie', 'Březohorské doly těžily hlavně olověné rudy se stříbrem; koncem 19. století dávaly přes 90 % stříbra a velkou část olova celé monarchie. Vedle toho zinek a antimon. Po roce 1948 se na Příbramsku těžil uran, rudné doly na Březových Horách skončily roku 1978.'],
+  /* práce v dole */
+  ['Šichta', 'Práce v dole', 'Z něm. Schicht. Pracovní směna v dole. Roku 1892 se směny střídaly ve 4, 12 a 20 hodin; po katastrofě se změnily na 6–14, 14–22 a 22–6.'],
+  ['Fárat', 'Práce v dole', 'Z něm. fahren. Sestupovat do dolu (sfárat) nebo z něj vystupovat (vyfárat).'],
+  ['Šichtamt (šichtovna)', 'Práce v dole', 'Z něm. Schichtamt. Úřad a budova, kde se horníci hlásili na směnu, vedly se záznamy o práci a vyplácely mzdy.'],
+  ['Zdař Bůh', 'Práce v dole', 'Tradiční pozdrav horníků. Přeje šťastný návrat z podzemí.'],
+  ['Porub', 'Práce v dole', 'Místo, kde se rube (dobývá) ruda ze žíly.'],
+  /* lidé */
+  ['Havíř, lamač', 'Lidé', 'Horník, který rozrušuje horninu na porubu. Lamači tvořili většinu obětí katastrofy (267 mužů).'],
+  ['Vozač', 'Lidé', 'Horník, který tlačí vozíky s rudou nebo hlušinou po chodbách. Na tuto práci nastupovali často mladí chlapci.'],
+  ['Kočí', 'Lidé', 'Horník, který v podzemí obsluhoval koně tahající vozíky. Koně měli v dole i stáje.'],
+  ['Báňský učeň', 'Lidé', 'Mladík, který se učil hornickému řemeslu. Při katastrofě zahynulo pět učňů.'],
+  ['Dozorce, hormistr', 'Lidé', 'Dozorce (Steiger) vedl práci na části dolu, hormistr (Obersteiger) dohlížel na celý důl nebo patro.'],
+  ['Šichtmistr', 'Lidé', 'Úředník, který vedl šichtamt: evidenci směn, práce a mezd. Nejznámějším šichtmistrem Březových Hor byl Jan Antonín Alis.'],
+  ['Markšajdr', 'Lidé', 'Z něm. Markscheider. Důlní měřič, který kreslil plány dolů a hlídal, aby se chodby setkaly. Důlní měřictví učil na horní akademii Gustav Ziegelheim.'],
+  ['Vrchní horní správce', 'Lidé', 'Vedoucí úředník, který řídil provoz skupiny dolů. Roku 1892 jím byl Hugo Grögler, který vedl i záchranu.'],
+  /* důl */
+  ['Šachta (jáma)', 'Důl', 'Svislé důlní dílo, kterým se fárá, těží a větrá. Důl se často jmenuje podle hlavní šachty, např. Vojtěch nebo Marie.'],
+  ['Štola', 'Důl', 'Vodorovná chodba, která ústí na povrch. Odvodňovací štoly odváděly vodu z dolů.'],
+  ['Dědičná štola', 'Důl', 'Dlouhá odvodňovací štola, která odvodňuje více dolů najednou. Podle starého horního práva měl její majitel nárok na podíl z výnosu odvodňovaných dolů. Na Příbramsku je to Dědičná štola císaře Josefa II.'],
+  ['Patro', 'Důl', 'Vodorovná úroveň chodeb v určité hloubce. Důl Vojtěch dosáhl roku 1875 na 30. patře hloubky 1 000 m. Požár roku 1892 vznikl na 29. patře dolu Marie.'],
+  ['Komín', 'Důl', 'Strmé nebo svislé důlní dílo spojující dvě úrovně uvnitř dolu, bez vyústění na povrch.'],
+  ['Náraziště', 'Důl', 'Místo u šachty na patře, kde se nakládá do klece a kde horníci nastupují.'],
+  ['Sklípek', 'Důl', 'Zásobník na rudu u šachty. Do sklípku na 29. patře dolu Marie propadl doutnající knot.'],
+  ['Výdřeva', 'Důl', 'Dřevěná výztuž chodeb a šachet. Je hořlavá; v dole Marie byla navíc nasáklá olejem.'],
+  ['Vodní patro', 'Důl', 'Chodba z 16.–19. století, kterou tekla voda k vodním kolům pohánějícím stroje. Spojuje doly Anna a Vojtěch a 31. května 1892 jí unikli mnozí horníci.'],
+  ['Halda', 'Důl', 'Hromada hlušiny u dolu. Na Březových Horách tvoří haldy dodnes výrazné kopečky.'],
+  /* technika */
+  ['Stoupací stroj', 'Technika', 'Zařízení ze dvou svislých tyčí se stupínky, které se střídavě pohybují nahoru a dolů. Horník přestupuje z jednoho stupínku na druhý a postupně sjíždí nebo vyjíždí. Roku 1892 ho měly doly Marie a Anna.'],
+  ['Klec', 'Technika', 'Plošina zavěšená na laně v šachtě. Vozí lidi, vozíky i materiál.'],
+  ['Fahrty', 'Technika', 'Z něm. Fahrt. Žebříky v šachtě, po kterých se dalo lézt mezi patry.'],
+  ['Hunt', 'Technika', 'Důlní vozík na rudu nebo hlušinu.'],
+  ['Kahan', 'Technika', 'Hornická lampa s otevřeným plamenem na oleji s knotem. Doutnající zbytek knotu byl podle soudu příčinou požáru roku 1892.'],
+  ['Signální údery', 'Technika', 'Domluvené údery kladivem nebo zvonkem, kterými se horníci v šachtě dorozumívali s obsluhou těžního stroje.'],
+  ['Větrání', 'Technika', 'Přívod čerstvého vzduchu do dolu. Na Březových Horách šel vzduch dovnitř níže položenými šachtami a ven výše položenými. Tah vzniká z rozdílu teplot; 31. května 1892 bylo v dole i venku stejně teplo, a tah se zastavil.'],
+  /* úprava a huť */
+  ['Úpravna, prádlo', 'Úprava rudy', 'Provoz, kde se ruda drtila a ve vodě „prala“: těžké rudní minerály se oddělily od lehké hlušiny. Na Březových Horách stála Annenská a Vojtěšská prádla.'],
+  ['Stoupa', 'Úprava rudy', 'Drtič rudy s těžkými tlouky, které zvedá vodní kolo nebo stroj a pouští na rudu.'],
+  ['Huť', 'Úprava rudy', 'Závod, kde se z upravené rudy tavil kov. Příbramská stříbrná huť stála od roku 1786 u Lhoty na soutoku Litavky a Obecnického potoka.'],
+  ['Sháněcí pec', 'Úprava rudy', 'Pec, ve které se ze slitiny olova a stříbra „sháněla“ stříbro: olovo za přístupu vzduchu zoxidovalo na klejt a zůstalo stříbro.'],
+  ['Klejt', 'Úprava rudy', 'Oxid olovnatý, vedlejší produkt výroby stříbra. Roku 1875 vyrobil Vojtěch 2 846 tun klejtu.'],
+  /* bezpečnost */
+  ['Oxid uhelnatý', 'Bezpečnost', 'Jedovatý plyn bez barvy a zápachu, který vzniká při nedokonalém hoření. Brání krvi přenášet kyslík. Byl hlavní příčinou smrti obětí katastrofy.'],
+  ['Báňská záchranná služba', 'Bezpečnost', 'Organizovaná služba vycvičených záchranářů s dýchacími přístroji. Její vznik urychlily katastrofy jako ta březohorská.'],
+  /* právo a úřady */
+  ['Obecný horní zákon', 'Právo a úřady', 'Rakouský horní zákon vyhlášený císařským patentem 23. května 1854 (č. 146 ř. z.), platný od 1. listopadu 1854. Platil i roku 1892 a v českých zemích až do roku 1957. Stanovil, že vyhrazené nerosty (kovy, uhlí, soli) patří pod horní regál státu, který propůjčuje právo těžit.'],
+  ['Horní regál', 'Právo a úřady', 'Výsadní právo panovníka (státu) na vyhrazené nerosty. Kdo chtěl těžit, potřeboval od státu propůjčku.'],
+  ['Kutání a propůjčka', 'Právo a úřady', 'Kutání je vyhledávání ložiska na základě povolení. Propůjčka je udělení dobývací míry, tedy práva ložisko dobývat.'],
+  ['Horní kniha', 'Právo a úřady', 'Veřejný rejstřík, do kterého se zapisovala důlní pole a jejich vlastníci.'],
+  ['Revírní báňský úřad', 'Právo a úřady', 'Nejnižší báňský úřad (podle zákona z roku 1871), dohlížel na bezpečnost v dolech svého revíru. Nad ním stálo báňské hejtmanství v Praze a nejvýš ministerstvo orby ve Vídni.'],
+  ['Ministerstvo orby', 'Právo a úřady', 'Rakouské ministerstvo zemědělství, pod které patřilo i hornictví a státní doly. Roku 1892 ho vedl hrabě Julius Falkenhayn.'],
+  ['Horní ředitelství', 'Právo a úřady', 'Úřad, který řídil státní doly a hutě na Příbramsku. Sídlil v budově na náměstí v Příbrami. Přednostou byl roku 1892 Jan Novák.'],
+  ['Spolutěžířstvo', 'Právo a úřady', 'Společnost spolumajitelů dolu. Příbramské doly patřily státu a soukromým spolutěžířům; závod se jmenoval po sv. Karlu Boromejském.'],
+  ['Bratrská pokladna', 'Právo a úřady', 'Společný fond horníků, ze kterého se vyplácely podpory nemocným, raněným a pozůstalým rodinám. Platili do ní horníci i závod.'],
+  ['Zlatý (zl.)', 'Právo a úřady', 'Rakouská měna (gulden) do roku 1892, kdy začal přechod na korunu. Císař věnoval pozůstalým 10 000 zlatých.'],
+  /* jazyk */
+  ['Hory', 'Jazyk', 'Ve staré češtině znamenalo slovo „hory“ také doly (odtud „horník“). Březové Hory jsou tedy doly v březovém lese, ne hory jako kopce.'],
+  ['Sv. Prokop a sv. Barbora', 'Jazyk', 'Patroni horníků. Na Březových Horách mají oba oltář v kostele sv. Prokopa.']
+];
+function renderLex() {
+  const q = $('lex-q').value.trim().toLocaleLowerCase('cs');
+  const list = LEX.filter(([t, c, d]) => !q || (t + ' ' + c + ' ' + d).toLocaleLowerCase('cs').includes(q));
+  $('lex').innerHTML = list.length ? list.map(([t, c, d]) => `<div class="card"><span class="tag">${esc(c)}</span><h3>${esc(t)}</h3><p>${esc(d)}</p></div>`).join('')
+    : '<p style="grid-column:1/-1;text-align:center;color:var(--ink-2)">Žádný pojem neodpovídá hledání.</p>';
+}
+
+/* ==================== KVÍZ ==================== */
+const Q_TOPICS = { misto: 'Místa na mapě', katastrofa: 'Katastrofa 1892', slovnik: 'Slovník' };
+const QUIZ = [
+  { id: 'm-vojtech', t: 'misto', z: 'Důl Vojtěch', q: 'Čím se proslavil důl Vojtěch roku 1875?', a: 'Jako první na světě dosáhl svislé hloubky 1 000 m.',
+    w: ['Vytěžil první uran v Evropě.', 'Byl prvním dolem s elektrickým osvětlením.', 'Byl nejstarším dolem v Čechách.'], e: 'Kilometrové hloubky dosáhl 8. května 1875 na 30. patře, s jediným těžním lanem.' },
+  { id: 'm-marie', t: 'misto', z: 'Důl Marie', q: 'Ve kterém dole vznikl požár 31. května 1892?', a: 'V dole Marie.',
+    w: ['V dole Vojtěch.', 'V dole Lill.', 'V dole Anna.'], e: 'Oheň vznikl na 29. patře dolu Marie. Kouř se pak rozšířil do sousedních dolů.' },
+  { id: 'm-sevcin', t: 'misto', z: 'Ševčinský důl', q: 'Pod jakým jménem znali horníci roku 1892 Ševčinský důl?', a: 'Císař František Josef I.',
+    w: ['Karel Boromejský.', 'Svatý Prokop.', 'Arcivévoda Rainer.'], e: 'Šachta založená roku 1813 jako Ševčinská nesla v 19. století jméno císaře.' },
+  { id: 'm-reditelstvi', t: 'misto', z: 'Horní ředitelství', q: 'Kde stojí budova horního ředitelství?', a: 'Na náměstí v Příbrami (dnes nám. T. G. Masaryka).',
+    w: ['Na náměstí v Březových Horách.', 'Na Svaté Hoře.', 'Přímo v areálu dolu Vojtěch.'], e: 'Empírová budova vznikla v letech 1844–1847.' },
+  { id: 'm-vojtech-kostel', t: 'misto', z: 'Kostel sv. Vojtěcha', q: 'Co bylo roku 1893 odhaleno v kostele sv. Vojtěcha?', a: 'Pamětní deska záchranářům.',
+    w: ['Oltář sv. Barbory.', 'Socha císaře Františka Josefa I.', 'Zvon z roku 1580.'], e: 'Deska připomíná záchranáře, kteří zahynuli při pokusech zachránit druhy.' },
+  { id: 'm-prokop', t: 'misto', z: 'Kostel sv. Prokopa', q: 'Který kostel byl v letech 1879–1889 jediným kostelem na Březových Horách?', a: 'Kostel sv. Prokopa.',
+    w: ['Kostel sv. Vojtěcha.', 'Kostel sv. Jakuba.', 'Bazilika na Svaté Hoře.'], e: 'Kostel sv. Vojtěcha byl dokončen až roku 1889.' },
+  { id: 'm-svhora', t: 'misto', z: 'Svatá Hora', q: 'Který řád spravoval Svatou Horu roku 1892?', a: 'Redemptoristé.',
+    w: ['Jezuité.', 'Cisterciáci.', 'Benediktini.'], e: 'Redemptoristé převzali Svatou Horu roku 1861. Předtím ji spravovali jezuité.' },
+  { id: 'm-akademie', t: 'misto', z: 'Horní akademie', q: 'Kam se příbramská Vysoká škola báňská přestěhovala po druhé světové válce?', a: 'Do Ostravy.',
+    w: ['Do Prahy.', 'Do Kutné Hory.', 'Do Brna.'], e: 'Dnešní VŠB – Technická univerzita Ostrava se hlásí k příbramským kořenům.' },
+  { id: 'm-hrbitov', t: 'misto', z: 'Březohorský hřbitov', q: 'Jak byli pohřbeni mnozí mrtví horníci?', a: 'Do hromadných hrobů, protože mnohé nešlo poznat.',
+    w: ['Do rodinných hrobek v Praze.', 'Na Svaté Hoře.', 'V podzemí dolu Marie.'], e: 'Hromadné hroby jsou na březohorském i příbramském hřbitově.' },
+  { id: 'k-pocet', t: 'katastrofa', z: '31. května 1892', q: 'Kolik lidí zahynulo při březohorské katastrofě?', a: '319.',
+    w: ['92.', '835.', '1 000.'], e: 'Z 835 mužů odpolední šichty přežilo 516.' },
+  { id: 'k-pricina', t: 'katastrofa', z: 'Příčina', q: 'Co bylo podle soudu příčinou požáru?', a: 'Odhozený doutnající zbytek knotu z kahanu.',
+    w: ['Výbuch metanu.', 'Úder blesku do šachetní budovy.', 'Zkrat elektrického vedení.'], e: 'Znalci z horní akademie ale uvedli, že příčinu nelze s jistotou určit.' },
+  { id: 'k-plyn', t: 'katastrofa', z: 'Oběti', q: 'Co zabilo většinu obětí?', a: 'Otrava oxidem uhelnatým z kouře.',
+    w: ['Plameny požáru.', 'Zával chodeb.', 'Zatopení dolu vodou.'], e: 'Oxid uhelnatý nemá barvu ani zápach. Způsobuje zmatenost a bezvědomí.' },
+  { id: 'k-sireni', t: 'katastrofa', z: 'Šíření kouře', q: 'Proč se kouř rozšířil do sousedních dolů?', a: 'Doly byly propojené chodbami a přirozený tah vzduchu se zastavil.',
+    w: ['Vítr ho zanesl po povrchu do šachet.', 'Horníci ho tam zanesli na oděvu.', 'Šachty měly společnou budovu.'], e: 'Venku bylo tak teplo jako v dole, takže se větrání zastavilo a kouř se tlačil do chodeb.' },
+  { id: 'k-dul', t: 'katastrofa', z: 'Oběti', q: 'Kde pracovala většina obětí?', a: 'V dole Vojtěch.',
+    w: ['V dole Marie.', 'V dole Lill.', 'V huti v Příbrami.'], e: 'Kouř z dolu Marie pronikl do Vojtěcha, kde ho nikdo nečekal.' },
+  { id: 'k-neverili', t: 'katastrofa', z: 'Průběh', q: 'Proč mnozí horníci nejprve pokračovali v práci?', a: 'Požár v příbramských dolech nikdo nepamatoval, a tak zprávám nevěřili.',
+    w: ['Bylo jim to výslovně nařízeno.', 'Nic necítili, protože kouř nevznikal.', 'Šichtu nesměli opustit bez podpisu ředitele.'], e: 'Mnozí nedbali ani příkazů dozorců.' },
+  { id: 'k-zachranari', t: 'katastrofa', z: 'Záchrana', q: 'Čím se chránili záchranáři?', a: 'Šátky namočenými v octě.',
+    w: ['Dýchacími přístroji s kyslíkem.', 'Plynovými maskami.', 'Ničím, záchrana nebyla povolena.'], e: 'Proti oxidu uhelnatému je to nechránilo, pět záchranářů zahynulo.' },
+  { id: 'k-groegler', t: 'katastrofa', z: 'Záchrana', q: 'Kdo byl vrchní správce, který opakovaně sfáral a nakonec ho vynesli v bezvědomí?', a: 'Hugo Grögler.',
+    w: ['Emanuel Kříž.', 'Ignác Jeschke.', 'Gustav Ziegelheim.'], e: 'Grögler také rozhodl o hašení vodou.' },
+  { id: 'k-signal', t: 'katastrofa', z: '1. června', q: 'Co se stalo 1. června kolem 13. hodiny v dole Císař František Josef I.?', a: 'Ozvalo se 28 signálních úderů, dole byli ještě živí lidé.',
+    w: ['Znovu vypukl požár.', 'Do dolu sfáral císař.', 'Byla obnovena těžba.'], e: 'Záchranáři k nim bohužel dorazili pozdě.' },
+  { id: 'k-soud', t: 'katastrofa', z: 'Soud', q: 'Jak dopadl Emanuel Kříž?', a: 'Byl odsouzen na tři roky, ale asi po roce a půl ho omilostnil císař.',
+    w: ['Byl osvobozen.', 'Zemřel při požáru.', 'Uprchl do Ameriky.'], e: 'Znalci přitom tvrdili, že příčinu nelze s jistotou určit.' },
+  { id: 'k-dusledek', t: 'katastrofa', z: 'Důsledky', q: 'Co katastrofa urychlila?', a: 'Vývoj dýchacích přístrojů a vznik báňské záchranné služby.',
+    w: ['Uzavření všech příbramských dolů.', 'Přesun horní akademie do Ostravy.', 'Zákaz dětské práce v dolech.'], e: 'Bez dýchacích přístrojů nemohla záchrana v zakouřeném dole fungovat.' },
+  { id: 'm-anna', t: 'misto', z: 'Důl Anna', q: 'Proč se důl Anna stal hlavní základnou záchrany?', a: 'Ležel od Marie nejdál, a kouř do něj pronikl až v noci.',
+    w: ['Byl nejhlubší.', 'Měl jako jediný elektrické světlo.', 'Sídlilo v něm horní ředitelství.'], e: 'Anna byla 820 m od Marie. Klec i stoupací stroj tu jezdily celé odpoledne.' },
+  { id: 'm-hut', t: 'misto', z: 'Stříbrná huť', q: 'Kde stála příbramská stříbrná huť?', a: 'U Lhoty na soutoku Litavky a Obecnického potoka.',
+    w: ['Na náměstí v Příbrami.', 'Přímo u dolu Marie.', 'Na Svaté Hoře.'], e: 'Stavba začala roku 1786. Na stejném místě dnes pracují Kovohutě Příbram.' },
+  { id: 'm-sichtamt', t: 'misto', z: 'Šichtamt', q: 'K čemu sloužil šichtamt?', a: 'Horníci se tu hlásili na směnu a vedly se tu záznamy o práci a mzdách.',
+    w: ['Skladoval se tu střelný prach.', 'Tavila se tu ruda.', 'Bydlel tu farář.'], e: 'Šichtamt vedl šichtmistr. Nejznámějším byl Jan Antonín Alis.' },
+  { id: 'm-pradla', t: 'misto', z: 'Úpravny', q: 'Co se dělo s rudou v „prádle“?', a: 'Rozdrcená ruda se ve vodě oddělovala od lehké hlušiny.',
+    w: ['Ruda se tavila na kov.', 'Prali se tu oděvy horníků.', 'Ruda se tu razila na mince.'], e: 'Těžké rudní minerály klesaly ke dnu, hlušina odtékala s vodou.' },
+  { id: 'k-novak', t: 'katastrofa', z: 'Úředníci', q: 'Kdo byl roku 1892 přednostou horního ředitelství v Příbrami?', a: 'C. k. vrchní horní rada Jan Novák.',
+    w: ['Hugo Grögler.', 'Jan Antonín Alis.', 'Karel Balling.'], e: 'Hugo Grögler byl vrchní horní správce, který vedl záchranu.' },
+  { id: 'k-tah', t: 'katastrofa', z: 'Větrání', q: 'Proč se 31. května zastavil přirozený tah vzduchu?', a: 'V dole i na povrchu bylo stejně teplo, kolem 24 °C.',
+    w: ['Rozbil se ventilátor.', 'Šachta Marie se zřítila.', 'Horníci zavřeli všechny dveře.'], e: 'Tah vzduchu v šachtách vzniká z rozdílu teplot.' },
+  { id: 'k-pesek', t: 'katastrofa', z: 'Záchrana', q: 'Kde jsou uvedena jména pěti záchranářů, kteří zahynuli?', a: 'Na mramorové desce v kostele sv. Vojtěcha.',
+    w: ['Na budově horního ředitelství.', 'Na obelisku na Svaté Hoře.', 'Na radnici v Příbrami.'], e: 'Deska byla odhalena 18. května 1893.' },
+  { id: 'k-tisk', t: 'katastrofa', z: 'Dobový tisk', q: 'Kolik mrtvých odhadovaly první novinové zprávy 1. června?', a: 'Asi 250.',
+    w: ['Asi 30.', 'Přes 1 000.', 'Přesně 319.'], e: 'Konečný počet 319 se ustálil až později.' },
+  { id: 's-zakon', t: 'slovnik', z: 'Obecný horní zákon', q: 'Jaký horní zákon platil roku 1892?', a: 'Obecný horní zákon z roku 1854.',
+    w: ['Horní zákoník Václava II.', 'Horní zákon z roku 1957.', 'Žádný, doly byly soukromé.'], e: 'Platil v českých zemích až do roku 1957.' },
+  { id: 's-galenit', t: 'slovnik', z: 'Galenit', q: 'Co je galenit?', a: 'Sulfid olova, hlavní ruda Březových Hor obsahující stříbro.',
+    w: ['Jedovatý plyn v dole.', 'Druh výdřevy.', 'Hornický nástroj.'], e: 'Z galenitu se získávalo olovo i stříbro.' },
+  { id: 's-ruda', t: 'slovnik', z: 'Ruda', q: 'Co je ruda?', a: 'Hornina nebo směs minerálů, ze které se vyplatí získávat kov.',
+    w: ['Jakýkoli minerál.', 'Hlušina na haldě.', 'Roztavený kov.'], e: 'Zda je něco ruda, záleží i na ceně kovu.' },
+  { id: 's-zila', t: 'slovnik', z: 'Žíla', q: 'Co je rudní žíla?', a: 'Puklina v hornině vyplněná minerály.',
+    w: ['Podzemní potok.', 'Hlavní chodba dolu.', 'Lano v šachtě.'], e: 'Hlavní žílou Březových Hor byla Vojtěšská žíla.' },
+  { id: 's-antimon', t: 'slovnik', z: 'Antimon', q: 'Co je antimon?', a: 'Křehký polokov, na Příbramsku hlavně v rudách u Bohutína.',
+    w: ['Druh hornické lampy.', 'Minerál obsahující zlato.', 'Starý název pro stříbro.'], e: 'Přidával se například do tiskového písma ze slitiny olova.' },
+  { id: 's-farat', t: 'slovnik', z: 'Fárat', q: 'Co znamená „sfárat“?', a: 'Sestoupit do dolu.',
+    w: ['Odpracovat šichtu.', 'Vytěžit rudu.', 'Vyměnit knot v kahanu.'], e: 'Z něm. fahren. Opak je „vyfárat“.' },
+  { id: 's-hory', t: 'slovnik', z: 'Hory', q: 'Co znamená slovo „hory“ v názvu Březové Hory?', a: 'Doly.',
+    w: ['Vysoké kopce.', 'Lesy.', 'Haldy hlušiny.'], e: 'Odtud i slovo horník. Stejný původ má název Kutná Hora.' },
+  { id: 's-stoupaci', t: 'slovnik', z: 'Stoupací stroj', q: 'Co je stoupací stroj?', a: 'Zařízení s pohyblivými stupínky, po kterých horníci sjížděli a vyjížděli.',
+    w: ['Parní stroj na čerpání vody.', 'Vrtačka na tvrdou horninu.', 'Výtah pouze pro koně.'], e: 'V dole Marie byl od roku 1853.' },
+  { id: 's-patro', t: 'slovnik', z: 'Patro', q: 'Co je v hornictví „patro“?', a: 'Vodorovná úroveň chodeb v určité hloubce.',
+    w: ['Poschodí šachetní budovy.', 'Vrstva rudy.', 'Část směny.'], e: 'Požár vznikl na 29. patře dolu Marie.' },
+  { id: 's-pozdrav', t: 'slovnik', z: 'Zdař Bůh', q: 'Jaký je tradiční pozdrav horníků?', a: 'Zdař Bůh.',
+    w: ['Pozdrav Pánbůh.', 'Šťastnou cestu.', 'Hora volá.'], e: 'Přeje šťastný návrat z podzemí.' },
+  { id: 's-patron', t: 'slovnik', z: 'Patroni horníků', q: 'Kdo jsou patroni horníků?', a: 'Sv. Prokop a sv. Barbora.',
+    w: ['Sv. Václav a sv. Ludmila.', 'Sv. Florián a sv. Jiří.', 'Sv. Kryštof a sv. Anna.'], e: 'Oba mají oltář v kostele sv. Prokopa na Březových Horách.' }
+];
+const RES_RANKS = [[.9, 'Horní rada'], [.7, 'Markšajdr'], [.5, 'Předák'], [.3, 'Havíř'], [0, 'Vozač']];
+const quizPaid = new Set(save.get('quizPaid', []));
+let qTopic = 'all', qLen = 10, qSet = [], qi = 0, qScore = 0, qAnswered = false, qOrder = [];
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const poolOf = t => QUIZ.filter(q => t === 'all' || q.t === t);
+function renderSetup() {
+  const chip = (k, label, on, attr) => `<button class="chip" type="button" data-${attr}="${k}" aria-pressed="${on}">${esc(label)}</button>`;
+  $('q-topics').innerHTML = chip('all', `Vše (${QUIZ.length})`, qTopic === 'all', 'topic') +
+    Object.entries(Q_TOPICS).map(([k, l]) => chip(k, `${l} (${poolOf(k).length})`, qTopic === k, 'topic')).join('');
+  const n = poolOf(qTopic).length;
+  $('q-lengths').innerHTML = chip(10, '10 otázek', qLen === 10, 'len') + chip(0, `Všechny otázky tématu (${n})`, qLen === 0, 'len');
+  $('q-paid').textContent = quizPaid.size; $('q-all').textContent = QUIZ.length;
+}
+function startQuiz() {
+  const pool = shuffle(poolOf(qTopic));
+  qSet = qLen ? pool.slice(0, qLen) : pool;
+  qi = 0; qScore = 0;
+  $('q-setup').hidden = true; $('q-results').hidden = true; $('q-play').hidden = false; $('q-step').hidden = false;
+  renderQ();
+}
+function renderQ() {
+  qAnswered = false;
+  const q = qSet[qi];
+  $('q-step').textContent = `${qi + 1} / ${qSet.length}`;
+  $('q-cat').textContent = `${Q_TOPICS[q.t]} · ${q.z}`; $('q-title').textContent = q.q;
+  qOrder = shuffle([q.a, ...q.w]);
+  $('q-opts').innerHTML = qOrder.map((t, i) => `<button class="opt" type="button" data-i="${i}"><span class="k">${'ABCD'[i]}</span><span>${esc(t)}</span></button>`).join('');
+  $('q-fb').hidden = true;
+}
+function answer(i) {
+  if (qAnswered) return; qAnswered = true;
+  const q = qSet[qi], ok = qOrder[i] === q.a;
+  document.querySelectorAll('.opt').forEach((b, j) => {
+    b.disabled = true;
+    if (qOrder[j] === q.a) b.classList.add('ok'); else if (j === i) b.classList.add('ko'); else b.classList.add('off');
+  });
+  const fb = $('q-fb'); fb.hidden = false; fb.className = 'feedback ' + (ok ? 'ok' : 'ko');
+  if (ok) { qScore++; quizPaid.add(q.id); save.set('quizPaid', [...quizPaid]); $('q-fb-title').textContent = 'Správně!'; }
+  else $('q-fb-title').textContent = 'Tohle není správně. Správně: ' + q.a;
+  $('q-fb-text').textContent = q.e;
+  $('q-next').textContent = qi < qSet.length - 1 ? 'Další otázka →' : 'Zobrazit výsledek';
+  $('q-next').focus({ preventScroll: true });
+}
+function nextQ() {
+  if (qi < qSet.length - 1) { qi++; renderQ(); return; }
+  $('q-play').hidden = true; $('q-results').hidden = false; $('q-step').hidden = true;
+  const ratio = qScore / qSet.length;
+  $('q-rank').textContent = RES_RANKS.find(([min]) => ratio >= min)[1];
+  const left = QUIZ.length - quizPaid.size;
+  $('q-sum').textContent = `Správně ${qScore} z ${qSet.length}. ` +
+    (left ? `Ze všech ${QUIZ.length} otázek máš správně zodpovězeno ${quizPaid.size}, zbývá ${left}.` : `Zodpověděl(a) jsi správně všech ${QUIZ.length} otázek.`);
+}
+function buildQuiz() {
+  $('q-topics').addEventListener('click', e => { const b = e.target.closest('[data-topic]'); if (!b) return; qTopic = b.dataset.topic; renderSetup(); });
+  $('q-lengths').addEventListener('click', e => { const b = e.target.closest('[data-len]'); if (!b) return; qLen = +b.dataset.len; renderSetup(); });
+  $('q-start').addEventListener('click', startQuiz);
+  $('q-opts').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b) answer(+b.dataset.i); });
+  $('q-next').addEventListener('click', nextQ);
+  $('q-again').addEventListener('click', startQuiz);
+  $('q-back').addEventListener('click', () => { $('q-results').hidden = true; $('q-setup').hidden = false; renderSetup(); });
+  renderSetup();
+}
+
+/* ==================== start ==================== */
+$('lex-count').textContent = LEX.length + ' pojmů';
+$('lex-q').addEventListener('input', renderLex);
+$('reset-all').addEventListener('click', () => {
+  if (!confirm('Vymazat prozkoumaná místa, postup v příběhu a výsledky kvízu v tomto prohlížeči?')) return;
+  save.clear(); location.reload();
+});
+renderSound();
+buildMap(); selectLoc('marie', true);
+renderAdv();
+buildQuiz(); renderLex();
+showTab(location.hash.slice(1));
+</script>
+</body>
+</html>
