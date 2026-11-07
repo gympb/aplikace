@@ -416,6 +416,10 @@ details.adv-warn p{margin:8px 0 0}
     <div class="top-row">
       <a class="back" href="../">← Všechny školní aplikace</a>
       <div class="hud">
+        <button class="iconbtn" id="fullscreen" type="button" title="Celá obrazovka">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path id="fs-in" d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5"/><path id="fs-out" hidden d="M8 3v5H3M17 8h-5V3M12 17v-5h5M3 12h5v5"/></svg>
+          <span class="lbl" id="fullscreen-lbl">Celá obrazovka</span>
+        </button>
         <button class="iconbtn" id="sound" aria-pressed="true" title="Zvukové potvrzení kliknutí">
           <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M9.4 3.1A1 1 0 0 1 10 4v12a1 1 0 0 1-1.7.7L4.6 13H2a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h2.6l3.7-3.7a1 1 0 0 1 1.1-.2z"/><path id="snd-waves" d="M13.8 6.2a1 1 0 0 1 1.4 0 5.5 5.5 0 0 1 0 7.6 1 1 0 1 1-1.4-1.4 3.5 3.5 0 0 0 0-4.8 1 1 0 0 1 0-1.4z"/><path id="snd-off" hidden d="M12.3 7.3a1 1 0 0 1 1.4 0L15 8.6l1.3-1.3a1 1 0 1 1 1.4 1.4L16.4 10l1.3 1.3a1 1 0 0 1-1.4 1.4L15 11.4l-1.3 1.3a1 1 0 0 1-1.4-1.4l1.3-1.3-1.3-1.3a1 1 0 0 1 0-1.4z"/></svg>
           <span class="lbl" id="sound-lbl">Zvuk kliknutí</span>
@@ -427,8 +431,8 @@ details.adv-warn p{margin:8px 0 0}
       <button class="tab" role="tab" id="t-katastrofa" aria-controls="p-katastrofa">Den katastrofy</button>
       <button class="tab" role="tab" id="t-slovnik" aria-controls="p-slovnik">Slovník</button>
       <button class="tab" role="tab" id="t-sachty" aria-controls="p-sachty">Šachty</button>
-      <button class="tab" role="tab" id="t-adventura" aria-controls="p-adventura">Odpolední šichta</button>
       <button class="tab" role="tab" id="t-kviz" aria-controls="p-kviz">Kvíz</button>
+      <button class="tab" role="tab" id="t-adventura" aria-controls="p-adventura">Odpolední šichta</button>
     </nav>
   </div>
 </header>
@@ -983,11 +987,35 @@ function renderSound() {
 }
 $('sound').addEventListener('click', () => { soundOn = !soundOn; save.set('sound', soundOn); renderSound(); clickSound(); });
 
+/* ==================== celá obrazovka pro celou aplikaci ==================== */
+const fsSupported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+function renderFs() {
+  const on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  $('fs-in').hidden = on; $('fs-out').hidden = !on;
+  $('fullscreen-lbl').textContent = on ? 'Ukončit celou obrazovku' : 'Celá obrazovka';
+  $('fullscreen').title = on ? 'Ukončit celou obrazovku (Esc)' : 'Zobrazit aplikaci přes celou obrazovku';
+  $('fullscreen').setAttribute('aria-pressed', String(on));
+}
+$('fullscreen').hidden = !fsSupported;
+$('fullscreen').addEventListener('click', () => {
+  const el = document.documentElement;
+  try {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      const pr = (document.exitFullscreen || document.webkitExitFullscreen).call(document); if (pr && pr.catch) pr.catch(() => {});
+    } else {
+      const pr = (el.requestFullscreen || el.webkitRequestFullscreen).call(el); if (pr && pr.catch) pr.catch(() => toast('Celou obrazovku tento prohlížeč nedovolil'));
+    }
+  } catch (e) { toast('Celou obrazovku tento prohlížeč nedovolil'); }
+});
+document.addEventListener('fullscreenchange', renderFs);
+document.addEventListener('webkitfullscreenchange', renderFs);
+renderFs();
+
 let toastT;
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
 
 /* ==================== záložky ==================== */
-const TABS = ['mapa', 'katastrofa', 'slovnik', 'sachty', 'adventura', 'kviz'];
+const TABS = ['mapa', 'katastrofa', 'slovnik', 'sachty', 'kviz', 'adventura'];
 function showTab(name, focus) {
   if (!TABS.includes(name)) name = 'mapa';
   for (const t of TABS) {
