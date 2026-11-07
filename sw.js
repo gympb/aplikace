@@ -1,7 +1,7 @@
 /* Service worker katalogu gymplikace. Slouží k instalaci jako aplikace a k otevření katalogu bez sítě.
    Nic neodesílá a nic nesleduje. Aplikace ve složkách (např. /caesarova-sifra/) a portfolio se nezachytávají,
    načítají se vždy ze sítě. Při změně souborů v SEZNAM zvyš VERZE. */
-const VERZE = 'gymplikace-1';
+const VERZE = 'gymplikace-2';
 const SEZNAM = ['./', 'index.html', 'katalog.json', 'manifest.webmanifest', 'favicon.svg',
   'assets/ikona/ikona-192.png', 'assets/ikona/ikona-512.png', 'assets/obrazky/skola.svg', 'assets/obrazky/predmety/zaloha.svg'];
 
