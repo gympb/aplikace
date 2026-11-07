@@ -829,7 +829,7 @@ function viewAnim(r){
  const segSp=h('div',{cls:'seg'},[[0.5,'0,5×'],[0.75,'0,75×'],[1,'1×'],[1.5,'1,5×']].map(([k,n])=>h('button',{'data-k':k,on:{click:()=>{speed=k;store.set('speed',k);upd()}}},n)));
  const panel=h('div',{cls:'panel'},h('div',{cls:'ctrl'},bPrev,bGo,bPlay),h('div',{cls:'scrub'},rng,ticks),
   h('div',{cls:'card'},phases),
-  h('div',{cls:'card opts'},h('div',{cls:'lab',style:'margin-top:0'},'Přehrávání'),segMode,h('div',{cls:'mut',style:'margin:-2px 2px 4px'},'Celá animace běží bez přerušení. Kdykoli ji můžeš zastavit klepnutím do obrázku nebo přepnout na zastavování po krocích.'),h('div',{cls:'lab'},'Postranskripční úpravy mRNA'),segUp,h('div',{cls:'lab'},'Rychlost'),segSp,
+  h('div',{cls:'card opts'},h('div',{cls:'lab',style:'margin-top:0'},'Přehrávání'),segMode,h('div',{cls:'mut',style:'margin:-2px 2px 4px'},'Celá animace běží bez přerušení. Zastavíš ji klepnutím do volného místa obrázku, nebo ji přepni na zastavování po krocích. Klepnutím na objekt (např. DNA, ribozom, tRNA) zobrazíš bublinu s vysvětlením.'),h('div',{cls:'lab'},'Postranskripční úpravy mRNA'),segUp,h('div',{cls:'lab'},'Rychlost'),segSp,
    fsb,h('div',{cls:'kb',html:'<kbd>mezerník</kbd> přehrát/pauza · <kbd>→</kbd> pokračovat · <kbd>←</kbd> zpět · <kbd>F</kbd> celá obrazovka · funguje i prezentér (PageUp/PageDown)'})),
   h('div',{cls:'row',style:'gap:8px'},h('button',{cls:'btn s',style:'flex:1',on:{click:()=>go('kod')}},'Genetický kód'),h('button',{cls:'btn s',style:'flex:1',on:{click:()=>go('otazky')}},'Kvíz →')));
  app.append(backBtn(),h('div',{cls:'stagew'},h('div',{},stage),panel));
@@ -842,14 +842,13 @@ function viewAnim(r){
   const r=stage.getBoundingClientRect();let x=cx-r.left+14,y=cy-r.top+(dy||16);
   const w=tipEl.offsetWidth,hh=tipEl.offsetHeight;if(x+w>r.width-6)x=cx-r.left-w-14;if(y+hh>r.height-6||dy<0)y=cy-r.top-hh-(dy<0?-dy:12);
   tipEl.style.left=Math.max(6,x)+'px';tipEl.style.top=Math.max(6,y)+'px'};
- let lp=null,lpXY=null,lpShown=false,lpHide=0;
- svg.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;clearTimeout(lp);lpXY=[e.clientX,e.clientY];const el=e.target;
-  lp=setTimeout(()=>{const t=tipFor(el);if(!t)return;lpShown=true;showTip(t,lpXY[0],lpXY[1],-40);clearTimeout(lpHide);lpHide=setTimeout(()=>{tipEl.hidden=true},3500)},450)});
- svg.addEventListener('pointerup',e=>{if(e.pointerType!=='mouse')clearTimeout(lp)});
- svg.addEventListener('pointercancel',()=>clearTimeout(lp));
- svg.addEventListener('contextmenu',e=>{if(lpShown||lp)e.preventDefault()});
- svg.addEventListener('click',e=>{if(lpShown){lpShown=false;e.stopImmediatePropagation()}},true);
- svg.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'){if(lpXY&&Math.hypot(e.clientX-lpXY[0],e.clientY-lpXY[1])>10)clearTimeout(lp);return}
+ let tXY=null,tEl=null,tTouch=false,tHide=0;
+ svg.addEventListener('pointerdown',e=>{tTouch=e.pointerType!=='mouse';if(tTouch){tXY=[e.clientX,e.clientY];tEl=e.target}});
+ svg.addEventListener('contextmenu',e=>{if(tTouch)e.preventDefault()});
+ svg.addEventListener('click',e=>{if(!tTouch||!tXY)return;const t=tipFor(tEl);
+  if(t){e.stopImmediatePropagation();showTip(t,tXY[0],tXY[1],-40);clearTimeout(tHide);tHide=setTimeout(()=>{tipEl.hidden=true},4500)}
+  else if(!tipEl.hidden){tipEl.hidden=true;e.stopImmediatePropagation()}},true);
+ svg.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;
   const t=tipFor(e.target);
   if(!t){tipEl.hidden=true;stage.style.cursor='';return}
   showTip(t,e.clientX,e.clientY);stage.style.cursor='help'});
