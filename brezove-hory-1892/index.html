@@ -395,6 +395,8 @@ body{background:var(--wood) radial-gradient(ellipse at 50% 0%,#2b2925 0%,var(--w
 .pin.approx{border-style:dashed}
 .pin.edge{opacity:.85}
 .note.pos{margin:10px 0 0;font-size:14px}
+.defbox{margin:0 0 8px;max-width:820px}
+.defbox p{margin:0 0 8px}
 /* --- adventura: doplňky --- */
 details.adv-warn summary{cursor:pointer;font-weight:700;min-height:32px}
 details.adv-warn p{margin:8px 0 0}
@@ -422,6 +424,7 @@ details.adv-warn p{margin:8px 0 0}
     </div>
     <nav class="tabs" role="tablist" aria-label="Části aplikace">
       <button class="tab" role="tab" id="t-mapa" aria-controls="p-mapa">Mapa 1892</button>
+      <button class="tab" role="tab" id="t-sachty" aria-controls="p-sachty">Šachty 1892</button>
       <button class="tab" role="tab" id="t-katastrofa" aria-controls="p-katastrofa">31. května 1892</button>
       <button class="tab" role="tab" id="t-adventura" aria-controls="p-adventura">Odpolední šichta</button>
       <button class="tab" role="tab" id="t-slovnik" aria-controls="p-slovnik">Slovník</button>
@@ -442,9 +445,9 @@ details.adv-warn p{margin:8px 0 0}
 <div class="map-layout" id="map-layout">
   <div class="sheet map-top">
     <div class="sheet-head">
-      <div class="kicker">Schematická mapa · měřítko přibližné</div>
+      <div class="kicker">Mapa podle skutečných souřadnic</div>
       <h2>Březové Hory a Příbram roku 1892</h2>
-      <p>Klikni na značku nebo na název místa pod mapou. Polohy dolů a kostelů vycházejí ze souřadnic a ze vzdáleností uváděných po katastrofě; místa s přerušovaným okrajem značky mají polohu jen přibližnou. Čárkovaně je naznačeno, kudy se podzemím šířil kouř.</p>
+      <p>Klikni na značku nebo na název místa pod mapou. Řeky, železnice, cesty a polohy šachet, kostelů a hřbitovů jsou převzaty ze skutečné mapy (OpenStreetMap) a porovnány s mapou z 19. století. Značky s přerušovaným okrajem mají polohu přibližnou, značky u okraje ukazují místa mimo výřez.</p>
     </div>
     <div class="map-tools">
       <div class="filters" role="group" aria-label="Filtr míst" id="filters"></div>
@@ -458,100 +461,118 @@ details.adv-warn p{margin:8px 0 0}
   <div class="sheet map-sheet">
     <div class="map" id="map">
       <svg viewBox="0 0 1000 680" role="img" aria-labelledby="map-title map-desc" id="map-svg">
-        <title id="map-title">Schematická mapa Březových Hor a Příbrami roku 1892</title>
-        <desc id="map-desc">Hornický městys Březové Hory leží na vyvýšenině západně od údolí Litavky, Příbram na východ od něj. Kolem Březových Hor stojí šachty dolů Marie, Císař František Josef I. (Ševčinský), Vojtěch, Anna a Prokop, severněji doly Ferdinand a Lill, jižně Drkolnov. Na kopci východně od příbramského náměstí stojí Svatá Hora. Stříbrná huť stojí asi 4 km severně u Lhoty.</desc>
+        <title id="map-title">Mapa Březových Hor a Příbrami roku 1892</title>
+        <desc id="map-desc">Březové Hory leží na hřbetu mezi Litavkou na západě a údolím Příbramského potoka na východě. Údolím potoka vede od roku 1875 železnice. Na hřbetu stojí šachty Ševčinská (Císař František Josef I.), Marie, Vojtěch, Anna a Prokop, severněji Ferdinand. Z náměstí na Březových Horách vede Prokopská cesta kolem kostela sv. Prokopa a březového háje dolů k potoku a do Příbrami. Na kopci východně od příbramského náměstí stojí Svatá Hora.</desc>
         <defs>
           <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><line x1="0" y1="0" x2="0" y2="9" stroke="#c9ad74" stroke-width="1"/></pattern>
           <pattern id="slope" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)"><line x1="0" y1="0" x2="0" y2="7" stroke="#8a6c3e" stroke-width="1.1" opacity=".55"/></pattern>
+          <pattern id="birch" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="2.2" fill="#8fa06a" opacity=".8"/><circle cx="11" cy="10" r="1.8" fill="#8fa06a" opacity=".7"/></pattern>
           <marker id="arr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7a5a32"/></marker>
         </defs>
         <rect width="1000" height="680" fill="#efe1bd"/>
         <rect width="1000" height="680" fill="url(#hatch)" opacity=".35"/>
 
-        <!-- vyvýšenina Březových Hor (rudní pásmo) -->
-        <path d="M150 300 C 140 200 220 120 320 110 C 420 102 470 160 470 230 C 470 290 420 330 380 360 C 340 400 330 470 270 500 C 200 530 160 460 150 400 Z" fill="#e3cf9f" stroke="#b39a68" stroke-width="2"/>
-        <path d="M150 300 C 140 200 220 120 320 110 C 420 102 470 160 470 230" fill="none" stroke="url(#slope)" stroke-width="16" opacity=".7"/>
+        <!-- březohorský hřbet mezi Litavkou a Příbramským potokem -->
+        <path d="M150 0 L 560 0 C 545 120 560 230 575 300 C 590 380 560 470 520 560 C 490 620 470 650 450 680 L 160 680 C 130 600 140 470 150 380 C 155 300 145 160 150 0 Z" fill="#e6d3a6"/>
+        <path d="M560 0 C 545 120 560 230 575 300 C 590 380 560 470 520 560 C 490 620 470 650 450 680" fill="none" stroke="url(#slope)" stroke-width="22" opacity=".7"/>
+        <path d="M150 0 C 145 160 155 300 150 380 C 140 470 130 600 160 680" fill="none" stroke="url(#slope)" stroke-width="18" opacity=".6"/>
+        <!-- březový háj u sv. Prokopa (Koráb) -->
+        <path d="M370 262 C 400 245 450 245 480 258 C 500 272 488 300 455 304 C 420 306 385 296 370 282 Z" fill="url(#birch)" stroke="#8fa06a" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="430" y="322" text-anchor="middle" font-family="Almendra, Georgia, serif" font-style="italic" font-size="13" fill="#5e6b3a">březový háj</text>
 
         <!-- Svatá Hora -->
-        <ellipse cx="830" cy="340" rx="78" ry="60" fill="#dcc596" stroke="#a88a58" stroke-width="2"/>
-        <path d="M752 340 C 760 300 800 280 830 280 C 870 280 900 300 908 340" fill="none" stroke="url(#slope)" stroke-width="14" opacity=".8"/>
+        <ellipse cx="845" cy="322" rx="92" ry="70" fill="#dcc596" stroke="#a88a58" stroke-width="2"/>
+        <path d="M753 322 C 760 275 805 252 845 252 C 890 252 930 275 937 322" fill="none" stroke="url(#slope)" stroke-width="14" opacity=".8"/>
 
-        <!-- Litavka -->
-        <path id="litavka" d="M268 680 C 300 600 340 500 368 410 C 384 360 400 330 414 312 C 432 286 452 262 470 230 C 495 170 515 90 535 0" fill="none" stroke="#4d7f8f" stroke-width="10" stroke-linecap="round"/>
-        <path d="M268 680 C 300 600 340 500 368 410 C 384 360 400 330 414 312 C 432 286 452 262 470 230 C 495 170 515 90 535 0" fill="none" stroke="#a9cdd6" stroke-width="2" stroke-dasharray="10 12" stroke-linecap="round"/>
-        <path id="litavka-label" d="M300 610 C 318 560 334 520 346 480" fill="none"/>
-        <text font-family="Almendra, Georgia, serif" font-style="italic" font-size="17" fill="#2f5f72"><textPath href="#litavka-label">Litavka</textPath></text>
+        <!-- Litavka (podle dnešního toku) -->
+        <path d="M-18 541L30 508L38 502L43 495L49 483L53 476L60 471L69 467L76 461L80 455L92 438L97 431L102 423L105 414L103 407L100 399L107 385L120 370L127 349L132 346L140 338L142 332L134 319L131 307L133 271L135 235L136 166L138 153L139 139L140 128L140 114L141 103L143 85L143 75L143 65L142 57L143 49L143 39L144 31L144 23L144 9L143 -46" fill="none" stroke="#4d7f8f" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M-18 541L30 508L49 483L80 455L102 423L100 399L120 370L142 332L131 307L136 166L140 114L143 65L144 9" fill="none" stroke="#a9cdd6" stroke-width="2" stroke-dasharray="10 12"/>
+        <text x="120" y="210" transform="rotate(-88 120 210)" font-family="Almendra, Georgia, serif" font-style="italic" font-size="17" fill="#2f5f72">Litavka</text>
         <!-- Příbramský potok -->
-        <path d="M1000 215 C 930 235 860 262 790 282 C 740 296 690 300 620 300 C 540 300 470 305 414 312" fill="none" stroke="#4d7f8f" stroke-width="6" stroke-linecap="round"/>
-        <path id="potok-label" d="M560 296 C 600 296 640 296 690 292" fill="none"/>
-        <text font-family="Almendra, Georgia, serif" font-style="italic" font-size="14" fill="#2f5f72"><textPath href="#potok-label">Příbramský potok</textPath></text>
+        <path d="M516 720L514 713L517 706L523 700L518 695L511 693L516 688L521 683L517 678L519 670L520 663L520 651L523 630L527 616L530 601L532 595L535 589L552 574L559 566L564 562L570 554L573 545L590 517L594 509L597 502L600 495L605 486L613 467L617 460L619 454L618 436L622 414L622 407L619 379L626 336L627 328L616 311L611 302L607 291L606 284L607 275L610 252L613 243L614 227L608 212L601 189L591 183L578 163L561 133L560 124L565 98L572 85L571 79L583 60L587 49L590 41L595 35L606 25L642 -4L655 -19" fill="none" stroke="#4d7f8f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="634" y="470" transform="rotate(-72 634 470)" font-family="Almendra, Georgia, serif" font-style="italic" font-size="15" fill="#2f5f72">Příbramský potok</text>
 
-        <!-- cesty -->
-        <g fill="none" stroke="#a5875a" stroke-width="5" stroke-linecap="round" opacity=".9">
-          <path d="M305 372 C 400 352 500 312 580 284 C 640 262 680 248 708 240"/>
-          <path d="M716 248 C 760 278 795 306 820 328"/>
-          <path d="M705 230 C 690 160 650 80 625 0"/>
-          <path d="M290 380 C 200 400 100 430 0 452"/>
-          <path d="M300 384 C 292 470 280 560 268 640"/>
-          <path d="M705 240 C 780 230 880 205 1000 190"/>
+        <!-- struhy: přívod vody z Brd (schematicky) -->
+        <path d="M-10 640 C 60 600 120 560 175 520 C 215 490 245 470 262 455 C 275 420 280 360 284 300 M 284 300 C 300 275 320 255 340 240" fill="none" stroke="#5b9bb0" stroke-width="3" stroke-dasharray="9 6" stroke-linecap="round"/>
+        <text x="40" y="596" transform="rotate(-30 40 596)" font-family="Almendra, Georgia, serif" font-style="italic" font-size="14" fill="#2f5f72">struhy z Brd (schematicky)</text>
+
+        <!-- železnice Zdice–Protivín (od 1875) -->
+        <path d="M491 685L500 664L512 631L525 588L549 506L559 473L565 442L569 415L573 390L577 360L581 331L584 307L585 292L581 273L574 254L564 238L539 200L504 147L485 117L473 95L466 72L467 48L472 26L478 10L487 -19" fill="none" stroke="#3b3b3b" stroke-width="5"/>
+        <path d="M491 685L500 664L512 631L525 588L549 506L559 473L565 442L569 415L573 390L577 360L581 331L584 307L585 292L581 273L574 254L564 238L539 200L504 147L485 117L473 95L466 72L467 48L472 26L478 10L487 -19" fill="none" stroke="#efe1bd" stroke-width="3" stroke-dasharray="8 8"/>
+        <text x="532" y="640" transform="rotate(-72 532 640)" font-family="Almendra, Georgia, serif" font-style="italic" font-size="13" fill="#3b3b3b">trať Zdice–Protivín (1875)</text>
+        <rect x="545" y="190" width="22" height="12" fill="#c4a774" stroke="#5e4728" stroke-width="1.2"/>
+        <text x="532" y="186" text-anchor="end" font-family="Almendra, Georgia, serif" font-style="italic" font-size="13" fill="#5e4728">nádraží</text>
+
+        <!-- cesty (podle dnešních ulic, které sledují staré cesty) -->
+        <g fill="none" stroke="#a5875a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".95">
+          <!-- Prokopská (Březohorská) cesta: náměstí – sv. Prokop – háj – údolí – Příbram -->
+          <path d="M246 391L260 378L275 360L284 350L299 330L308 320L334 299L341 293L354 278L361 273L374 267L390 264L411 263L441 262 C 480 262 520 268 555 280 C 590 290 620 262 645 238 C 655 228 665 220 678 214"/>
+          <!-- Mariánská: od dolu Marie na jih Příbrami -->
+          <path d="M255 393L296 396L353 398L389 399L418 397L452 383L478 369L509 359L530 353L574 335L597 324L615 317 C 640 300 660 260 678 214"/>
+          <!-- hlavní ulice Březových Hor (Husova) -->
+          <path d="M232 400L236 367L241 339L251 325L272 311L292 290L307 274L317 255L326 237L349 190L370 168L398 142L414 127L438 104L465 81L484 77L537 82"/>
+          <!-- Rožmitálská -->
+          <path d="M232 400L223 423L218 454L208 466L184 487L160 525L137 559L87 603L42 644L0 676"/>
+          <!-- Pražská a Milínská -->
+          <path d="M684 230L719 212L758 190L800 165L860 130L960 80L1000 60"/>
+          <path d="M663 265L666 308L661 351L652 412L645 475L631 504L624 560L610 648L600 679"/>
+          <!-- ke Svaté Hoře -->
+          <path d="M700 214 C 740 235 770 265 800 290 C 815 300 828 308 840 316"/>
         </g>
-        <g font-family="Almendra, Georgia, serif" font-style="italic" font-size="15" fill="#7a5a32">
-          <text x="18" y="440" transform="rotate(-12 18 440)">k Bohutínu</text>
-          <text x="880" y="186" transform="rotate(-8 880 186)">do Prahy</text>
-          <text x="486" y="320" transform="rotate(-20 486 320)">Březohorská silnice</text>
-          <text x="740" y="315" transform="rotate(36 740 315)">krytá schodiště</text>
-          <text x="660" y="62" transform="rotate(64 660 62)">k Lhotě</text>
+        <g font-family="Almendra, Georgia, serif" font-style="italic" font-size="14" fill="#7a5a32">
+          <text x="300" y="352" transform="rotate(-42 300 352)">Prokopská cesta</text>
+          <text x="400" y="414" transform="rotate(-8 400 414)">Mariánská</text>
+          <text x="40" y="664" transform="rotate(-40 40 664)">k Rožmitálu</text>
+          <text x="880" y="118" transform="rotate(-28 880 118)">do Prahy</text>
+          <text x="755" y="258" transform="rotate(40 755 258)">krytá schodiště</text>
         </g>
 
         <!-- podzemní spojení dolů, kterým se šířil kouř (schematicky) -->
         <g fill="none" stroke="#6a6158" stroke-width="3" stroke-dasharray="3 7" stroke-linecap="round" opacity=".85">
-          <path d="M227 330 L 284 388"/>
-          <path d="M227 330 L 356 311"/>
-          <path d="M284 388 L 356 311"/>
-          <path d="M356 311 L 405 268"/>
-          <path d="M318 225 L 405 268"/>
-          <path d="M318 225 L 356 311"/>
+          <path d="M276 455 L 192 386"/><path d="M276 455 L 285 289"/><path d="M192 386 L 285 289"/>
+          <path d="M285 289 L 344 239"/><path d="M285 289 L 368 311"/><path d="M344 239 L 368 311"/>
         </g>
-        <text x="20" y="602" font-family="Almendra, Georgia, serif" font-style="italic" font-size="14" fill="#5e564c">··· šíření kouře podzemím 31. 5. 1892 (schematicky)</text>
+        <text x="300" y="590" font-family="Almendra, Georgia, serif" font-style="italic" font-size="13" fill="#5e564c">··· šíření kouře podzemím 31. 5. 1892</text>
 
         <!-- haldy u dolů -->
         <g fill="#8d7450" stroke="#5e4728" stroke-width="1.2">
-          <path d="M196 342 l12-16 12 16z"/><path d="M254 404 l11-15 11 15z"/><path d="M366 330 l10-13 10 13z"/>
-          <path d="M418 288 l11-15 11 15z"/><path d="M294 244 l11-15 11 15z"/><path d="M332 158 l9-12 9 12z"/>
-          <path d="M552 60 l10-13 10 13z"/><path d="M280 670 l9-12 9 12z"/>
+          <path d="M160 404 l12-16 12 16z"/><path d="M290 478 l11-15 11 15z"/><path d="M300 312 l10-13 10 13z"/>
+          <path d="M358 222 l11-15 11 15z"/><path d="M380 336 l10-13 10 13z"/><path d="M250 92 l9-12 9 12z"/>
         </g>
 
         <!-- zástavba Březových Hor -->
         <g fill="#c4a774" stroke="#8a6b3d" stroke-width="1.2">
-          <rect x="300" y="390" width="22" height="14"/><rect x="345" y="380" width="20" height="14"/><rect x="258" y="350" width="18" height="13"/>
-          <rect x="330" y="335" width="18" height="13"/><rect x="235" y="380" width="18" height="13"/><rect x="355" y="440" width="22" height="14"/>
-          <rect x="300" y="440" width="18" height="13"/><rect x="380" y="290" width="16" height="12"/><rect x="270" y="300" width="16" height="12"/>
+          <rect x="215" y="408" width="18" height="12"/><rect x="260" y="405" width="18" height="12"/><rect x="225" y="350" width="16" height="12"/>
+          <rect x="300" y="365" width="18" height="12"/><rect x="200" y="430" width="16" height="11"/><rect x="330" y="370" width="16" height="11"/>
+          <rect x="265" y="330" width="16" height="11"/><rect x="300" y="240" width="14" height="11"/><rect x="240" y="440" width="16" height="11"/>
         </g>
-        <rect x="292" y="352" width="44" height="28" fill="#d8bf8b" stroke="#8a6b3d" stroke-width="1.5" stroke-dasharray="4 3"/>
-        <text x="175" y="104" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="22" font-weight="700" fill="#6b4f2c" letter-spacing="3">BŘEZOVÉ HORY</text>
-        <text x="175" y="124" text-anchor="middle" font-family="Almendra, Georgia, serif" font-style="italic" font-size="15" fill="#7a5a32">hornický městys</text>
+        <rect x="228" y="378" width="38" height="24" fill="#d8bf8b" stroke="#8a6b3d" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="300" y="530" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="22" font-weight="700" fill="#6b4f2c" letter-spacing="3">BŘEZOVÉ HORY</text>
+        <text x="300" y="548" text-anchor="middle" font-family="Almendra, Georgia, serif" font-style="italic" font-size="14" fill="#7a5a32">hornický městys, od 1897 královské horní město</text>
 
         <!-- zástavba Příbrami -->
         <g fill="#c4a774" stroke="#8a6b3d" stroke-width="1.2">
-          <rect x="650" y="225" width="26" height="16"/><rect x="740" y="215" width="24" height="15"/><rect x="745" y="255" width="22" height="15"/>
-          <rect x="640" y="262" width="22" height="15"/><rect x="700" y="270" width="24" height="15"/><rect x="660" y="320" width="22" height="15"/>
-          <rect x="610" y="240" width="20" height="14"/><rect x="770" y="240" width="20" height="14"/><rect x="725" y="190" width="20" height="14"/>
-          <rect x="600" y="330" width="20" height="14"/><rect x="705" y="330" width="22" height="14"/>
+          <rect x="630" y="225" width="22" height="14"/><rect x="700" y="232" width="22" height="14"/><rect x="640" y="250" width="20" height="13"/>
+          <rect x="690" y="150" width="20" height="13"/><rect x="650" y="180" width="20" height="13"/><rect x="725" y="215" width="20" height="13"/>
+          <rect x="672" y="280" width="20" height="13"/><rect x="620" y="200" width="18" height="12"/><rect x="740" y="185" width="18" height="12"/>
+          <rect x="690" y="310" width="18" height="12"/><rect x="655" y="330" width="18" height="12"/>
         </g>
-        <rect x="680" y="222" width="48" height="34" fill="#d8bf8b" stroke="#8a6b3d" stroke-width="1.5" stroke-dasharray="4 3"/>
-        <text x="760" y="160" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="26" font-weight="700" fill="#6b4f2c" letter-spacing="3">PŘÍBRAM</text>
-        <text x="760" y="180" text-anchor="middle" font-family="Almendra, Georgia, serif" font-style="italic" font-size="15" fill="#7a5a32">královské horní město</text>
-        <text x="830" y="422" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="17" font-weight="700" fill="#6b4f2c" letter-spacing="2">SVATÁ HORA</text>
+        <rect x="660" y="198" width="44" height="30" fill="#d8bf8b" stroke="#8a6b3d" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="830" y="210" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="26" font-weight="700" fill="#6b4f2c" letter-spacing="3">PŘÍBRAM</text>
+        <text x="830" y="230" text-anchor="middle" font-family="Almendra, Georgia, serif" font-style="italic" font-size="14" fill="#7a5a32">královské horní město</text>
+        <text x="845" y="410" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-size="17" font-weight="700" fill="#6b4f2c" letter-spacing="2">SVATÁ HORA</text>
 
         <!-- šipky k místům mimo výřez -->
         <g fill="none" stroke="#7a5a32" stroke-width="1.6" marker-end="url(#arr)">
-          <path d="M650 50 L 650 26"/><path d="M450 50 L 450 26"/><path d="M40 470 L 18 470"/>
+          <path d="M62 66 L 48 40"/><path d="M110 66 L 110 40"/><path d="M474 66 L 474 40"/>
+          <path d="M52 470 L 26 470"/><path d="M52 528 L 26 528"/><path d="M52 412 L 26 412"/><path d="M52 590 L 26 590"/><path d="M124 610 L 124 640"/>
         </g>
+        <text x="600" y="672" font-family="Source Sans 3, sans-serif" font-size="12" fill="#5e4728">šipky u okraje: místa mimo výřez</text>
 
         <!-- měřítko -->
         <g transform="translate(840 650)" font-family="Source Sans 3, sans-serif" font-size="13" fill="#5e4728">
-          <path d="M0 0h116M0 -5v10M58 -3v6M116 -5v10" stroke="#5e4728" stroke-width="2"/>
-          <text x="58" y="-10" text-anchor="middle">500 m (přibližně)</text>
+          <path d="M0 0h147M0 -5v10M74 -3v6M147 -5v10" stroke="#5e4728" stroke-width="2"/>
+          <text x="74" y="-10" text-anchor="middle">500 m</text>
         </g>
 
         <!-- růžice -->
@@ -590,6 +611,80 @@ details.adv-warn p{margin:8px 0 0}
   </div>
   </div>
 </div>
+</section>
+
+<!-- ==================== ŠACHTY ==================== -->
+<section id="p-sachty" role="tabpanel" aria-labelledby="t-sachty" hidden>
+  <div class="sheet">
+    <div class="sheet-head">
+      <div class="kicker">Příbramský rudní revír roku 1892</div>
+      <h2>Šachty a doly</h2>
+      <p>Roku 1892 měl c. k. a spolutěžířský hlavní závod v Příbrami (pojmenovaný po sv. Karlu Boromejském) jámy na čtyřech ložiskách: březohorském, černojamském, bohutínském a na několika průzkumných místech v okolí. Hlavní šachty spojovala na 2. patře Dědičná štola císaře Josefa II.</p>
+    </div>
+
+    <div class="card defbox">
+      <span class="tag">Rozdíl</span>
+      <h3 style="margin-top:8px">Důl, nebo šachta?</h3>
+      <p><b>Šachta</b> (též <b>jáma</b>) je jedno konkrétní důlní dílo: svislá nebo šikmá „studna“ vedoucí z povrchu do hloubky. Šachtou se fárá, těží ruda, čerpá voda a větrá. Nad ní stojí šachetní budova s těžním zařízením.</p>
+      <p><b>Důl</b> je celý provoz, který dobývá ložisko: jedna nebo více šachet, desítky pater chodeb, porubů a komínů, štoly, strojovny, kovárny, šichtovna i úpravna. Důl se většinou jmenuje po své hlavní šachtě, proto se oba pojmy zaměňují: „důl Vojtěch“ je celý provoz kolem šachty Vojtěch.</p>
+      <p><b>Štola</b> se od šachty liší tím, že vede z povrchu vodorovně (nebo mírně stoupá), typicky ze svahu údolí. Odvádí vodu, přivádí vzduch nebo slouží k dopravě.</p>
+    </div>
+
+    <h3 class="kat-h">Šachty v provozu roku 1892</h3>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Šachta</th><th>Ložisko</th><th>Založena</th><th>Hloubka</th><th>Poznámka</th></tr></thead>
+      <tbody>
+        <tr><td><b>Vojtěch</b> (Adalbert)</td><td>Březové Hory</td><td>1779</td><td>1 099 m (1892)</td><td>1875 první na světě 1 000 m; nejvíc obětí katastrofy</td></tr>
+        <tr><td><b>Anna</b></td><td>Březové Hory</td><td>1789</td><td>942 m (1892)</td><td>stoupací stroj; hlavní základna záchrany</td></tr>
+        <tr><td><b>Císař František Josef I.</b> (Ševčinská)</td><td>Březové Hory</td><td>1813</td><td>991 m (1892)</td><td>dvoupatrové klece; vtažná jáma</td></tr>
+        <tr><td><b>Marie</b></td><td>Březové Hory</td><td>1822</td><td>asi 1 110 m (1892)</td><td>stoupací stroj od 1853; ohnisko požáru</td></tr>
+        <tr><td><b>Prokop</b></td><td>Březové Hory</td><td>1832</td><td>909 m (1892)</td><td>klecová těžba od 1858, parní stroj od 1869</td></tr>
+        <tr><td><b>Drkolnov</b> (původně August)</td><td>Březové Hory, jih</td><td>1836</td><td>konečná 425 m</td><td>podzemní vodní kolo o průměru 12,4 m</td></tr>
+        <tr><td><b>Jarošovka</b></td><td>černojamské</td><td>1814 (obnovena)</td><td>konečná 219 m</td><td>prohloubena 1864</td></tr>
+        <tr><td><b>Ferdinand</b></td><td>černojamské</td><td>1820</td><td>konečná 325 m</td><td>od 1866 zděná šachetní budova</td></tr>
+        <tr><td><b>Lill</b></td><td>černojamské</td><td>1857</td><td>konečná 455 m</td><td>v provozu asi do 1902; jako jediná nenapojena na dědičnou štolu</td></tr>
+        <tr><td><b>Štěpán</b></td><td>Bohutín</td><td>1827</td><td>konečná 864 m</td><td>pojmenována po arcivévodovi Štěpánovi</td></tr>
+        <tr><td><b>František</b></td><td>Bohutín</td><td>1843</td><td>konečná 133 m</td><td>parní těžní stroj od 1850</td></tr>
+        <tr><td><b>Řimbaba</b></td><td>Bohutín</td><td>1843</td><td>270 m</td><td>parní těžba od 1885, uzavřena 1900</td></tr>
+        <tr><td><b>Kozičín</b></td><td>Bohutín</td><td>1870</td><td>200 m</td><td>nenapojena na dědičnou štolu</td></tr>
+        <tr><td><b>Rudolf</b></td><td>Bohutín</td><td>1878</td><td>konečná 1 199 m</td><td>později důl 25. února</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note" style="margin-top:10px">Hloubka „1892“ je stav v roce katastrofy, „konečná“ je největší hloubka, které šachta dosáhla během celé těžby (často až ve 20. století).</p>
+
+    <h3 class="kat-h">Průzkumné jámy</h3>
+    <p>Mělké jámy, kterými závod hledal nové žíly v okolí Příbrami. Většina dosáhla jen jednoho až několika pater.</p>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Jáma</th><th>Založena</th><th>Hloubka</th></tr></thead>
+      <tbody>
+        <tr><td>Zdabořská</td><td>1858</td><td>92 m</td></tr>
+        <tr><td>Schwarzenberská (u Žežic)</td><td>1862</td><td>158 m</td></tr>
+        <tr><td>Sádecká</td><td>1866</td><td>240 m</td></tr>
+        <tr><td>Svatohorská</td><td>1867</td><td>300 m</td></tr>
+        <tr><td>Květenská</td><td>1867–1871</td><td>270 m (průzkum do 1885)</td></tr>
+        <tr><td>Novohospodská</td><td>1885</td><td>44 m</td></tr>
+        <tr><td>Třebská</td><td>1887</td><td>60 m</td></tr>
+        <tr><td>Narysovská</td><td><b>1892</b>, v roce katastrofy</td><td>64 m</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 class="kat-h">Staré jámy, které už nesloužily</h3>
+    <p>Na Březových Horách se těžilo od 14. století a hřbet je posetý starými jámami. Tyto se v pramenech připomínají jako starší nebo opuštěné; v přehledech hlavních jam z konce 19. století už nefigurují.</p>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Jáma</th><th>Co o ní víme</th></tr></thead>
+      <tbody>
+        <tr><td>Mučednická (pumpařská)</td><td>stará čerpací jáma na Mučednické žíle, asi o 200 let starší než šachta, která roku 1813 vznikla obnovením staré jámy v téže oblasti (pozdější Císař František Josef I.)</td></tr>
+        <tr><td>Janská ležatá jáma</td><td>šikmá jáma na Janské žíle ještě před rokem 1779; roku 1787 vedle ní vznikla svislá Janská jáma a roku 1789 Anna</td></tr>
+        <tr><td>Strachovská (Strachová) jáma</td><td>stará jáma na Strachovské žíle, ke které roku 1813 dorazila dědičná štola; žílu pak dobývala šachta Ferdinand</td></tr>
+        <tr><td>Volfgangova (Wolfgang)</td><td>od roku 1827 hlavní jáma na Volfgangově žíle u Drkolnova; roku 1838 po poruše čerpání zatopena</td></tr>
+        <tr><td>Kovářská</td><td>starý důl na Vojtěšské žíle, obnovený roku 1810</td></tr>
+        <tr><td>Novoroční</td><td>stará jáma, ještě roku 1790 otevřená</td></tr>
+        <tr><td>Bohutínská</td><td>hloubení zastaveno roku 1832 kvůli přívalu vody</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note" style="margin-top:10px">Pozdější šachty, které roku 1892 ještě neexistovaly: Obecnická průzkumná jáma (1912), Hůrka (1942) a slepé jámy Řimbabská a Eduard v Bohutíně (1956). Po roce 1948 vznikly na Příbramsku i desítky uranových jam.</p>
+    <p class="src" style="margin-top:10px">Podle: <a href="http://muzeum.mineral.cz/hornictvi/brezove-hory/souhrn.php" target="_blank" rel="noopener">Březohorský rudní revír – hloubky jam</a> · <a href="https://podzemi.solvayovylomy.cz/cteni/1000m/03.htm" target="_blank" rel="noopener">Doba třetí (1779–1875)</a> · <a href="http://muzeum.mineral.cz/hornictvi/brezove-hory/historie-dobyvani/dolovani-rud-19-stoleti.php" target="_blank" rel="noopener">Dolování rud v 19. století</a> · <a href="https://www.bergbaumuseum.de/fileadmin/forschung/zeitschriften/der-anschnitt/1972/1972-02/anschnitt-2-1972-schenk-grubenunglueck.pdf" target="_blank" rel="noopener">G. W. Schenk 1972</a> (hloubky 1892)</p>
+  </div>
 </section>
 
 <!-- ==================== KATASTROFA ==================== -->
@@ -830,7 +925,7 @@ details.adv-warn p{margin:8px 0 0}
 </main>
 
 <footer>
-  <p>Mapa je schematická a nezachycuje přesnou polohu ani měřítko. Podzemní spojení dolů je naznačeno jen přibližně.</p>
+  <p>Podklad mapy: © přispěvatelé <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL), porovnáno s historickou mapou 19. století na mapy.cz. Podzemní spojení dolů a trasa Struh jsou naznačeny schematicky.</p>
   <p>Pro další studium: <a href="https://www.muzeum-pribram.cz/" target="_blank" rel="noopener">Hornické muzeum Příbram</a> (Ševčinský důl, důl Marie a Vojtěch, naučná stezka o katastrofě), <a href="https://www.poznejpribram.cz/" target="_blank" rel="noopener">Poznej Příbram</a>.</p>
   <p>Autor: Ivo Bešťák · Gymnázium Příbram · Licence <a href="https://creativecommons.org/licenses/by/4.0/deed.cs" target="_blank" rel="noopener">CC BY 4.0</a> · Aktualizace: 7. 11. 2026 · <button class="iconbtn" id="reset-all" type="button" style="min-height:32px;font-size:13px">Vymazat postup</button></p>
 </footer>
@@ -886,7 +981,7 @@ let toastT;
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
 
 /* ==================== záložky ==================== */
-const TABS = ['mapa', 'katastrofa', 'adventura', 'slovnik', 'kviz'];
+const TABS = ['mapa', 'sachty', 'katastrofa', 'adventura', 'slovnik', 'kviz'];
 function showTab(name, focus) {
   if (!TABS.includes(name)) name = 'mapa';
   for (const t of TABS) {
@@ -915,7 +1010,8 @@ const CATS = {
   upravy:    { label: 'Úprava rudy a huť', color: '#8a5a1e' },
   instituce: { label: 'Hornické instituce', color: '#7a2a1c' },
   kostely:   { label: 'Kostely a poutní místa', color: '#6a4a8a' },
-  zivot:     { label: 'Život horníků', color: '#4f6b2f' },
+  zivot:     { label: 'Život a doprava', color: '#4f6b2f' },
+  voda:      { label: 'Voda pro doly', color: '#2f6f8f' },
   pamet:     { label: 'Hřbitovy', color: '#2f5f72' }
 };
 const ICONS = {
@@ -931,6 +1027,7 @@ const ICONS = {
   school: '<path d="M1 8l9-4 9 4-9 4zM5 10v4c3 2 7 2 10 0v-4M18 8v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
   hall: '<path d="M3 18V8h14v10M10 8V3M8 5h4M6 11h2v3H6zM12 11h2v3h-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
   house: '<path d="M3 18V9l7-6 7 6v9zM8 18v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>',
+  water: '<path d="M10 3c3 4 5 6.5 5 9a5 5 0 0 1-10 0c0-2.5 2-5 5-9z" fill="currentColor"/>',
   cross: '<path d="M10 2v16M5 7h10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>'
 };
 /* Polohy: x, y na mapě 1000 × 680. Doly Vojtěch, Anna, Ševčinský, Lill, Ferdinand, Drkolnov, kostely a Svatá Hora jsou
@@ -938,154 +1035,182 @@ const ICONS = {
    „edge“ = místo leží mimo výřez mapy a značka ukazuje jen směr. */
 const LOCS = [
   /* --- doly a štoly --- */
-  { id: 'marie', name: 'Důl Marie', cat: 'doly', icon: 'fire', x: 227, y: 330,
+  { id: 'marie', name: 'Důl Marie', cat: 'doly', icon: 'fire', x: 276, y: 455,
     hist: 'Šachta Marie se začala hloubit roku 1822 na Mariánské žíle, aby ulehčila sousednímu Vojtěchu. Roku 1884 přesáhla hloubku 1 000 m a roku 1892 měla 32 pater a asi 1 110 m. Od roku 1853 tu jezdil stoupací stroj, podle Hornického muzea první v Rakousku-Uhersku.',
     y1892: '31. května tu na 29. patře, asi 955 m pod povrchem, vznikl požár. Hořel sklípek s odřezky dřeva a od něj výdřeva šachty nasáklá olejem z lan a stoupacího stroje. Shořelo asi 400 m³ dřeva v délce přes 500 m. Obě klece se po přetavení lan zřítily do šachty.',
     zaj: 'Šachta měla průřez asi 2 × 6 m a sloužila jako výdušná: odváděla vzduch z dolů Císař František Josef I. a Vojtěch. Proto se oheň tak rychle šířil vzhůru. Obnova trvala do roku 1894.',
     dnes: 'Důl patří Hornickému muzeu Příbram, návštěvníci mohou projet Mariánskou štolu. Na nádvoří stojí od roku 1997 pomník vdovám a sirotkům.',
     tip: 'Proč byla Marie, kde oheň vznikl, pro záchranu méně důležitá než Anna, nejvzdálenější z pěti dolů?' },
-  { id: 'sevcin', name: 'Důl Císař František Josef I. (Ševčinský)', cat: 'doly', icon: 'shaft', x: 284, y: 388,
+  { id: 'sevcin', name: 'Důl Císař František Josef I. (Ševčinský)', cat: 'doly', icon: 'shaft', x: 192, y: 386,
     hist: 'Šachta se začala hloubit roku 1813 jako Ševčinská, později nesla jméno císaře Františka Josefa I. Roku 1892 měla hloubku 991 m. Měla dvoupatrové klece, takže najednou vezla dvakrát víc lidí. Šachetní budova je z roku 1879, cáchovna (šichtovna) z roku 1880.',
     y1892: 'Ležela jen 350 m od Marie, a kouř sem dorazil první, kolem 14. hodiny. Prázdná klec se vrátila nahoru jen s klobouky. Do 7. června odtud vynesli 129 těl. 1. června kolem 13. hodiny se z hlubin ozvalo 28 signálních úderů, záchranáři ale přišli pozdě.',
     zaj: 'Šachtou Císař František Josef I. normálně vstupoval do dolů čerstvý vzduch, protože její ústí leželo nejníž (528 m n. m.). Kouř sem pronikl nečekaně.',
     dnes: 'Hlavní areál Hornického muzea Příbram, největšího hornického muzea v Česku. Zastávka naučné stezky o katastrofě.',
     tip: 'Proč se dnes říká „Ševčinský důl“, a ne „důl Císař František Josef I.“?' },
-  { id: 'vojtech', name: 'Důl Vojtěch', cat: 'doly', icon: 'shaft', x: 356, y: 311,
+  { id: 'vojtech', name: 'Důl Vojtěch', cat: 'doly', icon: 'shaft', x: 285, y: 289,
     hist: 'Šachta Vojtěch se začala hloubit roku 1779. Dne 8. května 1875 dosáhla jako první na světě svislé hloubky 1 000 m na 30. patře, s jediným těžním lanem. Oslavy v září 1875 navštívil ministr Colloredo-Mansfeld a odborníci z celé Evropy. Roku 1892 byla hluboká 1 099 m.',
     y1892: 'Kouř sem dorazil kolem 14.30. Mnoho mužů čekalo u šachty na klec, jiní nevěřili, že hoří. Do 7. června odtud vynesli 130 těl, nejvíc ze všech dolů.',
     zaj: 'V kilometrové hloubce byla laboratoř pro fyzikální pokusy. Navštívili ji Jan Neruda (1878), Joachim Barrande v den svých 80. narozenin (1879), arcivévoda Rainer (1885) a Emil Holub (1888).',
     dnes: 'Součást Hornického muzea Příbram s parním strojem a vyhlídkovou věží. Těžba na Březových Horách skončila roku 1978 a podzemí bylo zatopeno.',
     tip: 'Rok 1875 byl chvílí slávy, rok 1892 největší tragédií. Jak spolu souvisí rekordní hloubka a nebezpečí?' },
-  { id: 'anna', name: 'Důl Anna', cat: 'doly', icon: 'shaft', x: 405, y: 268,
+  { id: 'anna', name: 'Důl Anna', cat: 'doly', icon: 'shaft', x: 344, y: 239,
     hist: 'Šachta Anna se začala hloubit roku 1789. Roku 1892 byla hluboká 942 m a jako Marie měla stoupací stroj. S Vojtěchem ji spojuje asi 750 m dlouhá chodba tzv. vodního patra.',
     y1892: 'Anna byla od Marie nejdál (820 m), a proto zůstala nejdéle bez kouře. Stala se hlavní základnou záchrany: klec i stoupací stroj jezdily bez přestávky a utíkala sem většina mužů z Prokopu a Vojtěcha. Plyn sem pronikl až v noci; do 7. června odtud vynesli 45 těl.',
     zaj: 'Podle odhadů se během odpoledne dostalo na povrch asi 240 mužů klecí a 200 stoupacím strojem, většinou právě na Anně.',
     dnes: 'Areál Hornického muzea s parním těžním strojem z roku 1914. Odtud vede podzemní trasa Prokopskou štolou a vodní patro.',
     tip: 'Najdi na mapě, jak daleko leží Anna od Marie. Proč byla vzdálenost tak důležitá?' },
-  { id: 'prokop', name: 'Důl Prokop', cat: 'doly', icon: 'shaft', x: 318, y: 225, approx: true,
+  { id: 'prokop', name: 'Důl Prokop', cat: 'doly', icon: 'shaft', x: 368, y: 311,
     hist: 'Šachta Prokop se začala hloubit roku 1832. Roku 1892 byla hluboká 909 m. Jméno nese po sv. Prokopovi, patronovi horníků.',
     y1892: 'Kouř dorazil na 28. patro kolem 15. hodiny. Většina mužů z Prokopu stačila utéct přes důl Anna.',
     zaj: 'Prokop sloužil jako výdušná šachta pro Annu a Vojtěch. Roku 1875 se z jeho haldy střílelo z hmoždířů na oslavu kilometrové hloubky Vojtěcha.',
     dnes: 'Prokopskou štolou jezdí důlní vláček Hornického muzea.',
-    tip: 'Poloha šachty je na mapě jen přibližná. Zkus ji dohledat na mapě Hornického muzea.' },
-  { id: 'ferdinand', name: 'Důl Ferdinand', cat: 'doly', icon: 'shaft', x: 319, y: 140,
+    tip: 'Prokopská cesta vede od náměstí kolem kostela sv. Prokopa. Proč se kostel i šachta jmenují po stejném světci?' },
+  { id: 'ferdinand', name: 'Důl Ferdinand', cat: 'doly', icon: 'shaft', x: 238, y: 70,
     hist: 'Šachta Ferdinand na tzv. černojamském ložisku severně od Březových Hor se začala hloubit roku 1820. Roku 1866 nahradila dřevěné kolo zděná šachetní budova.',
     y1892: 'Ležela stranou zasažených dolů a požár se jí netýkal.',
     zaj: 'Černojamské ložisko s doly Ferdinand, Lill a Jarošovka tvořilo samostatnou část revíru severně od hlavních březohorských dolů.',
     tip: 'Proč se rudní revír skládal z několika ložisek, a ne z jednoho velkého dolu?' },
-  { id: 'lill', name: 'Důl Lill', cat: 'doly', icon: 'shaft', x: 538, y: 40,
-    hist: 'Šachta Lill se začala hloubit roku 1857 na černojamském ložisku, asi 1,4 km severovýchodně od Vojtěcha. Pracovala do roku 1902.',
+  { id: 'lill', name: 'Důl Lill', cat: 'doly', icon: 'shaft', x: 474, y: 24, edge: true,
+    hist: 'Šachta Lill se začala hloubit 20. října 1857 na černojamském ložisku, asi 1,4 km severovýchodně od Vojtěcha. Jméno má po vrchním dvorním správci Aloisi Lillovi z Lilienbachu. Pracovala do roku 1902.',
     y1892: 'Ležela daleko od požářiště. Ruda z Lillu se upravovala v městském prádle u Příbrami.',
     zaj: 'Odtud pocházejí vzácné minerály, některé byly poprvé popsány právě tady. Traduje se, že odsud putovala ruda Marii Curie-Skłodowské, archivní doklad pro to ale nebyl nalezen.',
     dnes: 'Část haldy dolu Lill je přenesena do areálu Hornického muzea.',
     tip: 'Jak bys ověřil(a), zda je zajímavá historka doložená?' },
-  { id: 'drkolnov', name: 'Důl Drkolnov', cat: 'doly', icon: 'shaft', x: 268, y: 655,
+  { id: 'drkolnov', name: 'Důl Drkolnov', cat: 'doly', icon: 'shaft', x: 124, y: 660, edge: true,
     hist: 'Důl otevřený roku 1836 se původně jmenoval August, podle knížete Augusta Longina Lobkowicze. Jméno Drkolnov má podle skladu, který tu kdysi stál.',
     y1892: 'Drkolnov ležel jižně od Březových Hor, mimo zasaženou oblast. Koncem 19. století tu v podzemí čerpalo vodu ocelové vodní kolo o průměru asi 12 m.',
     zaj: 'Vodní kola v podzemí čerpala vodu dlouho před nástupem parních a elektrických čerpadel.',
     dnes: 'Vodní kolo o průměru 12,4 m je přístupné s průvodcem Hornického muzea.',
     tip: 'Jak se do podzemí dostala voda, která kolo poháněla, a kam pak odtékala?' },
-  { id: 'stola', name: 'Dědičná štola císaře Josefa II.', cat: 'doly', icon: 'adit', x: 450, y: 18, edge: true,
-    hist: 'Odvodňovací štola začala vznikat kolem roku 1789 za vlády Josefa II. Hlavní štola měří 14,9 km, se všemi odbočkami 21,9 km. Vede od Bohutína přes Vysokou Pec, Drkolnov a Březové Hory až k ústí u Trhových Dušníků.',
+  { id: 'stola', name: 'Dědičná štola císaře Josefa II.', cat: 'doly', icon: 'adit', x: 40, y: 28, edge: true,
+    hist: 'Odvodňovací štola začala vznikat kolem roku 1789 za vlády Josefa II. Hlavní štola měří 14,9 km, se všemi odbočkami 21,9 km. Vede od Bohutína přes Vysokou Pec, Drkolnov a Březové Hory k ústí do Litavky pod hutí (u Trhových Dušníků). Hlavní šachty spojuje na 2. patře, 57–101 m pod povrchem.',
     y1892: 'Štola odváděla vodu z horních pater všech dolů, takže se nemusela čerpat stroji. Roku 1859 byl dokončen průraz mezi doly František a Řimbaba.',
     zaj: 'Podle starého horního práva měl majitel dědičné štoly nárok na podíl z výnosu dolů, které odvodňovala. Odtud její jméno.',
-    dnes: 'Kulturní památka od roku 1973. Ústí leží asi 2,6 km severně od Vojtěcha.',
+    dnes: 'Kulturní památka od roku 1973. Ústí do Litavky pod Kovohutěmi, severně od Příbrami.',
     tip: 'Ústí štoly je mimo výřez mapy. Proč musí odvodňovací štola ústit níž, než leží doly?' },
-  { id: 'rimbaba', name: 'Důl Řimbaba', cat: 'doly', icon: 'shaft', x: 14, y: 470, edge: true,
+  { id: 'rimbaba', name: 'Důl Řimbaba', cat: 'doly', icon: 'shaft', x: 14, y: 590, edge: true,
     hist: 'Šachta Řimbaba (Seegen Gottes) na skalnatém hřbetu nad údolím Litavky u Bohutína se začala hloubit roku 1843. Dosáhla hloubky 270 m.',
     y1892: 'Důl pracoval, roku 1885 dostal parní těžní stroj. Ruda šla do úpravny v Bohutíně. Uzavřen byl roku 1900.',
     zaj: 'Bohutínské ložisko bylo bohaté na antimonové rudy; slavná je tzv. Antimonitová žíla.',
     dnes: 'Na šachtě stojí vyhlídková věž.',
     tip: 'Důl leží asi 3 km jihozápadně, mimo výřez mapy.' },
   /* --- úprava rudy a huť --- */
-  { id: 'pradla-anna', name: 'Annenská prádla (úpravna)', cat: 'upravy', icon: 'mill', x: 452, y: 232, approx: true,
+  { id: 'pradla-anna', name: 'Annenská prádla (úpravna)', cat: 'upravy', icon: 'mill', x: 392, y: 205, approx: true,
     hist: 'Úpravna pod haldou dolu Anna. Roku 1879 tu stálo prádlo, mačkadlo a puchýrna. Koncem 19. století měla 42 úpravnických strojů, 30 drtičů a 76 stoup se 120 tlouky.',
     y1892: 'Ruda z Anny a Vojtěcha se tu drtila, třídila a prala. Těžké zrnka galenitu klesala ke dnu, lehká hlušina odtékala s vodou.',
-    zaj: 'Úpravny potřebovaly hodně vody, proto stály u potoků a rybníků. Odpadní kal se ukládal do kalojemů nad Litavkou.',
+    zaj: 'Voda byla pro prádla dvojnásob důležitá: poháněla kola stoup a strojů a zároveň se v ní ruda prala. Proto sem vedly struhy z brdských rybníků. Odpadní kal se ukládal do kalojemů nad Litavkou.',
     tip: 'Proč se ruda musela upravit, než se poslala do hutě?' },
-  { id: 'pradla-vojtech', name: 'Vojtěšská prádla (úpravna)', cat: 'upravy', icon: 'mill', x: 405, y: 335, approx: true,
-    hist: 'Úpravna u dolu Vojtěch. Roku 1879 tu stálo prádlo, mačkadlo a puchýrna.',
+  { id: 'pradla-vojtech', name: 'Vojtěšská prádla (úpravna)', cat: 'upravy', icon: 'mill', x: 225, y: 262, approx: true,
+    hist: 'Úpravna dolu Vojtěch. Roku 1879 tu stálo prádlo, mačkadlo a puchýrna. Starší Thinnfeldovu puchýrnu v Podleském údolí (1846–1865) nahradila roku 1865 Vojtěšská puchýrna a prádlo.',
     y1892: 'Pracovala spolu s Annenskou úpravnou. Obě fungovaly do roku 1904, pak zůstala jen Vojtěšská.',
     zaj: '„Prádlo“ je úpravna, kde se rozdrcená ruda „pere“ ve vodě: těžké rudní minerály se oddělí od lehké hlušiny.',
     tip: 'Najdi ve slovníku rozdíl mezi rudou, minerálem a hlušinou.' },
-  { id: 'hut', name: 'Stříbrná huť u Lhoty', cat: 'upravy', icon: 'smelter', x: 650, y: 18, edge: true,
+  { id: 'hut', name: 'Stříbrná huť u Lhoty', cat: 'upravy', icon: 'smelter', x: 110, y: 24, edge: true,
     hist: 'Huť na soutoku Litavky a Obecnického potoka u Lhoty, asi 4 km severně od Příbrami. Navrhl ji královský horní a hutní úředník Jan Antonín Alis; stavba začala 10. dubna 1786 a skončila roku 1793. Huť zpracovávala hlavně rudu z Vojtěcha.',
     y1892: 'Huť měla vysoké šachtové pece (od 1860–1862), od roku 1869 částečně topila koksem. Od roku 1877 rafinovala olovo Pattinsonovým způsobem a v letech 1886–1888 přibyla továrna na olověné výrobky. Stříbro šlo do mincovny ve Vídni.',
     zaj: 'V 80. a 90. letech 19. století vyrobila příbramská huť přes 90 % stříbra celé monarchie.',
     dnes: 'Na stejném místě pracují Kovohutě Příbram, dnes hlavně recyklací olova.',
     tip: 'Huť leží mimo výřez mapy. Proč stála u vody a daleko od náměstí?' },
-  { id: 'kovarny', name: 'Kovárny a strojní dílny', cat: 'upravy', icon: 'anvil', x: 250, y: 425, approx: true,
+  { id: 'kovarny', name: 'Kovárny a strojní dílny', cat: 'upravy', icon: 'anvil', x: 212, y: 328, approx: true,
     hist: 'Kovárny a strojnické dílny vznikly v letech 1867–1868 na staré haldě, pod místem, kde dříve stál starší šichtamt. Kovárny na Březových Horách měly 13 výhní.',
     y1892: 'Kováři ostřili a kalili vrtáky a želízka, opravovali vozíky, kování a součásti strojů.',
     zaj: 'Podle kováren se dodnes jmenuje ulice Pod Kovárnami. Přes ni vede most důlní železnice Hornického muzea.',
     tip: 'Kolik vrtáků asi musela kovárna nabrousit pro 5 000 horníků?' },
   /* --- instituce --- */
-  { id: 'sichtamt', name: 'Šichtamt', cat: 'instituce', icon: 'house', x: 392, y: 228, approx: true,
+  { id: 'sichtamt', name: 'Šichtamt', cat: 'instituce', icon: 'house', x: 380, y: 262, approx: true,
     hist: 'Šichtamt (šichtovna) byl úřad a budova, kde se horníci hlásili na směnu, vedly se záznamy o práci a vyplácely mzdy. Vedl ho šichtmistr. Nejslavnějším šichtmistrem byl Jan Antonín Alis, který působil na Březových Horách od 70. let 18. století.',
     y1892: 'Každý den se tu zapisovaly stovky jmen. Seznamy z přihlašování na šichtu ukazovaly, kdo je právě v dole.',
     zaj: 'Jan Antonín Alis prosadil stavbu nové huti a rozvoj Vojtěchu. Po něm se jmenuje dnešní náměstí na Březových Horách.',
     dnes: 'Budova označovaná jako Šichtamt stojí v areálu Hornického muzea u kostela sv. Prokopa.',
     tip: 'Proč bylo po katastrofě tak důležité vědět, kdo se ráno hlásil na šichtu?' },
-  { id: 'reditelstvi', name: 'Horní ředitelství', cat: 'instituce', icon: 'office', x: 722, y: 232,
+  { id: 'reditelstvi', name: 'Horní ředitelství', cat: 'instituce', icon: 'office', x: 712, y: 200,
     hist: 'Empírová budova na východní straně dnešního náměstí T. G. Masaryka vznikla v letech 1844–1847 pro c. k. vrchní horní úřad, horní úřad a horní soud. Pak sloužila jako horní ředitelství, odkud se řídily státní doly a hutě na Příbramsku.',
     y1892: 'Přednostou ředitelství byl c. k. vrchní horní rada Jan Novák. Sem došla kolem 14. hodiny poslem písemná zpráva od vrchního horního správce Hugo Gröglera. Po neštěstí nad budovou visel černý prapor. Roky 1868–1891 byly pro příbramské doly nejziskovější.',
     zaj: 'Roku 1875 tu vítali stovky odborníků z celého světa na oslavách kilometrové hloubky. Roku 1889 tu pobýval arcivévoda František Ferdinand.',
     dnes: 'Budova patří městu Příbram. Je zastávkou naučné stezky o katastrofě.',
     tip: 'Kdo podle tebe nesl za bezpečnost v dolech největší odpovědnost: horník, správce dolu, nebo úřad?' },
-  { id: 'akademie', name: 'Horní akademie', cat: 'instituce', icon: 'school', x: 765, y: 280, approx: true,
-    hist: 'Hornická škola vznikla v Příbrami v polovině 19. století a od roku 1865 nesla název horní akademie. Roku 1894 dostala vysokoškolská práva, od roku 1904 se jmenovala Vysoká škola báňská. Po druhé světové válce se přestěhovala do Ostravy.',
+  { id: 'akademie', name: 'Horní akademie', cat: 'instituce', icon: 'school', x: 730, y: 150, approx: true,
+    hist: 'Hornická škola vznikla v Příbrami roku 1849 v bývalém arcibiskupském zámečku (Ernestinum) a od roku 1865 nesla název horní akademie. Roku 1894 dostala vysokoškolská práva, od roku 1904 se jmenovala Vysoká škola báňská. Po druhé světové válce se přestěhovala do Ostravy.',
     y1892: 'Profesoři Josef Hrabák a Gustav Ziegelheim vypracovali soudní posudek o příčině požáru. Profesor Karel Balling počítal objem vzniklých plynů a podle jednoho pramene nesouhlasil s hašením vodou.',
     zaj: 'Dnešní VŠB – Technická univerzita Ostrava se hlásí k příbramským kořenům.',
-    tip: 'Umístění na mapě je přibližné. Zkus dohledat, kde akademie v Příbrami sídlila.' },
-  { id: 'radnice', name: 'Radnice Příbram', cat: 'instituce', icon: 'hall', x: 688, y: 205, approx: true,
+    tip: 'Značka stojí u zámečku Ernestinum, kde škola začínala. Kde sídlila v 90. letech, si ověř v Hornickém muzeu.' },
+  { id: 'radnice', name: 'Radnice Příbram', cat: 'instituce', icon: 'hall', x: 686, y: 168, approx: true,
     hist: 'Novorenesanční radnici postavil v letech 1889–1891 architekt Vojtěch Ignác Ullmann.',
     y1892: 'Zbrusu nová radnice. Starosta Karel Heil vydal spolu s poslancem Blažejem Mixou výzvu ke sbírce pro pozůstalé.',
     zaj: 'Roku 1886 bylo v Příbrami založeno muzeum, předchůdce dnešního Hornického muzea.',
     tip: 'Co prozrazují velké stavby z 80. a 90. let 19. století o tehdejším bohatství města?' },
   /* --- kostely --- */
-  { id: 'sv-prokop', name: 'Kostel sv. Prokopa', cat: 'kostely', icon: 'church', x: 360, y: 266,
+  { id: 'sv-prokop', name: 'Kostel sv. Prokopa (Prokopský kostelík)', cat: 'kostely', icon: 'church', x: 335, y: 293,
     hist: 'Na místě dřevěné zvonice vznikla v letech 1724–1733 kaple sv. Prokopa, patrona horníků. Roku 1879 byla přestavěna na pseudorománský kostel s hranolovou věží.',
     y1892: 'V letech 1879–1889 byl jediným kostelem rychle rostoucích Březových Hor a cílem hornických průvodů. Konala se tu i mše na oslavu kilometrové hloubky Vojtěcha roku 1875.',
-    zaj: 'Původní zvon z roku 1580 je v Hornickém muzeu. V kostele je rokokový boční oltář sv. Barbory, další patronky horníků.',
-    dnes: 'Stojí v sousedství areálu Hornického muzea. Slouží obnovené Prokopské pouti.',
+    zaj: 'Kostel stojí u Prokopské cesty, která vede z náměstí J. A. Alise kolem něj březovým hájem (Korábem) dolů k potoku a do Příbrami. V háji stojí kamenný kříž z roku 1831 a litinový z roku 1859. Původní zvon z roku 1580 je v Hornickém muzeu.',
+    dnes: 'Stojí u areálu dolu Anna v Hornickém muzeu, v dnešní Prokopské ulici. Slouží obnovené Prokopské pouti.',
     tip: 'Sv. Prokop i sv. Barbora jsou patroni horníků. Najdeš v Příbrami další stopy hornické zbožnosti?' },
-  { id: 'sv-vojtech', name: 'Kostel sv. Vojtěcha', cat: 'kostely', icon: 'church', x: 318, y: 366,
+  { id: 'sv-vojtech', name: 'Kostel sv. Vojtěcha', cat: 'kostely', icon: 'church', x: 253, y: 386,
     hist: 'Novorenesanční trojlodní kostel s věží v průčelí vznikl v letech 1886–1889 podle návrhu architekta Bedřicha Münzbergera. Je největší stavbou bývalého horního města Březové Hory.',
     y1892: 'Kostel je tři roky starý. Konaly se tu zádušní obřady za mrtvé horníky.',
     zaj: '18. května 1893 tu byla odhalena mramorová deska se jmény pěti záchranářů, kteří zahynuli: Antonín Pešek, Augustin Žlutický, Adolf Schöffel, Josef Vondruška a František Sláma.',
     dnes: 'Stojí na náměstí J. A. Alise a je kulturní památkou. Konají se v něm vzpomínkové koncerty k výročí.',
     tip: 'Proč se památka záchranářům umístila do kostela, a ne k dolu?' },
-  { id: 'sv-jakub', name: 'Kostel sv. Jakuba Většího', cat: 'kostely', icon: 'church', x: 690, y: 258,
+  { id: 'sv-jakub', name: 'Kostel sv. Jakuba Většího', cat: 'kostely', icon: 'church', x: 668, y: 212,
     hist: 'Hlavní farní kostel Příbrami. Dnešní podobu věže se čtyřmi novogotickými věžičkami dostal roku 1869.',
     y1892: 'Kolem kostela býval do roku 1786 hřbitov. Pak se začalo pohřbívat na novém hřbitově na Panské louce.',
     zaj: 'Rušení hřbitovů kolem kostelů uvnitř měst patřilo k reformám Josefa II.',
     tip: 'Kde se pohřbívalo ve tvém městě a kdy se hřbitov přestěhoval?' },
-  { id: 'svata-hora', name: 'Svatá Hora', cat: 'kostely', icon: 'abbey', x: 826, y: 335,
+  { id: 'svata-hora', name: 'Svatá Hora', cat: 'kostely', icon: 'abbey', x: 843, y: 324,
     hist: 'Poutní místo na kopci nad Příbramí. Od roku 1647 ho spravovali jezuité a nechali postavit barokní areál podle plánů Carla Luraga. Od roku 1861 do roku 2025 o něj pečovali redemptoristé.',
     y1892: 'Nejvýznamnější mariánské poutní místo v Čechách, s krytými schodišti z města. Mezi poutníky byly i hornické rodiny.',
     zaj: 'Svatá Hora a Březové Hory leží na opačných stranách Příbrami. Duchovní „hora“ a pracovní „hory“ (doly) lemují město z obou stran.',
     dnes: 'Bazilika Nanebevzetí Panny Marie patří k nejnavštěvovanějším památkám Středočeského kraje.',
     tip: 'Slovo „hory“ v názvu Březové Hory neznamená kopce, ale doly. Jaká další místní jména mají stejný původ?' },
   /* --- život horníků --- */
-  { id: 'domek', name: 'Hornický domek', cat: 'zivot', icon: 'house', x: 335, y: 425, approx: true,
+  { id: 'domek', name: 'Hornický domek', cat: 'zivot', icon: 'house', x: 165, y: 440, approx: true,
     hist: 'Malý roubený nebo zděný domek ze 17. století v dnešní Havířské ulici. Takové domky si stavěli horníci na Březových Horách po staletí, často s políčkem a chlévem.',
     y1892: 'Ve stejně skromných domcích žily rodiny většiny obětí. Po katastrofě zůstaly v mnoha z nich vdovy s dětmi.',
     zaj: 'Horníci si přivydělávali drobnou prací doma, například výrobou hraček a loutek.',
     dnes: 'Expozice Hornického muzea o životě hornické rodiny a lidových řemeslech.',
     tip: 'Jak by se změnil život rodiny, která přišla o otce i nejstaršího syna?' },
+  { id: 'nadrazi', name: 'Nádraží Příbram', cat: 'zivot', icon: 'hall', x: 556, y: 196,
+    hist: 'Trať ze Zdic do Protivína přes Příbram byla slavnostně otevřena 20. prosince 1875. Vede údolím Příbramského potoka mezi Březovými Horami a Příbramí.',
+    y1892: 'Roku 1892 jezdily vlaky údolím už sedmnáct let. Prokopská cesta z Březových Hor do Příbrami trať křížila v údolí.',
+    zaj: 'Železnice usnadnila dopravu uhlí pro parní stroje dolů a huti, které od poloviny 19. století postupně nahrazovaly vodní kola.',
+    tip: 'Na historické mapě z poloviny 19. století trať ještě chybí. Porovnej ji s mapou z konce století.' },
+  { id: 'struhy', name: 'Struhy', cat: 'voda', icon: 'water', x: 205, y: 500, approx: true,
+    hist: 'Struhy byly povrchový kanál, který přiváděl vodu z brdských rybníků (dnes Lázská a Pilská nádrž) přes Láz a Bohutín k dolům a prádlům v Bohutíně, na Drkolnově a na Březových Horách. Jejich délka se uvádí 7,5 až 17,5 km, podle toho, zda se počítá i spojka mezi oběma rybníky.',
+    y1892: 'Voda ze Struh poháněla vodní kola, která čerpala vodu z dolů a pohybovala stoupacími stroji, a v prádlech sloužila k pohonu stoup i k samotnému praní rudy.',
+    zaj: 'Struhy fungovaly až do počátku 60. let 20. století a v 70. letech byly z velké části zničeny. Jejich trasu dodnes připomínají zbytky kanálu, portál pod Žernovou a místní název Horní struhy u Bohutína.',
+    tip: 'Trasa Struh je na mapě jen naznačená. Zkus ji dohledat v terénu nebo na historické mapě.' },
+  { id: 'laz', name: 'Lázská nádrž (rybník Františka Karla)', cat: 'voda', icon: 'water', x: 14, y: 528, edge: true,
+    hist: 'Rybník u obce Láz v Brdech se stavěl v letech 1818–1822 a dostal jméno po arcivévodovi Františku Karlovi, který ho roku 1822 navštívil. Měl objem 785 000 m³.',
+    y1892: 'Byl jedním ze dvou zdrojů vody pro Struhy. Roku 1857 se protrhla hráz; rybník byl obnoven a později zvýšen.',
+    zaj: 'Přes hřbet Zavírky ho s Pilskou nádrží spojuje asi 2,5 km dlouhý kanál; hladiny se liší asi o 30 m.',
+    dnes: 'Vodní nádrž Láz zásobuje Příbram pitnou vodou. Hráz byla přestavěna v letech 1991–1993, původní 60 m dlouhý tunel je technickou památkou.',
+    tip: 'Nádrž leží asi 6 km západně od Březových Hor, mimo výřez mapy.' },
+  { id: 'pilska', name: 'Pilská nádrž (Žofínský rybník)', cat: 'voda', icon: 'water', x: 14, y: 470, edge: true,
+    hist: 'Rybník postavili v letech 1851–1853 bratři Kleinové pro hornické a hutní provozy Příbramska, hlavně k pohonu čerpadel odvodňujících hluboké doly. Původně se jmenoval Žofínský (Sofiin) rybník.',
+    y1892: 'Spolu s Lázským rybníkem napájel Struhy. Po protržení hráze roku 1854, při kterém v Bohutíně zahynuli dva lidé, byla roku 1865 hladina trvale snížena o 5 m.',
+    zaj: 'Nedostatek vody byl pro doly stálý problém. Od 50. let 19. století proto přibývaly parní stroje (na Vojtěchu 1859), ale vodní kola a stoupací stroje dál potřebovaly vodu z Brd.',
+    dnes: 'Pilská nádrž je dnes zdrojem pitné vody.',
+    tip: 'Nádrž leží asi 6 km západně od Březových Hor pod hřebenem Zavírky, mimo výřez mapy.' },
+  { id: 'octarna', name: 'Octárna', cat: 'voda', icon: 'water', x: 14, y: 412, edge: true,
+    hist: 'Rybník na Obecnickém potoce u Obecnice. Jméno má podle malé octárny, která pod rybníkem vznikla roku 1848, když se tu přerušila výroba železa.',
+    y1892: 'Obecnický potok ústí do Litavky právě u stříbrné huti. Voda z Octárny sloužila huti.',
+    zaj: 'Huť potřebovala vodu k pohonu dmychadel a strojů. Proto stála na soutoku Litavky a Obecnického potoka.',
+    dnes: 'Vodní nádrž Obecnice, místně Octárna, dnes zásobuje pitnou vodou Příbram a okolí.',
+    tip: 'Nádrž leží asi 4,5 km severozápadně od Březových Hor, mimo výřez mapy.' },
   /* --- hřbitovy --- */
-  { id: 'hrbitov-bh', name: 'Březohorský hřbitov', cat: 'pamet', icon: 'cross', x: 195, y: 455, approx: true,
-    hist: 'Hřbitov byl založen roku 1879 a vysvěcen v říjnu téhož roku spolu s přestavěným kostelem sv. Prokopa. Do dnešní podoby byl rozšířen roku 1907.',
+  { id: 'hrbitov-bh', name: 'Březohorský hřbitov', cat: 'pamet', icon: 'cross', x: 187, y: 663,
+    hist: 'Hřbitov jižně od Březových Hor byl založen roku 1879 a vysvěcen v říjnu téhož roku spolu s přestavěným kostelem sv. Prokopa. Do dnešní podoby byl rozšířen roku 1907.',
     y1892: 'Sem bylo pohřbeno 145 obětí, do dvou hromadných hrobů. Mnoho mrtvých nešlo poznat; rodiny je hledaly podle prstenů, řetízků nebo zbytků oděvu.',
     zaj: 'Roku 1893 tu ministerstvo orby postavilo 6,5 m vysoký litinový obelisk z komárovských železáren s hrobkou.',
     dnes: 'Hromadné hroby se zachovaly. Odtud začíná naučná stezka o katastrofě a konají se tu pietní akty k 31. květnu.',
     tip: 'Jak se dnes připomínají oběti velkých neštěstí? Liší se to od roku 1893?' },
-  { id: 'hrbitov-pb', name: 'Příbramský hřbitov', cat: 'pamet', icon: 'cross', x: 640, y: 400, approx: true,
-    hist: 'Hřbitov na Panské louce byl otevřen 26. ledna 1786, kdy se přestalo pohřbívat u kostela sv. Jakuba. Místo předtím sloužilo jako nouzové morové pohřebiště.',
+  { id: 'hrbitov-pb', name: 'Příbramský hřbitov', cat: 'pamet', icon: 'cross', x: 748, y: 61,
+    hist: 'Městský hřbitov na Panské louce severně od náměstí byl otevřen 26. ledna 1786, kdy se přestalo pohřbívat u kostela sv. Jakuba. Místo předtím sloužilo jako nouzové morové pohřebiště.',
     y1892: 'Sem bylo pohřbeno 153 obětí, většina do dvou hromadných hrobů se 78 a 40 muži. Zápach spáleniště, těl a chlorového vápna se nesl městem a část obyvatel ze strachu před nákazou odešla.',
     zaj: 'Hromadné hroby z roku 1892 jsou dnes překryté běžnými hroby. Druhý obelisk z roku 1893 stojí i tady.',
     dnes: 'Konečná zastávka naučné stezky o katastrofě.',
-    tip: 'Umístění hřbitova na mapě je jen přibližné. Dohledej, kde leží Panská louka.' }
+    tip: 'Litinový obelisk z roku 1893 na hřbitově stojí dodnes. Najdeš ho?' }
 ];
 
 const FOTO = window.FOTO_DATA || {};
@@ -1998,7 +2123,14 @@ const LEX = [
   ['Minerál (nerost)', 'Geologie', 'Přírodní látka s určitým chemickým složením a pravidelnou vnitřní stavbou, například galenit, křemen nebo kalcit. Z minerálů se skládají horniny i rudy.'],
   ['Hornina', 'Geologie', 'Přírodní směs minerálů tvořící zemskou kůru, například břidlice nebo droba. Březohorské žíly procházejí břidlicemi a drobami.'],
   ['Ruda', 'Geologie', 'Hornina nebo směs minerálů, ze které se vyplatí získávat kov. Zda je něco ruda, záleží i na ceně kovu a na technice: když stříbro zlevnilo, chudé rudy přestaly být rudou.'],
-  ['Žíla', 'Geologie', 'Puklina v hornině vyplněná minerály, které se do ní vysrážely z horkých roztoků. Žíla může být tenká jako papír i několik metrů mocná. Hlavní žílou Březových Hor byla Vojtěšská žíla.'],
+  ['Žíla', 'Geologie', 'Puklina v hornině vyplněná minerály, které se do ní vysrážely z horkých roztoků. Žíla může být tenká jako papír i několik metrů mocná. Na Březových Horách se kolem roku 1900 dobývalo 18 žil, na celém Příbramsku 42. Žíly provázela velká porucha zvaná Jílová rozsedlina (Lettenkluft).'],
+  ['Vojtěšská hlavní žíla', 'Žíly', 'Nejmocnější a nejbohatší žíla Březových Hor, místy až 5 m mocná. Dobýval ji hlavně důl Vojtěch; v hloubce 600 m tu byl galenit přes půl metru silný. Provází ji Vojtěšská podložní žíla.'],
+  ['Mariánská žíla', 'Žíly', 'Žíla, na které roku 1822 vznikla šachta Marie. Spolu s Vojtěšskou patřila k hlavním žilám ložiska.'],
+  ['Anenská žíla', 'Žíly', 'Žíla (či skupina žil) dobývaná dolem Anna; z ní měl těžit i důl Prokop.'],
+  ['Ševčinská žíla', 'Žíly', 'Žíla u dolu Císař František Josef I. (Ševčinského). Byla bohatá na železo, a proto méně ceněná.'],
+  ['Žíla Matky Boží', 'Žíly', 'Jedna z hlavních březohorských žil; mezi ní a Vojtěšskou žílou se roku 1779 začala hloubit šachta Vojtěch.'],
+  ['Další žíly', 'Žíly', 'Eusebská, Kateřinská, Václavská, Prokopská a Janská na Březových Horách; Strachovská, Černojamská a Jarošovská na severu; Boží přízně, sv. Františka a sv. Klementa na jihozápadě. Žíly nesly jména světců, šachet i dárců.'],
+  ['Antimonitová žíla', 'Žíly', 'Žíla u Bohutína bohatá na antimonové rudy, dobývaná zejména z dolu Rudolf.'],
   ['Ložisko', 'Geologie', 'Místo, kde je nahromaděno tolik užitkové suroviny, že se vyplatí ji těžit. Příbramský revír tvořila ložiska březohorské, bohutínské, černojamské a další.'],
   ['Žilovina', 'Geologie', 'Minerály, které vyplňují žílu spolu s rudou, ale kov z nich nezískáváme, například siderit, kalcit, křemen nebo baryt.'],
   ['Hlušina', 'Geologie', 'Vytěžená hornina bez užitečného obsahu. Sypala se na haldy u dolů.'],
@@ -2007,6 +2139,11 @@ const LEX = [
   ['Stříbrné rudy', 'Geologie', 'Minerály bohaté na stříbro, například pyrargyrit (rubínově červený), tetraedrit a vzácně ryzí stříbro. Většina stříbra však byla „schovaná“ v galenitu.'],
   ['Antimon', 'Geologie', 'Křehký stříbrolesklý polokov (značka Sb). Na Příbramsku se vyskytoval v minerálech jako antimonit, boulangerit nebo diaforit, hojně hlavně u Bohutína (Antimonitová žíla). Přidával se do slitin olova, například do písma pro tiskárny.'],
   ['Co se těžilo', 'Geologie', 'Březohorské doly těžily hlavně olověné rudy se stříbrem; koncem 19. století dávaly přes 90 % stříbra a velkou část olova celé monarchie. Vedle toho zinek a antimon. Po roce 1948 se na Příbramsku těžil uran, rudné doly na Březových Horách skončily roku 1978.'],
+  /* důl a voda */
+  ['Důl', 'Důl', 'Celý provoz, který dobývá ložisko: šachty, štoly, desítky pater chodeb, budovy, strojovny a úpravny. Důl se většinou jmenuje po hlavní šachtě, např. důl Vojtěch.'],
+  ['Jáma', 'Důl', 'Jiné slovo pro šachtu, používané hlavně ve starších textech („Vojtěšská jáma“).'],
+  ['Struhy', 'Voda', 'Povrchový kanál, který přiváděl vodu z brdských rybníků (Lázská a Pilská nádrž) k dolům a prádlům v Bohutíně a na Březových Horách. Voda poháněla kola, čerpadla, stoupací stroje i stoupy a v prádlech se v ní prala ruda.'],
+  ['Vodní kolo', 'Voda', 'Kolo poháněné padající vodou. V příbramských dolech stála kola i v podzemí, v komorách na tzv. vodním patře; čerpala vodu a pohybovala stroji.'],
   /* práce v dole */
   ['Šichta', 'Práce v dole', 'Z něm. Schicht. Pracovní směna v dole. Roku 1892 se směny střídaly ve 4, 12 a 20 hodin; po katastrofě se změnily na 6–14, 14–22 a 22–6.'],
   ['Fárat', 'Práce v dole', 'Z něm. fahren. Sestupovat do dolu (sfárat) nebo z něj vystupovat (vyfárat).'],
