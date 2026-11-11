@@ -442,8 +442,6 @@ const STAGES=[
  {n:'Reproduktor',s:'napětí → zvuk',cls:'an',tag:'analogový',ic:SVG('<path d="M7 19h8l10-8v26l-10-8H7z"/><path d="M31 17a10 10 0 0 1 0 14M36 12a17 17 0 0 1 0 24"/>'),
   cap:'Membrána reproduktoru kmitá podle signálu a rozechvěje vzduch. Uši slyší zvuk.'},
 ];
-const PRE={hrub:[8000,3],tel:[8000,8],cd:[44100,16],stud:[96000,24]};
-ACT.p1=v=>{S.afs=PRE[v][0];S.abits=PRE[v][1];refresh()};
 ACT.stage=v=>{S.stage=+v;refresh()};
 ACT.play1=(v,btn)=>{
  if(PLAY.on){stopAll();return}
@@ -486,7 +484,7 @@ function r1(){
  const Nn=N(),fs=S.afs,Tw=Nn/fs,t0=S.pos,b=S.abits;
  $('#tag1').innerHTML=`<i class="${sg.cls==='an'?'a':''}"></i>${sg.n} · ${sg.s}`;
  $('#cap1').textContent=sg.cap;
- $('#bd1').innerHTML=`${nf(fs)} Hz · ${b} bit<br>${nf(2**b)} úrovní · ${S.ach===2?'stereo':'mono'}`;
+ $('#bd1').innerHTML=S.stage<2||S.stage===5?'':`ilustrativně hrubé: ${nf(fs)} Hz · ${b} bity<br>${nf(2**b)} úrovní · ${S.ach===2?'stereo':'mono'}`;
  cv.hidden=S.stage===3;codes.hidden=S.stage!==3;
  if(S.stage===3){renderCodes();return}
  const g=setup(cv),{x,w,h,R}=g;
@@ -558,9 +556,6 @@ TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
    </div></div>
    <div class="side card">
     <div class="ctl"><div class="hd"><span class="lbl">Zdroj zvuku</span></div><div class="chips g2">${Object.keys(SRC).map(k=>`<button class="chip" data-k="src" data-v="${k}">${SRC[k].n}</button>`).join('')}</div></div>
-    <div class="ctl"><div class="hd"><span class="lbl">Rychlé nastavení</span></div><div class="chips g2"><button class="chip" data-act="p1" data-v="hrub">Hrubé<small>8 kHz · 3 b</small></button><button class="chip" data-act="p1" data-v="tel">Telefon<small>8 kHz · 8 b</small></button><button class="chip" data-act="p1" data-v="cd">CD<small>44,1 · 16 b</small></button><button class="chip" data-act="p1" data-v="stud">Studio<small>96 · 24 b</small></button></div></div>
-    <div class="ctl"><div class="hd"><span class="lbl">Vzorkovací frekvence</span><span class="val" data-o="afs"></span></div><input type="range" data-k="afs" data-list="fs" min="0" max="7" step="1"></div>
-    <div class="ctl"><div class="hd"><span class="lbl">Bitová hloubka</span><span class="val" data-o="abits"></span></div><input type="range" data-k="abits" min="1" max="24" step="1"></div>
     <div class="ctl"><div class="hd"><span class="lbl">Kanály</span></div><div class="seg"><button class="chip" data-k="ach" data-v="1">Mono</button><button class="chip" data-k="ach" data-v="2">Stereo</button></div></div>
     <div class="row" style="margin-top:auto"><button class="btn" data-act="play1" style="flex:2">${PLAYI}Poslechnout</button><button class="btn sec" data-act="stop">${STOPI}</button></div>
    </div></div>`;
