@@ -1087,13 +1087,13 @@ const LAY=(()=>{
  function labelPos(m,P,l,k){const ids=l._ids.filter(i=>P[i]);if(!ids.length)return [l.x,l.y];const b=box(m,P,[...ids,...lpOf(m,{pos:P},ids)]);
   for(const id in l._mk||{}){if(!ids.includes(id)||!P[id])continue;const v=l._mk[id];if(Array.isArray(v)&&v[1]==='mid'){const a=P[v[2]],c=P[v[3]];if(a&&c){const x=(a[0]+c[0])/2,y=(a[1]+c[1])/2;b.x0=Math.min(b.x0,x-30);b.x1=Math.max(b.x1,x+30);b.y1=Math.max(b.y1,y+30)}continue}const r=rad(m,id),y=P[id][1]+(Array.isArray(v)?v[2]:-r-9),x=P[id][0]+(Array.isArray(v)?v[1]:0);
    b.x0=Math.min(b.x0,x-8);b.x1=Math.max(b.x1,x+8);b.y0=Math.min(b.y0,y-8);b.y1=Math.max(b.y1,y+8)}
-  const o=(l._slot||0)*17/k,hw=l.t.length*3.7/k,cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2;
-  const cand=[[cx,b.y1+19/k+o],[cx,b.y0-9/k-o],[b.x0-hw-6/k,cy+5/k],[b.x1+hw+6/k,cy+5/k]];if(l._above)cand.unshift(cand.splice(1,1)[0]);
+  const o=(l._slot||0)*17/k,hw=Math.max(l.t.length,(l.sub||'').length*.85)*3.7/k,cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2;
+  const cand=[[cx,b.y1+19/k+o],[cx,b.y0-9/k-o-(l.sub?14/k:0)],[b.x0-hw-6/k,cy+5/k],[b.x1+hw+6/k,cy+5/k]];if(l._above)cand.unshift(cand.splice(1,1)[0]);
   const others=Object.keys(P).filter(id=>!ids.includes(id)&&vis(m,id));
-  const free=([x,y])=>others.every(id=>{const p=P[id],r=rad(m,id);return Math.abs(p[0]-x)>hw+r||p[1]<y-14/k-r||p[1]>y+4/k+r});
+  const free=([x,y])=>others.every(id=>{const p=P[id],r=rad(m,id);return Math.abs(p[0]-x)>hw+r||p[1]<y-14/k-r||p[1]>y+(l.sub?18:4)/k+r});
   return cand.find(free)||cand[0]}
  function fit(m,s){const ids=Object.keys(s.pos).filter(id=>{const K=kd(m,id);return K&&!K.hidden});let b=box(m,s.pos,ids);
-  for(const l of s.labels||[]){if(!l._ids)continue;const [x,y]=labelPos(m,s.pos,l,1),w=l.t.length*3.7;b={x0:Math.min(b.x0,x-w),x1:Math.max(b.x1,x+w),y0:Math.min(b.y0,y-12),y1:Math.max(b.y1,y+4)}}
+  for(const l of s.labels||[]){if(!l._ids)continue;const [x,y]=labelPos(m,s.pos,l,1),w=Math.max(l.t.length,(l.sub||'').length*.85)*3.7;b={x0:Math.min(b.x0,x-w),x1:Math.max(b.x1,x+w),y0:Math.min(b.y0,y-12),y1:Math.max(b.y1,y+(l.sub?18:4))}}
   b.y0-=10;b.y1+=4;const W=b.x1-b.x0,H=b.y1-b.y0,k=Math.max(.55,Math.min(1.25,330/W,272/H));s.fit={cx:(b.x0+b.x1)/2,cy:(b.y0+b.y1)/2,k}}
  return {separate,anchor,fit,labelPos}})();
 
@@ -1132,6 +1132,13 @@ function arrowSvg(a,pos,m,op,bonds){
   const head=a.half?`M${x2} ${y2} L${bx+px*5} ${by+py*5} L${x2-ux*6} ${y2-uy*6} Z`:`M${x2} ${y2} L${bx+px*4.5} ${by+py*4.5} L${bx-px*4.5} ${by-py*4.5} Z`;
   return `<g opacity="${op}"><path d="M${x0} ${y0} Q${cx} ${cy} ${x2-ux*5} ${y2-uy*5}" fill="none" stroke="var(--electron)" stroke-width="2.2" stroke-linecap="round"/><path d="${head}" fill="var(--electron)"/></g>`;
 }
+// π/σ komplex: název přímo u struktury, pod ním druh částice
+MECH.forEach(m=>m.steps.forEach(s=>{const t=s.title||'';let k=null,sub='';
+  if(/^Vznik π komplexu/.test(t))k='π komplex';
+  else if(/^Vznik σ komplexu|^σ komplex/.test(t)){k='σ komplex';const r=t.match(/(\d)\. rezonanční struktura/);sub=r?r[1]+'. rezonanční struktura':/vinylový/.test(t)?'vinylový karbokation':/sekundární/.test(t)?'sekundární karbokation':'karbokation'}
+  if(!k)return;const C=Object.keys(s.pos).filter(id=>/^[Cc]$/.test(m.atoms[id]));if(!C.length)return;
+  const cx=C.reduce((a,id)=>a+s.pos[id][0],0)/C.length,my=Math.max(...C.map(id=>s.pos[id][1]));
+  s.labels=(s.labels||[]).filter(l=>!/komplex|karbokation/.test(l.t)).concat([{x:cx,y:my+40,t:k,sub}])}));
 MECH.forEach(m=>m.steps.forEach(s=>{LAY.separate(m,s);LAY.anchor(m,s);LAY.fit(m,s)}));
 function render(){
   const m=mech(),B=m.steps[si],A=from||B,e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2,sc=m.sc||1;
@@ -1209,11 +1216,12 @@ function render(){
       else s+=`<g opacity="${op}"><circle cx="${x}" cy="${y}" r="8" fill="var(--stage)" stroke="var(--electron)" stroke-width="1.8"/><text x="${x}" y="${y+4.5}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--electron)">${mk}</text></g>`;
       if(off&&mv[1]==='mid')s+=`<text x="${x.toFixed(1)}" y="${(y+19).toFixed(1)}" text-anchor="middle" font-size="8.5" font-style="italic" font-weight="600" fill="var(--electron)" stroke="var(--stage)" stroke-width="3" stroke-linejoin="round" paint-order="stroke" opacity="${op}">delokalizovaný</text>`}}
   // popisky
-  const lt=l=>l.t,tA=(A.labels||[]).map(lt),tB=(B.labels||[]).map(lt);
-  const drawL=(l,op)=>{if(op<=0.01)return;let [x,y]=l._ids?LAY.labelPos(m,pos,l,FK):rv([l.x,l.y,0]);const half=l.t.length*3.7/FK;x=Math.max(CX-176/FK+half,Math.min(CX+176/FK-half,x));
-   s+=`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="${(13.5/FK).toFixed(2)}" font-weight="600" fill="var(--muted)" opacity="${op}">${l.t}</text>`};
-  for(const l of B.labels||[])drawL(l,tA.includes(l.t)&&A!==B?1:(A===B?1:e));
-  if(A!==B)for(const l of A.labels||[])if(!tB.includes(l.t))drawL(l,1-e);
+  const lt=l=>l.t+'|'+(l.sub||''),tA=(A.labels||[]).map(lt),tB=(B.labels||[]).map(lt);
+  const drawL=(l,op)=>{if(op<=0.01)return;let [x,y]=l._ids?LAY.labelPos(m,pos,l,FK):rv([l.x,l.y,0]);const half=Math.max(l.t.length,(l.sub||"").length*.85)*3.7/FK;x=Math.max(CX-176/FK+half,Math.min(CX+176/FK-half,x));
+   s+=`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="${(13.5/FK).toFixed(2)}" font-weight="600" fill="var(--muted)" opacity="${op}">${l.t}</text>`;
+   if(l.sub)s+=`<text x="${x.toFixed(1)}" y="${(y+14/FK).toFixed(1)}" text-anchor="middle" font-size="${(11/FK).toFixed(2)}" font-weight="500" fill="var(--muted)" opacity="${op*.85}">${l.sub}</text>`};
+  for(const l of B.labels||[])drawL(l,tA.includes(lt(l))&&A!==B?1:(A===B?1:e));
+  if(A!==B)for(const l of A.labels||[])if(!tB.includes(lt(l)))drawL(l,1-e);
   // šipky
   if(from&&from!==B)for(const a of A.arrows||[])s+=arrowSvg(a,PA,m,Math.max(0,1-t*4),A.bonds);
   for(const a of B.arrows||[])s+=arrowSvg(a,PB,m,from&&from!==B?Math.max(0,(t-.65)/.35):1,B.bonds);
