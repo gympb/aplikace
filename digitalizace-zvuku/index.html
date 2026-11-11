@@ -39,8 +39,8 @@ b{font-weight:700}
 .brand b{font:800 1.7rem/1 var(--f-head);letter-spacing:-.01em}
 .brand b span{background:linear-gradient(transparent 58%,var(--orange) 58%,var(--orange) 92%,transparent 92%);padding:0 .1rem}
 .brand small{font:700 .66rem/1 var(--f-head);letter-spacing:.22em;text-transform:uppercase;color:var(--orange-t)}
-.tabs{display:flex;gap:.35rem;justify-content:center;min-width:0}
-.tab-b{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;padding:.55rem .95rem .6rem;border-radius:1rem;min-width:7rem;min-height:3.6rem;transition:background .2s,color .2s}
+.tabs{display:flex;gap:.2rem;justify-content:center;min-width:0}
+.tab-b{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;padding:.55rem .75rem .6rem;border-radius:1rem;min-width:0;flex:0 1 auto;min-height:3.6rem;transition:background .2s,color .2s}
 .tab-b .kap{font:700 .6rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
 .tab-b .nm{font:700 1rem/1.1 var(--f-head);white-space:nowrap}
 .tab-b:hover{background:rgba(255,151,46,.14)}
@@ -51,6 +51,10 @@ b{font-weight:700}
 .ib svg{width:1.5rem;height:1.5rem;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ib[aria-pressed=false]{opacity:.55}
 .ib:hover{background:var(--orange);color:#17140F}
+.lang{display:grid;grid-auto-flow:column;gap:.2rem;background:var(--card);box-shadow:var(--shadow);border-radius:1.6rem;padding:.25rem;height:3.1rem;align-items:center}
+.lang button{height:2.6rem;padding:0 .8rem;border-radius:1.3rem;font:800 .9rem Montserrat,sans-serif;letter-spacing:.04em;color:var(--ink2)}
+.lang button.on{background:var(--ink);color:var(--bg)}
+.lang button:not(.on):hover{background:var(--orange);color:#17140F}
 #stage{padding:.3rem 2rem .5rem;min-height:0;overflow:hidden}
 .foot{display:flex;justify-content:space-between;padding:.2rem 2rem .7rem;font:500 .8rem/1 var(--f-mono);color:var(--ink2)}
 /* rozvržení */
@@ -236,16 +240,17 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 <body>
 <div class="app">
  <header class="top">
-  <div class="brand"><a class="back" href="../">← Všechny školní aplikace</a><b><span>Sound Lab</span> Pro</b><small>Gymnázium Příbram · Informatika</small></div>
+  <div class="brand"><a class="back" href="../" id="tBack">← Všechny školní aplikace</a><b><span>Sound Lab</span> Pro</b><small id="tSub">Gymnázium Příbram · Informatika</small></div>
   <nav class="tabs" id="tabs" role="tablist" aria-label="Záložky"></nav>
   <div class="tools">
+   <div class="lang" role="group" aria-label="Jazyk / Language"><button data-act="lang" data-v="cs" lang="cs">CZ</button><button data-act="lang" data-v="en" lang="en">EN</button></div>
    <button class="ib" id="bSnd" data-act="sound" aria-pressed="true" aria-label="Zvuk zapnout nebo vypnout"></button>
    <button class="ib" id="bThm" data-act="theme" aria-label="Světlý nebo tmavý vzhled"></button>
    <button class="ib" id="bFul" data-act="full" aria-label="Celá obrazovka"></button>
   </div>
  </header>
  <main id="stage"></main>
- <footer class="foot"><span>Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 12. 11. 2026</span><span>Zvuk se vytváří přímo v prohlížeči. Nic se nikam neodesílá.</span></footer>
+ <footer class="foot"><span id="fL"></span><span id="fR"></span></footer>
 </div>
 <script>
 'use strict';
@@ -253,7 +258,11 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
-const nf=(n,d=0)=>(+n).toLocaleString('cs-CZ',{maximumFractionDigits:d,minimumFractionDigits:0});
+let LANG='cs';try{LANG=localStorage.getItem('slp-lang')||''}catch(e){}
+if(LANG!=='cs'&&LANG!=='en')LANG=/^cs|^sk/i.test(navigator.language||'cs')?'cs':'en';
+const tx=(c,e)=>LANG==='en'?e:c;
+const bw=n=>LANG==='en'?(n===1?'bit':'bits'):(n===1?'bit':n<5?'bity':'bitů');
+const nf=(n,d=0)=>(+n).toLocaleString(LANG==='en'?'en-US':'cs-CZ',{maximumFractionDigits:d,minimumFractionDigits:0});
 const TAU=Math.PI*2;
 const bin=(i,b)=>i.toString(2).padStart(b,'0');
 function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -286,7 +295,7 @@ function timeAxis(g,t0,Tw,x0,x1,yb){
 }
 
 /* ========== zdroje zvuku ========== */
-const SRC={ton:{n:'Tón 440 Hz',dur:5},akord:{n:'Akord C dur',dur:5},melodie:{n:'Melodie',dur:5},hvizd:{n:'Hvizd 0,2→16 kHz',dur:5},vlastni:{n:'Vlastní soubor',dur:0}};
+const SRC={ton:{n:tx('Tón 440 Hz','Tone 440 Hz'),dur:5},akord:{n:tx('Akord C dur','C major chord'),dur:5},melodie:{n:tx('Melodie','Melody'),dur:5},hvizd:{n:tx('Hvizd 0,2→16 kHz','Sweep 0.2→16 kHz'),dur:5},vlastni:{n:tx('Vlastní soubor','Your file'),dur:0}};
 let USR=null; // nahraný soubor: {ch:[Float32Array],rate,dur,name,gain}
 const NOTES=[261.63,329.63,392,523.25,392,329.63];
 function sample(src,t,c){
@@ -309,7 +318,7 @@ const MAPS={dur:v=>Math.max(1,Math.round(Math.pow(5000,v/100)))};
 const IMAP={dur:d=>100*Math.log(d)/Math.log(5000)};
 const S={tab:0,sound:true,
  // 1 Cesta zvuku
- src:'melodie',afs:44100,abits:16,ach:1,tw:.006,ph:null,pos:0.02,amp:.9,stage:2,smooth:false,
+ src:'melodie',afs:44100,abits:16,ach:1,tw:.02,ph:null,pos:0.02,amp:.9,stage:0,smooth:false,
  // 2 Analog × digitál
  gen:0,wmode:'copy',dmag:10,
  // 3 Vzorkování
@@ -413,15 +422,25 @@ function go(i){
  sync();requestAnimationFrame(()=>{sync();t.render&&t.render()});
 }
 ACT.sound=()=>{S.sound=!S.sound;if(MG)MG.gain.value=S.sound?.6:0;$('#bSnd').innerHTML=S.sound?ICON.snd:ICON.mute;$('#bSnd').setAttribute('aria-pressed',S.sound)};
-ACT.theme=()=>{const d=document.documentElement;const dark=d.dataset.theme?d.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;d.dataset.theme=dark?'light':'dark';readC();refresh()};
+ACT.theme=()=>{const d=document.documentElement;const dark=d.dataset.theme?d.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;d.dataset.theme=dark?'light':'dark';try{localStorage.setItem('slp-theme',d.dataset.theme)}catch(e){}readC();refresh()};
+ACT.lang=v=>{if(v===LANG)return;try{localStorage.setItem('slp-lang',v)}catch(e){}stopAll();location.reload()};
 ACT.full=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()};
 ACT.stop=()=>stopAll();
 function boot(){
+ try{const th=localStorage.getItem('slp-theme');if(th==='dark'||th==='light')document.documentElement.dataset.theme=th}catch(e){}
+ document.documentElement.lang=LANG;document.title='Sound Lab Pro';
+ $('meta[name=description]').content=tx('Interaktivní laboratoř digitalizace zvuku: cesta zvuku od mikrofonu k reproduktoru, analog a digitál, vzorkování, kvantování, datový tok a komprese. Určeno pro projekci a velké dotykové panely.','Interactive sound digitization lab: the path of sound from microphone to speaker, analog vs digital, sampling, quantization, bit rate and compression. Made for projection and large touch panels.');
+ $('#tBack').textContent=tx('← Všechny školní aplikace','← All school apps');$('#tSub').textContent=tx('Gymnázium Příbram · Informatika','Gymnázium Příbram · Computer science');
+ $('#tabs').setAttribute('aria-label',tx('Záložky','Tabs'));
+ $('#bSnd').setAttribute('aria-label',tx('Zvuk zapnout nebo vypnout','Sound on or off'));$('#bThm').setAttribute('aria-label',tx('Světlý nebo tmavý vzhled','Light or dark theme'));$('#bFul').setAttribute('aria-label',tx('Celá obrazovka','Fullscreen'));
+ $$('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.v===LANG));
+ $('#fL').textContent=tx('Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 12. 11. 2026','Author: Ivo Bešťák · License CC BY 4.0 · Updated: 12 Nov 2026');
+ $('#fR').textContent=tx('Zvuk se vytváří přímo v prohlížeči. Nic se nikam neodesílá.','Sound is generated right in your browser. Nothing is sent anywhere.');
  readC();
  $('#bSnd').innerHTML=ICON.snd;$('#bThm').innerHTML=ICON.theme;$('#bFul').innerHTML=ICON.full;
  const nav=$('#tabs'),st=$('#stage');
  TABS.forEach((t,i)=>{
-  nav.insertAdjacentHTML('beforeend',`<button class="tab-b" role="tab" aria-selected="false" data-act="tab" data-v="${i}"><span class="kap">kap. ${t.kap}</span><span class="nm">${t.name}</span></button>`);
+  nav.insertAdjacentHTML('beforeend',`<button class="tab-b" role="tab" aria-selected="false" data-act="tab" data-v="${i}"><span class="kap">${tx('kap.','ch.')} ${t.kap}</span><span class="nm">${t.name}</span></button>`);
   st.insertAdjacentHTML('beforeend',`<section class="tab" hidden data-t="${i}" style="${t.side?'--side:'+t.side+';':''}${t.rows?'grid-template-rows:'+t.rows+';':''}">${t.build()}</section>`);
  });
  ACT.tab=v=>go(+v);
@@ -439,18 +458,18 @@ function boot(){
 const SVG=(p)=>`<svg viewBox="0 0 48 48">${p}</svg>`;
 const TX=(t)=>`<text x="24" y="28.5" text-anchor="middle" font-family="Montserrat" font-weight="800" font-size="12" fill="currentColor" stroke="none">${t}</text>`;
 const STAGES=[
- {n:'Zvuk',s:'změny tlaku vzduchu',cls:'an',tag:'analogový',ic:SVG('<path d="M7 24h3M15 15v18M22 8v32M29 14v20M36 19v10M42 23v2"/>'),
-  cap:'Zvuk je mechanické vlnění vzduchu: střídá se zhuštění a zředění.'},
- {n:'Mikrofon',s:'tlak → elektrické napětí',cls:'an',tag:'analogový',ic:SVG('<rect x="17" y="5" width="14" height="23" rx="7"/><path d="M11 23a13 13 0 0 0 26 0M24 36v7M16 43h16"/>'),
-  cap:'Mikrofon sleduje změny tlaku v reálném čase. Signál je spojitý: v každém okamžiku má nějakou hodnotu.'},
- {n:'A/D převodník',s:'vzorkování a kvantování',cls:'ad',tag:'převodník',ic:SVG('<rect x="9" y="9" width="30" height="30" rx="5"/><path d="M15 9V4M24 9V4M33 9V4M15 44v-5M24 44v-5M33 44v-5"/>'+TX('A/D')),
-  cap:'Převodník v pravidelných intervalech změří hodnotu (vzorek) a zaokrouhlí ji na nejbližší úroveň.'},
- {n:'Soubor',s:'čísla zapsaná jako 0 a 1',cls:'dg',tag:'digitální',ic:SVG('<path d="M12 5h17l8 8v30H12z"/><path d="M29 5v8h8"/>'+TX('0101')),
-  cap:'Každý vzorek je jedno číslo zapsané dvojkově. Soubor je jen dlouhá řada nul a jedniček.'},
- {n:'D/A převodník',s:'čísla → napětí',cls:'da',tag:'převodník',ic:SVG('<rect x="9" y="9" width="30" height="30" rx="5"/><path d="M15 9V4M24 9V4M33 9V4M15 44v-5M24 44v-5M33 44v-5"/>'+TX('D/A')),
-  cap:'Z čísel se znovu vyrábí napětí. Výstup má zprvu podobu schodů, které se vyhladí.'},
- {n:'Reproduktor',s:'napětí → zvuk',cls:'an',tag:'analogový',ic:SVG('<path d="M7 19h8l10-8v26l-10-8H7z"/><path d="M31 17a10 10 0 0 1 0 14M36 12a17 17 0 0 1 0 24"/>'),
-  cap:'Membrána reproduktoru kmitá podle signálu a rozechvěje vzduch. Uši slyší zvuk.'},
+ {n:tx('Zvuk','Sound'),s:tx('změny tlaku vzduchu','air pressure changes'),cls:'an',tag:tx('analogový','analog'),ic:SVG('<path d="M7 24h3M15 15v18M22 8v32M29 14v20M36 19v10M42 23v2"/>'),
+  cap:tx('Zvuk je mechanické vlnění vzduchu: střídá se zhuštění a zředění.','Sound is a mechanical wave in air: compression and rarefaction alternate.')},
+ {n:tx('Mikrofon','Microphone'),s:tx('tlak → elektrické napětí','pressure → electric voltage'),cls:'an',tag:tx('analogový','analog'),ic:SVG('<rect x="17" y="5" width="14" height="23" rx="7"/><path d="M11 23a13 13 0 0 0 26 0M24 36v7M16 43h16"/>'),
+  cap:tx('Mikrofon sleduje změny tlaku v reálném čase. Signál je spojitý: v každém okamžiku má nějakou hodnotu.','The microphone follows pressure changes in real time. The signal is continuous: it has a value at every instant.')},
+ {n:tx('A/D převodník','A/D converter'),s:tx('vzorkování a kvantování','sampling and quantization'),cls:'ad',tag:tx('převodník','converter'),ic:SVG('<rect x="9" y="9" width="30" height="30" rx="5"/><path d="M15 9V4M24 9V4M33 9V4M15 44v-5M24 44v-5M33 44v-5"/>'+TX('A/D')),
+  cap:tx('Převodník v pravidelných intervalech změří hodnotu (vzorek) a zaokrouhlí ji na nejbližší úroveň.','At regular intervals the converter measures the value (a sample) and rounds it to the nearest level.')},
+ {n:tx('Soubor','File'),s:tx('čísla zapsaná jako 0 a 1','numbers written as 0 and 1'),cls:'dg',tag:tx('digitální','digital'),ic:SVG('<path d="M12 5h17l8 8v30H12z"/><path d="M29 5v8h8"/>'+TX('0101')),
+  cap:tx('Každý vzorek je jedno číslo zapsané dvojkově. Soubor je jen dlouhá řada nul a jedniček.','Each sample is one number written in binary. A file is just a long string of zeros and ones.')},
+ {n:tx('D/A převodník','D/A converter'),s:tx('čísla → napětí','numbers → voltage'),cls:'da',tag:tx('převodník','converter'),ic:SVG('<rect x="9" y="9" width="30" height="30" rx="5"/><path d="M15 9V4M24 9V4M33 9V4M15 44v-5M24 44v-5M33 44v-5"/>'+TX('D/A')),
+  cap:tx('Z čísel se znovu vyrábí napětí. Výstup má zprvu podobu schodů, které se vyhladí.','Numbers are turned back into voltage. The output starts as steps, which are then smoothed.')},
+ {n:tx('Reproduktor','Speaker'),s:tx('napětí → zvuk','voltage → sound'),cls:'an',tag:tx('analogový','analog'),ic:SVG('<path d="M7 19h8l10-8v26l-10-8H7z"/><path d="M31 17a10 10 0 0 1 0 14M36 12a17 17 0 0 1 0 24"/>'),
+  cap:tx('Membrána reproduktoru kmitá podle signálu a rozechvěje vzduch. Uši slyší zvuk.','The speaker cone vibrates with the signal and sets the air in motion. The ears hear sound.')},
 ];
 ACT.stage=v=>{S.stage=+v;refresh()};
 const TT=()=>S.src==='vlastni'&&USR?USR.dur:SRC[S.src].dur;
@@ -530,8 +549,8 @@ ACT.play1=(v,btn)=>{
  playBuf(buf,fs,{btn,onTick:tick,onDone:done});
 };
 OUT.afs=()=>`<b>${nf(S.afs)}</b> Hz`;
-OUT.abits=()=>`<b>${S.abits}</b> ${S.abits===1?'bit':S.abits<5?'bity':'bitů'} = ${nf(2**S.abits)} úrovní`;
-OUT.tw=()=>S.stage<2?`<b>${fmtT(S.tw)}</b>`:`<b>${fmtT(S.tw)}</b> · ${nf(Math.round(S.tw*S.afs))} vzorků`;
+OUT.abits=()=>`<b>${S.abits}</b> ${bw(S.abits)} = ${nf(2**S.abits)} ${tx('úrovní','levels')}`;
+OUT.tw=()=>S.stage<2?`<b>${fmtT(S.tw)}</b>`:`<b>${fmtT(S.tw)}</b> · ${nf(Math.round(S.tw*S.afs))} ${tx('vzorků','samples')}`;
 OUT.pos=()=>`<b>${nf(S.pos,S.tw<.1?3:2)}</b> s`;
 
 function recon(vq,t,fs){ // Lanczos interpolace kvantovaných vzorků (vizuální rekonstrukce)
@@ -547,13 +566,13 @@ function renderCodes(){
   h+=`<div class="cg" style="--n:${n}">`;
   for(let j=0;j<(nl===2?8:16);j++){
    const k=k0+j,v=sample(S.src,k/fs,c)*S.amp,i=qIdx(v,b);
-   h+=`<div><i>${nl===2?(c?'P':'L')+' · ':''}VZOREK ${k}</i><em>${nf(i)}</em><s>${bin(i,b)}</s></div>`;
+   h+=`<div><i>${nl===2?(c?tx('P','R'):'L')+' · ':''}${tx('VZOREK','SAMPLE')} ${k}</i><em>${nf(i)}</em><s>${bin(i,b)}</s></div>`;
    if(nl===1&&j===7)h+=`</div><div class="cg" style="--n:${n}">`;
   }
   h+='</div>';
  }
  const parts=[];let len=0;for(let j=0;j<60&&len<420;j++){const k=k0+j;for(let c=0;c<nl;c++){parts.push(bin(qIdx(sample(S.src,k/fs,c)*S.amp,b),b));len+=b}}
- el.innerHTML=h+`<div class="lbl">Tak vypadá začátek souboru</div><div class="bits">${parts.join('<span>·</span>')}</div>`;
+ el.innerHTML=h+`<div class="lbl">${tx('Tak vypadá začátek souboru','This is how the start of the file looks')}</div><div class="bits">${parts.join('<span>·</span>')}</div>`;
 }
 let geo=null;
 function r1(){
@@ -563,9 +582,9 @@ function r1(){
  const fs=S.afs,b=S.abits;
  $('#tag1').innerHTML=`<i class="${sg.cls==='an'?'a':''}"></i>${sg.n} · ${sg.s}`;
  $('#cap1').textContent=sg.cap;
- $('#bd1').innerHTML=S.stage<2||S.stage===5?'':`${nf(fs)} Hz · ${b} bitů<br>${nf(2**b)} úrovní · ${S.ach===2?'stereo':'mono'}`;
+ $('#bd1').innerHTML=S.stage<2||S.stage===5?'':`${nf(fs)} Hz · ${b} ${bw(b)}<br>${nf(2**b)} ${tx('úrovní','levels')} · ${S.ach===2?'stereo':'mono'}`;
  cv.hidden=S.stage===3;codes.hidden=S.stage!==3;
- {const zc=$('#zc4'),an=S.stage<2;zc.textContent=an?'1 ms':'64 vzorků';zc.dataset.v=an?'ms1':'smp'}
+ {const zc=$('#zc4'),an=S.stage<2;zc.textContent=an?'1 ms':tx('64 vzorků','64 samples');zc.dataset.v=an?'ms1':'smp'}
  $('#tg1').style.display=S.stage===4?'flex':'none';$('#sm1').style.display=S.stage===4?'flex':'none';
  $$('#sm1 .chip').forEach((bb,i)=>bb.classList.toggle('on',(i===1)===S.smooth));
  if(S.stage===3){renderCodes();return}
@@ -581,7 +600,7 @@ function r1(){
  for(let c=0;c<nl;c++){
   const cy=top+LH*c+LH/2,vy=v=>cy-v*A;
   line(x,x0,cy,x1,cy,C.grid2,1);
-  if(nl===2)TH(x,c?'PRAVÝ':'LEVÝ',x1,top+LH*c+R*.7,R*.7,'rgba(244,241,234,.5)','right');
+  if(nl===2)TH(x,c?tx('PRAVÝ','RIGHT'):tx('LEVÝ','LEFT'),x1,top+LH*c+R*.7,R*.7,'rgba(244,241,234,.5)','right');
   const an=px=>sample(S.src,t0+(px-x0)/(x1-x0)*Tw,c)*S.amp;
   const wv=(vf,col)=>{x.beginPath();x.strokeStyle=col;x.lineWidth=1;for(let px=Math.ceil(x0);px<=x1;px++){const[mn,mx]=ext(c,t0+(px-x0)/(x1-x0)*Tw,t0+(px+1-x0)/(x1-x0)*Tw);let ya=vf(mx),yb=vf(mn);if(yb-ya<1.4){const m=(ya+yb)/2;ya=m-.7;yb=m+.7}x.moveTo(px+.5,ya);x.lineTo(px+.5,yb)}x.stroke()};
   const curve=(fn,col,lw,dash,vf)=>{vf=vf||vy;x.beginPath();x.strokeStyle=col;x.lineWidth=lw;x.setLineDash(dash||[]);x.lineJoin='round';let f=true;for(let px=x0;px<=x1;px+=2){const y=vf(fn(px));if(f){x.moveTo(px,y);f=false}else x.lineTo(px,y)}x.stroke();x.setLineDash([])};
@@ -601,14 +620,14 @@ function r1(){
      const px=pos[j],py=py0+(r+.5)/rows*ph;
      dot(x,px,py,R*.17,'rgba(244,241,234,'+(.35+.4*Math.abs(Math.sin(r*7.3+j*.1)))+')');
     }
-   }else T(x,'Přibliž si graf (kolečko myši nebo posuvník Zvětšení) a uvidíš kmitání částic vzduchu.',(x0+x1)/2,top+h*.15,R*.8,'rgba(244,241,234,.5)','center');
+   }else T(x,tx('Přibliž si graf (kolečko myši nebo posuvník Zvětšení) a uvidíš kmitání částic vzduchu.','Zoom in (mouse wheel or the Zoom slider) to see the air particles vibrate.'),(x0+x1)/2,top+h*.15,R*.8,'rgba(244,241,234,.5)','center');
    const cy2=h-bot-(h-top-bot)*.2,vf2=v=>cy2-v*A*.62;
    line(x,x0,cy2,x1,cy2,C.grid2,1);
    if(wave)wv(vf2,C.analog);else curve(an,C.analog,R*.2,null,vf2);
-   T(x,'tlak vzduchu: nahoře zhuštění, dole zředění',x0,cy2-A*.62-R*.7,R*.78,'rgba(244,241,234,.6)');
+   T(x,tx('tlak vzduchu: nahoře zhuštění, dole zředění','air pressure: compression on top, rarefaction below'),x0,cy2-A*.62-R*.7,R*.78,'rgba(244,241,234,.6)');
   }else if(S.stage===1){
    if(wave)wv(vy,C.analog);else curve(an,C.analog,R*.22);
-   T(x,'napětí',x0,top+LH*c+R*.7,R*.78,'rgba(244,241,234,.6)');
+   T(x,tx('napětí','voltage'),x0,top+LH*c+R*.7,R*.78,'rgba(244,241,234,.6)');
   }else if(S.stage===2){
    const L=2**b;
    if(L<=32)for(let i=0;i<L;i++){const y=vy(qVal(i,b));line(x,x0,y,x1,y,C.grid,1);if(L<=16)T(x,bin(i,b),x0-R*.3,y,R*.62,'rgba(244,241,234,.5)','right')}
@@ -621,6 +640,7 @@ function r1(){
    if(wave)wv(vy,C.orange);
    else{curve(an,'rgba(189,182,167,.35)',R*.12,[R*.3,R*.3]);const q=qv(c);
     if(!S.smooth)steps(C.orange,R*.22);else curve(px=>recon(q,t0+(px-x0)/(x1-x0)*Tw,fs),C.orange,R*.24)}
+   if(dots){const q2=qv(c);for(let k=k0;kx(k)<=x1;k++){const px=kx(k),vq=vy(q2(k));line(x,px,top-R*.5,px,vq,'rgba(255,151,46,.45)',1);dot(x,px,vq,R*.27,C.orange)}}
   }else if(S.stage===5){
    if(wave)wv(vy,C.orange);
    else{const q=qv(c);curve(an,'rgba(189,182,167,.35)',R*.12,[R*.3,R*.3]);curve(px=>recon(q,t0+(px-x0)/(x1-x0)*Tw,fs),C.orange,R*.26)}
@@ -635,25 +655,25 @@ function r1(){
   dot(x,cx,cy+R*.5,R*.5+v*R*.15,'#17140F');
  }
 }
-TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
+TABS.push({kap:1,name:tx('Cesta zvuku','Sound path'),rows:'auto minmax(0,1fr)',
  build(){
   const tiles=STAGES.map((s,i)=>`${i?`<i class="wire ${i===3||i===4?'dg':''}"><u></u></i>`:''}<button class="tile ${s.cls}" data-act="stage" data-v="${i}" aria-pressed="false"><span class="ic">${s.ic}</span><span class="k">${s.tag}</span><b>${s.n}</b><small>${s.s}</small></button>`).join('');
   return `<div class="chain card" id="chain">${tiles}</div>
   <div class="split"><div class="col">
    <div class="scope grow"><canvas id="c1"></canvas><div id="codes" hidden></div><div class="tag" id="tag1"></div><div class="cap" id="cap1"></div><div class="badge" id="bd1"></div>
-    <div class="tg" id="tg1" style="display:none"><span id="sm1" style="display:none;gap:.4rem"><button class="chip" data-act="smooth" data-v="0">Schody</button><button class="chip" data-act="smooth" data-v="1">Vyhlazení</button></span></div></div>
+    <div class="tg" id="tg1" style="display:none"><span id="sm1" style="display:none;gap:.4rem"><button class="chip" data-act="smooth" data-v="0">${tx('Schody','Steps')}</button><button class="chip" data-act="smooth" data-v="1">${tx('Vyhlazení','Smoothing')}</button></span></div></div>
    <div class="card scrub">
-    <div class="ctl"><div class="hd"><span class="lbl">Zvětšení</span><span class="val" data-o="tw"></span></div><input type="range" data-k="tw" data-map="zoom" min="0" max="100" step="0.1">
-     <div class="chips mini"><button class="chip" data-act="zoomto" data-v="all">Celá skladba</button><button class="chip" data-act="zoomto" data-v="s">1 s</button><button class="chip" data-act="zoomto" data-v="ms">10 ms</button><button class="chip" id="zc4" data-act="zoomto" data-v="smp">64 vzorků</button></div></div>
-    <div class="ctl"><div class="hd"><span class="lbl">Pozice ve zvuku</span><span class="val" data-o="pos"></span></div><input type="range" data-k="pos" min="0" max="1" step="any"></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Zvětšení','Zoom')}</span><span class="val" data-o="tw"></span></div><input type="range" data-k="tw" data-map="zoom" min="0" max="100" step="0.1">
+     <div class="chips mini"><button class="chip" data-act="zoomto" data-v="all">${tx('Celá skladba','Whole track')}</button><button class="chip" data-act="zoomto" data-v="s">1 s</button><button class="chip" data-act="zoomto" data-v="ms">10 ms</button><button class="chip" id="zc4" data-act="zoomto" data-v="smp">${tx('64 vzorků','64 samples')}</button></div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Pozice ve zvuku','Position in sound')}</span><span class="val" data-o="pos"></span></div><input type="range" data-k="pos" min="0" max="1" step="any"></div>
    </div></div>
    <div class="side card">
-    <div class="ctl"><div class="hd"><span class="lbl">Zdroj zvuku</span></div><div class="chips g2">${Object.keys(SRC).filter(k=>k!=='vlastni').map(k=>`<button class="chip" data-k="src" data-v="${k}">${SRC[k].n}</button>`).join('')}</div>
-     <div class="chips" style="margin-top:.5rem"><button class="chip" id="usrChip" data-k="src" data-v="vlastni" hidden></button><button class="chip" data-act="pick" style="flex:1">Nahrát vlastní zvuk</button></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Zdroj zvuku','Sound source')}</span></div><div class="chips g2">${Object.keys(SRC).filter(k=>k!=='vlastni').map(k=>`<button class="chip" data-k="src" data-v="${k}">${SRC[k].n}</button>`).join('')}</div>
+     <div class="chips" style="margin-top:.5rem"><button class="chip" id="usrChip" data-k="src" data-v="vlastni" hidden></button><button class="chip" data-act="pick" style="flex:1">${tx('Nahrát vlastní zvuk','Upload your own sound')}</button></div>
      <input type="file" id="usrFile" hidden accept="audio/*,.mp3,.wav,.ogg,.oga,.m4a,.aac,.flac,.opus">
-     <div class="msg2" id="usrMsg">MP3, WAV, OGG a další. Soubor můžeš přetáhnout i na graf. Zpracuje se jen v tomto prohlížeči a nikam se neodesílá.</div></div>
-    <div class="ctl"><div class="hd"><span class="lbl">Kanály</span></div><div class="seg"><button class="chip" data-k="ach" data-v="1">Mono</button><button class="chip" data-k="ach" data-v="2">Stereo</button></div></div>
-    <div class="row" style="margin-top:auto"><button class="btn" data-act="play1" style="flex:2">${PLAYI}Poslechnout</button><button class="btn sec" data-act="stop">${STOPI}</button></div>
+     <div class="msg2" id="usrMsg">${tx('MP3, WAV, OGG a další. Soubor můžeš přetáhnout i na graf. Zpracuje se jen v tomto prohlížeči a nikam se neodesílá.','MP3, WAV, OGG and more. You can also drop a file onto the graph. It is processed only in this browser and never uploaded.')}</div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Kanály','Channels')}</span></div><div class="seg"><button class="chip" data-k="ach" data-v="1">Mono</button><button class="chip" data-k="ach" data-v="2">Stereo</button></div></div>
+    <div class="row" style="margin-top:auto"><button class="btn" data-act="play1" style="flex:2">${PLAYI}${tx('Poslechnout','Listen')}</button><button class="btn sec" data-act="stop">${STOPI}</button></div>
    </div></div>`;
  },
  init(){ACT.smooth=v=>{S.smooth=v==='1';refresh()};
@@ -661,23 +681,23 @@ TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
   const msg=(t,bad)=>{const m=$('#usrMsg');m.textContent=t;m.classList.toggle('bad',!!bad)};
   async function load(file){
    if(!file)return;
-   if(file.size>150*1048576){msg('Soubor je příliš velký (nejvýš 150 MB).',1);return}
-   msg('Načítám a dekóduji…');
+   if(file.size>150*1048576){msg(tx('Soubor je příliš velký (nejvýš 150 MB).','The file is too large (150 MB max).'),1);return}
+   msg(tx('Načítám a dekóduji…','Loading and decoding…'));
    try{
     const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
     const buf=await new OC(1,1,44100).decodeAudioData(await file.arrayBuffer());
     const rate=buf.sampleRate,max=Math.floor(Math.min(buf.duration,600)*rate),ch=[];
     for(let c=0;c<Math.min(2,buf.numberOfChannels);c++)ch.push(buf.getChannelData(c).subarray(0,max));
     let pk=0;for(const a of ch)for(let i=0;i<a.length;i++){const v=Math.abs(a[i]);if(v>pk)pk=v}
-    if(pk<1e-5){msg('V souboru je jen ticho.',1);return}
+    if(pk<1e-5){msg(tx('V souboru je jen ticho.','The file contains only silence.'),1);return}
     const name=file.name.replace(/\.[^.]+$/,'');
     const B=256,pks=ch.map(a=>{const nb=Math.ceil(a.length/B),mn=new Float32Array(nb),mx=new Float32Array(nb);for(let k=0;k<nb;k++){let lo=1e9,hi=-1e9;const e=Math.min(a.length,(k+1)*B);for(let i=k*B;i<e;i++){const v=a[i];if(v<lo)lo=v;if(v>hi)hi=v}mn[k]=lo;mx[k]=hi}return{mn,mx}});
     USR={ch,rate,dur:max/rate,name,gain:.9/pk,ab:buf,pk:pks,B};SRC.vlastni.dur=USR.dur;
     const chip=$('#usrChip');chip.hidden=false;chip.textContent=(name.length>22?name.slice(0,21)+'…':name)+' · '+mmss2(USR.dur);
     S.pos=0;S.src='vlastni';S.tw=USR.dur;S.ph=null;fitPos();stopAll();
-    msg(`Načteno: ${file.name} · ${nf(rate)} Hz · ${ch.length===2?'stereo':'mono'}${buf.duration>600?' · použito prvních 10 minut':''}. Signál se upravil na stejnou hlasitost a ztrátový formát (např. MP3) je tu už dekódovaný.`);
+    msg(`${tx('Načteno','Loaded')}: ${file.name} · ${nf(rate)} Hz · ${ch.length===2?'stereo':'mono'}${buf.duration>600?tx(' · použito prvních 10 minut',' · first 10 minutes used'):''}. ${tx('Signál se upravil na stejnou hlasitost a ztrátový formát (např. MP3) je tu už dekódovaný.','The signal was normalized in loudness, and a lossy format (e.g. MP3) is already decoded here.')}`);
     refresh();
-   }catch(e){msg('Tento soubor se nepodařilo přečíst. Zkus MP3, WAV nebo OGG.',1)}
+   }catch(e){msg(tx('Tento soubor se nepodařilo přečíst. Zkus MP3, WAV nebo OGG.','This file could not be read. Try MP3, WAV or OGG.'),1)}
   }
   ACT.pick=()=>$('#usrFile').click();
   $('#usrFile').addEventListener('change',e=>{load(e.target.files[0]);e.target.value=''});
@@ -731,7 +751,7 @@ function curveAt(n){
 function errAt(a){let s=0;for(let i=0;i<M;i++){const d=a[i]-B0[i];s+=d*d}return Math.sqrt(s/M)/rmsB*100}
 function fitGen(){const el=$('input[data-k=gen]');if(el){el.max=MD().max;el.step=MD().step}S.gen=clamp(S.gen,0,MD().max)}
 HOOK.wmode=()=>{S.gen=0;fitGen()};
-OUT.gen=()=>{const n=S.gen;return S.wmode==='copy'?`<b>${n}</b> ${n===1?'kopie':n>1&&n<5?'kopie':'kopií'}`:`<b>${n}</b> přehrání`};
+OUT.gen=()=>{const n=S.gen;return S.wmode==='copy'?`<b>${n}</b> ${LANG==='en'?(n===1?'copy':'copies'):(n===1||(n>1&&n<5)?'kopie':'kopií')}`:`<b>${n}</b> ${tx('přehrání',n===1?'play':'plays')}`};
 OUT.aerr=()=>`<span style="color:var(--bad)">${nf(errAt(curveAt(S.gen)),S.gen?2:2)} %</span>`;
 ACT.gen=v=>{S.gen=clamp(S.gen+(+v),0,MD().max);refresh()};
 ACT.gen0=()=>{S.gen=0;refresh()};
@@ -760,22 +780,31 @@ function drawScope(cv,analog){
  x.beginPath();x.setLineDash([R*.35,R*.3]);x.strokeStyle='rgba(244,241,234,.6)';x.lineWidth=R*.1;for(let i=0;i<M;i++){const [px,py]=Q(i);i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();x.setLineDash([]);
  x.beginPath();x.strokeStyle=analog?C.analog:C.orange;x.lineWidth=R*.2;x.lineJoin='round';for(let i=0;i<M;i++){const [px,py]=P(i);i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
  if(!analog){
-  T(x,'kopie souboru: rozdíl = 0 · převod z analogu: chyba ≈ '+nf(QERR,3)+' %',x1,h-R*1.1,R*.85,C.good,'right');
+  const cap2=tx('kopie souboru: rozdíl = 0 · převod z analogu: chyba ≈ ','file copy: difference = 0 · A/D conversion error ≈ ')+nf(QERR,3)+' %';
+  T(x,cap2,x1,h-R*1.1,R*.85,C.good,'right');
   let s='';for(let i=0;i<6;i++)s+=bin(qIdx(B0[i*40],16),16).slice(0,8)+' ';
-  T(x,s,x0,h-R*1.1,R*.72,'rgba(244,241,234,.4)');
- }else T(x,'červeně: rozdíl oproti originálu'+(k>1?' (zvětšen '+k+'×)':' (ve skutečném měřítku)'),x1,h-R*1.1,R*.85,C.bad,'right');
+  x.font=`500 ${R*.85}px "Atkinson Hyperlegible Mono",monospace`;const w1=x.measureText(cap2).width;x.font=`500 ${R*.72}px "Atkinson Hyperlegible Mono",monospace`;const w2=x.measureText(s).width;
+  if(x0+w2+w1+R*2<x1)T(x,s,x0,h-R*1.1,R*.72,'rgba(244,241,234,.4)');
+ }else T(x,tx('červeně: rozdíl oproti originálu','red: difference from the original')+(k>1?tx(' (zvětšen ',' (magnified ')+k+'×)':tx(' (ve skutečném měřítku)',' (true scale)')),x1,h-R*1.1,R*.85,C.bad,'right');
 }
 function r2(){
  const g=S.gen,m=MD(),ca=curveAt(g),e=errAt(ca),snr=m.snr(g);
- $('#tg2a').innerHTML=`<i class="a"></i>Analogový záznam · ${S.wmode==='copy'?'kazeta':'gramofonová deska'} · ${S.wmode==='copy'?'kopie':'přehrání'} ${g} · odstup od šumu ≈ ${nf(snr)} dB`;
- $('#tg2b').innerHTML=`<i></i>Digitální záznam · ${S.wmode==='copy'?'kopie souboru':'přehrání souboru'} ${g}`;
- $('#bd2a').innerHTML=`odchylka od originálu<br><b style="font-size:1.5rem;color:var(--bad)">${nf(e,2)} %</b>`;
- $('#bd2b').innerHTML=`odchylka od digitalizovaného originálu<br><b style="font-size:1.5rem;color:var(--good)">0 %</b>`;
+ $('#tg2a').innerHTML=`<i class="a"></i>${tx('Analogový záznam','Analog recording')} · ${S.wmode==='copy'?tx('kazeta','cassette'):tx('gramofonová deska','vinyl record')} · ${S.wmode==='copy'?tx('kopie','copy'):tx('přehrání','play')} ${g} · ${tx('odstup od šumu','signal-to-noise')} ≈ ${nf(snr)} dB`;
+ $('#tg2b').innerHTML=`<i></i>${tx('Digitální záznam','Digital recording')} · ${S.wmode==='copy'?tx('kopie souboru','file copy'):tx('přehrání souboru','file play')} ${g}`;
+ $('#bd2a').innerHTML=`${tx('odchylka od originálu','deviation from the original')}<br><b style="font-size:1.5rem;color:var(--bad)">${nf(e,2)} %</b>`;
+ $('#bd2b').innerHTML=`${tx('odchylka od digitalizovaného originálu','deviation from the digitized original')}<br><b style="font-size:1.5rem;color:var(--good)">0 %</b>`;
  $('#mA').style.width=clamp(e/3*100,2,100)+'%';
  const [b1,b2]=m.btn;[['#gb1',b1],['#gb2',b2]].forEach(([id,bb])=>{const el=$(id);el.dataset.v=bb[0];el.textContent=bb[1]});
  drawScope($('#c2a'),true);drawScope($('#c2b'),false);
 }
-const ROWS=[
+const ROWS=LANG==='en'?[
+ ['','Principle','continuous curve','separate values (numbers)'],
+ ['copy','Copying','every copy adds noise and loses quality (generation loss)','a file copy is bit-for-bit identical to the original'],
+ ['wear','Wear','the medium slowly wears out mechanically (after hundreds of plays)','data does not wear out by playing (but disks and cloud storage have a limited lifespan)'],
+ ['','Noise','always present (record crackle, tape hiss)','no noise arises in the data itself'],
+ ['','Editing','difficult (cutting and splicing tape)','easy and non-destructive'],
+ ['','Perception','"warm", natural sound, pleasant distortion','very precise, to some almost "sterile"'],
+]:[
  ['','Princip','spojitá křivka','oddělené hodnoty (čísla)'],
  ['copy','Kopírování','každá kopie přidává šum a ztrácí kvalitu (generační ztráta)','kopie souboru je bitově shodná s originálem'],
  ['wear','Opotřebení','nosič se přehráváním pomalu mechanicky opotřebovává (po stovkách přehrání)','data se přehráváním neopotřebovávají (ale disk či cloud mají omezenou životnost)'],
@@ -783,25 +812,25 @@ const ROWS=[
  ['','Střih','obtížný (stříhání a lepení pásky)','snadný a nedestruktivní'],
  ['','Vnímání','„teplý“, přirozený zvuk, příjemné zkreslení','velmi přesný, pro někoho až „sterilní“'],
 ];
-TABS.push({kap:1,name:'Analog × digitál',
+TABS.push({kap:1,name:tx('Analog × digitál','Analog/digital'),
  build(){
   const rows=ROWS.map(r=>`<div class="rw" style="display:contents" ${r[0]?`data-k="wmode" data-v="${r[0]}"`:''}><div class="r">${r[1]}</div><div>${r[2]}</div><div>${r[3]}</div></div>`).join('');
   return `<div class="split"><div class="col">
    <div class="scope grow"><canvas id="c2a"></canvas><div class="tag" id="tg2a"></div><div class="badge" id="bd2a"></div></div>
    <div class="scope grow"><canvas id="c2b"></canvas><div class="tag" id="tg2b"></div><div class="badge" id="bd2b"></div></div>
-   <div class="card cmp"><div class="h"></div><div class="h">Analogový záznam</div><div class="h">Digitální záznam</div>${rows}</div>
+   <div class="card cmp"><div class="h"></div><div class="h">${tx('Analogový záznam','Analog recording')}</div><div class="h">${tx('Digitální záznam','Digital recording')}</div>${rows}</div>
   </div>
   <div class="side card">
-   <div class="ctl"><div class="hd"><span class="lbl">Co zkoušíme</span></div><div class="seg"><button class="chip" data-k="wmode" data-v="copy">Kopírování kazety</button><button class="chip" data-k="wmode" data-v="wear">Přehrávání desky</button></div></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Počet</span><span class="val" data-o="gen"></span></div><input type="range" data-k="gen" min="0" max="5" step="1"></div>
-   <div class="row"><button class="btn" id="gb1" data-act="gen" data-v="1">+ 1</button><button class="btn" id="gb2" data-act="gen" data-v="5">+ 5</button><button class="btn sec" data-act="gen0">Znovu</button></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Odchylka od originálu</span><span class="val" data-o="aerr"></span></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Co zkoušíme','What we test')}</span></div><div class="seg"><button class="chip" data-k="wmode" data-v="copy">${tx('Kopírování kazety','Copying a cassette')}</button><button class="chip" data-k="wmode" data-v="wear">${tx('Přehrávání desky','Playing a record')}</button></div></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Počet','Count')}</span><span class="val" data-o="gen"></span></div><input type="range" data-k="gen" min="0" max="5" step="1"></div>
+   <div class="row"><button class="btn" id="gb1" data-act="gen" data-v="1">+ 1</button><button class="btn" id="gb2" data-act="gen" data-v="5">+ 5</button><button class="btn sec" data-act="gen0">${tx('Znovu','Reset')}</button></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Odchylka od originálu','Deviation from the original')}</span><span class="val" data-o="aerr"></span></div>
     <div class="meter"><div class="bar"><i id="mA" style="width:2%"></i></div><div class="bar"><i class="g" style="width:0%"></i></div></div>
-    <p class="n">Horní pruh: analog, spodní pruh: digitál. Digitální kopie zůstává pokaždé stejná.</p></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Zvětšení rozdílu v grafu a poslechu</span></div><div class="chips g4">${[1,3,10,30].map(v=>`<button class="chip" data-k="dmag" data-v="${v}">${v}×</button>`).join('')}</div></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Poslech</span></div>
-    <div class="row"><button class="btn sec" data-act="play2" data-v="a">${PLAYI}Analog</button><button class="btn sec" data-act="play2" data-v="d">${PLAYI}Digitál</button></div></div>
-   <div class="callout" style="font-size:.9rem;line-height:1.35"><b class="l">Ilustrační model</b>Syntetický signál a typické hodnoty: kazeta ≈ 55 dB odstupu od šumu a pokles výšek při každé kopii, deska ≈ 62 dB a pomalé opotřebení po stovkách přehrání. Čísla v procentech jsou skutečná, rozdíl v grafu a poslechu je pro slyšitelnost zvětšen. Digitální kopie souboru je přesná, ale převod z analogu má zaokrouhlovací chybu (16 bitů ≈ 0,002 %). O tom, co je lepší, rozhoduje i vkus, ne jen měření.</div>
+    <p class="n">${tx('Horní pruh: analog, spodní pruh: digitál. Digitální kopie zůstává pokaždé stejná.','Top bar: analog, bottom bar: digital. The digital copy stays the same every time.')}</p></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Zvětšení rozdílu v grafu a poslechu','Magnify the difference in graph and audio')}</span></div><div class="chips g4">${[1,3,10,30].map(v=>`<button class="chip" data-k="dmag" data-v="${v}">${v}×</button>`).join('')}</div></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Poslech','Listen')}</span></div>
+    <div class="row"><button class="btn sec" data-act="play2" data-v="a">${PLAYI}${tx('Analog','Analog')}</button><button class="btn sec" data-act="play2" data-v="d">${PLAYI}${tx('Digitál','Digital')}</button></div></div>
+   <div class="callout" style="font-size:.9rem;line-height:1.35"><b class="l">${tx('Ilustrační model','Illustrative model')}</b>${tx('Syntetický signál a typické hodnoty: kazeta ≈ 55 dB odstupu od šumu a pokles výšek při každé kopii, deska ≈ 62 dB a pomalé opotřebení po stovkách přehrání. Čísla v procentech jsou skutečná, rozdíl v grafu a poslechu je pro slyšitelnost zvětšen. Digitální kopie souboru je přesná, ale převod z analogu má zaokrouhlovací chybu (16 bitů ≈ 0,002 %). O tom, co je lepší, rozhoduje i vkus, ne jen měření.','Synthetic signal and typical values: cassette ≈ 55 dB signal-to-noise and a loss of treble with every copy, record ≈ 62 dB and slow wear over hundreds of plays. The percentages are real; the difference in the graph and audio is magnified so it can be heard. A digital file copy is exact, but analog-to-digital conversion has a rounding error (16 bits ≈ 0.002 %). What is better is also a matter of taste, not just measurement.')}</div>
   </div></div>`;
  },
  enter(){fitGen()},
@@ -818,10 +847,10 @@ OUT.sfs=()=>`<b>${nf(S.sfs)}</b> Hz`;
 OUT.vol=()=>`<b>${Math.round(S.amp*100)}</b> %`;
 OUT.stat=()=>{
  const fs=S.sfs,f=S.f;
- if(!isAl())return `<div class="status"><i></i><div>Nyquist splněn<br><span style="font:400 .85rem var(--f-body)">${nf(f)} Hz ≤ fs/2 = ${nf(fs/2)} Hz, signál lze věrně obnovit</span></div></div>`;
- return `<div class="status bad"><i></i><div>Alias! Slyšíš ${nf(alias())} Hz<br><span style="font:400 .85rem var(--f-body)">${nf(f)} Hz je nad fs/2 = ${nf(fs/2)} Hz, vzorků je málo</span></div></div>`;
+ if(!isAl())return `<div class="status"><i></i><div>${tx('Nyquist splněn','Nyquist satisfied')}<br><span style="font:400 .85rem var(--f-body)">${nf(f)} Hz ≤ fs/2 = ${nf(fs/2)} Hz, ${tx('signál lze věrně obnovit','the signal can be faithfully restored')}</span></div></div>`;
+ return `<div class="status bad"><i></i><div>${tx('Alias! Slyšíš','Alias! You hear')} ${nf(alias())} Hz<br><span style="font:400 .85rem var(--f-body)">${nf(f)} Hz ${tx('je nad','is above')} fs/2 = ${nf(fs/2)} Hz, ${tx('vzorků je málo','too few samples')}</span></div></div>`;
 };
-OUT.sneed=()=>`aspoň <b>${nf(2*S.f)}</b> Hz`;
+OUT.sneed=()=>`${tx('aspoň','at least')} <b>${nf(2*S.f)}</b> Hz`;
 ACT.fs3=v=>{S.sfs=+v;refresh()};
 ACT.f3=v=>{S.f=+v;refresh()};
 ACT.tone3=(v,btn)=>{
@@ -858,9 +887,9 @@ function drawScope(){
  const sp=(x1-x0)/Tw/fs,stem=sp>R*.9;
  for(let k=0;k<=nS;k++){const X=px(k/fs),Y=py(Math.cos(TAU*f*k/fs));if(stem)line(x,X,cy,X,Y,'rgba(255,151,46,.5)',1);dot(x,X,Y,Math.min(R*.3,Math.max(R*.1,sp*.3)),C.cream)}
  const ty=R*4.6;
- if(al)TH(x,`Z ${nf(f)} Hz se stalo ${nf(fa)} Hz`,(x0+x1)/2,ty,R*1.5,C.bad,'center');
- $('#bd3').innerHTML=`${nS+1} vzorků v okně · ${ms(Tw)}<br>perioda signálu ${ms(1/f)}`;
- $('#tg3').innerHTML=`<i class="a"></i>skutečný signál<i class="${al?'b':''}" style="margin-left:.6rem"></i>${al?'co z něj po vzorkování zbude':'rekonstrukce z vzorků'}`;
+ if(al)TH(x,tx(`Z ${nf(f)} Hz se stalo ${nf(fa)} Hz`,`${nf(f)} Hz became ${nf(fa)} Hz`),(x0+x1)/2,ty,R*1.5,C.bad,'center');
+ $('#bd3').innerHTML=`${nS+1} ${tx('vzorků v okně','samples in view')} · ${ms(Tw)}<br>${tx('perioda signálu','signal period')} ${ms(1/f)}`;
+ $('#tg3').innerHTML=`<i class="a"></i>${tx('skutečný signál','actual signal')}<i class="${al?'b':''}" style="margin-left:.6rem"></i>${al?tx('co z něj po vzorkování zbude','what is left of it after sampling'):tx('rekonstrukce z vzorků','reconstruction from samples')}`;
 }
 function axisX(f,w,R){return R*1.6+f/FMAX*(w-R*3.2)}
 function drawAxis(){
@@ -868,7 +897,7 @@ function drawAxis(){
  const X=v=>axisX(v,w,R);
  // slyšitelné pásmo
  x.fillStyle='rgba(255,151,46,.2)';x.fillRect(X(20),by-R*1.2,X(20000)-X(20),R*2.4);
- TH(x,'slyšíme 20 Hz až 20 kHz',X(10000),by-R*1.7,R*.7,'rgba(244,241,234,.6)','center');
+ TH(x,tx('slyšíme 20 Hz až 20 kHz','we hear 20 Hz to 20 kHz'),X(10000),by-R*1.7,R*.7,'rgba(244,241,234,.6)','center');
  line(x,R*1.6,by,w-R*1.6,by,'rgba(244,241,234,.5)',2);
  for(let v=0;v<=FMAX;v+=4000){line(x,X(v),by-R*.4,X(v),by+R*.4,'rgba(244,241,234,.5)',1);T(x,v/1000+' k',X(v),by+R*1.5,R*.7,'rgba(244,241,234,.55)','center')}
  // Nyquist
@@ -893,7 +922,7 @@ function drawPhasor(){
  for(let k=0;k<K;k++){const[a,b]=pt(k);if(k)line(x,...pt(k-1),a,b,'rgba(255,151,46,.3)',1.5);}
  for(let k=0;k<K;k++){const[a,b]=pt(k);dot(x,a,b,k===cur?R*.5:R*.26,k===cur?C.orange:'rgba(244,241,234,.8)')}
  const[a,b]=pt(cur);line(x,cx,cy,a,b,C.orange,R*.2);
- $('#ph3').innerHTML=`krok ${nf(Math.round(th*180/Math.PI*10)/10,1)}° za vzorek<br>kolo <b>${ap>1e-3?'se zdá točit správně':ap<-1e-3?'se zdá točit pozpátku':'se zdá stát'}</b>`;
+ $('#ph3').innerHTML=`${tx('krok','step')} ${nf(Math.round(th*180/Math.PI*10)/10,1)}° ${tx('za vzorek','per sample')}<br>${tx('kolo','the wheel')} <b>${ap>1e-3?tx('se zdá točit správně','seems to turn forward'):ap<-1e-3?tx('se zdá točit pozpátku','seems to turn backward'):tx('se zdá stát','seems to stand still')}</b>`;
 }
 let anim=0;
 function tick(){if(S.tab===2){drawPhasor();anim=requestAnimationFrame(tick)}}
@@ -901,22 +930,22 @@ function pointer(e){
  const cv=$('#c3b'),r=cv.getBoundingClientRect(),R=REM(),px=e.clientX-r.left;
  const f=Math.round(clamp((px-R*1.6)/(r.width-R*3.2),0,1)*FMAX/10)*10;S.f=clamp(f,20,FMAX);refresh();
 }
-TABS.push({kap:2,name:'Vzorkování',
+TABS.push({kap:2,name:tx('Vzorkování','Sampling'),
  build(){
   return `<div class="split"><div class="col">
    <div class="scope grow"><canvas id="c3"></canvas><div class="tag" id="tg3"></div><div class="badge" id="bd3"></div></div>
-   <div class="scope" style="height:10.5rem"><canvas id="c3b"></canvas><div class="tag">Frekvenční osa: přetáhni značku</div></div>
+   <div class="scope" style="height:10.5rem"><canvas id="c3b"></canvas><div class="tag">${tx('Frekvenční osa: přetáhni značku','Frequency axis: drag the marker')}</div></div>
   </div>
   <div class="side card">
-   <div class="ctl"><div class="hd"><span class="lbl">Vzorkovací frekvence</span><span class="val" data-o="sfs"></span></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Vzorkovací frekvence','Sampling rate')}</span><span class="val" data-o="sfs"></span></div>
     <div class="chips g4">${[8000,16000,22050,44100,48000,96000].map(v=>`<button class="chip" data-k="sfs" data-v="${v}">${v>=44100?nf(v/1000,1):nf(v/1000,v%1000?3:0)}k</button>`).join('')}<button class="chip" data-k="sfs" data-v="11025">11k</button><button class="chip" data-k="sfs" data-v="32000">32k</button></div></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Frekvence tónu</span><span class="val" data-o="sf"></span></div><input type="range" data-k="f" min="20" max="${FMAX}" step="10"></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Frekvence tónu','Tone frequency')}</span><span class="val" data-o="sf"></span></div><input type="range" data-k="f" min="20" max="${FMAX}" step="10"></div>
    <div data-o="stat"></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Rekonstrukce</span></div><div class="seg"><button class="chip" data-k="rec" data-v="steps">Schody</button><button class="chip" data-k="rec" data-v="lines">Úsečky</button><button class="chip" data-k="rec" data-v="ideal">Ideální</button></div></div>
-   <div class="row"><button class="btn" data-act="tone3">${PLAYI}Tón</button><button class="btn" data-act="sweep3">${PLAYI}Hvizd</button></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Hlasitost</span><span class="val" data-o="vol"></span></div><input type="range" data-k="amp" min="0.1" max="1" step="0.01"></div>
-   <div class="scope" style="height:9.2rem;flex:none"><canvas id="c3c"></canvas><div class="tag">Točící se kolo</div><div class="badge" id="ph3" style="font-size:.78rem;top:.6rem"></div></div>
-   <div class="callout" style="padding:.45rem .8rem;font-size:.85rem"><b class="l">Častý omyl</b>Vyšší vzorkovací frekvence neznamená hlasitější zvuk. Zkus ji měnit: hlasitost zůstane stejná.</div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Rekonstrukce','Reconstruction')}</span></div><div class="seg"><button class="chip" data-k="rec" data-v="steps">${tx('Schody','Steps')}</button><button class="chip" data-k="rec" data-v="lines">${tx('Úsečky','Lines')}</button><button class="chip" data-k="rec" data-v="ideal">${tx('Ideální','Ideal')}</button></div></div>
+   <div class="row"><button class="btn" data-act="tone3">${PLAYI}${tx('Tón','Tone')}</button><button class="btn" data-act="sweep3">${PLAYI}${tx('Hvizd','Sweep')}</button></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Hlasitost','Volume')}</span><span class="val" data-o="vol"></span></div><input type="range" data-k="amp" min="0.1" max="1" step="0.01"></div>
+   <div class="scope" style="height:9.2rem;flex:none"><canvas id="c3c"></canvas><div class="tag">${tx('Točící se kolo','Spinning wheel')}</div><div class="badge" id="ph3" style="font-size:.78rem;top:.6rem"></div></div>
+   <div class="callout" style="padding:.45rem .8rem;font-size:.85rem"><b class="l">${tx('Častý omyl','Common mistake')}</b>${tx('Vyšší vzorkovací frekvence neznamená hlasitější zvuk. Zkus ji měnit: hlasitost zůstane stejná.','A higher sampling rate does not mean louder sound. Try changing it: the volume stays the same.')}</div>
   </div></div>`;
  },
  init(){
@@ -934,12 +963,12 @@ TABS.push({kap:2,name:'Vzorkování',
 const M=32,GEO={};let tm=0;
 const qs=(u,c)=>S.amp*(c?.74*Math.sin(TAU*2*u+1.4)+.12*Math.sin(TAU*5*u):.78*Math.sin(TAU*2*u+.35)+.14*Math.sin(TAU*6*u+1));
 const lvl=b=>nf(2**b);
-OUT.qb=()=>`<b>${S.qb}</b> ${S.qb<2?'bit':S.qb<5?'bity':'bitů'} = ${lvl(S.qb)} úrovní`;
-OUT.qb2=()=>`<b>${S.qb2}</b> ${S.qb2<5?'bity':'bitů'} = ${lvl(S.qb2)} úrovní`;
+OUT.qb=()=>`<b>${S.qb}</b> ${bw(S.qb)} = ${lvl(S.qb)} ${tx('úrovní','levels')}`;
+OUT.qb2=()=>`<b>${S.qb2}</b> ${bw(S.qb2)} = ${lvl(S.qb2)} ${tx('úrovní','levels')}`;
 OUT.qamp=()=>`<b>${Math.round(S.amp*100)}</b> %`;
 OUT.qinfo=()=>{
  const k=S.sel,b=S.qb,v=qs(k/M,0),i=qIdx(v,b),e=qVal(i,b)-v;
- return `vzorek <b>${k}</b> · naměřeno <b>${nf(v,3)}</b> → úroveň <b>${nf(i)}</b> z ${nf(2**b-1)} → kód <b>${bin(i,b)}</b> · chyba zaokrouhlení ${nf(e,3)}`;
+ return `${tx('vzorek','sample')} <b>${k}</b> · ${tx('naměřeno','measured')} <b>${nf(v,3)}</b> → ${tx('úroveň','level')} <b>${nf(i)}</b> ${tx('z','of')} ${nf(2**b-1)} → ${tx('kód','code')} <b>${bin(i,b)}</b> · ${tx('chyba zaokrouhlení','rounding error')} ${nf(e,3)}`;
 };
 ACT.qplay=()=>{
  clearTimeout(tm);S.qstep=1;refresh();
@@ -954,11 +983,11 @@ function drawQ(cv,bits,tagId){
  const {x,w,h,R}=setup(cv),L=2**bits,nl=S.qch,st=S.qstep;
  const x0=R*(bits<=4&&st>=2?3.2:1.4),x1=w-R*1.2,top=R*3.2,bot=R*1.4,LH=(h-top-bot)/nl,A=LH*.43,dx=(x1-x0)/M;
  GEO[cv.id]={x0,x1};
- $('#'+tagId).innerHTML=`<i class="a"></i>původní signál<i style="margin-left:.6rem"></i>${st>=2?`${bits} ${bits<2?'bit':bits<5?'bity':'bitů'} = ${lvl(bits)} úrovní`:'vzorky'}`;
+ $('#'+tagId).innerHTML=`<i class="a"></i>${tx('původní signál','original signal')}<i style="margin-left:.6rem"></i>${st>=2?`${bits} ${bw(bits)} = ${lvl(bits)} ${tx('úrovní','levels')}`:tx('vzorky','samples')}`;
  for(let c=0;c<nl;c++){
   const cy=top+LH*c+LH/2,vy=v=>cy-v*A;
   line(x,x0,cy,x1,cy,C.grid2,1);
-  if(nl===2)TH(x,c?'PRAVÝ':'LEVÝ',x1,top+LH*c+R*.5,R*.62,'rgba(244,241,234,.45)','right');
+  if(nl===2)TH(x,c?tx('PRAVÝ','RIGHT'):tx('LEVÝ','LEFT'),x1,top+LH*c+R*.5,R*.62,'rgba(244,241,234,.45)','right');
   for(let k=0;k<=M;k+=4)line(x,x0+k*dx,cy-A*1.1,x0+k*dx,cy+A*1.1,C.grid,1);
   if(st>=2&&L<=32)for(let i=0;i<L;i++){const y=vy(qVal(i,bits));line(x,x0,y,x1,y,C.grid,1);if(L<=16)T(x,bin(i,bits),x0-R*.35,y,Math.min(R*.66,LH/L*.8),'rgba(244,241,234,.55)','right')}
   // původní křivka
@@ -985,12 +1014,12 @@ function table(){
  const rows=[];
  const cell=(k,txt,cls='')=>`<div class="c ${cls} ${k===S.sel?'sel':''}" data-act="qsel" data-v="${k}">${txt}</div>`;
  const R=(lab,fn,cls)=>`<div class="rw" style="--n:${n}"><div class="rh">${lab}</div>${Array.from({length:n},(_,j)=>cell(s0+j,fn(s0+j),cls)).join('')}</div>`;
- rows.push(R('vzorek',k=>k));
+ rows.push(R(tx('vzorek','sample'),k=>k));
  for(let c=0;c<nl;c++){
-  const ch=nl===2?(c?' P':' L'):'',v=k=>qs(k/M,c),i=k=>qIdx(v(k),b);
-  if(st<3)rows.push(R('naměřeno'+ch,k=>nf(v(k),2)));
-  if(st>=2)rows.push(R('úroveň'+ch,k=>nf(i(k))));
-  if(st>=3)rows.push(R('kód'+ch,k=>bin(i(k),b),'cd'));
+  const ch=nl===2?(c?tx(' P',' R'):' L'):'',v=k=>qs(k/M,c),i=k=>qIdx(v(k),b);
+  if(st<3)rows.push(R(tx('naměřeno','measured')+ch,k=>nf(v(k),2)));
+  if(st>=2)rows.push(R(tx('úroveň','level')+ch,k=>nf(i(k))));
+  if(st>=3)rows.push(R(tx('kód','code')+ch,k=>bin(i(k),b),'cd'));
  }
  el.innerHTML=rows.join('');
 }
@@ -1001,7 +1030,7 @@ function rq(){
  if(S.cmp)drawQ($('#c4b'),S.qb2,'tg4b');
  $('#ctl4b').style.display=S.cmp?'':'none';
  $('#pb4').style.display=S.cmp?'':'none';
- $('#pa4').innerHTML=PLAYI+(S.cmp?'A':'S '+S.qb+' b');
+ $('#pa4').innerHTML=PLAYI+(S.cmp?'A':S.qb+' b');
  $('#pb4').innerHTML=PLAYI+'B';
  table();
 }
@@ -1010,7 +1039,7 @@ function pick(e,id){
  const k=clamp(Math.floor((e.clientX-r.left-g.x0)/(g.x1-g.x0)*M),0,M-1);S.sel=k;refresh();
 }
 ACT.qsel=v=>{S.sel=+v;refresh()};
-TABS.push({kap:2,name:'Kvantování',side:'28rem',
+TABS.push({kap:2,name:tx('Kvantování','Quantization'),side:'28rem',
  build(){
   return `<div class="split"><div class="col">
    <div class="scope grow"><canvas id="c4a"></canvas><div class="tag" id="tg4a"></div></div>
@@ -1018,16 +1047,16 @@ TABS.push({kap:2,name:'Kvantování',side:'28rem',
    <div class="card" style="padding:.7rem 1rem"><div class="lbl" style="margin-bottom:.4rem" data-o="qinfo" style2=""></div><div id="qtable"></div></div>
   </div>
   <div class="side card">
-   <div class="ctl"><div class="hd"><span class="lbl">Tři kroky PCM</span></div>
-    <div class="steps" id="qsteps"><button class="chip" data-k="qstep" data-v="1"><b>1</b><span>Vzorkování</span></button><button class="chip" data-k="qstep" data-v="2"><b>2</b><span>Kvantování</span></button><button class="chip" data-k="qstep" data-v="3"><b>3</b><span>Kódování</span></button></div>
-    <button class="btn sec" data-act="qplay" style="min-height:2.7rem">${PLAYI}Postup krok za krokem</button></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Bitová hloubka</span><span class="val" data-o="qb"></span></div><input type="range" data-k="qb" min="1" max="24" step="1">
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Tři kroky PCM','Three steps of PCM')}</span></div>
+    <div class="steps" id="qsteps"><button class="chip" data-k="qstep" data-v="1"><b>1</b><span>${tx('Vzorkování','Sampling')}</span></button><button class="chip" data-k="qstep" data-v="2"><b>2</b><span>${tx('Kvantování','Quantization')}</span></button><button class="chip" data-k="qstep" data-v="3"><b>3</b><span>${tx('Kódování','Encoding')}</span></button></div>
+    <button class="btn sec" data-act="qplay" style="min-height:2.7rem">${PLAYI}${tx('Postup krok za krokem','Step by step')}</button></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Bitová hloubka','Bit depth')}</span><span class="val" data-o="qb"></span></div><input type="range" data-k="qb" min="1" max="24" step="1">
     <div class="chips">${[1,2,3,4,8,16,24].map(b=>`<button class="chip" data-k="qb" data-v="${b}" style="padding:.3rem .8rem;min-height:2.3rem">${b}</button>`).join('')}</div></div>
-   <div class="ctl" id="ctl4b"><div class="hd"><span class="lbl">Druhý záznam (B)</span><span class="val" data-o="qb2"></span></div><input type="range" data-k="qb2" min="1" max="24" step="1"></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Hlasitost signálu</span><span class="val" data-o="qamp"></span></div><input type="range" data-k="amp" min="0.02" max="1" step="0.01"></div>
+   <div class="ctl" id="ctl4b"><div class="hd"><span class="lbl">${tx('Druhý záznam (B)','Second recording (B)')}</span><span class="val" data-o="qb2"></span></div><input type="range" data-k="qb2" min="1" max="24" step="1"></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Hlasitost signálu','Signal volume')}</span><span class="val" data-o="qamp"></span></div><input type="range" data-k="amp" min="0.02" max="1" step="0.01"></div>
    <div class="ctl"><div class="seg"><button class="chip" data-k="qch" data-v="1">Mono</button><button class="chip" data-k="qch" data-v="2">Stereo</button></div></div>
-   <div class="ctl"><div class="seg"><button class="chip" data-k="cmp" data-v="false">Jeden záznam</button><button class="chip" data-k="cmp" data-v="true">Porovnat dva</button></div></div>
-   <div class="row" style="margin-top:auto"><button class="btn sec" data-act="playq" data-v="o">${PLAYI}Originál</button><button class="btn" id="pa4" data-act="playq" data-v="a"></button><button class="btn" id="pb4" data-act="playq" data-v="b"></button></div>
+   <div class="ctl"><div class="seg"><button class="chip" data-k="cmp" data-v="false">${tx('Jeden záznam','Single recording')}</button><button class="chip" data-k="cmp" data-v="true">${tx('Porovnat dva','Compare two')}</button></div></div>
+   <div class="row" style="margin-top:auto"><button class="btn sec" data-act="playq" data-v="o">${PLAYI}${tx('Originál','Original')}</button><button class="btn" id="pa4" data-act="playq" data-v="a"></button><button class="btn" id="pb4" data-act="playq" data-v="b"></button></div>
   </div></div>`;
  },
  init(){
@@ -1052,24 +1081,24 @@ const bitRate=r=>r>=1e6?nf(r/1e6,3)+' Mbit/s':nf(r/1e3,1)+' kbit/s';
 OUT.f_fs=()=>nf(S.fs);OUT.f_bits=()=>S.bits;OUT.f_ch=()=>S.ch;OUT.f_rate=()=>nf(rate());
 OUT.f_rate2=()=>bitRate(rate());
 OUT.calc=()=>`${nf(rate())} bit/s × ${nf(S.dur)} s ÷ 8 =`;
-OUT.bytes=()=>`${nf(bytes())}<u>bajtů</u>`;
+OUT.bytes=()=>`${nf(bytes())}<u>${tx('bajtů','bytes')}</u>`;
 OUT.human=()=>human(bytes());
 OUT.durl=()=>`<b>${mmss(S.dur)}</b>`;
 OUT.fits=()=>[1e9,8e9,64e9].map(c=>{const t=c/(rate()/8),h=Math.floor(t/3600),m=Math.round(t%3600/60);return `<div class="fac" style="cursor:default;padding:.45rem .7rem"><small>${c/1e9} GB</small><span style="font:700 1.1rem var(--f-head)">${t<60?nf(t,0)+' s':t<3600?nf(t/60,0)+' min':h<100?h+' h '+m+' min':nf(h)+' h'}</span></div>`}).join('');
 OUT.cdnote=()=>{
  const m=rate()*S.dur/8/1048576;
- return S.fs===44100&&S.bits===16&&S.ch===2&&S.dur===4440?`74 minut = ${nf(m,0)} MiB (${nf(bytes()/1e6,0)} MB)`:'';
+ return S.fs===44100&&S.bits===16&&S.ch===2&&S.dur===4440?`${tx('74 minut','74 minutes')} = ${nf(m,0)} MiB (${nf(bytes()/1e6,0)} MB)`:'';
 };
 const EX={a:[48000,16,2,10],b:[22050,8,1,60],c:[16000,16,1,300],d:[44100,16,2,180],e:[44100,16,2,4440]};
 ACT.ex=v=>{const e=EX[v];S.fs=e[0];S.bits=e[1];S.ch=e[2];S.dur=e[3];refresh()};
 ACT.hl=v=>{S.hl=S.hl===v?'':v;refresh()};
 ACT.pre=v=>{const p=PRE[+v];S.fs=p.fs;S.bits=p.bits;S.ch=p.ch;refresh()};
 const PRE=[
- {n:'Telefon',s:'8 kHz · 8 b · mono',fs:8000,bits:8,ch:1},
- {n:'Hlas, podcast',s:'16 kHz · 16 b · mono',fs:16000,bits:16,ch:1},
- {n:'CD Audio',s:'44,1 kHz · 16 b · stereo',fs:44100,bits:16,ch:2},
- {n:'Úloha z textu',s:'48 kHz · 16 b · stereo',fs:48000,bits:16,ch:2},
- {n:'Studio',s:'96 kHz · 24 b · stereo',fs:96000,bits:24,ch:2}];
+ {n:tx('Telefon','Telephone'),s:'8 kHz · 8 b · mono',fs:8000,bits:8,ch:1},
+ {n:tx('Hlas, podcast','Voice, podcast'),s:'16 kHz · 16 b · mono',fs:16000,bits:16,ch:1},
+ {n:'CD Audio',s:tx('44,1 kHz · 16 b · stereo','44.1 kHz · 16 b · stereo'),fs:44100,bits:16,ch:2},
+ {n:tx('Úloha z textu','Textbook task'),s:'48 kHz · 16 b · stereo',fs:48000,bits:16,ch:2},
+ {n:tx('Studio','Studio'),s:'96 kHz · 24 b · stereo',fs:96000,bits:24,ch:2}];
 let cu={w:.46,h:.67,d:1},anim=0;
 const tgt=()=>({w:S.fs/96000,h:S.bits/24,d:S.ch});
 function drawCube(){
@@ -1088,14 +1117,14 @@ function drawCube(){
  x.strokeStyle='#17140F';x.lineWidth=2;x.strokeRect(ox,oy-H,W,H);
  const hl=S.hl;
  const lab=(s2,px,py,al,key)=>TH(x,s2,px,py,R*.95,hl===key?C.orange:C.cream,al);
- lab(`${nf(S.fs)} vzorků za sekundu`,ox+W/2,oy+R*1.5,'center','fs');
- lab(`${S.bits} bitů`,ox-R*.8,oy-H/2,'right','bits');
- lab(`${S.ch} ${S.ch===1?'kanál':'kanály'}`,ox+W+dx+R*.8,oy-H/2-dy,'left','ch');
+ lab(`${nf(S.fs)} ${tx('vzorků za sekundu','samples per second')}`,ox+W/2,oy+R*1.5,'center','fs');
+ lab(`${S.bits} ${bw(S.bits)}`,ox-R*.8,oy-H/2,'right','bits');
+ lab(`${S.ch} ${tx(S.ch===1?'kanál':'kanály',S.ch===1?'channel':'channels')}`,ox+W+dx+R*.8,oy-H/2-dy,'left','ch');
  if(hl==='fs')line(x,ox,oy+R*.6,ox+W,oy+R*.6,C.orange,R*.25);
  if(hl==='bits')line(x,ox-R*.3,oy-H,ox-R*.3,oy,C.orange,R*.25);
  if(hl==='ch')line(x,ox+W+R*.3,oy,ox+W+dx+R*.3,oy-dy,C.orange,R*.25);
- T(x,'1 sekunda záznamu',R*1.2,R*3.4,R*.8,'rgba(244,241,234,.55)');
- TH(x,`${nf(rate())} bitů`,R*1.2,R*4.6,R*1.5,C.cream);
+ T(x,tx('1 sekunda záznamu','1 second of recording'),R*1.2,R*3.4,R*.8,'rgba(244,241,234,.55)');
+ TH(x,`${nf(rate())} ${bw(rate())}`,R*1.2,R*4.6,R*1.5,C.cream);
 }
 function tickCube(){
  const g=tgt();let mv=false;
@@ -1104,47 +1133,47 @@ function tickCube(){
 }
 function bars(){
  const bpm=p=>p.fs*p.bits*p.ch*60/8;
- const cur={n:'Tvoje nastavení',s:`${nf(S.fs/1000,S.fs%1000?2:0)} kHz · ${S.bits} b · ${S.ch===1?'mono':'stereo'}`,fs:S.fs,bits:S.bits,ch:S.ch};
+ const cur={n:tx('Tvoje nastavení','Your setting'),s:`${nf(S.fs/1000,S.fs%1000?2:0)} kHz · ${S.bits} b · ${S.ch===1?'mono':'stereo'}`,fs:S.fs,bits:S.bits,ch:S.ch};
  const all=[cur,...PRE],mx=Math.max(...all.map(bpm),bpm(cur));
  $('#bars5').innerHTML=all.map((p,i)=>{
   const same=i>0&&p.fs===S.fs&&p.bits===S.bits&&p.ch===S.ch;
   return `<button class="br ${i===0||same?'on':''}" ${i?`data-act="pre" data-v="${i-1}"`:'style="cursor:default"'}><span class="nm">${p.n}<small>${p.s}</small></span><span class="tr"><i style="width:${Math.max(1,bpm(p)/mx*100)}%"></i></span><span class="v">${human(bpm(p))}/min</span></button>`;
  }).join('');
 }
-TABS.push({kap:3,name:'Datový tok',side:'29rem',
+TABS.push({kap:3,name:tx('Datový tok','Bit rate'),side:'29rem',
  build(){
   return `<div class="split"><div class="col">
    <div class="card formula">
-    <div class="fac" data-act="hl" data-v="fs"><small>vzorkovací frekvence</small><span><b data-o="f_fs"></b><u>Hz</u></span></div><div class="op">×</div>
-    <div class="fac" data-act="hl" data-v="bits"><small>bitová hloubka</small><span><b data-o="f_bits"></b><u>bit</u></span></div><div class="op">×</div>
-    <div class="fac" data-act="hl" data-v="ch"><small>počet kanálů</small><span><b data-o="f_ch"></b><u>kanál</u></span></div><div class="op">=</div>
-    <div class="fac res"><small>datový tok</small><span><b data-o="f_rate"></b><u>bit/s</u></span><span class="val" style="color:#CFC8B8;font-size:.9rem" data-o="f_rate2"></span></div>
+    <div class="fac" data-act="hl" data-v="fs"><small>${tx('vzorkovací frekvence','sampling rate')}</small><span><b data-o="f_fs"></b><u>Hz</u></span></div><div class="op">×</div>
+    <div class="fac" data-act="hl" data-v="bits"><small>${tx('bitová hloubka','bit depth')}</small><span><b data-o="f_bits"></b><u>bit</u></span></div><div class="op">×</div>
+    <div class="fac" data-act="hl" data-v="ch"><small>${tx('počet kanálů','number of channels')}</small><span><b data-o="f_ch"></b><u>${tx('kanál','channel')}</u></span></div><div class="op">=</div>
+    <div class="fac res"><small>${tx('datový tok','bit rate')}</small><span><b data-o="f_rate"></b><u>bit/s</u></span><span class="val" style="color:#CFC8B8;font-size:.9rem" data-o="f_rate2"></span></div>
    </div>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;min-height:0;flex:1.15">
     <div class="scope"><canvas id="c5"></canvas></div>
     <div class="card" style="display:flex;flex-direction:column;gap:.55rem">
-     <div class="hd" style="display:flex;justify-content:space-between"><span class="lbl">Velikost záznamu</span><span class="val" data-o="durl"></span></div>
+     <div class="hd" style="display:flex;justify-content:space-between"><span class="lbl">${tx('Velikost záznamu','File size')}</span><span class="val" data-o="durl"></span></div>
      <div class="val" style="color:var(--ink2)" data-o="calc"></div>
      <div class="big" data-o="bytes" style="font-size:2.3rem"></div>
      <div class="big or" data-o="human" style="font-size:3.4rem"></div>
      <div class="val" style="color:var(--ink2);min-height:1.2rem" data-o="cdnote"></div>
-     <div class="lbl" style="margin-top:auto">Kolik zvuku se vejde</div>
+     <div class="lbl" style="margin-top:auto">${tx('Kolik zvuku se vejde','How much audio fits')}</div>
      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem" data-o="fits"></div>
     </div>
    </div>
-   <div class="card" style="padding:.7rem 1rem"><div class="lbl" style="margin-bottom:.35rem">Jedna minuta záznamu: klepnutím převezmeš nastavení</div><div class="bars" id="bars5"></div></div>
+   <div class="card" style="padding:.7rem 1rem"><div class="lbl" style="margin-bottom:.35rem">${tx('Jedna minuta záznamu: klepnutím převezmeš nastavení','One minute of recording: tap to adopt the setting')}</div><div class="bars" id="bars5"></div></div>
   </div>
   <div class="side card">
-   <div class="ctl"><div class="hd"><span class="lbl">Vzorkovací frekvence</span></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Vzorkovací frekvence','Sampling rate')}</span></div>
     <div class="chips g4">${FS.map(v=>`<button class="chip" data-k="fs" data-v="${v}" style="padding:.4rem .1rem">${nf(v/1000,v%1000?2:0)}k</button>`).join('')}</div></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Bitová hloubka</span></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Bitová hloubka','Bit depth')}</span></div>
     <div class="chips g4">${[8,12,16,24].map(v=>`<button class="chip" data-k="bits" data-v="${v}">${v} b</button>`).join('')}</div></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Kanály</span></div><div class="seg"><button class="chip" data-k="ch" data-v="1">Mono</button><button class="chip" data-k="ch" data-v="2">Stereo</button></div></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Délka záznamu</span><span class="val" data-o="durl"></span></div><input type="range" data-k="dur" data-map="dur" min="0" max="100" step="0.2">
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Kanály','Channels')}</span></div><div class="seg"><button class="chip" data-k="ch" data-v="1">Mono</button><button class="chip" data-k="ch" data-v="2">Stereo</button></div></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Délka záznamu','Recording length')}</span><span class="val" data-o="durl"></span></div><input type="range" data-k="dur" data-map="dur" min="0" max="100" step="0.2">
     <div class="chips">${[[10,'10 s'],[60,'1 min'],[180,'3 min'],[300,'5 min'],[4440,'74 min']].map(a=>`<button class="chip" data-k="dur" data-v="${a[0]}" style="min-height:2.3rem;padding:.3rem .8rem">${a[1]}</button>`).join('')}</div></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Jednotka</span></div><div class="seg"><button class="chip" data-k="unit" data-v="MB">MB (10⁶ B)</button><button class="chip" data-k="unit" data-v="MiB">MiB (1 048 576 B)</button></div></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Příklady z textu</span></div>
-    <div class="chips g2"><button class="chip" data-act="ex" data-v="a" style="padding:.35rem .5rem;font-size:.82rem">10 s · 48 kHz · stereo</button><button class="chip" data-act="ex" data-v="b" style="padding:.35rem .5rem;font-size:.82rem">Mono 22 050 Hz · 8 b</button><button class="chip" data-act="ex" data-v="c" style="padding:.35rem .5rem;font-size:.82rem">Podcast 5 min</button><button class="chip" data-act="ex" data-v="d" style="padding:.35rem .5rem;font-size:.82rem">Skladba 3 min</button><button class="chip" data-act="ex" data-v="e" style="padding:.35rem .5rem;font-size:.82rem;grid-column:span 2">Celé CD, 74 minut</button></div></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Jednotka','Unit')}</span></div><div class="seg"><button class="chip" data-k="unit" data-v="MB">MB (10⁶ B)</button><button class="chip" data-k="unit" data-v="MiB">MiB (${nf(1048576)} B)</button></div></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Příklady z textu','Textbook examples')}</span></div>
+    <div class="chips g2"><button class="chip" data-act="ex" data-v="a" style="padding:.35rem .5rem;font-size:.82rem">10 s · 48 kHz · stereo</button><button class="chip" data-act="ex" data-v="b" style="padding:.35rem .5rem;font-size:.82rem">Mono ${nf(22050)} Hz · 8 b</button><button class="chip" data-act="ex" data-v="c" style="padding:.35rem .5rem;font-size:.82rem">Podcast 5 min</button><button class="chip" data-act="ex" data-v="d" style="padding:.35rem .5rem;font-size:.82rem">${tx('Skladba 3 min','Track 3 min')}</button><button class="chip" data-act="ex" data-v="e" style="padding:.35rem .5rem;font-size:.82rem;grid-column:span 2">${tx('Celé CD, 74 minut','Whole CD, 74 minutes')}</button></div></div>
   </div></div>`;
  },
  render(){
@@ -1158,13 +1187,13 @@ TABS.push({kap:3,name:'Datový tok',side:'29rem',
 (function(){
 const CDBR=1411.2;
 const FM=[
- {id:'cd',n:'CD Audio (PCM)',k:'raw',br:CDBR,d:'Nekomprimovaný zvuk: 44,1 kHz, 16 bitů, stereo. Jedna minuta zabere asi 10,6 MB.'},
- {id:'flac',n:'FLAC',k:'ll',r:[.5,2/3],d:'„ZIP pro hudbu“: po rozbalení je zvuk bitově shodný s originálem. Soubor bývá obvykle o třetinu až polovinu menší než nekomprimovaný zvuk.'},
- {id:'mp3-320',n:'MP3',k:'zt',br:320,d:'Nejstarší a nejznámější, technologicky překonaný, ale kompatibilní skoro všude. Při 320 kbit/s zní velmi slušně.'},
- {id:'mp3-128',n:'MP3',k:'zt',br:128,d:'Nejstarší a nejznámější, technologicky překonaný, ale kompatibilní skoro všude. Při 320 kbit/s zní velmi slušně.'},
- {id:'aac-256',n:'AAC',k:'zt',br:256,d:'Nástupce MP3, při stejném datovém toku zní lépe. Používá ho například Apple Music a YouTube.'},
- {id:'aac-128',n:'AAC',k:'zt',br:128,d:'Nástupce MP3, při stejném datovém toku zní lépe. Používá ho například Apple Music a YouTube.'},
- {id:'ogg-320',n:'Ogg Vorbis',k:'zt',br:320,d:'Otevřený formát bez licenčních poplatků s dobrým poměrem kvality a velikosti.'},
+ {id:'cd',n:'CD Audio (PCM)',k:'raw',br:CDBR,d:tx('Nekomprimovaný zvuk: 44,1 kHz, 16 bitů, stereo. Jedna minuta zabere asi 10,6 MB.','Uncompressed sound: 44.1 kHz, 16 bits, stereo. One minute takes about 10.6 MB.')},
+ {id:'flac',n:'FLAC',k:'ll',r:[.5,2/3],d:tx('„ZIP pro hudbu“: po rozbalení je zvuk bitově shodný s originálem. Soubor bývá obvykle o třetinu až polovinu menší než nekomprimovaný zvuk.','“ZIP for music”: once unpacked, the sound is bit-for-bit identical to the original. The file is usually a third to a half smaller than uncompressed sound.')},
+ {id:'mp3-320',n:'MP3',k:'zt',br:320,d:tx('Nejstarší a nejznámější, technologicky překonaný, ale kompatibilní skoro všude. Při 320 kbit/s zní velmi slušně.','The oldest and best known, technologically outdated, but compatible almost everywhere. At 320 kbit/s it sounds very decent.')},
+ {id:'mp3-128',n:'MP3',k:'zt',br:128,d:tx('Nejstarší a nejznámější, technologicky překonaný, ale kompatibilní skoro všude. Při 320 kbit/s zní velmi slušně.','The oldest and best known, technologically outdated, but compatible almost everywhere. At 320 kbit/s it sounds very decent.')},
+ {id:'aac-256',n:'AAC',k:'zt',br:256,d:tx('Nástupce MP3, při stejném datovém toku zní lépe. Používá ho například Apple Music a YouTube.','The successor to MP3, it sounds better at the same bit rate. Used for example by Apple Music and YouTube.')},
+ {id:'aac-128',n:'AAC',k:'zt',br:128,d:tx('Nástupce MP3, při stejném datovém toku zní lépe. Používá ho například Apple Music a YouTube.','The successor to MP3, it sounds better at the same bit rate. Used for example by Apple Music and YouTube.')},
+ {id:'ogg-320',n:'Ogg Vorbis',k:'zt',br:320,d:tx('Otevřený formát bez licenčních poplatků s dobrým poměrem kvality a velikosti.','An open, royalty-free format with a good balance of quality and size.')},
 ];
 const sz=(f,dur)=>f.r?f.r.map(r=>CDBR*1000*dur/8*r):[f.br*1000*dur/8];
 const hum=b=>b>=1e9?nf(b/1e9,2)+' GB':b>=1e6?nf(b/1e6,b<1e7?2:1)+' MB':nf(b/1e3,0)+' kB';
@@ -1176,17 +1205,17 @@ function list(){
   const s=sz(f,S.cdur),mx=s[s.length-1],lo=s[0];
   const bar=f.r?`<span class="tr"><i class="rg" style="width:${mx/cd*100}%"></i></span>`:`<span class="tr"><i style="width:${Math.max(.8,mx/cd*100)}%"></i></span>`;
   const val=f.r?`${hum(lo)}–${hum(mx)}`:hum(mx);
-  const ratio=f.k==='raw'?'základ':f.r?`${nf(cd/mx,1)}–${nf(cd/lo,1)}× menší`:`${nf(cd/mx,1)}× menší`;
-  const nm=`${f.n}<span class="badge2 ${f.k==='zt'?'zt':'ls'}">${f.k==='zt'?'ztrátový':f.k==='ll'?'bezeztrátový':'bez komprese'}</span><small>${f.br&&f.k!=='raw'?nf(f.br)+' kbit/s':f.k==='raw'?'1 411,2 kbit/s':'o ⅓ až ½ menší než PCM'}</small>`;
+  const ratio=f.k==='raw'?tx('základ','baseline'):f.r?`${nf(cd/mx,1)}–${nf(cd/lo,1)}× ${tx('menší','smaller')}`:`${nf(cd/mx,1)}× ${tx('menší','smaller')}`;
+  const nm=`${f.n}<span class="badge2 ${f.k==='zt'?'zt':'ls'}">${f.k==='zt'?tx('ztrátový','lossy'):f.k==='ll'?tx('bezeztrátový','lossless'):tx('bez komprese','uncompressed')}</span><small>${f.br&&f.k!=='raw'?nf(f.br)+' kbit/s':f.k==='raw'?tx('1 411,2 kbit/s','1,411.2 kbit/s'):tx('o ⅓ až ½ menší než PCM','⅓ to ½ smaller than PCM')}</small>`;
   return `<button class="br ${f.id===S.fmt?'on':''}" data-k="fmt" data-v="${f.id}"><span class="nm">${nm}</span>${bar}<span class="v">${val}</span><span class="v" style="font-size:.85rem;color:var(--ink2)">${ratio}</span></button>`;
  }).join('');
  $('#fdesc').innerHTML=`<b class="l">${FM.find(f=>f.id===S.fmt).n}</b>${FM.find(f=>f.id===S.fmt).d}`;
 }
-const LMSG=['Originál: všechny detaily zvuku jsou na místě.','Ztrátová komprese smazala to, co ucho díky maskování nevnímá. Soubor je mnohem menší.','Soubor je teď větší, ale smazané detaily se nevrátily. Kvalita se nezlepšila.','Bezeztrátově: soubor je menší a nic nechybí.'];
+const LMSG=[tx('Originál: všechny detaily zvuku jsou na místě.','Original: all the details of the sound are in place.'),tx('Ztrátová komprese smazala to, co ucho díky maskování nevnímá. Soubor je mnohem menší.','Lossy compression deleted what the ear does not perceive thanks to masking. The file is much smaller.'),tx('Soubor je teď větší, ale smazané detaily se nevrátily. Kvalita se nezlepšila.','The file is now larger, but the deleted details did not come back. The quality did not improve.'),tx('Bezeztrátově: soubor je menší a nic nechybí.','Lossless: the file is smaller and nothing is missing.')];
 let override='';
 ACT.restore=()=>{
  $$('#sq i.x').forEach(i=>{i.classList.remove('sh');void i.offsetWidth;i.classList.add('sh')});
- override=S.lstage>=1&&S.lstage<=2?'Nelze. Smazané informace jsou pryč navždy.':'Není co obnovovat, nic nechybí.';
+ override=S.lstage>=1&&S.lstage<=2?tx('Nelze. Smazané informace jsou pryč navždy.','Impossible. The deleted information is gone forever.'):tx('Není co obnovovat, nic nechybí.','Nothing to restore, nothing is missing.');
  refresh();
 };
 HOOK.lstage=()=>{override=''};
@@ -1201,43 +1230,43 @@ function lossy(){
  $('#lmsg').textContent=override||LMSG[L];
 }
 const SPO={
- app:'Ogg Vorbis, nejvýš 320 kbit/s',web:'AAC, obvykle 128 nebo 256 kbit/s',ll:'FLAC, až 24 bitů / 44,1 kHz'};
+ app:tx('Ogg Vorbis, nejvýš 320 kbit/s','Ogg Vorbis, up to 320 kbit/s'),web:tx('AAC, obvykle 128 nebo 256 kbit/s','AAC, usually 128 or 256 kbit/s'),ll:tx('FLAC, až 24 bitů / 44,1 kHz','FLAC, up to 24 bits / 44.1 kHz')};
 function spot(){
  const src=S.ll?SPO.ll:S.dev==='app'?SPO.app:SPO.web;
  const l1=S.ll,l2=l1&&S.link==='cable';
  const nodes=[
   [`Spotify`,src,l1],
-  [S.link==='cable'?'Kabel':'Bluetooth',S.link==='cable'?'přenos beze změny':'zvuk se znovu komprimuje',S.link==='cable'?l1:false],
-  [`Sluchátka`,l2?'bezeztrátový zvuk':'ztrátový zvuk',l2]];
+  [S.link==='cable'?tx('Kabel','Cable'):'Bluetooth',S.link==='cable'?tx('přenos beze změny','transfer without change'):tx('zvuk se znovu komprimuje','sound is compressed again'),S.link==='cable'?l1:false],
+  [tx('Sluchátka','Headphones'),l2?tx('bezeztrátový zvuk','lossless sound'):tx('ztrátový zvuk','lossy sound'),l2]];
  $('#spch').innerHTML=nodes.map((n,i)=>`${i?'<span class="ar">→</span>':''}<div class="nd ${n[2]?'':'zt'}">${n[0]}<small>${n[1]}</small></div>`).join('');
- $('#spmsg').textContent=S.ll&&S.link==='bt'?'Přes běžný Bluetooth se zvuk znovu komprimuje, takže rozdíl neuslyšíš.':S.ll?'Tady se bezeztrátový zvuk využije. Hodí se kabelová sluchátka nebo přenos, který to umožňuje.':'Ztrátový formát je pro běžný poslech v pořádku. Bezeztrátový zvuk se v nastavení kvality médií zapíná ručně.';
+ $('#spmsg').textContent=S.ll&&S.link==='bt'?tx('Přes běžný Bluetooth se zvuk znovu komprimuje, takže rozdíl neuslyšíš.','Over ordinary Bluetooth the sound is compressed again, so you will not hear the difference.'):S.ll?tx('Tady se bezeztrátový zvuk využije. Hodí se kabelová sluchátka nebo přenos, který to umožňuje.','Here lossless sound pays off. Wired headphones or a link that supports it will do.'):tx('Ztrátový formát je pro běžný poslech v pořádku. Bezeztrátový zvuk se v nastavení kvality médií zapíná ručně.','A lossy format is fine for everyday listening. Lossless sound is switched on manually in the media quality settings.');
 }
-TABS.push({kap:4,name:'Komprese',side:'36rem',
+TABS.push({kap:4,name:tx('Komprese','Compression'),side:'36rem',
  build(){
   return `<div class="split"><div class="col">
    <div class="card fm grow" style="display:flex;flex-direction:column;gap:.7rem">
-    <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="lbl">Velikost skladby podle formátu</span><span class="val" data-o="cdurl"></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="lbl">${tx('Velikost skladby podle formátu','Track size by format')}</span><span class="val" data-o="cdurl"></span></div>
     <div class="bars" id="flist" style="flex:1;justify-content:space-between"></div>
     <div class="callout" id="fdesc"></div>
     <div class="ctl"><input type="range" data-k="cdur" data-map="dur" min="0" max="100" step="0.2">
      <div class="chips">${[[60,'1 min'],[180,'3 min'],[240,'4 min'],[600,'10 min'],[4440,'74 min']].map(a=>`<button class="chip" data-k="cdur" data-v="${a[0]}" style="min-height:2.3rem;padding:.3rem .9rem">${a[1]}</button>`).join('')}</div></div>
    </div></div>
    <div class="side card" style="gap:.6rem">
-    <div class="lbl">Pokus: co zůstane po převodu?</div>
-    <div class="chips g2"><button class="chip" data-k="lstage" data-v="0">Originál (PCM)</button><button class="chip" data-k="lstage" data-v="3">Originál → FLAC</button><button class="chip" data-k="lstage" data-v="1">Originál → MP3</button><button class="chip" data-k="lstage" data-v="2">MP3 → FLAC</button></div>
+    <div class="lbl">${tx('Pokus: co zůstane po převodu?','Experiment: what is left after conversion?')}</div>
+    <div class="chips g2"><button class="chip" data-k="lstage" data-v="0">${tx('Originál (PCM)','Original (PCM)')}</button><button class="chip" data-k="lstage" data-v="3">${tx('Originál → FLAC','Original → FLAC')}</button><button class="chip" data-k="lstage" data-v="1">${tx('Originál → MP3','Original → MP3')}</button><button class="chip" data-k="lstage" data-v="2">MP3 → FLAC</button></div>
     <div class="sq" id="sq"></div>
     <div class="sz"><span>PCM</span><span class="tr"><i style="width:100%;background:var(--ink)"></i></span><span>100 %</span></div>
-    <div class="sz"><span>soubor</span><span class="tr"><i id="szb"></i></span><span id="szv"></span></div>
+    <div class="sz"><span>${tx('soubor','file')}</span><span class="tr"><i id="szb"></i></span><span id="szv"></span></div>
     <div class="msg" id="lmsg"></div>
-    <button class="btn sec" data-act="restore" style="min-height:2.8rem">Zkusit obnovit smazané detaily</button>
+    <button class="btn sec" data-act="restore" style="min-height:2.8rem">${tx('Zkusit obnovit smazané detaily','Try to restore the deleted details')}</button>
     <hr>
-    <div class="lbl">Příklad z praxe: Spotify</div>
-    <div class="seg"><button class="chip" data-k="dev" data-v="app">Aplikace</button><button class="chip" data-k="dev" data-v="web">Webový přehrávač</button></div>
-    <div class="seg"><button class="chip" data-k="ll" data-v="false">Běžná kvalita</button><button class="chip" data-k="ll" data-v="true">Bezeztrátový zvuk</button></div>
-    <div class="seg"><button class="chip" data-k="link" data-v="cable">Kabel</button><button class="chip" data-k="link" data-v="bt">Bluetooth</button></div>
+    <div class="lbl">${tx('Příklad z praxe: Spotify','Real-world example: Spotify')}</div>
+    <div class="seg"><button class="chip" data-k="dev" data-v="app">${tx('Aplikace','App')}</button><button class="chip" data-k="dev" data-v="web">${tx('Webový přehrávač','Web player')}</button></div>
+    <div class="seg"><button class="chip" data-k="ll" data-v="false">${tx('Běžná kvalita','Standard quality')}</button><button class="chip" data-k="ll" data-v="true">${tx('Bezeztrátový zvuk','Lossless sound')}</button></div>
+    <div class="seg"><button class="chip" data-k="link" data-v="cable">${tx('Kabel','Cable')}</button><button class="chip" data-k="link" data-v="bt">Bluetooth</button></div>
     <div class="chainv" id="spch"></div>
     <div class="msg" id="spmsg" style="font-weight:500"></div>
-    <p class="n" style="font-size:.78rem">Podle učebního textu; údaje se časem mění, ověřuj je v aplikaci.</p>
+    <p class="n" style="font-size:.78rem">${tx('Podle učebního textu; údaje se časem mění, ověřuj je v aplikaci.','Based on the course text; the details change over time, so check them in the app.')}</p>
    </div></div>`;
  },
  render(){list();lossy();spot()}});
@@ -1259,8 +1288,8 @@ const SC={
 ACT.sc7=v=>{S.tones=SC[v].map(t=>({...t}));S.tsel=-1;refresh()};
 ACT.add7=()=>{if(S.tones.length>=10)return;const f=Math.round(200*Math.pow(FMAX/200/4,Math.random()))+150;S.tones.push({f,L:30+Math.round(Math.random()*20)});S.tsel=S.tones.length-1;refresh()};
 ACT.del7=()=>{if(S.tsel>=0){S.tones.splice(S.tsel,1);S.tsel=-1;refresh()}};
-OUT.mcount=()=>{const n=S.tones.length,m=S.tones.filter((_,i)=>masked(i)).length;return `<span class="big or">${m}</span><span class="big" style="font-size:1.4rem"> z ${n}</span><br><span style="font:600 .95rem var(--f-head)">složek kodek smaže${n?` (${Math.round(m/n*100)} %)`:''}</span>`};
-OUT.tstat=()=>tmasked()?`<div class="status bad"><i></i>Tichý zvuk je zamaskovaný: kodek ho smaže</div>`:`<div class="status"><i></i>Tichý zvuk je slyšet: kodek ho ponechá</div>`;
+OUT.mcount=()=>{const n=S.tones.length,m=S.tones.filter((_,i)=>masked(i)).length;return `<span class="big or">${m}</span><span class="big" style="font-size:1.4rem"> ${tx('z','of')} ${n}</span><br><span style="font:600 .95rem var(--f-head)">${tx('složek kodek smaže','components deleted by the codec')}${n?` (${Math.round(m/n*100)} %)`:''}</span>`};
+OUT.tstat=()=>tmasked()?`<div class="status bad"><i></i>${tx('Tichý zvuk je zamaskovaný: kodek ho smaže','The quiet sound is masked: the codec deletes it')}</div>`:`<div class="status"><i></i>${tx('Tichý zvuk je slyšet: kodek ho ponechá','The quiet sound is audible: the codec keeps it')}</div>`;
 const gain=L=>.2*Math.pow(10,(L-80)/35);
 ACT.playf=(v,btn)=>{
  if(PLAY.on){stopAll();return}
@@ -1282,17 +1311,17 @@ function drawF(){
  const cv=$('#c7a'),{x,w,h,R}=setup(cv),g=geo(w,h,R);
  for(const f of[100,200,500,1000,2000,5000,10000]){const X=fX(f,g);line(x,X,g.y0,X,g.y1,C.grid,1);T(x,f>=1000?f/1000+' k':f,X,g.y1+R*1.1,R*.75,'rgba(244,241,234,.55)','center')}
  for(let L=0;L<=LMAX;L+=20){const Y=lY(L,g);line(x,g.x0,Y,g.x1,Y,L?C.grid:C.grid2,1);T(x,L+' dB',g.x0-R*.5,Y,R*.72,'rgba(244,241,234,.55)','right')}
- T(x,'frekvence [Hz]',g.x1,g.y1+R*2.05,R*.72,'rgba(244,241,234,.45)','right');
+ T(x,tx('frekvence [Hz]','frequency [Hz]'),g.x1,g.y1+R*2.05,R*.72,'rgba(244,241,234,.45)','right');
  // práh maskování
  x.beginPath();x.moveTo(g.x0,g.y1);for(let X=g.x0;X<=g.x1;X+=2){const th=clamp(thr(XF(X,g)),0,LMAX);x.lineTo(X,lY(th,g))}x.lineTo(g.x1,g.y1);x.closePath();x.fillStyle='rgba(255,151,46,.2)';x.fill();
  x.beginPath();for(let X=g.x0;X<=g.x1;X+=2){const th=clamp(thr(XF(X,g)),0,LMAX);X===g.x0?x.moveTo(X,lY(th,g)):x.lineTo(X,lY(th,g))}x.strokeStyle=C.orange;x.lineWidth=R*.14;x.setLineDash([R*.4,R*.25]);x.stroke();x.setLineDash([]);
- TH(x,'práh slyšitelnosti zvýšený maskováním',g.x1,g.y0-R*.6,R*.72,C.orange,'right');
+ TH(x,tx('práh slyšitelnosti zvýšený maskováním','hearing threshold raised by masking'),g.x1,g.y0-R*.6,R*.72,C.orange,'right');
  S.tones.forEach((t,i)=>{
   const X=fX(t.f,g),Y=lY(t.L,g),m=masked(i);
   if(i===S.tsel){x.fillStyle='rgba(244,241,234,.1)';x.fillRect(X-R*1.2,g.y0,R*2.4,g.y1-g.y0)}
   line(x,X,g.y1,X,Y,m?'rgba(189,182,167,.55)':C.orange,R*.5);
   dot(x,X,Y,R*.55,m?'#8A8372':C.cream);
-  if(m){TH(x,'✕',X,Y,R*.75,'#17140F','center');TH(x,'smazáno',X,Y-R*1.2,R*.62,C.bad,'center')}
+  if(m){TH(x,'✕',X,Y,R*.75,'#17140F','center');TH(x,tx('smazáno','deleted'),X,Y-R*1.2,R*.62,C.bad,'center')}
   else T(x,nf(t.f)+' Hz',X,Y-R*1.2,R*.68,'rgba(244,241,234,.8)','center');
   if(i===S.tsel){x.beginPath();x.strokeStyle=C.cream;x.lineWidth=2;x.arc(X,Y,R*.95,0,TAU);x.stroke()}
  });
@@ -1308,14 +1337,14 @@ function drawT(){
  x.beginPath();for(let X=g.x0;X<=g.x1;X+=2){const Y=lY(Math.max(0,tthr(XT(X))),g);X===g.x0?x.moveTo(X,Y):x.lineTo(X,Y)}x.strokeStyle=C.orange;x.lineWidth=R*.14;x.setLineDash([R*.4,R*.25]);x.stroke();x.setLineDash([]);
  // hlasitý úder
  const X0=tX(0);x.beginPath();x.moveTo(X0,g.y1);x.lineTo(X0,lY(LMAX,g));for(let t=0;t<=130;t+=4)x.lineTo(tX(t),lY(LMAX*Math.exp(-t/42),g));x.lineTo(tX(130),g.y1);x.closePath();x.fillStyle='rgba(244,241,234,.5)';x.fill();
- TH(x,'hlasitý úder',tX(8),lY(LMAX,g)-R*.2,R*.75,C.cream,'left');
+ TH(x,tx('hlasitý úder','loud hit'),tX(8),lY(LMAX,g)-R*.2,R*.75,C.cream,'left');
  // tichý zvuk
  const m=tmasked(),X=tX(S.qev.t),Y=lY(S.qev.L,g);
  line(x,X,g.y1,X,Y,m?'rgba(189,182,167,.55)':C.orange,R*.5);dot(x,X,Y,R*.55,m?'#8A8372':C.cream);
  if(m)TH(x,'✕',X,Y,R*.75,'#17140F','center');
- TH(x,m?'tichý zvuk: smazáno':'tichý zvuk',X,Y-R*1.2,R*.7,m?C.bad:C.cream,'center');
- TH(x,'před úderem',tX(-20),g.y0-R*.6,R*.65,'rgba(244,241,234,.5)','center');
- $('#bd7b').innerHTML=`${nf(S.qev.t)} ms od úderu · ${Math.round(S.qev.L)} dB`;
+ TH(x,m?tx('tichý zvuk: smazáno','quiet sound: deleted'):tx('tichý zvuk','quiet sound'),X,Y-R*1.2,R*.7,m?C.bad:C.cream,'center');
+ TH(x,tx('před úderem','before the hit'),tX(-20),g.y0-R*.6,R*.65,'rgba(244,241,234,.5)','center');
+ $('#bd7b').innerHTML=`${nf(S.qev.t)} ms ${tx('od úderu','from the hit')} · ${Math.round(S.qev.L)} dB`;
 }
 function drag(id,fn){
  const cv=$('#'+id);let d=false;
@@ -1325,20 +1354,20 @@ function drag(id,fn){
  const up=()=>{if(!d)return;d=false;if(id==='c7a'&&S.tsel>=0&&S.tones[S.tsel].L<=2){S.tones.splice(S.tsel,1);S.tsel=-1;refresh()}};
  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
 }
-TABS.push({kap:4,name:'Maskování',side:'27rem',
+TABS.push({kap:4,name:tx('Maskování','Masking'),side:'27rem',
  build(){
   return `<div class="split"><div class="col">
-   <div class="scope" style="flex:3"><canvas id="c7a"></canvas><div class="tag"><i></i>Frekvenční maskování: klepni, přidáš tón; táhni, změníš ho; stáhni dolů, smažeš ho</div></div>
-   <div class="scope" style="flex:2"><canvas id="c7b"></canvas><div class="tag"><i></i>Časové maskování: klepni nebo táhni, přesuneš tichý zvuk</div><div class="badge" id="bd7b"></div></div>
+   <div class="scope" style="flex:3"><canvas id="c7a"></canvas><div class="tag"><i></i>${tx('Frekvenční maskování: klepni, přidáš tón; táhni, změníš ho; stáhni dolů, smažeš ho','Frequency masking: tap to add a tone; drag to change it; drag it down to delete it')}</div></div>
+   <div class="scope" style="flex:2"><canvas id="c7b"></canvas><div class="tag"><i></i>${tx('Časové maskování: klepni nebo táhni, přesuneš tichý zvuk','Temporal masking: tap or drag to move the quiet sound')}</div><div class="badge" id="bd7b"></div></div>
   </div>
   <div class="side card">
-   <div class="callout" style="padding:.55rem .8rem;font-size:.92rem;line-height:1.35"><b class="l">Proč se maskování řeší</b>Je to základ ztrátové komprese (MP3, AAC, Ogg Vorbis). Silný zvuk zakryje slabší zvuky poblíž, ve frekvenci i v čase, takže je ucho neslyší. Kodek je smaže a ušetřená data využije jinde, a soubor je mnohem menší. Je to zjednodušený model, skutečné kodeky počítají přesněji.</div>
+   <div class="callout" style="padding:.55rem .8rem;font-size:.92rem;line-height:1.35"><b class="l">${tx('Proč se maskování řeší','Why masking matters')}</b>${tx('Je to základ ztrátové komprese (MP3, AAC, Ogg Vorbis). Silný zvuk zakryje slabší zvuky poblíž, ve frekvenci i v čase, takže je ucho neslyší. Kodek je smaže a ušetřená data využije jinde, a soubor je mnohem menší. Je to zjednodušený model, skutečné kodeky počítají přesněji.','It is the basis of lossy compression (MP3, AAC, Ogg Vorbis). A loud sound covers weaker sounds nearby, in frequency and in time, so the ear does not hear them. The codec deletes them and spends the saved data elsewhere, and the file is much smaller. This is a simplified model; real codecs calculate more precisely.')}</div>
    <div data-o="mcount" style="line-height:1.1"></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Scénář</span></div><div class="chips g3"><button class="chip" data-act="sc7" data-v="a">Scénář A</button><button class="chip" data-act="sc7" data-v="b">Scénář B</button><button class="chip" data-act="sc7" data-v="c">Jeden tón</button></div></div>
-   <div class="row"><button class="btn sec" data-act="add7" style="font-size:.95rem">+ Tón</button><button class="btn sec" data-act="del7" style="font-size:.95rem">✕ Odebrat</button></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Poslech: tóny</span></div><div class="row"><button class="btn sec" data-act="playf" data-v="o">${PLAYI}Původní</button><button class="btn" data-act="playf" data-v="k">${PLAYI}Po kompresi</button></div></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Scénář','Scenario')}</span></div><div class="chips g3"><button class="chip" data-act="sc7" data-v="a">${tx('Scénář A','Scenario A')}</button><button class="chip" data-act="sc7" data-v="b">${tx('Scénář B','Scenario B')}</button><button class="chip" data-act="sc7" data-v="c">${tx('Jeden tón','Single tone')}</button></div></div>
+   <div class="row"><button class="btn sec" data-act="add7" style="font-size:.95rem">${tx('+ Tón','+ Tone')}</button><button class="btn sec" data-act="del7" style="font-size:.95rem">${tx('✕ Odebrat','✕ Remove')}</button></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Poslech: tóny','Listen: tones')}</span></div><div class="row"><button class="btn sec" data-act="playf" data-v="o">${PLAYI}${tx('Původní','Original')}</button><button class="btn" data-act="playf" data-v="k">${PLAYI}${tx('Po kompresi','After compression')}</button></div></div>
    <div data-o="tstat"></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Poslech: úder a tichý zvuk</span></div><div class="row"><button class="btn sec" data-act="playt" data-v="o">${PLAYI}Původní</button><button class="btn" data-act="playt" data-v="k">${PLAYI}Po kompresi</button></div></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Poslech: úder a tichý zvuk','Listen: hit and quiet sound')}</span></div><div class="row"><button class="btn sec" data-act="playt" data-v="o">${PLAYI}${tx('Původní','Original')}</button><button class="btn" data-act="playt" data-v="k">${PLAYI}${tx('Po kompresi','After compression')}</button></div></div>
   </div></div>`;
  },
  init(){
