@@ -1323,6 +1323,15 @@ const fromHash=()=>{const i=MECH.findIndex(m=>'#'+m.id===location.hash);select(i
 addEventListener('hashchange',()=>{const i=MECH.findIndex(m=>'#'+m.id===location.hash);if(i>=0&&i!==mi)select(i,true)});
 document.querySelectorAll('.sub,.foot').forEach(el=>el.textContent=nb(el.textContent));
 fromHash();
+
+// PC: celá aplikace se přizpůsobí oknu (zvětší se na šířku i výšku, aby se scéna s ovladači vešla na obrazovku)
+(()=>{const H=document.documentElement;let tm=0;
+ const fitZoom=()=>{if(innerWidth<900){H.style.zoom='';return}H.style.zoom='1';
+  const sb=document.querySelector('.stagebox'),ct=document.querySelector('.ctl');if(!sb||!ct)return;
+  const h=sb.getBoundingClientRect().height+ct.getBoundingClientRect().height;
+  const z=Math.max(.8,Math.min(innerWidth/1180,(innerHeight-24)/h,1.9));H.style.zoom=z.toFixed(3)};
+ addEventListener('resize',()=>{clearTimeout(tm);tm=setTimeout(fitZoom,120)});
+ if(document.readyState==='complete')fitZoom();else addEventListener('load',fitZoom);fitZoom()})();
 </script>
 </body>
 </html>
