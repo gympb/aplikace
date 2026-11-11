@@ -225,6 +225,9 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 .fm .br{grid-template-columns:12rem 1fr 10rem 7rem}
 [hidden]{display:none!important}
 
+.msg2{margin-top:.5rem;font-size:.8rem;line-height:1.35;color:var(--ink2)}.msg2.bad{color:var(--bad);font-weight:600}
+.scope.drop{outline:.25rem dashed var(--orange);outline-offset:-.6rem}
+
 </style>
 </head>
 <body>
@@ -278,7 +281,8 @@ function timeAxis(g,t0,Tw,x0,x1,yb){
 }
 
 /* ========== zdroje zvuku ========== */
-const SRC={ton:{n:'Tón 440 Hz',dur:2},akord:{n:'Akord C dur',dur:2},melodie:{n:'Melodie',dur:3},hvizd:{n:'Hvizd 0,2→16 kHz',dur:4}};
+const SRC={ton:{n:'Tón 440 Hz',dur:2},akord:{n:'Akord C dur',dur:2},melodie:{n:'Melodie',dur:3},hvizd:{n:'Hvizd 0,2→16 kHz',dur:4},vlastni:{n:'Vlastní soubor',dur:0}};
+let USR=null; // nahraný soubor: {ch:[Float32Array],rate,dur,name,gain}
 const NOTES=[261.63,329.63,392,523.25,392,329.63];
 function sample(src,t,c){
  switch(src){
@@ -286,6 +290,7 @@ function sample(src,t,c){
  case 'akord':{const f=[261.63,329.63,392],a=c?[.9,.6,1]:[1,.8,.7];let s=0;for(let i=0;i<3;i++)s+=Math.sin(TAU*f[i]*t+(c?i*1.1:0))*a[i];return s/2.3}
  case 'melodie':{const tt=((t%1.5)+1.5)%1.5,i=Math.floor(tt/.25),tin=tt-i*.25,f=NOTES[i],env=(1-Math.exp(-tin*260))*Math.exp(-tin*4.5);let s=0;for(let k=1;k<=4;k++)s+=Math.sin(TAU*f*k*tin+(c?k*.7:0))/k;return s*env/1.7*(c?.8:1)}
  case 'hvizd':{const T0=4,f0=200,f1=16000,tt=((t%T0)+T0)%T0;return .9*Math.sin(TAU*(f0*tt+(f1-f0)*tt*tt/(2*T0))+(c?.6:0))}
+ case 'vlastni':{if(!USR||t<0)return 0;const a=USR.ch[c&&USR.ch.length>1?1:0],u=t*USR.rate,i=Math.floor(u);if(i<0||i>=a.length-1)return 0;const f=u-i;return(a[i]*(1-f)+a[i+1]*f)*USR.gain}
  }
  return 0;
 }
@@ -443,12 +448,15 @@ const STAGES=[
   cap:'Membrána reproduktoru kmitá podle signálu a rozechvěje vzduch. Uši slyší zvuk.'},
 ];
 ACT.stage=v=>{S.stage=+v;refresh()};
+const PM=()=>S.src==='vlastni'&&USR?Math.max(.1,USR.dur-.06):4;
+function fitPos(){const el=$('input[data-k=pos]');if(!el)return;el.max=PM();if(S.pos>PM())S.pos=0}
+HOOK.src=()=>{fitPos()};
 ACT.play1=(v,btn)=>{
  if(PLAY.on){stopAll();return}
- const dur=Math.min(3,SRC[S.src].dur),p0=S.pos;
+ const cust=S.src==='vlastni'&&USR,p0=S.pos,dur=cust?Math.max(.2,Math.min(6,USR.dur-p0)):Math.min(3,SRC[S.src].dur);
  const an=S.stage<2,fs=an?44100:S.afs,buf=genAudio({src:S.src,fs,bits:an?24:S.abits,ch:S.ach,amp:S.amp,t0:p0,dur});
  $('#chain').classList.add('run');
- playBuf(buf,fs,{btn,onTick:t=>{S.pos=(p0+t)%4;refresh()},onDone:()=>{S.pos=p0;refresh()}});
+ playBuf(buf,fs,{btn,onTick:t=>{S.pos=cust?Math.min(p0+t,PM()):(p0+t)%4;refresh()},onDone:()=>{S.pos=p0;refresh()}});
 };
 const N=()=>8<<S.win;
 OUT.afs=()=>`<b>${nf(S.afs)}</b> Hz`;
@@ -589,12 +597,42 @@ TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
     <div class="ctl"><div class="hd"><span class="lbl">Pozice ve zvuku</span><span class="val" data-o="pos"></span></div><input type="range" data-k="pos" min="0" max="4" step="0.005"></div>
    </div></div>
    <div class="side card">
-    <div class="ctl"><div class="hd"><span class="lbl">Zdroj zvuku</span></div><div class="chips g2">${Object.keys(SRC).map(k=>`<button class="chip" data-k="src" data-v="${k}">${SRC[k].n}</button>`).join('')}</div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">Zdroj zvuku</span></div><div class="chips g2">${Object.keys(SRC).filter(k=>k!=='vlastni').map(k=>`<button class="chip" data-k="src" data-v="${k}">${SRC[k].n}</button>`).join('')}</div>
+     <div class="chips" style="margin-top:.5rem"><button class="chip" id="usrChip" data-k="src" data-v="vlastni" hidden></button><button class="chip" data-act="pick" style="flex:1">Nahrát vlastní zvuk</button></div>
+     <input type="file" id="usrFile" hidden accept="audio/*,.mp3,.wav,.ogg,.oga,.m4a,.aac,.flac,.opus">
+     <div class="msg2" id="usrMsg">MP3, WAV, OGG a další. Soubor můžeš přetáhnout i na graf. Zpracuje se jen v tomto prohlížeči a nikam se neodesílá.</div></div>
     <div class="ctl"><div class="hd"><span class="lbl">Kanály</span></div><div class="seg"><button class="chip" data-k="ach" data-v="1">Mono</button><button class="chip" data-k="ach" data-v="2">Stereo</button></div></div>
     <div class="row" style="margin-top:auto"><button class="btn" data-act="play1" style="flex:2">${PLAYI}Poslechnout</button><button class="btn sec" data-act="stop">${STOPI}</button></div>
    </div></div>`;
  },
  init(){ACT.smooth=v=>{S.smooth=v==='1';refresh()};ACT.lupa=()=>{S.lupa=!S.lupa;refresh()};
+  const mmss2=t=>Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');
+  const msg=(t,bad)=>{const m=$('#usrMsg');m.textContent=t;m.classList.toggle('bad',!!bad)};
+  async function load(file){
+   if(!file)return;
+   if(file.size>150*1048576){msg('Soubor je příliš velký (nejvýš 150 MB).',1);return}
+   msg('Načítám a dekóduji…');
+   try{
+    const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+    const buf=await new OC(1,1,44100).decodeAudioData(await file.arrayBuffer());
+    const rate=buf.sampleRate,max=Math.floor(Math.min(buf.duration,600)*rate),ch=[];
+    for(let c=0;c<Math.min(2,buf.numberOfChannels);c++)ch.push(buf.getChannelData(c).subarray(0,max));
+    let pk=0;for(const a of ch)for(let i=0;i<a.length;i++){const v=Math.abs(a[i]);if(v>pk)pk=v}
+    if(pk<1e-5){msg('V souboru je jen ticho.',1);return}
+    const name=file.name.replace(/\.[^.]+$/,'');
+    USR={ch,rate,dur:max/rate,name,gain:.9/pk};SRC.vlastni.dur=USR.dur;
+    const chip=$('#usrChip');chip.hidden=false;chip.textContent=(name.length>22?name.slice(0,21)+'…':name)+' · '+mmss2(USR.dur);
+    S.pos=0;S.src='vlastni';fitPos();stopAll();
+    msg(`Načteno: ${file.name} · ${nf(rate)} Hz · ${ch.length===2?'stereo':'mono'}${buf.duration>600?' · použito prvních 10 minut':''}. Signál se upravil na stejnou hlasitost a ztrátový formát (např. MP3) je tu už dekódovaný.`);
+    refresh();
+   }catch(e){msg('Tento soubor se nepodařilo přečíst. Zkus MP3, WAV nebo OGG.',1)}
+  }
+  ACT.pick=()=>$('#usrFile').click();
+  $('#usrFile').addEventListener('change',e=>{load(e.target.files[0]);e.target.value=''});
+  const sc=$('#c1').parentElement;
+  sc.addEventListener('dragover',e=>{e.preventDefault();sc.classList.add('drop')});
+  sc.addEventListener('dragleave',()=>sc.classList.remove('drop'));
+  sc.addEventListener('drop',e=>{e.preventDefault();sc.classList.remove('drop');load(e.dataTransfer.files[0])});
   const cv=$('#c1');let d=false;
   const pick=e=>{if(!S.lupa||!geo||(S.stage!==2&&S.stage!==4))return;const r=cv.getBoundingClientRect(),px=e.clientX-r.left;S.lk=Math.round((geo.t0+(px-geo.x0)/(geo.x1-geo.x0)*geo.Tw)*geo.fs);refresh()};
   cv.addEventListener('pointerdown',e=>{d=true;cv.setPointerCapture(e.pointerId);pick(e)});
