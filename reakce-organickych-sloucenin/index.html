@@ -1214,7 +1214,15 @@ function render(){
       if(mk==='•')s+=`<circle cx="${x}" cy="${y+3}" r="4" fill="var(--electron)" opacity="${op}"/>`;
       else if(mk[0]==='δ')s+=`<text x="${x}" y="${y+4}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--electron)" opacity="${op}">${mk}</text>`;
       else s+=`<g opacity="${op}"><circle cx="${x}" cy="${y}" r="8" fill="var(--stage)" stroke="var(--electron)" stroke-width="1.8"/><text x="${x}" y="${y+4.5}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--electron)">${mk}</text></g>`;
-      if(off&&mv[1]==='mid')s+=`<text x="${x.toFixed(1)}" y="${(y+19).toFixed(1)}" text-anchor="middle" font-size="8.5" font-style="italic" font-weight="600" fill="var(--electron)" stroke="var(--stage)" stroke-width="3" stroke-linejoin="round" paint-order="stroke" opacity="${op}">delokalizovaný</text>`}}
+      if(off&&mv[1]==='mid'){// popisek mimo atomy: přednostně směrem ven od centrálního atomu
+        const pn=pos[mv[4]],ux=x-pn[0],uy=y-pn[1],W=42,H=7;
+        const cands=[[x+10,y+2.5,'start'],[x-10,y+2.5,'end'],[x,y+15,'middle'],[x,y-11,'middle'],[x+8,y+14,'start'],[x-8,y+14,'end'],[x+8,y-9,'start'],[x-8,y-9,'end']];
+        const box=([cx,cy,an])=>{const x0=an==='start'?cx:an==='end'?cx-W:cx-W/2;return [x0,cy-H,x0+W,cy+1.5]};
+        const hit=bx=>{let c=0;for(const j in pos){const K=kindOf(m,j);if(!K||K.hidden)continue;const q=pos[j],r=K.lp?3:R(j);const nx=Math.max(bx[0],Math.min(q[0],bx[2])),ny=Math.max(bx[1],Math.min(q[1],bx[3]));const d=Math.hypot(nx-q[0],ny-q[1]);if(d<r+1)c+=r+1-d}
+          for(const q of placed){const nx=Math.max(bx[0],Math.min(q[0],bx[2])),ny=Math.max(bx[1],Math.min(q[1],bx[3]));const d=Math.hypot(nx-q[0],ny-q[1]);if(d<7)c+=7-d}
+          if(bx[0]<CX-178/FK||bx[2]>CX+178/FK)c+=20;return c};
+        let best=null,bs=1e9;for(const c of cands){const sc=hit(box(c))*10-((c[0]-x)*ux+(c[1]-y)*uy)/(Math.hypot(ux,uy)||1)*.05;if(sc<bs){bs=sc;best=c}}
+        s+=`<text x="${best[0].toFixed(1)}" y="${best[1].toFixed(1)}" text-anchor="${best[2]}" font-size="7" font-style="italic" font-weight="600" fill="var(--electron)" stroke="var(--stage)" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke" opacity="${op}">delokalizovaný</text>`}}}
   // popisky
   const lt=l=>l.t+'|'+(l.sub||''),tA=(A.labels||[]).map(lt),tB=(B.labels||[]).map(lt);
   const drawL=(l,op)=>{if(op<=0.01)return;let [x,y]=l._ids?LAY.labelPos(m,pos,l,FK):rv([l.x,l.y,0]);const half=Math.max(l.t.length,(l.sub||"").length*.85)*3.7/FK;x=Math.max(CX-176/FK+half,Math.min(CX+176/FK-half,x));
