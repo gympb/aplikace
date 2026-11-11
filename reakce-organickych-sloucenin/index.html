@@ -1061,6 +1061,37 @@ const DIEN=sub=>{const O=[180,205],rx=-50,ry=0,Y=[0,1,0],CL=62;
   a:'Navázáním na atom C1 vznikne allylový karbokation, ve kterém je celý kladný náboj rozprostřen mezi atomy C2 a C4 (dvě rezonanční struktury). Je proto stabilnější. Navázáním na atom C2 by vznikl primární karbokation bez této stabilizace.',steps}};
 for(const v of ['12','14']){const m=DIEN(v);m.steps.forEach(s=>{s.pos.m=V.mul(V.add(s.pos.C1,s.pos.C2),.5)});MECH.push(m)}
 MECH.forEach(m=>m.steps.forEach(s=>{for(const k in s.pos)if(s.pos[k].length<3)s.pos[k]=[s.pos[k][0],s.pos[k][1],0]}));
+/* ---------- rozvržení scény: oddělení částic, popisky u molekul, vycentrování a zvětšení ---------- */
+const LAY=(()=>{
+ const kd=(m,id)=>kindOf(m,id),vis=(m,id)=>{const K=kd(m,id);return K&&!K.hidden&&!K.lp};
+ const comps=(m,s)=>{const ids=Object.keys(s.pos).filter(id=>vis(m,id)),par={};ids.forEach(i=>par[i]=i);
+  const f=i=>par[i]===i?i:(par[i]=f(par[i])),u=(a,b)=>{if(par[a]!==undefined&&par[b]!==undefined)par[f(a)]=f(b)};
+  const hid={};for(const id in s.pos){const K=kd(m,id);if(K&&K.hidden){let best=null,bd=1e9;for(const j of ids){const d=Math.hypot(s.pos[j][0]-s.pos[id][0],s.pos[j][1]-s.pos[id][1]);if(d<bd){bd=d;best=j}}hid[id]=best}}
+  for(const [a,b] of s.bonds){u(hid[a]||a,hid[b]||b)}
+  const pt=ids.filter(i=>m.atoms[i]==='Pt');pt.forEach(i=>u(i,pt[0]));
+  const g={};ids.forEach(i=>{const r=f(i);(g[r]=g[r]||[]).push(i)});return Object.values(g)};
+ const lpOf=(m,s,ids)=>Object.keys(s.pos).filter(id=>{const a=m.atoms[id];return Array.isArray(a)&&ids.includes(a[1])});
+ const rad=(m,id)=>kd(m,id).r*(m.sc||1);
+ const box=(m,P,ids,withLp)=>{let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const id of ids){const p=P[id];if(!p)continue;const r=vis(m,id)?rad(m,id):7;x0=Math.min(x0,p[0]-r);x1=Math.max(x1,p[0]+r);y0=Math.min(y0,p[1]-r);y1=Math.max(y1,p[1]+r)}return {x0,y0,x1,y1}};
+ function separate(m,s){const cs=comps(m,s).filter(c=>!c.some(i=>m.atoms[i]==='Pt'));
+  for(let it=0;it<14;it++){let worst=null;
+   for(let a=0;a<cs.length;a++)for(let b=a+1;b<cs.length;b++){let gap=1e9;for(const i of cs[a])for(const j of cs[b]){const p=s.pos[i],q=s.pos[j];gap=Math.min(gap,Math.hypot(p[0]-q[0],p[1]-q[1])-rad(m,i)-rad(m,j))}
+    if(gap<5&&(!worst||gap<worst.gap))worst={a,b,gap}}
+   if(!worst)break;const [big,sm]=cs[worst.a].length>=cs[worst.b].length?[cs[worst.a],cs[worst.b]]:[cs[worst.b],cs[worst.a]];
+   const cen=c=>{let x=0,y=0;c.forEach(i=>{x+=s.pos[i][0];y+=s.pos[i][1]});return [x/c.length,y/c.length]},cb=cen(big),cm=cen(sm);let dx=cm[0]-cb[0],dy=cm[1]-cb[1],l=Math.hypot(dx,dy);if(l<1){dx=0;dy=-1;l=1}
+   const mv=5-worst.gap+4;for(const id of [...sm,...lpOf(m,s,sm)])s.pos[id]=[s.pos[id][0]+dx/l*mv,s.pos[id][1]+dy/l*mv,s.pos[id][2]]}}
+ function anchor(m,s){const cs=comps(m,s);
+  for(const l of s.labels||[]){let best=null,bd=1e9;for(const c of cs){const b=box(m,s.pos,c),cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2,d=Math.hypot(cx-l.x,(cy-l.y)*1.4)-Math.min(40,c.length*3);if(d<bd){bd=d;best={c,cy}}}
+   if(best){l._ids=best.c;l._above=l.y<best.cy;l._mk=s.marks||{}}}
+  const cnt={};for(const l of (s.labels||[]).slice().sort((a,b)=>a._above?b.y-a.y:a.y-b.y)){if(!l._ids)continue;const key=l._ids[0]+(l._above?'^':'v');l._slot=cnt[key]||0;cnt[key]=l._slot+1}}
+ function labelPos(m,P,l,k){const ids=l._ids.filter(i=>P[i]);if(!ids.length)return [l.x,l.y];const b=box(m,P,[...ids,...lpOf(m,{pos:P},ids)]);
+  for(const id in l._mk||{}){if(!ids.includes(id)||!P[id])continue;const v=l._mk[id];if(Array.isArray(v)&&v[1]==='mid')continue;const r=rad(m,id),y=P[id][1]+(Array.isArray(v)?v[2]:-r-9),x=P[id][0]+(Array.isArray(v)?v[1]:0);
+   b.x0=Math.min(b.x0,x-8);b.x1=Math.max(b.x1,x+8);b.y0=Math.min(b.y0,y-8);b.y1=Math.max(b.y1,y+8)}
+  const o=(l._slot||0)*17/k;return [(b.x0+b.x1)/2,l._above?b.y0-9/k-o:b.y1+19/k+o]}
+ function fit(m,s){const ids=Object.keys(s.pos).filter(id=>{const K=kd(m,id);return K&&!K.hidden});let b=box(m,s.pos,ids);
+  for(const l of s.labels||[]){if(!l._ids)continue;const [x,y]=labelPos(m,s.pos,l,1),w=l.t.length*3.7;b={x0:Math.min(b.x0,x-w),x1:Math.max(b.x1,x+w),y0:Math.min(b.y0,y-12),y1:Math.max(b.y1,y+4)}}
+  b.y0-=10;b.y1+=4;const W=b.x1-b.x0,H=b.y1-b.y0,k=Math.max(.55,Math.min(1.25,330/W,272/H));s.fit={cx:(b.x0+b.x1)/2,cy:(b.y0+b.y1)/2,k}}
+ return {separate,anchor,fit,labelPos}})();
 
 /* ---------- vykreslování ---------- */
 const $=id=>document.getElementById(id);
@@ -1070,7 +1101,8 @@ const grad=(id,a,b)=>`<radialGradient id="${id}" cx=".35" cy=".3" r=".8"><stop o
 const DEFS='<defs>'+grad('gC','#7c8a94','#1d252b')+grad('gH','#ffffff','#b9c6cc')+grad('gBr','#e58a5f','#7a2a12')+grad('gPt','#eef3f8','#7f93a8')+grad('gR','#b592ea','#4a2788')+grad('gCl','#6fd08a','#17662f')+grad('gN','#86abf5','#1f3f9a')+grad('gO','#f49a9a','#9c1717')+grad('gAl','#d9b8c4','#7a4f62')+grad('gS','#fff0a0','#c9980f')+'<radialGradient id="gPi" cx=".42" cy=".38" r=".62"><stop offset="0" style="stop-color:var(--cloud);stop-opacity:.62"/><stop offset=".7" style="stop-color:var(--cloud);stop-opacity:.34"/><stop offset="1" style="stop-color:var(--cloud);stop-opacity:.12"/></radialGradient><filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.4"/></filter></defs>';
 
 let mi=0,si=0,from=null,t=1,raf=0,timer=0,playing=false,RC=null,guess=null;
-const rv=p=>{if(!RC)return p;const x=p[0]-180,y=p[1]-150,z=p[2]||0;return [RC[0][0]*x+RC[1][0]*y+RC[2][0]*z+180,RC[0][1]*x+RC[1][1]*y+RC[2][1]*z+150,RC[0][2]*x+RC[1][2]*y+RC[2][2]*z]};
+let CX=180,CY=150;
+const rv=p=>{if(!RC)return p;const x=p[0]-CX,y=p[1]-CY,z=p[2]||0;return [RC[0][0]*x+RC[1][0]*y+RC[2][0]*z+CX,RC[0][1]*x+RC[1][1]*y+RC[2][1]*z+CY,RC[0][2]*x+RC[1][2]*y+RC[2][2]*z]};
 const rvAll=f=>{if(!RC)return f;const o={};for(const k in f)o[k]=rv(f[k]);return o};
 const mech=()=>MECH[mi];
 const kindOf=(m,id)=>{const a=m.atoms[id];return KIND[Array.isArray(a)?a[0]:a]};
@@ -1096,15 +1128,17 @@ function arrowSvg(a,pos,m,op,bonds){
   const head=a.half?`M${x2} ${y2} L${bx+px*5} ${by+py*5} L${x2-ux*6} ${y2-uy*6} Z`:`M${x2} ${y2} L${bx+px*4.5} ${by+py*4.5} L${bx-px*4.5} ${by-py*4.5} Z`;
   return `<g opacity="${op}"><path d="M${x0} ${y0} Q${cx} ${cy} ${x2-ux*5} ${y2-uy*5}" fill="none" stroke="var(--electron)" stroke-width="2.2" stroke-linecap="round"/><path d="${head}" fill="var(--electron)"/></g>`;
 }
+MECH.forEach(m=>m.steps.forEach(s=>{LAY.separate(m,s);LAY.anchor(m,s);LAY.fit(m,s)}));
 function render(){
   const m=mech(),B=m.steps[si],A=from||B,e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2,sc=m.sc||1;
+  const FA=A.fit,FB=B.fit,FK=FA.k+(FB.k-FA.k)*e;CX=FA.cx+(FB.cx-FA.cx)*e;CY=FA.cy+(FB.cy-FA.cy)*e;
   const pos={},aop={},PA=rvAll(A.pos),PB=rvAll(B.pos);
   for(const id in m.atoms){const a=PA[id],b=PB[id];
     if(a&&b){pos[id]=[a[0]+(b[0]-a[0])*e,a[1]+(b[1]-a[1])*e,a[2]+(b[2]-a[2])*e];aop[id]=1}
     else if(b){pos[id]=b;aop[id]=e}else if(a){pos[id]=a;aop[id]=1-e}}
   const dz=id=>1+pos[id][2]/350,R=id=>kindOf(m,id).r*sc*dz(id);
   const fade=(inA,inB)=>inA&&inB?1:inB?e:1-e;
-  let s=DEFS;const items=[];
+  let s=DEFS+`<g transform="translate(180 150) scale(${FK.toFixed(4)}) translate(${(-CX).toFixed(2)} ${(-CY).toFixed(2)})">`;const items=[];
   // oblaky elektronů π
   const pk=x=>x.join('|'),pA=(A.pi||[]).map(pk),pB=(B.pi||[]).map(pk);
   const allB=[...B.bonds,...A.bonds],ordOf=(a,b)=>{const x=allB.find(q=>(q[0]===a&&q[1]===b)||(q[0]===b&&q[1]===a));return x?String(x[2]):''};
@@ -1161,13 +1195,15 @@ function render(){
       else if(mk[0]==='δ')s+=`<text x="${x}" y="${y+4}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--electron)" opacity="${op}">${mk}</text>`;
       else s+=`<g opacity="${op}"><circle cx="${x}" cy="${y}" r="8" fill="var(--stage)" stroke="var(--electron)" stroke-width="1.8"/><text x="${x}" y="${y+4.5}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--electron)">${mk}</text></g>`}}
   // popisky
-  const lk=l=>l.x+'|'+l.y+'|'+l.t,lA=(A.labels||[]).map(lk),lB=(B.labels||[]).map(lk);
-  for(const k of new Set([...lA,...lB])){let [x,y,tx]=k.split('|');[x,y]=rv([+x,+y,0]);
-    s+=`<text x="${x}" y="${y}" text-anchor="middle" font-size="13.5" font-weight="600" fill="var(--muted)" opacity="${fade(lA.includes(k),lB.includes(k))}">${tx}</text>`}
+  const lt=l=>l.t,tA=(A.labels||[]).map(lt),tB=(B.labels||[]).map(lt);
+  const drawL=(l,op)=>{if(op<=0.01)return;let [x,y]=l._ids?LAY.labelPos(m,pos,l,FK):rv([l.x,l.y,0]);const half=l.t.length*3.7/FK;x=Math.max(CX-176/FK+half,Math.min(CX+176/FK-half,x));
+   s+=`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="${(13.5/FK).toFixed(2)}" font-weight="600" fill="var(--muted)" opacity="${op}">${l.t}</text>`};
+  for(const l of B.labels||[])drawL(l,tA.includes(l.t)&&A!==B?1:(A===B?1:e));
+  if(A!==B)for(const l of A.labels||[])if(!tB.includes(l.t))drawL(l,1-e);
   // šipky
   if(from&&from!==B)for(const a of A.arrows||[])s+=arrowSvg(a,PA,m,Math.max(0,1-t*4),A.bonds);
   for(const a of B.arrows||[])s+=arrowSvg(a,PB,m,from&&from!==B?Math.max(0,(t-.65)/.35):1,B.bonds);
-  $('stage').innerHTML=s;
+  s+='</g>';$('stage').innerHTML=s;
   $('rst').hidden=!RC;
 }
 const schemeHtml=m=>'<div class="rx">'+m.scheme.map(x=>Array.isArray(x)?(x[0]==='⇌'?`<span class="arw eq"><small>${x[1]||'&nbsp;'}</small><i></i><i class="rev"></i><small>&nbsp;</small></span>`:x[0]==='→'?`<span class="arw"><small>${x[1]||'&nbsp;'}</small><i></i><small>&nbsp;</small></span>`:`<span class="fm">${F[x[1]]}</span>`):`<span>${x}</span>`).join('')+'</div>';
