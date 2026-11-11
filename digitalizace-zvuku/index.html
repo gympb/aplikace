@@ -311,7 +311,7 @@ const S={tab:0,sound:true,
  // 1 Cesta zvuku
  src:'melodie',afs:44100,abits:16,ach:1,tw:.006,ph:null,pos:0.02,amp:.9,stage:2,smooth:false,
  // 2 Analog × digitál
- gen:0,wmode:'copy',
+ gen:0,wmode:'copy',dmag:10,
  // 3 Vzorkování
  f:1000,sfs:8000,rec:'steps',
  // 4 Kvantování
@@ -704,33 +704,52 @@ TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
 
 /* ===== 2 Analog × digitál ===== */
 (function(){
-const M=720,G=41;
-const base=u=>.6*Math.sin(TAU*3*u)+.25*Math.sin(TAU*8*u+.7)+.15*Math.sin(TAU*13*u+2);
-const B0=Float32Array.from({length:M},(_,i)=>base(i/M));
+const M=720;
+const CMP=[{a:.6,f:3,p:0},{a:.25,f:8,p:.7},{a:.15,f:13,p:2}]; // nízké, střední, vysoké složky
+const comp=(u,g)=>CMP.reduce((s,c,i)=>s+c.a*g[i]*Math.sin(TAU*c.f*u+c.p),0);
+const B0=Float32Array.from({length:M},(_,i)=>comp(i/M,[1,1,1]));
 const rmsB=Math.sqrt(B0.reduce((s,v)=>s+v*v,0)/M);
-function build(mode){
- const sg=mode==='copy'?.03:.017,gl=mode==='copy'?.985:.993,r=mulberry(mode==='copy'?7:11);
- const a=[Float32Array.from(B0,v=>v+.01*gauss(r))];
- for(let g=1;g<G;g++){const p=a[g-1],q=new Float32Array(M);for(let i=0;i<M;i++){const sm=p[(i+M-1)%M]*.1+p[i]*.8+p[(i+1)%M]*.1;q[i]=sm*gl+sg*gauss(r)}a.push(q)}
- const err=a.map(q=>{let s=0;for(let i=0;i<M;i++){const d=q[i]-B0[i];s+=d*d}return Math.sqrt(s/M)/rmsB*100});
- return{a,err};
+const QERR=Math.sqrt(B0.reduce((s,v)=>{const d=qVal(qIdx(v,16),16)-v;return s+d*d},0)/M)/rmsB*100; // chyba zaokrouhlení 16bitového převodu
+const db=x=>Math.pow(10,-x/20);
+const MODE={
+ copy:{max:5,step:1,btn:[[1,'+ 1'],[5,'+ 5']],
+  gain:n=>[.9992,.996,.985].map(r=>Math.pow(r,n)), // ztráta výšek při každé kopii
+  snr:n=>55-10*Math.log10(n+1)}, // každá kopie přidá šum se stejnou úrovní
+ wear:{max:500,step:10,btn:[[50,'+ 50'],[250,'+ 250']],
+  gain:n=>[1,db(.3*n/500),db(1*n/500)], // po 500 přehráních asi -1 dB na výškách
+  snr:n=>62-7*n/500}
+};
+const r0=mulberry(7);
+const NC=[];{let p=null;for(let n=0;n<=5;n++){const q=new Float32Array(M);for(let i=0;i<M;i++)q[i]=(p?p[i]:0)+rmsB*db(55)*gauss(r0);NC.push(q);p=q}}
+const rw=mulberry(11),NW=Float32Array.from({length:M},()=>gauss(rw));
+const MD=()=>MODE[S.wmode];
+function curveAt(n){
+ const m=MD(),g=m.gain(n),out=new Float32Array(M);
+ for(let i=0;i<M;i++){out[i]=comp(i/M,g)+(S.wmode==='copy'?NC[n][i]:NW[i]*rmsB*db(m.snr(n)))}
+ return out;
 }
-const AG={copy:build('copy'),wear:build('wear')};
-const cur=()=>AG[S.wmode];
-OUT.gen=()=>`<b>${S.gen}</b> ${S.wmode==='copy'?(S.gen===1?'kopie':S.gen>1&&S.gen<5?'kopie':'kopií'):(S.gen===1?'přehrání':S.gen>1&&S.gen<5?'přehrání':'přehrání')}`;
-OUT.aerr=()=>`<span style="color:var(--bad)">${nf(cur().err[S.gen],1)} %</span>`;
-ACT.gen=v=>{S.gen=clamp(S.gen+(+v),0,G-1);refresh()};
+function errAt(a){let s=0;for(let i=0;i<M;i++){const d=a[i]-B0[i];s+=d*d}return Math.sqrt(s/M)/rmsB*100}
+function fitGen(){const el=$('input[data-k=gen]');if(el){el.max=MD().max;el.step=MD().step}S.gen=clamp(S.gen,0,MD().max)}
+HOOK.wmode=()=>{S.gen=0;fitGen()};
+OUT.gen=()=>{const n=S.gen;return S.wmode==='copy'?`<b>${n}</b> ${n===1?'kopie':n>1&&n<5?'kopie':'kopií'}`:`<b>${n}</b> přehrání`};
+OUT.aerr=()=>`<span style="color:var(--bad)">${nf(errAt(curveAt(S.gen)),S.gen?2:2)} %</span>`;
+ACT.gen=v=>{S.gen=clamp(S.gen+(+v),0,MD().max);refresh()};
 ACT.gen0=()=>{S.gen=0;refresh()};
 ACT.play2=(v,btn)=>{
  if(PLAY.on){stopAll();return}
- const analog=v==='a',g=S.gen,sg=analog?(S.wmode==='copy'?.018:.011)*Math.sqrt(g+1.2):0;
- const buf=genAudio({src:'melodie',fs:22050,bits:16,ch:1,amp:.9,dur:3,noise:sg,seed:5});
- if(analog){const al=1/(1+g*(S.wmode==='copy'?.22:.1)),o=buf[0];let y=0;for(let i=0;i<o.length;i++){y+=al*(o[i]-y);o[i]=y}}
+ const analog=v==='a',n=S.gen,m=MD(),k=S.dmag;
+ const buf=genAudio({src:'melodie',fs:22050,bits:16,ch:1,amp:.9,dur:3});
+ if(analog){
+  const o=buf[0],gh=m.gain(n)[2],h=Math.min(.9,k*(1-gh));let y=0,ss=0;
+  for(let i=0;i<o.length;i++){const xv=o[i];y+=.54*(xv-y);o[i]=xv-h*(xv-y);ss+=xv*xv}
+  const sg=Math.sqrt(ss/o.length)*db(m.snr(n))*k,r=mulberry(5);
+  for(let i=0;i<o.length;i++)o[i]=clamp(o[i]+sg*gauss(r),-1,1);
+ }
  playBuf(buf,22050,{btn});
 };
 function drawScope(cv,analog){
  const g=setup(cv),{x,w,h,R}=g,x0=R*1.2,x1=w-R*1.2,cy=h*.56,A=h*.3;
- const a=cur().a[S.gen];
+ const a0=curveAt(S.gen),k=S.dmag,a=a0.map((v,i)=>B0[i]+k*(v-B0[i]));
  line(x,x0,cy,x1,cy,C.grid2,1);
  for(let i=1;i<8;i++){const px=x0+i/8*(x1-x0);line(x,px,cy-A*1.15,px,cy+A*1.15,C.grid,1)}
  const P=i=>[x0+i/(M-1)*(x1-x0),cy-(analog?a[i]:B0[i])*A];
@@ -741,24 +760,25 @@ function drawScope(cv,analog){
  x.beginPath();x.setLineDash([R*.35,R*.3]);x.strokeStyle='rgba(244,241,234,.6)';x.lineWidth=R*.1;for(let i=0;i<M;i++){const [px,py]=Q(i);i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();x.setLineDash([]);
  x.beginPath();x.strokeStyle=analog?C.analog:C.orange;x.lineWidth=R*.2;x.lineJoin='round';for(let i=0;i<M;i++){const [px,py]=P(i);i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
  if(!analog){
-  T(x,'bitově shodná s originálem · rozdíl = 0',x1,h-R*1.1,R*.9,C.good,'right');
+  T(x,'kopie souboru: rozdíl = 0 · převod z analogu: chyba ≈ '+nf(QERR,3)+' %',x1,h-R*1.1,R*.85,C.good,'right');
   let s='';for(let i=0;i<6;i++)s+=bin(qIdx(B0[i*40],16),16).slice(0,8)+' ';
   T(x,s,x0,h-R*1.1,R*.72,'rgba(244,241,234,.4)');
- }else T(x,'červeně: co se oproti originálu ztratilo nebo přibylo',x1,h-R*1.1,R*.9,C.bad,'right');
+ }else T(x,'červeně: rozdíl oproti originálu'+(k>1?' (zvětšen '+k+'×)':' (ve skutečném měřítku)'),x1,h-R*1.1,R*.85,C.bad,'right');
 }
 function r2(){
- const m=cur(),g=S.gen,e=m.err[g];
- $('#tg2a').innerHTML=`<i class="a"></i>${S.wmode==='copy'?'Analogový záznam · kazeta':'Analogový záznam · gramofonová deska'} · ${S.wmode==='copy'?'generace':'přehrání'} ${g}`;
+ const g=S.gen,m=MD(),ca=curveAt(g),e=errAt(ca),snr=m.snr(g);
+ $('#tg2a').innerHTML=`<i class="a"></i>Analogový záznam · ${S.wmode==='copy'?'kazeta':'gramofonová deska'} · ${S.wmode==='copy'?'kopie':'přehrání'} ${g} · odstup od šumu ≈ ${nf(snr)} dB`;
  $('#tg2b').innerHTML=`<i></i>Digitální záznam · ${S.wmode==='copy'?'kopie souboru':'přehrání souboru'} ${g}`;
- $('#bd2a').innerHTML=`odchylka od originálu<br><b style="font-size:1.5rem;color:var(--bad)">${nf(e,1)} %</b>`;
- $('#bd2b').innerHTML=`odchylka od originálu<br><b style="font-size:1.5rem;color:var(--good)">0 %</b>`;
- $('#mA').style.width=clamp(e/1.2,2,100)+'%';
+ $('#bd2a').innerHTML=`odchylka od originálu<br><b style="font-size:1.5rem;color:var(--bad)">${nf(e,2)} %</b>`;
+ $('#bd2b').innerHTML=`odchylka od digitalizovaného originálu<br><b style="font-size:1.5rem;color:var(--good)">0 %</b>`;
+ $('#mA').style.width=clamp(e/3*100,2,100)+'%';
+ const [b1,b2]=m.btn;[['#gb1',b1],['#gb2',b2]].forEach(([id,bb])=>{const el=$(id);el.dataset.v=bb[0];el.textContent=bb[1]});
  drawScope($('#c2a'),true);drawScope($('#c2b'),false);
 }
 const ROWS=[
  ['','Princip','spojitá křivka','oddělené hodnoty (čísla)'],
  ['copy','Kopírování','každá kopie přidává šum a ztrácí kvalitu (generační ztráta)','kopie souboru je bitově shodná s originálem'],
- ['wear','Opotřebení','nosič se přehráváním mechanicky opotřebovává','data se přehráváním neopotřebovávají (ale disk či cloud mají omezenou životnost)'],
+ ['wear','Opotřebení','nosič se přehráváním pomalu mechanicky opotřebovává (po stovkách přehrání)','data se přehráváním neopotřebovávají (ale disk či cloud mají omezenou životnost)'],
  ['','Šum','vždy přítomný (praskání desky, šum pásky)','v samotných datech žádný šum nevzniká'],
  ['','Střih','obtížný (stříhání a lepení pásky)','snadný a nedestruktivní'],
  ['','Vnímání','„teplý“, přirozený zvuk, příjemné zkreslení','velmi přesný, pro někoho až „sterilní“'],
@@ -773,16 +793,18 @@ TABS.push({kap:1,name:'Analog × digitál',
   </div>
   <div class="side card">
    <div class="ctl"><div class="hd"><span class="lbl">Co zkoušíme</span></div><div class="seg"><button class="chip" data-k="wmode" data-v="copy">Kopírování kazety</button><button class="chip" data-k="wmode" data-v="wear">Přehrávání desky</button></div></div>
-   <div class="ctl"><div class="hd"><span class="lbl">Počet</span><span class="val" data-o="gen"></span></div><input type="range" data-k="gen" min="0" max="${G-1}" step="1"></div>
-   <div class="row"><button class="btn" data-act="gen" data-v="1">+ 1</button><button class="btn" data-act="gen" data-v="5">+ 5</button><button class="btn sec" data-act="gen0">Znovu</button></div>
+   <div class="ctl"><div class="hd"><span class="lbl">Počet</span><span class="val" data-o="gen"></span></div><input type="range" data-k="gen" min="0" max="5" step="1"></div>
+   <div class="row"><button class="btn" id="gb1" data-act="gen" data-v="1">+ 1</button><button class="btn" id="gb2" data-act="gen" data-v="5">+ 5</button><button class="btn sec" data-act="gen0">Znovu</button></div>
    <div class="ctl"><div class="hd"><span class="lbl">Odchylka od originálu</span><span class="val" data-o="aerr"></span></div>
     <div class="meter"><div class="bar"><i id="mA" style="width:2%"></i></div><div class="bar"><i class="g" style="width:0%"></i></div></div>
     <p class="n">Horní pruh: analog, spodní pruh: digitál. Digitální kopie zůstává pokaždé stejná.</p></div>
+   <div class="ctl"><div class="hd"><span class="lbl">Zvětšení rozdílu v grafu a poslechu</span></div><div class="chips g4">${[1,3,10,30].map(v=>`<button class="chip" data-k="dmag" data-v="${v}">${v}×</button>`).join('')}</div></div>
    <div class="ctl"><div class="hd"><span class="lbl">Poslech</span></div>
     <div class="row"><button class="btn sec" data-act="play2" data-v="a">${PLAYI}Analog</button><button class="btn sec" data-act="play2" data-v="d">${PLAYI}Digitál</button></div></div>
-   <div class="callout"><b class="l">Pozor</b>Digitál vítězí v přesnosti, ale „teplý“ zvuk analogu si lidé cení. O tom, co je lepší, rozhoduje i vkus, ne jen měření.</div>
+   <div class="callout" style="font-size:.9rem;line-height:1.35"><b class="l">Ilustrační model</b>Syntetický signál a typické hodnoty: kazeta ≈ 55 dB odstupu od šumu a pokles výšek při každé kopii, deska ≈ 62 dB a pomalé opotřebení po stovkách přehrání. Čísla v procentech jsou skutečná, rozdíl v grafu a poslechu je pro slyšitelnost zvětšen. Digitální kopie souboru je přesná, ale převod z analogu má zaokrouhlovací chybu (16 bitů ≈ 0,002 %). O tom, co je lepší, rozhoduje i vkus, ne jen měření.</div>
   </div></div>`;
  },
+ enter(){fitGen()},
  render:r2});
 })();
 
