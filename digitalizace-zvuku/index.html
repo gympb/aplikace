@@ -299,7 +299,7 @@ const MAPS={dur:v=>Math.max(1,Math.round(Math.pow(5000,v/100)))};
 const IMAP={dur:d=>100*Math.log(d)/Math.log(5000)};
 const S={tab:0,sound:true,
  // 1 Cesta zvuku
- src:'melodie',afs:8000,abits:4,ach:1,win:5,pos:0.02,amp:.9,stage:2,smooth:false,
+ src:'melodie',afs:44100,abits:16,ach:1,win:4,pos:0.02,amp:.9,stage:2,smooth:false,lupa:true,lk:null,
  // 2 Analog × digitál
  gen:0,wmode:'copy',
  // 3 Vzorkování
@@ -446,9 +446,9 @@ ACT.stage=v=>{S.stage=+v;refresh()};
 ACT.play1=(v,btn)=>{
  if(PLAY.on){stopAll();return}
  const dur=Math.min(3,SRC[S.src].dur),p0=S.pos;
- const buf=genAudio({src:S.src,fs:S.afs,bits:S.abits,ch:S.ach,amp:S.amp,t0:p0,dur});
+ const an=S.stage<2,fs=an?44100:S.afs,buf=genAudio({src:S.src,fs,bits:an?24:S.abits,ch:S.ach,amp:S.amp,t0:p0,dur});
  $('#chain').classList.add('run');
- playBuf(buf,S.afs,{btn,onTick:t=>{S.pos=(p0+t)%4;refresh()},onDone:()=>{S.pos=p0;refresh()}});
+ playBuf(buf,fs,{btn,onTick:t=>{S.pos=(p0+t)%4;refresh()},onDone:()=>{S.pos=p0;refresh()}});
 };
 const N=()=>8<<S.win;
 OUT.afs=()=>`<b>${nf(S.afs)}</b> Hz`;
@@ -477,6 +477,37 @@ function renderCodes(){
  const parts=[];let len=0;for(let j=0;j<60&&len<420;j++){const k=k0+j;for(let c=0;c<nl;c++){parts.push(bin(qIdx(sample(S.src,k/fs,c)*S.amp,b),b));len+=b}}
  el.innerHTML=h+`<div class="lbl">Tak vypadá začátek souboru</div><div class="bits">${parts.join('<span>·</span>')}</div>`;
 }
+let geo=null;
+function lupa(g,c0,px,vyq){
+ const {x,w,R}=g,{x0,x1,top,k,b,stage}=c0,Lm=2**b-1;
+ const v=clamp(sample(S.src,k/c0.fs,0)*S.amp,-1,1),u=(v+1)/2*Lm,i=Math.round(u),err=u-i;
+ const iw=R*25,ih=R*16,ix=px>w*.5?x0+R*.4:x1-iw,iy=top+R*.2;
+ // spojnice a kroužek v hlavním grafu
+ dot(x,px,vyq,R*.2,C.orange);
+ x.beginPath();x.strokeStyle='#fff';x.lineWidth=R*.14;x.arc(px,vyq,R*.6,0,TAU);x.stroke();
+ line(x,px,vyq+R*.6,px,iy+ih,'rgba(255,255,255,.35)',1,[R*.2,R*.2]);
+ x.fillStyle='rgba(22,19,14,.97)';x.strokeStyle=C.orange;x.lineWidth=R*.12;x.beginPath();x.roundRect(ix,iy,iw,ih,R*.6);x.fill();x.stroke();
+ TH(x,(stage===2?'LUPA · VZOREK ':'LUPA · ÚROVEŇ PRO VZOREK ')+nf(k),ix+R*.8,iy+R*.95,R*.6,C.orange);
+ const ya=iy+R*2.5,yb=iy+ih-R*4.4,sp=(yb-ya)/2,yc=yb-sp;
+ const cx=ix+iw*.6;
+ for(let d=-1;d<=1;d++){
+  const li=i+d;if(li<0||li>Lm)continue;
+  const y=yb-(d+1)*sp;
+  line(x,ix+R*5.2,y,ix+iw-R*.6,y,d===0?'rgba(255,151,46,.5)':'rgba(244,241,234,.18)',d===0?1.5:1);
+  T(x,nf(li),ix+R*4.8,y,R*.72,d===0?C.orange:'rgba(244,241,234,.5)','right');
+ }
+ const yu=yc-err*sp,xa=cx-R*2.2,xo=cx+R*1.4,xe=cx+R*4.6;
+ line(x,xa,yu,xo,yu,'rgba(244,241,234,.45)',1,[R*.2,R*.2]);
+ line(x,xo,yc,ix+iw-R*.6,yc,C.orange,R*.2);
+ line(x,xe,yu,xe,yc,C.bad,R*.12);line(x,xe-R*.3,yu,xe+R*.3,yu,C.bad,R*.12);line(x,xe-R*.3,yc,xe+R*.3,yc,C.bad,R*.12);
+ dot(x,xa,yu,R*.45,C.cream);dot(x,xo,yc,R*.55,C.orange);
+ T(x,'změřeno',xa,yu+(err<0?1:-1)*R*1.1,R*.7,'rgba(244,241,234,.7)','center');
+ T(x,'zaokrouhleno',xo,yc-(err<0?1:-1)*R*1.15,R*.7,C.orange,'center');
+ const ty=iy+ih-R*3.4;
+ T(x,`změřeno ${nf(v,4)} → úroveň ${nf(i)} z ${nf(Lm)}`,ix+R*.8,ty,R*.72,C.cream);
+ T(x,`kód ${bin(i,b).replace(/(.{4})(?=.)/g,'$1 ')}`,ix+R*.8,ty+R*1.2,R*.72,C.orange);
+ T(x,`chyba zaokrouhlení ${nf(err,2)} úrovně`,ix+R*.8,ty+R*2.4,R*.72,'rgba(255,106,77,.95)');
+}
 function r1(){
  const sg=STAGES[S.stage];
  $$('#chain .tile').forEach((t,i)=>t.setAttribute('aria-pressed',i===S.stage));
@@ -484,7 +515,7 @@ function r1(){
  const Nn=N(),fs=S.afs,Tw=Nn/fs,t0=S.pos,b=S.abits;
  $('#tag1').innerHTML=`<i class="${sg.cls==='an'?'a':''}"></i>${sg.n} · ${sg.s}`;
  $('#cap1').textContent=sg.cap;
- $('#bd1').innerHTML=S.stage<2||S.stage===5?'':`ilustrativně hrubé: ${nf(fs)} Hz · ${b} bity<br>${nf(2**b)} úrovní · ${S.ach===2?'stereo':'mono'}`;
+ $('#bd1').innerHTML=S.stage<2||S.stage===5?'':`${nf(fs)} Hz · ${b} bitů<br>${nf(2**b)} úrovní · ${S.ach===2?'stereo':'mono'}`;
  cv.hidden=S.stage===3;codes.hidden=S.stage!==3;
  if(S.stage===3){renderCodes();return}
  const g=setup(cv),{x,w,h,R}=g;
@@ -492,6 +523,8 @@ function r1(){
  timeAxis(g,t0,Tw,x0,x1,h-R*1.6);
  const k0=Math.ceil(t0*fs-1e-9);
  const kx=k=>x0+(k/fs-t0)/Tw*(x1-x0);
+ const kmax=Math.floor((t0+Tw)*fs);geo={x0,x1,t0,Tw,fs};
+ if(S.lk==null||S.lk<k0||S.lk>kmax)S.lk=Math.round((k0+kmax)/2);
  const qv=(c)=>(k)=>qVal(qIdx(sample(S.src,k/fs,c)*S.amp,b),b);
  for(let c=0;c<nl;c++){
   const cy=top+LH*c+LH/2,vy=v=>cy-v*A;
@@ -532,6 +565,7 @@ function r1(){
    curve(an,'rgba(189,182,167,.35)',R*.12,[R*.3,R*.3]);
    curve(px=>recon(q,t0+(px-x0)/(x1-x0)*Tw,fs),C.orange,R*.26);
   }
+  if(c===0&&S.lupa&&(S.stage===2||S.stage===4)){const kk=S.lk;lupa(g,{x0,x1,top,k:kk,b,fs,stage:S.stage},kx(kk),vy(qv(0)(kk)))}
  }
  if(S.stage===5){ // reproduktor
   const cx=w-R*7,cy=top+R*1.2,v=recon(qv(0),t0,fs);
@@ -540,8 +574,8 @@ function r1(){
   x.beginPath();x.fillStyle=C.orange;x.arc(cx,cy+R*.5,R*1.25+v*R*.3,0,TAU);x.fill();
   dot(x,cx,cy+R*.5,R*.5+v*R*.15,'#17140F');
  }
- const tc=$('#tg1');tc.style.display=S.stage===4?'flex':'none';
- $$('#tg1 .chip').forEach((bb,i)=>bb.classList.toggle('on',(i===1)===S.smooth));
+ $('#tg1').style.display=(S.stage===2||S.stage===4)?'flex':'none';$('#sm1').style.display=S.stage===4?'flex':'none';
+ $$('#sm1 .chip').forEach((bb,i)=>bb.classList.toggle('on',(i===1)===S.smooth));$('#lp1').classList.toggle('on',S.lupa);
 }
 TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
  build(){
@@ -549,7 +583,7 @@ TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
   return `<div class="chain card" id="chain">${tiles}</div>
   <div class="split"><div class="col">
    <div class="scope grow"><canvas id="c1"></canvas><div id="codes" hidden></div><div class="tag" id="tag1"></div><div class="cap" id="cap1"></div><div class="badge" id="bd1"></div>
-    <div class="tg" id="tg1" style="display:none"><button class="chip" data-act="smooth" data-v="0">Schody</button><button class="chip" data-act="smooth" data-v="1">Vyhlazení</button></div></div>
+    <div class="tg" id="tg1" style="display:none"><span id="sm1" style="display:none;gap:.4rem"><button class="chip" data-act="smooth" data-v="0">Schody</button><button class="chip" data-act="smooth" data-v="1">Vyhlazení</button></span><button class="chip" id="lp1" data-act="lupa">Lupa</button></div></div>
    <div class="card scrub">
     <div class="ctl"><div class="hd"><span class="lbl">Okno</span><span class="val" data-o="win"></span></div><input type="range" data-k="win" min="0" max="7" step="1"></div>
     <div class="ctl"><div class="hd"><span class="lbl">Pozice ve zvuku</span><span class="val" data-o="pos"></span></div><input type="range" data-k="pos" min="0" max="4" step="0.005"></div>
@@ -560,7 +594,13 @@ TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
     <div class="row" style="margin-top:auto"><button class="btn" data-act="play1" style="flex:2">${PLAYI}Poslechnout</button><button class="btn sec" data-act="stop">${STOPI}</button></div>
    </div></div>`;
  },
- init(){ACT.smooth=v=>{S.smooth=v==='1';refresh()}},
+ init(){ACT.smooth=v=>{S.smooth=v==='1';refresh()};ACT.lupa=()=>{S.lupa=!S.lupa;refresh()};
+  const cv=$('#c1');let d=false;
+  const pick=e=>{if(!S.lupa||!geo||(S.stage!==2&&S.stage!==4))return;const r=cv.getBoundingClientRect(),px=e.clientX-r.left;S.lk=Math.round((geo.t0+(px-geo.x0)/(geo.x1-geo.x0)*geo.Tw)*geo.fs);refresh()};
+  cv.addEventListener('pointerdown',e=>{d=true;cv.setPointerCapture(e.pointerId);pick(e)});
+  cv.addEventListener('pointermove',e=>{if(d)pick(e)});
+  cv.addEventListener('pointerup',()=>d=false);cv.addEventListener('pointercancel',()=>d=false);
+ },
  render:r1});
 })();
 
