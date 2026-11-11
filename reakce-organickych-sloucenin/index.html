@@ -1089,7 +1089,7 @@ const SEL={vliv:m=>[['Substrát',[['nitro','Nitrobenzen'],['nh2','Anilin'],['cl'
  oxkarb:m=>[['Karbonylová sloučenina',[['a','aldehyd'],['k','keton']],m.sub,v=>'oxkarb-'+v]]};
 function nav(){
   const m=mech();
-  $('chips').innerHTML=CH.map(([id,n])=>{const has=MECH.some(x=>x.ch===id);return `<button class="chip" type="button" data-ch="${id}" ${has?'':'disabled'} aria-current="${id===m.ch}">${n}${has?'':' <small>· brzy</small>'}</button>`}).join('');
+  $('chips').innerHTML=CH.filter(([id])=>MECH.some(x=>x.ch===id)).map(([id,n])=>{const has=true;return `<button class="chip" type="button" data-ch="${id}" ${has?'':'disabled'} aria-current="${id===m.ch}">${n}${has?'':' <small>· brzy</small>'}</button>`}).join('');
   [...$('chips').children].forEach(b=>b.onclick=()=>select(MECH.findIndex(x=>x.ch===b.dataset.ch)));
   const seen={};$('tabs').innerHTML=MECH.map((x,i)=>{if(x.ch!==m.ch)return '';let idx=i,sel=i===mi;if(x.grp){if(seen[x.grp])return '';seen[x.grp]=1;sel=m.grp===x.grp;idx=sel?mi:MECH.findIndex(y=>x.grp==='vliv'?y.id==='vliv-nitro-m':y.grp===x.grp)}
    return `<button class="tab" role="tab" type="button" data-i="${idx}" aria-selected="${sel}"><b>${x.tab}</b>${x.name}</button>`}).join('');
