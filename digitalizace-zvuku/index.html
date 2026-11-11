@@ -620,15 +620,23 @@ function r1(){
   if(S.stage===0){
    if(Tw<=.04){ // částice vzduchu
     const rows=13,cols=110,py0=top-R*.4,ph=h*.36;
+    // hustota částic = 1 + signál: zhuštění leží přesně pod vrcholy křivky (částice rozdělené podle její kumulativní hustoty)
+    const NS=600,dx=(x1-x0)/NS,sv=[];let mean=0,pk=1e-9;
+    for(let i=0;i<=NS;i++){const v=an(x0+i*dx);sv.push(v);mean+=v}mean/=NS+1;
+    for(let i=0;i<=NS;i++){sv[i]-=mean;pk=Math.max(pk,Math.abs(sv[i]))}
+    const gk=Math.min(.85/pk,1.6),cdf=[0];
+    for(let i=0;i<NS;i++)cdf.push(cdf[i]+(1+gk*(sv[i]+sv[i+1])/2)*dx);
+    const tot=cdf[NS],pos=[];let ii=0;
+    for(let j=0;j<cols;j++){const tg=(j+.5)/cols*tot;while(ii<NS-1&&cdf[ii+1]<tg)ii++;const f=(tg-cdf[ii])/(cdf[ii+1]-cdf[ii]||1);pos.push(x0+(ii+f)*dx)}
     for(let r=0;r<rows;r++)for(let j=0;j<cols;j++){
-     const bx=x0+(j+.5)/cols*(x1-x0),s2=an(bx),px=bx-s2*R*1.7,py=py0+(r+.5)/rows*ph;
+     const px=pos[j],py=py0+(r+.5)/rows*ph;
      dot(x,px,py,R*.17,'rgba(244,241,234,'+(.35+.4*Math.abs(Math.sin(r*7.3+j*.1)))+')');
     }
    }else T(x,'Přibliž si graf (kolečko myši nebo posuvník Zvětšení) a uvidíš kmitání částic vzduchu.',(x0+x1)/2,top+h*.15,R*.8,'rgba(244,241,234,.5)','center');
    const cy2=h-bot-(h-top-bot)*.2,vf2=v=>cy2-v*A*.62;
    line(x,x0,cy2,x1,cy2,C.grid2,1);
    if(wave)wv(vf2,C.analog);else curve(an,C.analog,R*.2,null,vf2);
-   T(x,'tlak vzduchu',x0,cy2-A*.62-R*.7,R*.78,'rgba(244,241,234,.6)');
+   T(x,'tlak vzduchu: nahoře zhuštění, dole zředění',x0,cy2-A*.62-R*.7,R*.78,'rgba(244,241,234,.6)');
   }else if(S.stage===1){
    if(wave)wv(vy,C.analog);else curve(an,C.analog,R*.22);
    T(x,'napětí',x0,top+LH*c+R*.7,R*.78,'rgba(244,241,234,.6)');
