@@ -228,6 +228,9 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 .msg2{margin-top:.5rem;font-size:.8rem;line-height:1.35;color:var(--ink2)}.msg2.bad{color:var(--bad);font-weight:600}
 .scope.drop{outline:.25rem dashed var(--orange);outline-offset:-.6rem}
 
+#c1{cursor:grab;touch-action:none}#c1:active{cursor:grabbing}
+.chips.mini{margin-top:.45rem;gap:.35rem}.chips.mini .chip{min-height:2rem;padding:.2rem .75rem;font-size:.8rem}
+
 </style>
 </head>
 <body>
@@ -277,7 +280,9 @@ function niceStep(range,target){const raw=range/target,p=Math.pow(10,Math.floor(
 /* časová osa v ms; t0 a Tw v sekundách */
 function timeAxis(g,t0,Tw,x0,x1,yb){
  const {x,R}=g;const stepMs=niceStep(Tw*1000,7),first=Math.ceil(t0*1000/stepMs)*stepMs;
- for(let m=first;m<=(t0+Tw)*1000+1e-9;m+=stepMs){const px=x0+((m/1000-t0)/Tw)*(x1-x0);line(x,px,0,px,yb,C.grid,1);T(x,nf(m,stepMs<1?2:stepMs<10?1:0)+' ms',px,yb+R*.9,R*.72,'rgba(244,241,234,.55)','center')}
+ for(let m=first;m<=(t0+Tw)*1000+1e-9;m+=stepMs){const px=x0+((m/1000-t0)/Tw)*(x1-x0);line(x,px,0,px,yb,C.grid,1);
+  const lab=stepMs>=1000?nf(m/1000,stepMs%1000?1:0)+' s':nf(m,stepMs<1?2:stepMs<10?1:0)+' ms';
+  T(x,lab,px,yb+R*.9,R*.72,'rgba(244,241,234,.55)','center')}
 }
 
 /* ========== zdroje zvuku ========== */
@@ -304,7 +309,7 @@ const MAPS={dur:v=>Math.max(1,Math.round(Math.pow(5000,v/100)))};
 const IMAP={dur:d=>100*Math.log(d)/Math.log(5000)};
 const S={tab:0,sound:true,
  // 1 Cesta zvuku
- src:'melodie',afs:44100,abits:16,ach:1,win:4,pos:0.02,amp:.9,stage:2,smooth:false,lupa:true,lk:null,
+ src:'melodie',afs:44100,abits:16,ach:1,tw:.006,ph:null,pos:0.02,amp:.9,stage:2,smooth:false,lupa:true,lk:null,
  // 2 Analog × digitál
  gen:0,wmode:'copy',
  // 3 Vzorkování
@@ -448,21 +453,86 @@ const STAGES=[
   cap:'Membrána reproduktoru kmitá podle signálu a rozechvěje vzduch. Uši slyší zvuk.'},
 ];
 ACT.stage=v=>{S.stage=+v;refresh()};
-const PM=()=>S.src==='vlastni'&&USR?Math.max(.1,USR.dur-.06):4;
-function fitPos(){const el=$('input[data-k=pos]');if(!el)return;el.max=PM();if(S.pos>PM())S.pos=0}
-HOOK.src=()=>{fitPos()};
+const TT=()=>S.src==='vlastni'&&USR?USR.dur:SRC[S.src].dur;
+const TMIN=()=>8/S.afs;
+const TMAXW=()=>Math.max(TT(),TMIN()*2);
+const clampTw=v=>clamp(v,TMIN(),TMAXW());
+function fitPos(){S.tw=clampTw(S.tw);const mx=Math.max(0,TT()-S.tw);S.pos=clamp(S.pos,0,mx);const el=$('input[data-k=pos]');if(el)el.max=Math.max(mx,.001)}
+HOOK.src=v=>{if(v!=='vlastni'&&S.tw>SRC[v].dur*.5)S.tw=.006;fitPos()};HOOK.tw=()=>fitPos();
+MAPS.zoom=v=>{const a=TMIN(),b=TMAXW();return b*Math.pow(a/b,v/100)};
+IMAP.zoom=t=>{const a=TMIN(),b=TMAXW();return clamp(Math.log(t/b)/Math.log(a/b)*100,0,100)};
+ACT.zoomto=v=>{const c=S.pos+S.tw/2;S.tw=clampTw(v==='all'?TT():v==='s'?1:v==='ms'?.01:64/S.afs);S.pos=c-S.tw/2;fitPos();refresh()};
+const fmtT=t=>t>=1?nf(t,t>=10?0:1)+' s':nf(t*1000,t*1000<10?2:t*1000<100?1:0)+' ms';
+const CBL=c=>c&&USR&&USR.ch.length>1?1:0;
+/* rozsah (min, max) analogového signálu v časovém úseku, pro vykreslení průběhu při velkém oddálení */
+function ext(c,ta,tb){
+ if(S.src==='vlastni'&&USR){
+  const ci=CBL(c),a=USR.ch[ci],r=USR.rate,B=USR.B;let i0=Math.max(0,Math.floor(ta*r)),i1=Math.min(a.length-1,Math.ceil(tb*r));
+  if(i1<i0)return[0,0];let mn=1e9,mx=-1e9;
+  if(i1-i0<2*B){for(let i=i0;i<=i1;i++){const v=a[i];if(v<mn)mn=v;if(v>mx)mx=v}}
+  else{const p=USR.pk[ci],b0=Math.ceil(i0/B),b1=Math.floor((i1+1)/B)-1;
+   for(let i=i0;i<b0*B;i++){const v=a[i];if(v<mn)mn=v;if(v>mx)mx=v}
+   for(let k=b0;k<=b1;k++){if(p.mn[k]<mn)mn=p.mn[k];if(p.mx[k]>mx)mx=p.mx[k]}
+   for(let i=(b1+1)*B;i<=i1;i++){const v=a[i];if(v<mn)mn=v;if(v>mx)mx=v}}
+  const g=USR.gain*S.amp;return[mn*g,mx*g];
+ }
+ let mn=1e9,mx=-1e9;for(let j=0;j<=48;j++){const v=sample(S.src,ta+(tb-ta)*j/48,c)*S.amp;if(v<mn)mn=v;if(v>mx)mx=v}return[mn,mx];
+}
+/* vlastní soubor: zpracování (A/D) po částech, aby šla přehrát i dlouhá skladba */
+function renderUsr(p0,fs,bits,len,fin,fout){
+ const r=USR.rate,start=p0*r,n=Math.max(1,Math.round(len*fs)),L=2**Math.min(bits,24)-1,q=bits<24,g=USR.gain*S.amp,out=[],step=r/fs,fi=fs*.004,fo=fs*.01;
+ for(let c=0;c<S.ach;c++){
+  const a=USR.ch[CBL(c)],o=new Float32Array(n),na=a.length;
+  for(let i=0;i<n;i++){
+   const u=start+i*step,i0=u|0,f=u-i0;
+   let v=i0<na?((a[i0]*(1-f)+(i0+1<na?a[i0+1]:0)*f)*g):0;
+   if(v>1)v=1;else if(v<-1)v=-1;
+   if(q)v=Math.round((v+1)/2*L)/L*2-1;
+   let e=1;if(fin&&i<fi)e=i/fi;if(fout&&n-i<fo)e=Math.min(e,(n-i)/fo);
+   o[i]=v*.8*e;
+  }
+  out.push(o);
+ }
+ return out;
+}
+const endPlay=(btn,onDone)=>{PLAY.on=false;cancelAnimationFrame(PLAY.raf);btn&&btn.classList.remove('on');onDone&&onDone();$$('.run').forEach(e=>e.classList.remove('run'))};
+function playUsrNative(p0,btn,onTick,onDone){
+ stopAll();const a=actx(),s=a.createBufferSource(),gn=a.createGain();
+ s.buffer=USR.ab;gn.gain.value=USR.gain*S.amp*.8;s.connect(gn);gn.connect(MG);
+ const t0=a.currentTime+.03;s.start(t0,p0,USR.dur-p0);
+ PLAY.on=true;PLAY.t0=t0;PLAY.dur=USR.dur-p0;btn&&btn.classList.add('on');
+ s.onended=()=>{if(SRCN===s){SRCN=null;endPlay(btn,onDone)}};SRCN=s;
+ const loop=()=>{if(!PLAY.on)return;onTick(Math.max(0,a.currentTime-t0));PLAY.raf=requestAnimationFrame(loop)};loop();
+}
+function playUsrQ(p0,fs,bits,btn,onTick,onDone){
+ stopAll();const a=actx(),CH=5,total=USR.dur-p0,t00=a.currentTime+.06;
+ PLAY.on=true;PLAY.t0=t00;PLAY.dur=total;btn&&btn.classList.add('on');
+ const id=PLAY.id=(PLAY.id||0)+1;let off=0;
+ const feed=()=>{
+  while(PLAY.on&&PLAY.id===id&&off<total-1e-6&&off<a.currentTime-t00+10){
+   const len=Math.min(CH,total-off),last=off+len>=total-1e-6,chs=renderUsr(p0+off,fs,bits,len,off===0,last);
+   const b=a.createBuffer(chs.length,chs[0].length,fs);chs.forEach((d,i)=>b.copyToChannel(d,i));
+   const s=a.createBufferSource();s.buffer=b;s.connect(MG);s.start(t00+off);OSC.push(s);
+   if(last)s.onended=()=>{if(PLAY.id===id&&PLAY.on)endPlay(btn,onDone)};
+   off+=len;
+  }
+ };
+ const loop=()=>{if(!PLAY.on||PLAY.id!==id)return;feed();onTick(Math.max(0,a.currentTime-t00));PLAY.raf=requestAnimationFrame(loop)};loop();
+}
 ACT.play1=(v,btn)=>{
  if(PLAY.on){stopAll();return}
- const cust=S.src==='vlastni'&&USR,p0=S.pos,dur=cust?Math.max(.2,Math.min(6,USR.dur-p0)):Math.min(3,SRC[S.src].dur);
- const an=S.stage<2,fs=an?44100:S.afs,buf=genAudio({src:S.src,fs,bits:an?24:S.abits,ch:S.ach,amp:S.amp,t0:p0,dur});
+ const cust=S.src==='vlastni'&&USR,p0=S.pos,an=S.stage<2;
  $('#chain').classList.add('run');
- playBuf(buf,fs,{btn,onTick:t=>{S.pos=cust?Math.min(p0+t,PM()):(p0+t)%4;refresh()},onDone:()=>{S.pos=p0;refresh()}});
+ const tick=t=>{S.ph=p0+t;if(S.ph>S.pos+S.tw||S.ph<S.pos){S.pos=S.ph;fitPos()}refresh()};
+ const done=()=>{S.ph=null;S.pos=p0;fitPos();refresh()};
+ if(cust){if(an)playUsrNative(p0,btn,tick,done);else playUsrQ(p0,S.afs,S.abits,btn,tick,done);return}
+ const dur=clamp(SRC[S.src].dur-p0,.3,3),fs=an?44100:S.afs,buf=genAudio({src:S.src,fs,bits:an?24:S.abits,ch:S.ach,amp:S.amp,t0:p0,dur});
+ playBuf(buf,fs,{btn,onTick:tick,onDone:done});
 };
-const N=()=>8<<S.win;
 OUT.afs=()=>`<b>${nf(S.afs)}</b> Hz`;
 OUT.abits=()=>`<b>${S.abits}</b> ${S.abits===1?'bit':S.abits<5?'bity':'bitů'} = ${nf(2**S.abits)} úrovní`;
-OUT.win=()=>`<b>${N()}</b> vzorků ≈ ${ms(N()/S.afs)}`;
-OUT.pos=()=>`<b>${nf(S.pos,2)}</b> s`;
+OUT.tw=()=>`<b>${fmtT(S.tw)}</b> · ${nf(Math.round(S.tw*S.afs))} vzorků`;
+OUT.pos=()=>`<b>${nf(S.pos,S.tw<.1?3:2)}</b> s`;
 
 function recon(vq,t,fs){ // Lanczos interpolace kvantovaných vzorků (vizuální rekonstrukce)
  const u=t*fs,k0=Math.round(u);let s=0;
@@ -520,61 +590,67 @@ function r1(){
  const sg=STAGES[S.stage];
  $$('#chain .tile').forEach((t,i)=>t.setAttribute('aria-pressed',i===S.stage));
  const cv=$('#c1'),codes=$('#codes');
- const Nn=N(),fs=S.afs,Tw=Nn/fs,t0=S.pos,b=S.abits;
+ const fs=S.afs,b=S.abits;
  $('#tag1').innerHTML=`<i class="${sg.cls==='an'?'a':''}"></i>${sg.n} · ${sg.s}`;
  $('#cap1').textContent=sg.cap;
  $('#bd1').innerHTML=S.stage<2||S.stage===5?'':`${nf(fs)} Hz · ${b} bitů<br>${nf(2**b)} úrovní · ${S.ach===2?'stereo':'mono'}`;
  cv.hidden=S.stage===3;codes.hidden=S.stage!==3;
+ $('#tg1').style.display=(S.stage===2||S.stage===4)?'flex':'none';$('#sm1').style.display=S.stage===4?'flex':'none';
+ $$('#sm1 .chip').forEach((bb,i)=>bb.classList.toggle('on',(i===1)===S.smooth));$('#lp1').classList.toggle('on',S.lupa);
  if(S.stage===3){renderCodes();return}
  const g=setup(cv),{x,w,h,R}=g;
+ const Tw=S.tw,t0=S.pos;
  const x0=R*((S.stage===2&&2**b<=16)?3.2:1.4),x1=w-R*1.4,nl=S.stage===0?1:S.ach,top=R*4.2,bot=R*2.4,LH=(h-top-bot)/nl,A=LH*.4;
+ const spp=Tw*fs/(x1-x0),wave=spp>=1.2,dots=spp<=.33,insetOn=S.lupa&&(S.stage===2||S.stage===4)&&Tw*fs<=700;
  timeAxis(g,t0,Tw,x0,x1,h-R*1.6);
- const k0=Math.ceil(t0*fs-1e-9);
+ geo={x0,x1,t0,Tw,fs,insetOn};
+ const k0=Math.ceil(t0*fs-1e-9),kmax=Math.floor((t0+Tw)*fs);
+ if(insetOn&&(S.lk==null||S.lk<k0||S.lk>kmax))S.lk=Math.round((k0+kmax)/2);
  const kx=k=>x0+(k/fs-t0)/Tw*(x1-x0);
- const kmax=Math.floor((t0+Tw)*fs);geo={x0,x1,t0,Tw,fs};
- if(S.lk==null||S.lk<k0||S.lk>kmax)S.lk=Math.round((k0+kmax)/2);
  const qv=(c)=>(k)=>qVal(qIdx(sample(S.src,k/fs,c)*S.amp,b),b);
  for(let c=0;c<nl;c++){
   const cy=top+LH*c+LH/2,vy=v=>cy-v*A;
   line(x,x0,cy,x1,cy,C.grid2,1);
   if(nl===2)TH(x,c?'PRAVÝ':'LEVÝ',x1,top+LH*c+R*.7,R*.7,'rgba(244,241,234,.5)','right');
   const an=px=>sample(S.src,t0+(px-x0)/(x1-x0)*Tw,c)*S.amp;
-  const curve=(fn,col,lw,dash)=>{x.beginPath();x.strokeStyle=col;x.lineWidth=lw;x.setLineDash(dash||[]);x.lineJoin='round';let f=true;for(let px=x0;px<=x1;px+=2){const y=vy(fn(px));if(f){x.moveTo(px,y);f=false}else x.lineTo(px,y)}x.stroke();x.setLineDash([])};
+  const wv=(vf,col)=>{x.beginPath();x.strokeStyle=col;x.lineWidth=1;for(let px=Math.ceil(x0);px<=x1;px++){const[mn,mx]=ext(c,t0+(px-x0)/(x1-x0)*Tw,t0+(px+1-x0)/(x1-x0)*Tw);let ya=vf(mx),yb=vf(mn);if(yb-ya<1.4){const m=(ya+yb)/2;ya=m-.7;yb=m+.7}x.moveTo(px+.5,ya);x.lineTo(px+.5,yb)}x.stroke()};
+  const curve=(fn,col,lw,dash,vf)=>{vf=vf||vy;x.beginPath();x.strokeStyle=col;x.lineWidth=lw;x.setLineDash(dash||[]);x.lineJoin='round';let f=true;for(let px=x0;px<=x1;px+=2){const y=vf(fn(px));if(f){x.moveTo(px,y);f=false}else x.lineTo(px,y)}x.stroke();x.setLineDash([])};
+  const steps=(col,lw)=>{const q=qv(c);let first=true;x.beginPath();x.strokeStyle=col;x.lineWidth=lw;x.lineJoin='miter';for(let k=k0-1;kx(k)<x1;k++){const xa=Math.max(x0,kx(k)),xb=Math.min(x1,kx(k+1)),y=vy(q(k));if(xb<x0)continue;if(first){x.moveTo(xa,y);first=false}else x.lineTo(xa,y);x.lineTo(xb,y)}x.stroke()};
   if(S.stage===0){
-   // částice vzduchu
-   const rows=13,cols=110,py0=top-R*.4,ph=h*.36;
-   for(let r=0;r<rows;r++)for(let j=0;j<cols;j++){
-    const bx=x0+(j+.5)/cols*(x1-x0),s=an(bx),px=bx-s*R*1.7,py=py0+(r+.5)/rows*ph;
-    dot(x,px,py,R*.17,'rgba(244,241,234,'+(.35+.4*Math.abs(Math.sin(r*7.3+j*.1)))+')');
-   }
-   const cy2=h-bot-(h-top-bot)*.2;
+   if(Tw<=.04){ // částice vzduchu
+    const rows=13,cols=110,py0=top-R*.4,ph=h*.36;
+    for(let r=0;r<rows;r++)for(let j=0;j<cols;j++){
+     const bx=x0+(j+.5)/cols*(x1-x0),s2=an(bx),px=bx-s2*R*1.7,py=py0+(r+.5)/rows*ph;
+     dot(x,px,py,R*.17,'rgba(244,241,234,'+(.35+.4*Math.abs(Math.sin(r*7.3+j*.1)))+')');
+    }
+   }else T(x,'Přibliž si graf (kolečko myši nebo posuvník Zvětšení) a uvidíš kmitání částic vzduchu.',(x0+x1)/2,top+h*.15,R*.8,'rgba(244,241,234,.5)','center');
+   const cy2=h-bot-(h-top-bot)*.2,vf2=v=>cy2-v*A*.62;
    line(x,x0,cy2,x1,cy2,C.grid2,1);
-   x.beginPath();x.strokeStyle=C.analog;x.lineWidth=R*.2;let f=true;for(let px=x0;px<=x1;px+=2){const y=cy2-an(px)*A*.62;if(f){x.moveTo(px,y);f=false}else x.lineTo(px,y)}x.stroke();
+   if(wave)wv(vf2,C.analog);else curve(an,C.analog,R*.2,null,vf2);
    T(x,'tlak vzduchu',x0,cy2-A*.62-R*.7,R*.78,'rgba(244,241,234,.6)');
   }else if(S.stage===1){
-   curve(an,C.analog,R*.22);
+   if(wave)wv(vy,C.analog);else curve(an,C.analog,R*.22);
    T(x,'napětí',x0,top+LH*c+R*.7,R*.78,'rgba(244,241,234,.6)');
   }else if(S.stage===2){
    const L=2**b;
    if(L<=32)for(let i=0;i<L;i++){const y=vy(qVal(i,b));line(x,x0,y,x1,y,C.grid,1);if(L<=16)T(x,bin(i,b),x0-R*.3,y,R*.62,'rgba(244,241,234,.5)','right')}
-   curve(an,'rgba(189,182,167,.5)',R*.14);
-   const q=qv(c);let first=true;
-   x.beginPath();x.strokeStyle=C.orange;x.lineWidth=R*.2;x.lineJoin='miter';
-   for(let k=k0-1;kx(k)<x1;k++){const xa=Math.max(x0,kx(k)),xb=Math.min(x1,kx(k+1)),y=vy(q(k));if(xb<x0)continue;if(first){x.moveTo(xa,y);first=false}else x.lineTo(xa,y);x.lineTo(xb,y)}
-   x.stroke();
-   for(let k=k0;kx(k)<=x1;k++){const px=kx(k),vo=sample(S.src,k/fs,c)*S.amp;line(x,px,cy,px,vy(vo),'rgba(255,151,46,.45)',1);dot(x,px,vy(vo),R*.2,C.cream);dot(x,px,vy(q(k)),R*.27,C.orange)}
+   if(wave)wv(vy,C.orange);
+   else{
+    curve(an,'rgba(189,182,167,.5)',R*.14);steps(C.orange,R*.2);
+    if(dots){const q=qv(c);for(let k=k0;kx(k)<=x1;k++){const px=kx(k),vo=sample(S.src,k/fs,c)*S.amp;line(x,px,cy,px,vy(vo),'rgba(255,151,46,.45)',1);dot(x,px,vy(vo),R*.2,C.cream);dot(x,px,vy(q(k)),R*.27,C.orange)}}
+   }
   }else if(S.stage===4){
-   curve(an,'rgba(189,182,167,.35)',R*.12,[R*.3,R*.3]);
-   const q=qv(c);
-   if(!S.smooth){let first=true;x.beginPath();x.strokeStyle=C.orange;x.lineWidth=R*.22;for(let k=k0-1;kx(k)<x1;k++){const xa=Math.max(x0,kx(k)),xb=Math.min(x1,kx(k+1)),y=vy(q(k));if(xb<x0)continue;if(first){x.moveTo(xa,y);first=false}else x.lineTo(xa,y);x.lineTo(xb,y)}x.stroke()}
-   else curve(px=>recon(q,t0+(px-x0)/(x1-x0)*Tw,fs),C.orange,R*.24);
+   if(wave)wv(vy,C.orange);
+   else{curve(an,'rgba(189,182,167,.35)',R*.12,[R*.3,R*.3]);const q=qv(c);
+    if(!S.smooth)steps(C.orange,R*.22);else curve(px=>recon(q,t0+(px-x0)/(x1-x0)*Tw,fs),C.orange,R*.24)}
   }else if(S.stage===5){
-   const q=qv(c);
-   curve(an,'rgba(189,182,167,.35)',R*.12,[R*.3,R*.3]);
-   curve(px=>recon(q,t0+(px-x0)/(x1-x0)*Tw,fs),C.orange,R*.26);
+   if(wave)wv(vy,C.orange);
+   else{const q=qv(c);curve(an,'rgba(189,182,167,.35)',R*.12,[R*.3,R*.3]);curve(px=>recon(q,t0+(px-x0)/(x1-x0)*Tw,fs),C.orange,R*.26)}
   }
-  if(c===0&&S.lupa&&(S.stage===2||S.stage===4)){const kk=S.lk;lupa(g,{x0,x1,top,k:kk,b,fs,stage:S.stage},kx(kk),vy(qv(0)(kk)))}
+  if(c===0&&insetOn){const kk=S.lk;lupa(g,{x0,x1,top,k:kk,b,fs,stage:S.stage},kx(kk),vy(qv(0)(kk)))}
  }
+ if((S.stage===2||S.stage===4)&&S.lupa&&!insetOn)T(x,'Přibliž si graf: uvidíš jednotlivé vzorky a detail jejich zaokrouhlení.',x0+R*.2,h-R*3,R*.7,'rgba(244,241,234,.5)');
+ if(S.ph!=null&&S.ph>=t0&&S.ph<=t0+Tw){const px=x0+(S.ph-t0)/Tw*(x1-x0);line(x,px,top-R*.5,px,h-R*1.6,'rgba(255,255,255,.8)',1.5)}
  if(S.stage===5){ // reproduktor
   const cx=w-R*7,cy=top+R*1.2,v=recon(qv(0),t0,fs);
   x.fillStyle='rgba(244,241,234,.1)';x.beginPath();x.roundRect(cx-R*2,cy-R*2.6,R*4,R*5.2,R*.5);x.fill();
@@ -582,8 +658,6 @@ function r1(){
   x.beginPath();x.fillStyle=C.orange;x.arc(cx,cy+R*.5,R*1.25+v*R*.3,0,TAU);x.fill();
   dot(x,cx,cy+R*.5,R*.5+v*R*.15,'#17140F');
  }
- $('#tg1').style.display=(S.stage===2||S.stage===4)?'flex':'none';$('#sm1').style.display=S.stage===4?'flex':'none';
- $$('#sm1 .chip').forEach((bb,i)=>bb.classList.toggle('on',(i===1)===S.smooth));$('#lp1').classList.toggle('on',S.lupa);
 }
 TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
  build(){
@@ -591,10 +665,11 @@ TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
   return `<div class="chain card" id="chain">${tiles}</div>
   <div class="split"><div class="col">
    <div class="scope grow"><canvas id="c1"></canvas><div id="codes" hidden></div><div class="tag" id="tag1"></div><div class="cap" id="cap1"></div><div class="badge" id="bd1"></div>
-    <div class="tg" id="tg1" style="display:none"><span id="sm1" style="display:none;gap:.4rem"><button class="chip" data-act="smooth" data-v="0">Schody</button><button class="chip" data-act="smooth" data-v="1">Vyhlazení</button></span><button class="chip" id="lp1" data-act="lupa">Lupa</button></div></div>
+    <div class="tg" id="tg1" style="display:none"><span id="sm1" style="display:none;gap:.4rem"><button class="chip" data-act="smooth" data-v="0">Schody</button><button class="chip" data-act="smooth" data-v="1">Vyhlazení</button></span><button class="chip" id="lp1" data-act="lupa">Detail vzorku</button></div></div>
    <div class="card scrub">
-    <div class="ctl"><div class="hd"><span class="lbl">Okno</span><span class="val" data-o="win"></span></div><input type="range" data-k="win" min="0" max="7" step="1"></div>
-    <div class="ctl"><div class="hd"><span class="lbl">Pozice ve zvuku</span><span class="val" data-o="pos"></span></div><input type="range" data-k="pos" min="0" max="4" step="0.005"></div>
+    <div class="ctl"><div class="hd"><span class="lbl">Zvětšení</span><span class="val" data-o="tw"></span></div><input type="range" data-k="tw" data-map="zoom" min="0" max="100" step="0.1">
+     <div class="chips mini"><button class="chip" data-act="zoomto" data-v="all">Celá skladba</button><button class="chip" data-act="zoomto" data-v="s">1 s</button><button class="chip" data-act="zoomto" data-v="ms">10 ms</button><button class="chip" data-act="zoomto" data-v="smp">64 vzorků</button></div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">Pozice ve zvuku</span><span class="val" data-o="pos"></span></div><input type="range" data-k="pos" min="0" max="1" step="any"></div>
    </div></div>
    <div class="side card">
     <div class="ctl"><div class="hd"><span class="lbl">Zdroj zvuku</span></div><div class="chips g2">${Object.keys(SRC).filter(k=>k!=='vlastni').map(k=>`<button class="chip" data-k="src" data-v="${k}">${SRC[k].n}</button>`).join('')}</div>
@@ -620,9 +695,10 @@ TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
     let pk=0;for(const a of ch)for(let i=0;i<a.length;i++){const v=Math.abs(a[i]);if(v>pk)pk=v}
     if(pk<1e-5){msg('V souboru je jen ticho.',1);return}
     const name=file.name.replace(/\.[^.]+$/,'');
-    USR={ch,rate,dur:max/rate,name,gain:.9/pk};SRC.vlastni.dur=USR.dur;
+    const B=256,pks=ch.map(a=>{const nb=Math.ceil(a.length/B),mn=new Float32Array(nb),mx=new Float32Array(nb);for(let k=0;k<nb;k++){let lo=1e9,hi=-1e9;const e=Math.min(a.length,(k+1)*B);for(let i=k*B;i<e;i++){const v=a[i];if(v<lo)lo=v;if(v>hi)hi=v}mn[k]=lo;mx[k]=hi}return{mn,mx}});
+    USR={ch,rate,dur:max/rate,name,gain:.9/pk,ab:buf,pk:pks,B};SRC.vlastni.dur=USR.dur;
     const chip=$('#usrChip');chip.hidden=false;chip.textContent=(name.length>22?name.slice(0,21)+'…':name)+' · '+mmss2(USR.dur);
-    S.pos=0;S.src='vlastni';fitPos();stopAll();
+    S.pos=0;S.src='vlastni';S.tw=USR.dur;S.ph=null;fitPos();stopAll();
     msg(`Načteno: ${file.name} · ${nf(rate)} Hz · ${ch.length===2?'stereo':'mono'}${buf.duration>600?' · použito prvních 10 minut':''}. Signál se upravil na stejnou hlasitost a ztrátový formát (např. MP3) je tu už dekódovaný.`);
     refresh();
    }catch(e){msg('Tento soubor se nepodařilo přečíst. Zkus MP3, WAV nebo OGG.',1)}
@@ -633,11 +709,20 @@ TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
   sc.addEventListener('dragover',e=>{e.preventDefault();sc.classList.add('drop')});
   sc.addEventListener('dragleave',()=>sc.classList.remove('drop'));
   sc.addEventListener('drop',e=>{e.preventDefault();sc.classList.remove('drop');load(e.dataTransfer.files[0])});
-  const cv=$('#c1');let d=false;
-  const pick=e=>{if(!S.lupa||!geo||(S.stage!==2&&S.stage!==4))return;const r=cv.getBoundingClientRect(),px=e.clientX-r.left;S.lk=Math.round((geo.t0+(px-geo.x0)/(geo.x1-geo.x0)*geo.Tw)*geo.fs);refresh()};
-  cv.addEventListener('pointerdown',e=>{d=true;cv.setPointerCapture(e.pointerId);pick(e)});
-  cv.addEventListener('pointermove',e=>{if(d)pick(e)});
-  cv.addEventListener('pointerup',()=>d=false);cv.addEventListener('pointercancel',()=>d=false);
+  const cv=$('#c1'),P=new Map();let mv=0,sp=0,sx=0,pd=0,pt=0;
+  const frac=px=>geo?clamp((px-geo.x0)/(geo.x1-geo.x0),0,1):0;
+  const zoomAt=(fr,nt)=>{const tA=S.pos+fr*S.tw;S.tw=clampTw(nt);S.pos=tA-fr*S.tw;fitPos();refresh()};
+  const pick=px=>{if(!geo||!geo.insetOn||(S.stage!==2&&S.stage!==4))return;S.lk=Math.round((geo.t0+(px-geo.x0)/(geo.x1-geo.x0)*geo.Tw)*geo.fs);refresh()};
+  cv.addEventListener('wheel',e=>{if(S.stage===3)return;e.preventDefault();const r=cv.getBoundingClientRect();zoomAt(frac(e.clientX-r.left),S.tw*Math.exp(e.deltaY*(e.ctrlKey?.01:.0018)))},{passive:false});
+  cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);P.set(e.pointerId,e.clientX);mv=0;sp=S.pos;sx=e.clientX;pt=S.tw;if(P.size===2){const v=[...P.values()];pd=Math.abs(v[0]-v[1])||1}});
+  cv.addEventListener('pointermove',e=>{
+   if(!P.has(e.pointerId)||!geo)return;P.set(e.pointerId,e.clientX);
+   if(P.size===2){const v=[...P.values()],r=cv.getBoundingClientRect();mv=9;zoomAt(frac((v[0]+v[1])/2-r.left),pt*pd/(Math.abs(v[0]-v[1])||1));return}
+   const dx=e.clientX-sx;if(Math.abs(dx)>4)mv=9;
+   if(mv){S.pos=sp-dx/(geo.x1-geo.x0)*S.tw;fitPos();refresh()}
+  });
+  const up=e=>{if(P.has(e.pointerId)){if(P.size===1&&!mv){const r=cv.getBoundingClientRect();pick(e.clientX-r.left)}P.delete(e.pointerId)}};
+  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',e=>P.delete(e.pointerId));
  },
  render:r1});
 })();
