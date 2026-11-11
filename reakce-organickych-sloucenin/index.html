@@ -877,7 +877,7 @@ const MECH=[
   {title:'Eliminace alkoxidu',text:'Volný pár atomu kyslíku obnovil dvojnou vazbu C=O a od atomu uhlíku se odštěpil methoxidový anion CH₃O⁻. Atom uhlíku je opět rovinný. Skupinu –OCH₃ nahradila skupina –OH: proběhla nukleofilní substituce.',
    pos:SAP[2],bonds:[...SAB,['C','O1',2],['O4','H4',1],['C','O4',1]],marks:{O3:['−',-6,-27]},arrows:[{f:'O3p3',t:'H4',bend:-8}],labels:[{x:120,y:292,t:'kyselina octová a methoxid'}]},
   {title:'Přenos protonu: vznik karboxylátu',text:'Methoxid je silná zásada a odebere kyselině kation H⁺. Vznikl methanol a octanový anion, ve kterém je celý záporný náboj rozprostřen mezi oba atomy kyslíku. Tento krok je nevratný.',
-   pos:SAP[3],bonds:[...SAB,['C','O1','r'],['C','O4','r'],['O3','H4',1]],marks:{O4:['−',-4,-28]},labels:[{x:215,y:292,t:'octanový anion'},{x:75,y:292,t:'methanol'}]}
+   pos:SAP[3],bonds:[...SAB,['C','O1','r'],['C','O4','r'],['O3','H4',1]],marks:{O4:['−','mid','O1','O4','C']},labels:[{x:215,y:292,t:'octanový anion'},{x:75,y:292,t:'methanol'}]}
  ]},
 {id:'disulfid',ch:'thioly',tab:'Ox',name:'Vznik disulfidu',
  scheme:['2',['m','methanthiol'],['→','oxidace'],['m','disulfid'],'+','H<sub>2</sub>O'],schemeSub:'mírná oxidace thiolu, zjednodušené znázornění vzniku disulfidické vazby',
@@ -1085,9 +1085,13 @@ const LAY=(()=>{
    if(best){l._ids=best.c;l._above=l.y<best.cy;l._mk=s.marks||{}}}
   const cnt={};for(const l of (s.labels||[]).slice().sort((a,b)=>a._above?b.y-a.y:a.y-b.y)){if(!l._ids)continue;const key=l._ids[0]+(l._above?'^':'v');l._slot=cnt[key]||0;cnt[key]=l._slot+1}}
  function labelPos(m,P,l,k){const ids=l._ids.filter(i=>P[i]);if(!ids.length)return [l.x,l.y];const b=box(m,P,[...ids,...lpOf(m,{pos:P},ids)]);
-  for(const id in l._mk||{}){if(!ids.includes(id)||!P[id])continue;const v=l._mk[id];if(Array.isArray(v)&&v[1]==='mid')continue;const r=rad(m,id),y=P[id][1]+(Array.isArray(v)?v[2]:-r-9),x=P[id][0]+(Array.isArray(v)?v[1]:0);
+  for(const id in l._mk||{}){if(!ids.includes(id)||!P[id])continue;const v=l._mk[id];if(Array.isArray(v)&&v[1]==='mid'){const a=P[v[2]],c=P[v[3]];if(a&&c){const x=(a[0]+c[0])/2,y=(a[1]+c[1])/2;b.x0=Math.min(b.x0,x-30);b.x1=Math.max(b.x1,x+30);b.y1=Math.max(b.y1,y+30)}continue}const r=rad(m,id),y=P[id][1]+(Array.isArray(v)?v[2]:-r-9),x=P[id][0]+(Array.isArray(v)?v[1]:0);
    b.x0=Math.min(b.x0,x-8);b.x1=Math.max(b.x1,x+8);b.y0=Math.min(b.y0,y-8);b.y1=Math.max(b.y1,y+8)}
-  const o=(l._slot||0)*17/k;return [(b.x0+b.x1)/2,l._above?b.y0-9/k-o:b.y1+19/k+o]}
+  const o=(l._slot||0)*17/k,hw=l.t.length*3.7/k,cx=(b.x0+b.x1)/2,cy=(b.y0+b.y1)/2;
+  const cand=[[cx,b.y1+19/k+o],[cx,b.y0-9/k-o],[b.x0-hw-6/k,cy+5/k],[b.x1+hw+6/k,cy+5/k]];if(l._above)cand.unshift(cand.splice(1,1)[0]);
+  const others=Object.keys(P).filter(id=>!ids.includes(id)&&vis(m,id));
+  const free=([x,y])=>others.every(id=>{const p=P[id],r=rad(m,id);return Math.abs(p[0]-x)>hw+r||p[1]<y-14/k-r||p[1]>y+4/k+r});
+  return cand.find(free)||cand[0]}
  function fit(m,s){const ids=Object.keys(s.pos).filter(id=>{const K=kd(m,id);return K&&!K.hidden});let b=box(m,s.pos,ids);
   for(const l of s.labels||[]){if(!l._ids)continue;const [x,y]=labelPos(m,s.pos,l,1),w=l.t.length*3.7;b={x0:Math.min(b.x0,x-w),x1:Math.max(b.x1,x+w),y0:Math.min(b.y0,y-12),y1:Math.max(b.y1,y+4)}}
   b.y0-=10;b.y1+=4;const W=b.x1-b.x0,H=b.y1-b.y0,k=Math.max(.55,Math.min(1.25,330/W,272/H));s.fit={cx:(b.x0+b.x1)/2,cy:(b.y0+b.y1)/2,k}}
@@ -1190,10 +1194,11 @@ function render(){
     const same=String(mA[id])===String(mB[id]);
     for(const [mv,op] of same?[[mB[id],1]]:[[mA[id],1-e],[mB[id],e]]){if(!mv)continue;
       const off=Array.isArray(mv),mk=off?mv[0]:mv;let x=pos[id][0]+(off?mv[1]:0),y=pos[id][1]+(off?mv[2]:-R(id)-(mk[0]==='δ'?5:9));
-      if(off&&mv[1]==='mid'){const p1=pos[mv[2]],p2=pos[mv[3]],pn=pos[mv[4]];if(!p1||!p2||!pn)continue;x=(p1[0]+p2[0])/2;y=(p1[1]+p2[1])/2;const dx=x-pn[0],dy=y-pn[1],l=Math.hypot(dx,dy)||1,need=R(mv[4])+11;if(l<need){x=pn[0]+dx/l*need;y=pn[1]+dy/l*need}}
+      if(off&&mv[1]==='mid'){const p1=pos[mv[2]],p2=pos[mv[3]],pn=pos[mv[4]];if(!p1||!p2||!pn)continue;x=(p1[0]+p2[0])/2;y=(p1[1]+p2[1])/2;const dx=x-pn[0],dy=y-pn[1],l=Math.hypot(dx,dy)||1,need=R(mv[4])+11;if(l<need){x=pn[0]+dx/l*need;y=pn[1]+dy/l*need};mv._dl=1}
       if(mk==='•')s+=`<circle cx="${x}" cy="${y+3}" r="4" fill="var(--electron)" opacity="${op}"/>`;
       else if(mk[0]==='δ')s+=`<text x="${x}" y="${y+4}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--electron)" opacity="${op}">${mk}</text>`;
-      else s+=`<g opacity="${op}"><circle cx="${x}" cy="${y}" r="8" fill="var(--stage)" stroke="var(--electron)" stroke-width="1.8"/><text x="${x}" y="${y+4.5}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--electron)">${mk}</text></g>`}}
+      else s+=`<g opacity="${op}"><circle cx="${x}" cy="${y}" r="8" fill="var(--stage)" stroke="var(--electron)" stroke-width="1.8"/><text x="${x}" y="${y+4.5}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--electron)">${mk}</text></g>`;
+      if(off&&mv[1]==='mid')s+=`<text x="${x.toFixed(1)}" y="${(y+19).toFixed(1)}" text-anchor="middle" font-size="8.5" font-style="italic" font-weight="600" fill="var(--electron)" stroke="var(--stage)" stroke-width="3" stroke-linejoin="round" paint-order="stroke" opacity="${op}">delokalizovaný</text>`}}
   // popisky
   const lt=l=>l.t,tA=(A.labels||[]).map(lt),tB=(B.labels||[]).map(lt);
   const drawL=(l,op)=>{if(op<=0.01)return;let [x,y]=l._ids?LAY.labelPos(m,pos,l,FK):rv([l.x,l.y,0]);const half=l.t.length*3.7/FK;x=Math.max(CX-176/FK+half,Math.min(CX+176/FK-half,x));
