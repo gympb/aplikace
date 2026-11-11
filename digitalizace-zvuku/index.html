@@ -461,7 +461,7 @@ function fitPos(){S.tw=clampTw(S.tw);const mx=Math.max(0,TT()-S.tw);S.pos=clamp(
 HOOK.src=v=>{if(v!=='vlastni'&&S.tw>SRC[v].dur*.5)S.tw=.006;fitPos()};HOOK.tw=()=>fitPos();
 MAPS.zoom=v=>{const a=TMIN(),b=TMAXW();return b*Math.pow(a/b,v/100)};
 IMAP.zoom=t=>{const a=TMIN(),b=TMAXW();return clamp(Math.log(t/b)/Math.log(a/b)*100,0,100)};
-ACT.zoomto=v=>{const c=S.pos+S.tw/2;S.tw=clampTw(v==='all'?TT():v==='s'?1:v==='ms'?.01:64/S.afs);S.pos=c-S.tw/2;fitPos();refresh()};
+ACT.zoomto=v=>{const c=S.pos+S.tw/2;S.tw=clampTw(v==='all'?TT():v==='s'?1:v==='ms'?.01:v==='ms1'?.001:64/S.afs);S.pos=c-S.tw/2;fitPos();refresh()};
 const fmtT=t=>t>=1?nf(t,t>=10?0:1)+' s':nf(t*1000,t*1000<10?2:t*1000<100?1:0)+' ms';
 const CBL=c=>c&&USR&&USR.ch.length>1?1:0;
 /* rozsah (min, max) analogového signálu v časovém úseku, pro vykreslení průběhu při velkém oddálení */
@@ -531,7 +531,7 @@ ACT.play1=(v,btn)=>{
 };
 OUT.afs=()=>`<b>${nf(S.afs)}</b> Hz`;
 OUT.abits=()=>`<b>${S.abits}</b> ${S.abits===1?'bit':S.abits<5?'bity':'bitů'} = ${nf(2**S.abits)} úrovní`;
-OUT.tw=()=>`<b>${fmtT(S.tw)}</b> · ${nf(Math.round(S.tw*S.afs))} vzorků`;
+OUT.tw=()=>S.stage<2?`<b>${fmtT(S.tw)}</b>`:`<b>${fmtT(S.tw)}</b> · ${nf(Math.round(S.tw*S.afs))} vzorků`;
 OUT.pos=()=>`<b>${nf(S.pos,S.tw<.1?3:2)}</b> s`;
 
 function recon(vq,t,fs){ // Lanczos interpolace kvantovaných vzorků (vizuální rekonstrukce)
@@ -595,6 +595,7 @@ function r1(){
  $('#cap1').textContent=sg.cap;
  $('#bd1').innerHTML=S.stage<2||S.stage===5?'':`${nf(fs)} Hz · ${b} bitů<br>${nf(2**b)} úrovní · ${S.ach===2?'stereo':'mono'}`;
  cv.hidden=S.stage===3;codes.hidden=S.stage!==3;
+ {const zc=$('#zc4'),an=S.stage<2;zc.textContent=an?'1 ms':'64 vzorků';zc.dataset.v=an?'ms1':'smp'}
  $('#tg1').style.display=(S.stage===2||S.stage===4)?'flex':'none';$('#sm1').style.display=S.stage===4?'flex':'none';
  $$('#sm1 .chip').forEach((bb,i)=>bb.classList.toggle('on',(i===1)===S.smooth));$('#lp1').classList.toggle('on',S.lupa);
  if(S.stage===3){renderCodes();return}
@@ -668,7 +669,7 @@ TABS.push({kap:1,name:'Cesta zvuku',rows:'auto minmax(0,1fr)',
     <div class="tg" id="tg1" style="display:none"><span id="sm1" style="display:none;gap:.4rem"><button class="chip" data-act="smooth" data-v="0">Schody</button><button class="chip" data-act="smooth" data-v="1">Vyhlazení</button></span><button class="chip" id="lp1" data-act="lupa">Detail vzorku</button></div></div>
    <div class="card scrub">
     <div class="ctl"><div class="hd"><span class="lbl">Zvětšení</span><span class="val" data-o="tw"></span></div><input type="range" data-k="tw" data-map="zoom" min="0" max="100" step="0.1">
-     <div class="chips mini"><button class="chip" data-act="zoomto" data-v="all">Celá skladba</button><button class="chip" data-act="zoomto" data-v="s">1 s</button><button class="chip" data-act="zoomto" data-v="ms">10 ms</button><button class="chip" data-act="zoomto" data-v="smp">64 vzorků</button></div></div>
+     <div class="chips mini"><button class="chip" data-act="zoomto" data-v="all">Celá skladba</button><button class="chip" data-act="zoomto" data-v="s">1 s</button><button class="chip" data-act="zoomto" data-v="ms">10 ms</button><button class="chip" id="zc4" data-act="zoomto" data-v="smp">64 vzorků</button></div></div>
     <div class="ctl"><div class="hd"><span class="lbl">Pozice ve zvuku</span><span class="val" data-o="pos"></span></div><input type="range" data-k="pos" min="0" max="1" step="any"></div>
    </div></div>
    <div class="side card">
