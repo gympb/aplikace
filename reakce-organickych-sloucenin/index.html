@@ -533,7 +533,7 @@ const OXA=n=>{const O=[160,195],rx=-25,ry=20,C=[0,0,0],t=tet([1,0,0],UP),slots=n
   {title:'Na atomu uhlíku se skupinou –OH chybí atom vodíku',text:'K dehydrogenaci jsou potřeba dva atomy vodíku: jeden ze skupiny –OH a jeden z atomu uhlíku, který ji nese. Terciární alkohol na tomto atomu uhlíku žádný atom vodíku nemá.',pos:pos[1],bonds:[...sb([0,1,2]),['C','O',1],['O','Ho',1],['Ox','Ho','d']]},
   {title:'Mírná oxidace neprobíhá',text:'Dvojná vazba C=O nemůže vzniknout, terciární alkoholy se proto mírnou oxidací neoxidují. Silnější oxidace by musela štěpit vazby C–C v uhlíkatém řetězci.',pos:pos[2],bonds:[...sb([0,1,2]),['C','O',1],['O','Ho',1]],labels:[{x:140,y:292,t:'2-methylpropan-2-ol zůstává beze změny'}]}];
  const cs=[0,1,2].filter(k=>slots[k]==='C'),hs=[0,1,2].filter(k=>slots[k]==='H');
- return {id:'oxalk-'+n,ch:'hydroxy',grp:'oxalk',sub:String(n),good:n<3,tipQ:'Tipni si: zoxiduje se tento alkohol mírnou oxidací?',tab:'Ox',name:'Mírná oxidace alkoholů',
+ return {id:'oxalk-'+n,ch:'hydroxy',grp:'oxalk',sub:String(n),good:n<3,tipQ:'Odhadni: nese atom uhlíku se skupinou –OH aspoň jeden atom vodíku?',tab:'Ox',name:'Mírná oxidace alkoholů',
   scheme:n<3?[['m',NM[0]],['→','mírná oxidace'],['m',NM[1]],'+','H<sub>2</sub>O']:[['m',NM[0]],['→','mírná oxidace'],'nereaguje'],schemeSub:'mírná oxidace: '+NM[2]+' alkohol',
   atoms:{...atomsOf({C:['C',...cs.map(k=>'C'+k)].join(' '),H:['Ho',...hs.map(k=>'H'+k),...cs.flatMap(k=>['a','b','c'].map(x=>'H'+k+x))].join(' '),O:'O Ox'}),...lpIds('O',[1,2])},
   q:'Shrň, jak se liší mírná oxidace primárních, sekundárních a terciárních alkoholů.',
@@ -582,7 +582,7 @@ const OXK=ald=>{const O=[150,186],rx=ald?-25:-35,ry=ald?38:-30,C=[0,0,0],Z=[0,0,
    {title:'Hydratace: vznik diolu',text:'I keton může adovat vodu, i když jen v malé míře. Vznikne propan-2,2-diol. Na atomu uhlíku se dvěma skupinami –OH jsou ale dva uhlíkaté zbytky a žádný atom vodíku.',pos:pos[1],bonds:BH,labels:[{x:150,y:292,t:NM[1]}]},
    {title:'Na atomu uhlíku se skupinami –OH chybí atom vodíku',text:'Oxidace diolu jako u alkoholu potřebuje atom vodíku ve skupině –OH a zároveň atom vodíku na atomu uhlíku, který ji nese. Ten tu chybí.',pos:pos[2],bonds:BH,labels:[{x:282,y:30,t:'oxidační činidlo'}]},
    {title:'Mírná oxidace neprobíhá',text:'Ketony se mírnou oxidací neoxidují. Silnější oxidace by musela štěpit vazby C–C. Tím se ketony liší od aldehydů.',pos:pos[2],bonds:BH,labels:[{x:150,y:292,t:'propan-2,2-diol se neoxiduje'}]}]}
- return {id:'oxkarb-'+(ald?'a':'k'),ch:'karbonyl',grp:'oxkarb',sub:ald?'a':'k',good:ald,tipQ:'Tipni si: zoxiduje se tato sloučenina mírnou oxidací?',tab:'Ox',name:'Mírná oxidace',
+ return {id:'oxkarb-'+(ald?'a':'k'),ch:'karbonyl',grp:'oxkarb',sub:ald?'a':'k',good:ald,tipQ:'Odhadni: je na karbonylový atom uhlíku navázaný atom vodíku?',tab:'Ox',name:'Mírná oxidace',
   scheme:ald?[['m','ethanal'],'+','H<sub>2</sub>O',['→'],['m','diol11'],['→','mírná oxidace'],['m','octova']]:[['m','aceton'],'+','H<sub>2</sub>O',['→'],['m','diol22'],['→','mírná oxidace'],'nereaguje'],
   schemeSub:(ald?'aldehyd (ethanal)':'keton (propanon)')+': hydratace a mírná oxidace vzniklého diolu',
   atoms:{...atomsOf({C:'C Cm'+(ald?'':' Cr'),H:'Hma Hmb Hmc Ha Hb'+(ald?' Hr':' Hra Hrb Hrc'),O:'O1 O2 Ox'}),...lpIds('O1',[1,2]),...lpIds('O2',[1,2])},
@@ -1054,7 +1054,7 @@ const DIEN=sub=>{const O=[180,205],rx=-50,ry=0,Y=[0,1,0],CL=62;
   :{...RS2,title:'Nukleofilní atak chloridového aniontu na atom C4',text:'Anion Cl⁻ se volným elektronovým párem naváže na atom uhlíku C4, který nese celý kladný náboj v 2. rezonanční struktuře.',pos:s5,marks:{C4:'+',Clb:['−',-22,-25]},arrows:[{f:'Clbp4',t:'C4',bend:-8}]});
  steps.push({title:'Produkt '+PN+'-adice',text:sub==='12'?'Vznikl 3,4-dichlorbut-1-en: atomy chloru se navázaly na sousední atomy uhlíku C1 a C2 a dvojná vazba zůstala mezi atomy C3 a C4. Tento produkt vzniká rychleji, proto převládá za nižších teplot.':'Vznikl 1,4-dichlorbut-2-en: atomy chloru se navázaly na koncové atomy uhlíku C1 a C4 a dvojná vazba se přesunula doprostřed řetězce mezi atomy C2 a C3. Tento produkt je stabilnější, proto za vyšších teplot převládá.',
   pos:s6,bonds:sub==='12'?[...chain(1,1,2),['C1','Cla',1],['C2','Clb',1]]:[...chain(1,2,1),['C1','Cla',1],['C4','Clb',1]],pi:[sub==='12'?['C3','C4']:['C2','C3']],labels:[{x:180,y:292,t:PR}]});
- return {id:'dien-'+sub,ch:'alkadieny',grp:'dien',sub,good:sub==='14',tipQ:'Tipni si: bude tento produkt převládat za vyšších teplot?',tab:'A<sub>E</sub>',name:'Adice chloru',
+ return {id:'dien-'+sub,ch:'alkadieny',grp:'dien',sub,good:sub==='14',tipQ:'Odhadni: bude tento produkt převládat za vyšších teplot?',tab:'A<sub>E</sub>',name:'Adice chloru',
   scheme:[['m','butadien'],'+','Cl<sub>2</sub>',['→'],['m',sub==='12'?'dcb12':'dcb14']],schemeSub:PN+'-adice chloru na buta-1,3-dien',
   atoms:{...atomsOf({C:'C1 C2 C3 C4',H:'H1a H1b H2 H3 H4a H4b',Cl:'Cla Clb',M:'m'}),...lpIds('Cla',[1,2,3,4]),...lpIds('Clb',[1,2,3,4])},
   q:'Proč se kation Cl⁺ váže na krajní atom uhlíku C1, a ne na atom C2?',
@@ -1246,8 +1246,8 @@ function ui(){
   pl.innerHTML='<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'+(playing?'<rect x="6" y="5" width="4.5" height="14" rx="1"/><rect x="13.5" y="5" width="4.5" height="14" rx="1"/>':'<path d="M8 4.5l12 7.5-12 7.5z"/>')+'</svg>';
   $('first').disabled=si===0;$('cnt').textContent=`${si+1} / ${m.steps.length}`;
   [...$('dots').children].forEach((d,i)=>d.setAttribute('aria-current',i===si));
-  const tb=$('tip');if(!m.grp)tb.hidden=true;else{const last=si===m.steps.length-1,g=guess===null?'':`Tvůj tip: <b>${guess?'ano':'ne'}</b>. `;
-   tb.innerHTML=si===0&&guess===null?(m.tipQ||'Tipni si: bude substituce do této polohy probíhat přednostně?')+' <span class="tipb"><button class="btn" type="button" data-g="1">Ano</button><button class="btn" type="button" data-g="0">Ne</button></span>':last?(guess===null?'':g+(guess===m.good?'Správně.':'Tentokrát to nevyšlo.')):(g?g+'Projdi si rezonanční struktury a ověř ho.':'');
+  const tb=$('tip');if(!m.grp)tb.hidden=true;else{const last=si===m.steps.length-1,g=guess===null?'':`Tvůj odhad: <b>${guess?'ano':'ne'}</b>. `;
+   tb.innerHTML=si===0&&guess===null?(m.tipQ||'Odhadni: bude substituce do této polohy probíhat přednostně?')+' <span class="tipb"><button class="btn" type="button" data-g="1">Ano</button><button class="btn" type="button" data-g="0">Ne</button></span>':last?(guess===null?'':g+(guess===m.good?'Správně.':'Tentokrát to nevyšlo.')):(g?g+(m.grp==='oxalk'||m.grp==='oxkarb'?'Projdi si animaci a ověř ho.':'Projdi si rezonanční struktury a ověř ho.'):'');
    tb.hidden=!tb.innerHTML;tb.querySelectorAll('button').forEach(b=>b.onclick=()=>{guess=b.dataset.g==='1';ui()})}
 }
 function go(n,instant){
