@@ -145,6 +145,10 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 .hlp .hh b{font:700 .7rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
 .hlp h3{margin:.1rem 0 .6rem;font:700 1.3rem/1.2 var(--f-head)}
 .hlp h4{margin:1rem 0 .25rem;font:700 .68rem/1 var(--f-head);letter-spacing:.18em;text-transform:uppercase;color:var(--orange-t)}
+.xl{display:flex;align-items:center;justify-content:center;gap:.2rem;min-height:2.4rem;padding:.35rem .8rem;border-radius:1.5rem;border:.13rem solid var(--orange);color:var(--orange-t);font:700 .86rem/1.2 var(--f-head);text-decoration:none;text-align:center}
+.xl:hover,.xl:focus-visible{background:var(--orange);color:#17140F}
+.hlp .xl{display:inline-flex;margin:.15rem .4rem .15rem 0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .hlp .lead{font-size:1.05rem;color:var(--ink)}
 .hlp h4.hs{margin-top:1.4rem;padding-top:.9rem;border-top:1px solid var(--line2,rgba(127,127,127,.3))}
 .hlp p{margin:0;font-size:1rem;line-height:1.5;color:var(--ink2)}
@@ -183,6 +187,7 @@ const tx=(c,e)=>LANG==='en'?e:c;
 const nf=(n,d=0)=>(+n).toLocaleString(LANG==='en'?'en-US':'cs-CZ',{maximumFractionDigits:d,minimumFractionDigits:0});
 const pct=(r,d=1)=>nf(r*100,r*100<1?2:d)+' %';
 const TAU=Math.PI*2;
+const XL=(n,cs,en)=>`<a class="xl" href="../jpeg-lab-pro/#${n}" target="_blank" rel="noopener"><span>JPEG Lab Pro · ${tx(cs,en)}<span aria-hidden="true"> ↗</span></span><span class="sr">${tx(' (otevře se na nové kartě)',' (opens in a new tab)')}</span></a>`;
 const log10=Math.log10;
 
 /* ========== barvy a plátno ========== */
@@ -620,6 +625,7 @@ TABS.push({help:()=>`<h4>${tx('Jak to číst','How to read it')}</h4><p>${tx('Ob
      <div class="seg"><button class="chip" data-k="v3" data-v="res">${tx('Výsledek','Result')}</button><button class="chip" data-k="v3" data-v="chroma">${tx('Jen barva','Colour only')}</button><button class="chip" data-k="v3" data-v="diff">${tx('Chyba ×4','Error ×4')}</button></div></div>
     <div class="scope grow" style="min-height:17rem"><canvas id="c3b"></canvas></div>
     <div class="callout" data-o="d3"></div>
+    ${XL(2,'Barvy: podvzorkování','Colour: subsampling')}
    </div></div>`;
  },
  init(){makeSrc()},
@@ -925,6 +931,7 @@ TABS.push({help:()=>`<h4>${tx('Jak to funguje','How it works')}</h4><p>${tx('Obr
      <input type="range" data-k="q5" min="4" max="80" step="1">
      <div class="chips g4">${[8,16,32,64].map(v=>`<button class="chip" data-k="q5" data-v="${v}">${v} : 1</button>`).join('')}</div></div>
     <div class="callout" data-o="d5"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">${XL(3,'DCT','DCT')}${XL(4,'Kvantování','Quantization')}</div>
    </div></div>`;
  },
  render(){
@@ -1121,6 +1128,7 @@ H(tx('Surový tok je počet bitů, které by za sekundu vyprodukoval nestlačen�
  [tx('Co tok nejvíc zvedá','What raises it most'),tx('Roste s počtem pixelů, tedy čtyřnásobně při dvojnásobném rozlišení na šířku i výšku, a lineárně s počtem snímků a bitovou hloubkou. 4K, 50 snímků a HDR proto znamenají mnohonásobek SD.','It grows with the number of pixels, so fourfold when width and height both double, and linearly with frame rate and bit depth. 4K, 50 frames and HDR therefore mean many times SD.')],
  [tx('Poměr komprese','Compression ratio'),tx('Poměr je surový tok dělený tokem kanálu. Ukazuje, kolikrát musí kodek obraz zmenšit, aby se vešel.','The ratio is the raw rate divided by the channel rate. It tells how many times the codec has to shrink the picture to make it fit.')]]),
 H(tx('Oko vnímá ostrost hlavně v jasu, barvu vidí hrubší. Kodeky toho využívají: jas nechají celý a barevnou informaci uloží jen pro skupiny pixelů.','The eye sees sharpness mainly in luma and colour more coarsely. Codecs exploit this: they keep luma in full and store colour information only for groups of pixels.'),[
+ [tx('Kde to zkusit podrobněji','Where to explore further'),tx('Podvzorkování barev je do detailu rozebráno v aplikaci JPEG Lab Pro, v záložce Barvy. Otevře se na nové kartě: ','Chroma subsampling is covered in detail in the JPEG Lab Pro app, in the Colour tab. It opens in a new tab: ')+XL(2,'Barvy: podvzorkování','Colour: subsampling')],
  [tx('Y, Cb, Cr','Y, Cb, Cr'),tx('Místo R, G, B se obraz zapíše jako jas Y a dva barevné rozdíly Cb a Cr. Jas nese detail, rozdíly nesou odstín. Převodní koeficienty určuje norma, pro HD je to BT.709.','Instead of R, G, B the picture is written as luma Y and two colour differences Cb and Cr. Luma carries detail, the differences carry hue. The conversion coefficients are set by a standard, for HD it is BT.709.')],
  [tx('Podvzorkování 4:4:4, 4:2:2, 4:2:0','Subsampling 4:4:4, 4:2:2, 4:2:0'),tx('4:4:4 má barvu v každém pixelu (3 vzorky na pixel). 4:2:2 sdílí barvu ve dvojicích vodorovně (2 vzorky), 4:2:0 ve čtveřicích 2 × 2 (1,5 vzorku). Televize a streaming používají 4:2:0, ušetří tím polovinu dat.','4:4:4 has colour in every pixel (3 samples per pixel). 4:2:2 shares colour in horizontal pairs (2 samples), 4:2:0 in 2 × 2 groups (1.5 samples). Television and streaming use 4:2:0, which halves the data.')],
  [tx('Kde to vadí','Where it hurts'),tx('Na ostrých barevných hranách, například červený text na modrém pozadí, a při pozdějším stříhání a klíčování. Proto se ve studiu a při střihu drží 4:2:2 nebo 4:4:4.','On sharp colour edges, for example red text on blue, and in later editing and keying. That is why studios and editing keep 4:2:2 or 4:4:4.')]]),
@@ -1130,6 +1138,7 @@ H(tx('Po sobě jdoucí snímky jsou si velmi podobné. Kodek proto nemusí uklá
  [tx('GOP a přepínání kanálů','GOP and channel change'),tx('Skupina snímků (GOP) začíná snímkem I. Delší skupina šetří data, ale po přepnutí kanálu se čeká na další I, v televizi proto bývá zhruba půl až dvě sekundy.','A group of pictures (GOP) starts with an I frame. A longer group saves data, but after a channel change you wait for the next I, which is why television usually uses about half to two seconds.')],
  [tx('Predikce pohybu','Motion compensation'),tx('Pohybuje-li se předmět, kodér neukládá nové pixely. Najde, kam se blok posunul, uloží vektor posunu a jen drobný zbytek. Dole vidíte, o kolik se zbytek zmenší.','When an object moves, the encoder does not store new pixels. It finds where the block moved, stores the motion vector and only a small residual. Below you can see how much the residual shrinks.')]]),
 H(tx('Hlavní kompresní trik: obraz se převede z pixelů na koeficienty, kde se důležité od nedůležitého oddělí snadněji. Nedůležité se zahodí a zbytek se zapíše úsporně.','The main compression trick: the picture is turned from pixels into coefficients, where important and unimportant parts separate more easily. The unimportant is thrown away and the rest is stored compactly.'),[
+ [tx('Kde to zkusit podrobněji','Where to explore further'),tx('Blok 8 × 8, koeficienty DCT i kvantovací tabulky si můžete projít po jednotlivých krocích v aplikaci JPEG Lab Pro. Otevře se na nové kartě: ','You can walk through the 8 × 8 block, DCT coefficients and quantization tables step by step in the JPEG Lab Pro app. It opens in a new tab: ')+XL(3,'DCT','DCT')+XL(4,'Kvantování','Quantization')],
  [tx('DCT','DCT'),tx('Diskrétní kosinová transformace rozloží blok 8 × 8 pixelů na 64 koeficientů: první je průměr, další popisují postupně jemnější vzory. Většina energie obrazu je v několika prvních.','The discrete cosine transform splits an 8 × 8 pixel block into 64 coefficients: the first is the average, the next describe progressively finer patterns. Most of the picture energy is in the first few.')],
  [tx('Kvantování','Quantization'),tx('Koeficienty se zaokrouhlí na hrubší stupnici, drobné se vynulují. Tady vzniká ztráta a podle ní se řídí kvalita i velikost. Posuvník míry komprese ji zvyšuje.','Coefficients are rounded to a coarser scale and the small ones become zero. This is where loss occurs and it governs both quality and size. The compression slider increases it.')],
  [tx('Proč kostičky','Why blocks'),tx('Každý blok se kóduje zvlášť, proto se při silné kompresi objeví čtvercové kostičky. Vlnka pracuje s celým obrazem, nemá hranice bloků a chyba je měkká, rozmazaná. Proto ji volí digitální kino (JPEG 2000).','Each block is coded separately, so under heavy compression square blocks appear. A wavelet works on the whole picture, has no block borders and the error is soft, blurred. That is why digital cinema chose it (JPEG 2000).')],
