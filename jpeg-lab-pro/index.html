@@ -210,7 +210,7 @@ const MAPS={},IMAP={};
 const S={tab:0,
  q:50,sub:'s420',img:'foto',
  st:4,mp:12,                       // 1 Cesta obrazu
- blk:'img',bx:13,by:9,nc:10,qt:'y',   // 3–5 blok
+ blk:'img',bx:9,by:7,nc:10,qt:'y',   // 3–5 blok
  grid:false,rx:104,ry:60,rx7:20,ry7:6,            // 6 Laboratoř
  art:'blok',img7:'foto',q7:8,sub7:'s444',gen:1,shift:false, // 7 Artefakty
  fmt:'avif'};                        // 8 Praxe
@@ -444,7 +444,7 @@ ACT.upl=()=>$('#fUp').click();
 /* --- pomocné prvky rozhraní --- */
 const IMGL=()=>[['foto',tx('Krajina','Landscape')],['text',tx('Text','Text')],['barvy',tx('Barvy','Colours')],['prechod',tx('Přechod','Gradient')]];
 OUT.imgc=()=>{let a=IMGL();if(IM.vlastni)a=a.concat([['vlastni',tx('Vlastní','Own')]]);return a.map(([v,l])=>`<button class="chip${S.img===v?' on':''}" data-k="img" data-v="${v}">${l}</button>`).join('')+`<button class="chip up" data-act="upl">⇪ ${tx('Nahrát','Upload')}</button>`};
-const imgSel=()=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div><div class="chips g3" data-o="imgc"></div><span class="hint">${tx('Krajina: fotografie z Unsplash (CC0). Vlastní obrázek zůstane v prohlížeči.','Landscape: photo from Unsplash (CC0). Your picture stays in the browser.')}</span></div>`;
+const imgSel=()=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div><div class="chips g3" data-o="imgc"></div><span class="hint">${tx('Krajina: foto Teodora Vaklinska, Unsplash. Vlastní obrázek zůstane v prohlížeči.','Landscape: photo by Teodora Vaklinska, Unsplash. Your picture stays in the browser.')}</span></div>`;
 const subSel=k=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Podvzorkování barev','Chroma subsampling')}</span></div><div class="chips g3">${Object.keys(SUB).map(v=>`<button class="chip" data-k="${k}" data-v="${v}">${SUB[v].n}</button>`).join('')}</div></div>`;
 const qSel=(k,chips=true)=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Kvalita JPEG','JPEG quality')}</span><span class="val" data-o="qv_${k}"></span></div><input type="range" data-k="${k}" min="1" max="100" step="1">${chips?`<div class="chips g5">${[5,25,50,75,95].map(v=>`<button class="chip" data-k="${k}" data-v="${v}">${v}</button>`).join('')}</div>`:''}</div>`;
 OUT.qv_q=()=>`<b>${S.q}</b> / 100`;OUT.qv_q7=()=>`<b>${S.q7}</b> / 100`;
@@ -869,7 +869,7 @@ OUT.k6c=()=>`${d1(lab().r.psnr)}<u>dB</u>`;
 OUT.k6c_s=()=>{const p=lab().r.psnr;return p>=40?tx('Nad 40 dB je rozdíl téměř neviditelný.','Above 40 dB the difference is almost invisible.'):p>=33?tx('Kolem 35 dB je rozdíl vidět jen při zvětšení.','Around 35 dB the difference shows only when zoomed.'):p>=28?tx('Kolem 30 dB je ztráta znát při pozorném pohledu.','Around 30 dB the loss is noticeable on a close look.'):tx('Pod 28 dB je ztráta kvality zřejmá.','Below 28 dB the loss of quality is obvious.')};
 OUT.d6=()=>`<b class="l">${tx('Co je vidět','What to look for')}</b>`+(S.q<20?tx('Silné blokování a rozmazané hrany. Soubor je maličký, ale obraz už trpí.','Strong blocking and blurred edges. The file is tiny but the picture suffers.')
  :S.q<50?tx('V hladkých plochách jsou vidět bloky 8 × 8 a kolem hran šum. Zapni mřížku.','Blocks of 8 × 8 show in smooth areas and noise around edges. Turn on the grid.')
- :S.q<80?tx('Rozdíl je znát jen v lupě na ostrých hranách. Dobrý poměr mezi velikostí a kvalitou.','The difference shows only in the zoom on sharp edges. A good balance of size and quality.')
+ :S.q<80?tx('Hladké plochy vypadají dobře, jemné textury (listí, květy) a ostré hrany ztrácejí detail. Dobrý poměr mezi velikostí a kvalitou.','Smooth areas look good, fine textures (leaves, flowers) and sharp edges lose detail. A good balance of size and quality.')
  :tx('Téměř nepoznat od originálu, ale soubor roste. Poslední procenta kvality stojí hodně dat.','Almost indistinguishable from the original, but the file grows. The last percent of quality costs a lot of data.'));
 TABS.push({name:tx('Laboratoř','Laboratory'),side:'27rem',
  build(){return `<div class="split"><div class="col">
