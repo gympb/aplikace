@@ -1,0 +1,1082 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video Lab Pro</title>
+<meta name="description" content="Interaktivní laboratoř kódování a komprese videa pro televizi a kino: datový tok surového obrazu, podvzorkování barev, snímky I, P a B, blokové DCT a vlnka, kodeky MPEG-2, H.264, HEVC, AV1 a JPEG 2000 a kapacita multiplexu i velikost filmu. Určeno pro projekci a velké dotykové panely, pro mobily není vhodná.">
+<meta name="author" content="Ivo Bešťák">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/fonty/fonty.css">
+<style>
+:root{
+--f-head:'Montserrat','Segoe UI',system-ui,sans-serif;
+--f-body:'Atkinson Hyperlegible Next','Segoe UI',system-ui,sans-serif;
+--f-mono:'Atkinson Hyperlegible Mono',ui-monospace,Consolas,monospace;
+--orange:#FF972E;--orange-t:#B85800;--orange-soft:#FFE6C8;
+--bg:#F4F1EA;--card:#FFFFFF;--ink:#17140F;--ink2:#5A5446;--line:#E2DBCC;--line2:#CFC7B5;
+--scope:#16130E;--analog:#BDB6A7;--cream:#F4F1EA;--bad:#FF6A4D;--good:#5DB67F;--blue:#6EA8E0;
+--shadow:0 .06rem 0 rgba(60,40,10,.06),0 1.1rem 2.4rem -1.6rem rgba(60,40,10,.4);
+color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+--orange-t:#FFA94D;--orange-soft:#47311A;--bg:#12100C;--card:#1D1A14;--ink:#F4F1EA;--ink2:#B5AD9C;--line:#332F27;--line2:#463F34;
+--scope:#0A0907;--shadow:0 1.1rem 2.4rem -1.6rem rgba(0,0,0,.8);color-scheme:dark}}
+:root[data-theme=dark]{--orange-t:#FFA94D;--orange-soft:#47311A;--bg:#12100C;--card:#1D1A14;--ink:#F4F1EA;--ink2:#B5AD9C;--line:#332F27;--line2:#463F34;
+--scope:#0A0907;--shadow:0 1.1rem 2.4rem -1.6rem rgba(0,0,0,.8);color-scheme:dark}
+*{box-sizing:border-box}
+html{font-size:clamp(9px,min(calc(100vw/96),calc(100vh/54)),80px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1.1rem/1.38 var(--f-body);overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation;padding:0}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:.2rem solid var(--orange);outline-offset:.15rem}
+b{font-weight:700}
+[hidden]{display:none!important}
+.app{height:100vh;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+/* hlavička */
+.top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:1.6rem;padding:.9rem 2rem .6rem}
+.brand{display:flex;flex-direction:column;gap:.15rem;min-width:15rem}
+.back{font:600 .82rem/1 var(--f-head);color:var(--ink2);text-decoration:none;letter-spacing:.02em}
+.back:hover{color:var(--orange-t)}
+.brand b{font:800 1.7rem/1 var(--f-head);letter-spacing:-.01em}
+.brand b span{background:linear-gradient(transparent 58%,var(--orange) 58%,var(--orange) 92%,transparent 92%);padding:0 .1rem}
+.brand small{font:700 .66rem/1 var(--f-head);letter-spacing:.22em;text-transform:uppercase;color:var(--orange-t)}
+.tabs{display:flex;gap:.2rem;justify-content:center;min-width:0}
+.tab-b{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;padding:.55rem .75rem .6rem;border-radius:1rem;min-width:0;flex:0 1 auto;min-height:3.6rem;transition:background .2s,color .2s}
+.tab-b .kap{font:700 .6rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
+.tab-b .nm{font:700 1rem/1.1 var(--f-head);white-space:nowrap}
+.tab-b:hover{background:rgba(255,151,46,.14)}
+.tab-b[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.tab-b[aria-selected=true] .kap{color:var(--orange)}
+.tools{display:flex;gap:.5rem}
+.ib{width:3.1rem;height:3.1rem;border-radius:50%;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center}
+.ib svg{width:1.5rem;height:1.5rem;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ib:hover{background:var(--orange);color:#17140F}
+.lang{display:grid;grid-auto-flow:column;gap:.2rem;background:var(--card);box-shadow:var(--shadow);border-radius:1.6rem;padding:.25rem;height:3.1rem;align-items:center}
+.lang button{height:2.6rem;padding:0 .8rem;border-radius:1.3rem;font:800 .9rem Montserrat,sans-serif;letter-spacing:.04em;color:var(--ink2)}
+.lang button.on{background:var(--ink);color:var(--bg)}
+.lang button:not(.on):hover{background:var(--orange);color:#17140F}
+#stage{padding:.3rem 2rem .5rem;min-height:0;overflow:hidden}
+.foot{display:flex;justify-content:space-between;gap:1rem;padding:.2rem 2rem .7rem;font:500 .8rem/1 var(--f-mono);color:var(--ink2)}
+/* rozvržení */
+.tab{height:100%;display:grid;gap:1rem;min-height:0}
+.split{display:grid;grid-template-columns:minmax(0,1fr) var(--side,27rem);gap:1rem;min-height:0}
+.col{display:flex;flex-direction:column;gap:1rem;min-height:0;min-width:0}
+.col>.grow{flex:1;min-height:0}
+.card{background:var(--card);border-radius:1.2rem;padding:1rem 1.2rem;box-shadow:var(--shadow);min-width:0}
+.side{overflow:hidden}
+.side.card{display:flex;flex-direction:column;gap:.6rem}
+.side .callout{font-size:.86rem}
+.lbl{font:700 .68rem/1 var(--f-head);letter-spacing:.22em;text-transform:uppercase;color:var(--orange-t)}
+.ctl{display:flex;flex-direction:column;gap:.35rem}
+.ctl .hd{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem}
+.val{font:500 1.05rem/1 var(--f-mono);color:var(--ink)}
+.val b{font-weight:500;color:var(--orange-t)}
+p.n{margin:0;color:var(--ink2);font-size:.95rem;line-height:1.35}
+/* plátno */
+.scope{position:relative;border-radius:1.2rem;background:radial-gradient(120% 140% at 50% 0%,#241F17 0%,var(--scope) 62%);overflow:hidden;box-shadow:var(--shadow);min-height:0}
+.scope canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.tag{position:absolute;left:1rem;top:.8rem;font:700 .66rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--cream);opacity:.8;pointer-events:none;display:flex;gap:.8rem;align-items:center}
+.tag i{display:inline-block;width:.9rem;height:.28rem;border-radius:.2rem;background:var(--orange);margin-right:.35rem;vertical-align:.12rem}
+.tag i.a{background:var(--analog)}.tag i.b{background:var(--blue)}.tag i.g{background:var(--good)}.tag i.r{background:var(--bad)}.tag i.w{background:var(--cream)}
+.badge{position:absolute;right:1rem;top:.75rem;font:500 .8rem/1 var(--f-mono);color:var(--cream);opacity:.85;pointer-events:none;text-align:right}
+/* ovládací prvky */
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{min-height:2.7rem;padding:.45rem .95rem;border-radius:1.4rem;background:var(--bg);box-shadow:inset 0 0 0 .13rem var(--line2);font:600 .95rem/1.1 var(--f-head);transition:background .15s,color .15s,transform .1s;white-space:nowrap}
+.chip small{font:500 .78rem var(--f-body);opacity:.75;margin-left:.35rem}
+.chip:hover{box-shadow:inset 0 0 0 .13rem var(--orange)}
+.chip:active{transform:scale(.96)}
+.chip.on{background:var(--ink);color:var(--bg);box-shadow:none}
+.chips.g2{display:grid;grid-template-columns:repeat(2,1fr)}
+.chips.g3{display:grid;grid-template-columns:repeat(3,1fr)}
+.chips.g4{display:grid;grid-template-columns:repeat(4,1fr)}
+.chips.g2 .chip,.chips.g3 .chip,.chips.g4 .chip{padding:.45rem .25rem;text-align:center}
+.side .chip{min-height:2.4rem}
+.btn{min-height:3.3rem;padding:.6rem 1.4rem;border-radius:1.7rem;background:var(--orange);color:#17140F;font:700 1.05rem/1 var(--f-head);display:inline-flex;gap:.6rem;align-items:center;justify-content:center;box-shadow:0 .25rem 0 #C86D00;transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(.2rem);box-shadow:0 .05rem 0 #C86D00}
+.btn.on{background:var(--ink);color:var(--bg);box-shadow:none}
+.btn svg{width:1.1rem;height:1.1rem;fill:currentColor}
+.row{display:flex;gap:.6rem;align-items:center}
+.row>.btn{flex:1}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2.4rem;background:transparent;touch-action:pan-y;margin:0;--p:50%}
+input[type=range]::-webkit-slider-runnable-track{height:.65rem;border-radius:.4rem;background:linear-gradient(90deg,var(--orange) var(--p),var(--line) var(--p))}
+input[type=range]::-moz-range-track{height:.65rem;border-radius:.4rem;background:var(--line)}
+input[type=range]::-moz-range-progress{height:.65rem;border-radius:.4rem;background:var(--orange)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:2.2rem;height:2.2rem;border-radius:50%;background:var(--card);border:.28rem solid var(--orange);margin-top:-.78rem;box-shadow:0 .2rem .6rem rgba(0,0,0,.25)}
+input[type=range]::-moz-range-thumb{width:1.7rem;height:1.7rem;border-radius:50%;background:var(--card);border:.28rem solid var(--orange)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:.25rem;background:var(--bg);padding:.25rem;border-radius:1.5rem;box-shadow:inset 0 0 0 .13rem var(--line2)}
+.seg .chip{box-shadow:none;background:transparent;border-radius:1.2rem;text-align:center;padding:.4rem .3rem}
+.seg .chip.on{background:var(--ink);color:var(--bg)}
+.callout{border-radius:.9rem;background:var(--bg);padding:.7rem .9rem;border-left:.3rem solid var(--orange);font-size:.9rem;line-height:1.35;color:var(--ink2)}
+.callout b.l{display:block;font:700 .62rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t);margin-bottom:.3rem}
+.status{display:flex;align-items:center;gap:.7rem;padding:.7rem 1rem;border-radius:1rem;font:700 1.05rem/1.2 var(--f-head);background:rgba(93,182,127,.18);color:var(--ink)}
+.status i{width:1rem;height:1rem;border-radius:50%;background:var(--good);flex:none}
+.status.warn{background:rgba(255,151,46,.2)}.status.warn i{background:var(--orange)}
+.status.bad{background:rgba(255,106,77,.18)}.status.bad i{background:var(--bad)}
+.big{font:800 2.6rem/1 var(--f-head);letter-spacing:-.02em}
+.big u{font:600 .95rem var(--f-head);text-decoration:none;color:var(--ink2);margin-left:.4rem;letter-spacing:0}
+.or{color:var(--orange-t)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.kpi{display:flex;flex-direction:column;gap:.35rem;justify-content:center}
+.kpi small{font:400 .82rem/1.25 var(--f-body);color:var(--ink2)}
+/* tabulka formátů */
+/* kvíz kompatibility */
+/* metadata */
+.band{display:flex;height:1.7rem;border-radius:.5rem;overflow:hidden;gap:.12rem}
+.band i{display:block;height:100%;min-width:.2rem;font:600 .62rem/1.7rem var(--f-mono);font-style:normal;text-align:center;color:#17140F;overflow:hidden;white-space:nowrap}
+.brow{display:grid;grid-template-columns:7rem 1fr;gap:.8rem;align-items:center}
+.brow .nm{font:700 .85rem/1.1 var(--f-head)}
+.brow .nm small{display:block;font:400 .72rem var(--f-mono);color:var(--ink2);margin-top:.15rem}
+.legend{display:flex;gap:.9rem;flex-wrap:wrap;font:500 .72rem var(--f-mono);color:var(--ink2)}
+.legend i{display:inline-block;width:.8rem;height:.8rem;border-radius:.2rem;margin-right:.3rem;vertical-align:-.1rem}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.chips.g5{display:grid;grid-template-columns:repeat(5,1fr)}.chips.g5 .chip{padding:.45rem .1rem;text-align:center}
+.rd{display:grid;grid-template-columns:auto 1fr;gap:.3rem .9rem;font:500 .86rem/1.25 var(--f-mono)}
+.rd span{color:var(--ink2)}.rd b{font-weight:500;text-align:right}.rd b.hot{color:var(--orange-t)}
+.col>.scope.grow{min-height:9rem}
+@media (max-aspect-ratio:1/1){
+html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-height:100vh}#stage{overflow:visible}
+.split{grid-template-columns:1fr}.scope{min-height:34rem}.top{grid-template-columns:1fr}.tabs{flex-wrap:wrap}.kpis{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <header class="top">
+  <div class="brand"><a class="back" href="../" id="tBack">← Všechny školní aplikace</a><b><span>Video</span> Lab Pro</b><small id="tSub">Gymnázium Příbram · GymTV · Informatika</small></div>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Záložky"></nav>
+  <div class="tools">
+   <div class="lang" role="group" aria-label="Jazyk / Language"><button data-act="lang" data-v="cs" lang="cs">CZ</button><button data-act="lang" data-v="en" lang="en">EN</button></div>
+   <button class="ib" id="bThm" data-act="theme" aria-label="Světlý nebo tmavý vzhled"></button>
+   <button class="ib" id="bFul" data-act="full" aria-label="Celá obrazovka"></button>
+  </div>
+ </header>
+ <main id="stage"></main>
+ <footer class="foot"><span id="fL"></span><span id="fR"></span></footer>
+</div>
+<script>
+'use strict';
+/* ========== pomocné funkce ========== */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const sstep=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)};
+let LANG='cs';try{LANG=localStorage.getItem('vlp-lang')||''}catch(e){}
+if(LANG!=='cs'&&LANG!=='en')LANG=/^cs|^sk/i.test(navigator.language||'cs')?'cs':'en';
+const tx=(c,e)=>LANG==='en'?e:c;
+const nf=(n,d=0)=>(+n).toLocaleString(LANG==='en'?'en-US':'cs-CZ',{maximumFractionDigits:d,minimumFractionDigits:0});
+const pct=(r,d=1)=>nf(r*100,r*100<1?2:d)+' %';
+const TAU=Math.PI*2;
+const log10=Math.log10;
+
+/* ========== barvy a plátno ========== */
+const C={};
+function readC(){const cs=getComputedStyle(document.documentElement);['orange','orange-t','bg','card','ink','ink2','line','line2','scope','analog','cream','bad','good','blue'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim())}
+const REM=()=>parseFloat(getComputedStyle(document.documentElement).fontSize)||16;
+function setup(cv){
+ const r=cv.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2);
+ const w=Math.max(20,Math.round(r.width)),h=Math.max(20,Math.round(r.height));
+ if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d)}
+ const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,h);
+ return{x,w,h,R:REM()};
+}
+function T(x,s,px,py,size,col,al='left',font='Atkinson Hyperlegible Mono',wt=500,base='middle'){x.font=`${wt} ${size}px "${font}",monospace`;x.fillStyle=col;x.textAlign=al;x.textBaseline=base;x.fillText(s,px,py)}
+function TH(x,s,px,py,size,col,al='left'){T(x,s,px,py,size,col,al,'Montserrat',700)}
+function line(x,x1,y1,x2,y2,col,w=1,dash){x.beginPath();x.strokeStyle=col;x.lineWidth=w;x.setLineDash(dash||[]);x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();x.setLineDash([])}
+function dot(x,px,py,r,col){x.beginPath();x.fillStyle=col;x.arc(px,py,r,0,TAU);x.fill()}
+const GR='rgba(244,241,234,.09)',GR2='rgba(244,241,234,.22)',TXT='rgba(244,241,234,.6)';
+/* souřadnice ukazatele uvnitř plátna */
+function ptr(e,cv){const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top,w:r.width,h:r.height}}
+function drag(cv,fn){
+ let on=false;
+ cv.addEventListener('pointerdown',e=>{on=true;cv.setPointerCapture(e.pointerId);fn(ptr(e,cv),e)});
+ cv.addEventListener('pointermove',e=>{if(on)fn(ptr(e,cv),e)});
+ const off=()=>{on=false};cv.addEventListener('pointerup',off);cv.addEventListener('pointercancel',off);
+}
+/* logaritmická osa */
+const lg=(L,a,b,p0,p1)=>p0+(log10(Math.max(L,1e-12))-log10(a))/(log10(b)-log10(a))*(p1-p0);
+
+/* ========== stav ========== */
+const MAPS={mins:v=>Math.round(v/5)*5,q:v=>v};
+const IMAP={mins:v=>v,q:v=>v};
+const S={tab:0,
+ // 1 Cesta obrazu
+ chain:'tv',fmt1:'fhd',st1:0,
+ // 2 Surový tok
+ res:'fhd',fps:25,bits:10,chroma:'422',pipe:'t2',
+ // 3 Barvy
+ cs:'420',v3:'res',
+ // 4 Snímky
+ gop:12,bf:2,mot:'mid',mc:true,play:false,
+ // 5 DCT a vlnka
+ meth:'dct',q5:55,v5:'res',
+ // 6 Kodeky
+ cdc:'hevc',dom:'tv',
+ // 7 Kapacita
+ f7:'fhd',c7:'hevc',mux:'t2',mins:120,fm:'dcp'};
+const OUT={},ACT={},TABS=[];
+function set(k,v){S[k]=v;refresh()}
+let _rq=0;
+function refresh(){if(_rq)return;_rq=requestAnimationFrame(()=>{_rq=0;sync();const t=TABS[S.tab];t&&t.render&&t.render()})}
+function sync(){
+ $$('[data-k][data-v]').forEach(el=>el.classList.toggle('on',String(S[el.dataset.k])===el.dataset.v));
+ $$('input[data-k]').forEach(el=>{let v=S[el.dataset.k];if(el.dataset.map)v=IMAP[el.dataset.map](v);el.value=v;el.style.setProperty('--p',((el.value-el.min)/(el.max-el.min)*100)+'%')});
+ $$('[data-o]').forEach(el=>{const f=OUT[el.dataset.o];if(f){const h=f();if(el.innerHTML!==h)el.innerHTML=h}});
+}
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-k][data-v],[data-act]');if(!el)return;
+ if(el.dataset.act){ACT[el.dataset.act]&&ACT[el.dataset.act](el.dataset.v,el);return}
+ let v=el.dataset.v;if(/^-?\d+(\.\d+)?$/.test(v))v=+v;else if(v==='true')v=true;else if(v==='false')v=false;set(el.dataset.k,v);
+});
+document.addEventListener('input',e=>{
+ const el=e.target;if(el.type!=='range'||!el.dataset.k)return;
+ let v=+el.value;if(el.dataset.map)v=MAPS[el.dataset.map](v);set(el.dataset.k,v);
+});
+
+/* ========== rámec aplikace ========== */
+const ICON={
+ theme:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg>',
+ full:'<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+};
+const PLAYI='<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>';
+const STOPI='<svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>';
+function go(i){
+ if(S.play)ACT.play();
+ S.tab=i;
+ $$('#stage>.tab').forEach((s,j)=>s.hidden=j!==i);
+ $$('#tabs .tab-b').forEach((b,j)=>b.setAttribute('aria-selected',j===i));
+ if(location.hash!=='#'+(i+1))history.replaceState(null,'','#'+(i+1));
+ const t=TABS[i];if(t.enter)t.enter();
+ sync();requestAnimationFrame(()=>{sync();t.render&&t.render()});
+}
+ACT.theme=()=>{const d=document.documentElement;const dark=d.dataset.theme?d.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;d.dataset.theme=dark?'light':'dark';try{localStorage.setItem('vlp-theme',d.dataset.theme)}catch(e){}readC();refresh()};
+ACT.lang=v=>{if(v===LANG)return;try{localStorage.setItem('vlp-lang',v)}catch(e){}location.reload()};
+ACT.full=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()};
+function boot(){
+ try{const th=localStorage.getItem('vlp-theme');if(th==='dark'||th==='light')document.documentElement.dataset.theme=th}catch(e){}
+ document.documentElement.lang=LANG;document.title='Video Lab Pro';
+ $('meta[name=description]').content=tx('Interaktivní laboratoř kódování a komprese videa pro televizi a kino: datový tok, podvzorkování barev, snímky I, P a B, DCT a vlnka, kodeky a kapacita. Určeno pro projekci a velké dotykové panely, pro mobily není vhodná.','Interactive lab on video coding and compression for television and cinema: data rate, chroma subsampling, I, P and B frames, DCT and wavelets, codecs and capacity. Made for projection and large touch panels, not for phones.');
+ $('#tBack').textContent=tx('← Všechny školní aplikace','← All school apps');$('#tSub').textContent=tx('Gymnázium Příbram · GymTV · Informatika','Gymnázium Příbram · GymTV · Computer science');
+ $('#tabs').setAttribute('aria-label',tx('Záložky','Tabs'));
+ $('#bThm').setAttribute('aria-label',tx('Světlý nebo tmavý vzhled','Light or dark theme'));$('#bFul').setAttribute('aria-label',tx('Celá obrazovka','Fullscreen'));
+ $$('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.v===LANG));
+ $('#fL').textContent=tx('Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 12. 11. 2026','Author: Ivo Bešťák · License CC BY 4.0 · Updated: 12. 11. 2026');
+ $('#fR').textContent=tx('Počítá se v prohlížeči, nic se neodesílá. Kodeky jsou zjednodušené modely, čísla orientační.','Computed in your browser, nothing is sent. Codecs are simplified models, figures are approximate.');
+ readC();
+ $('#bThm').innerHTML=ICON.theme;$('#bFul').innerHTML=ICON.full;
+ const nav=$('#tabs'),st=$('#stage');
+ TABS.forEach((t,i)=>{
+  nav.insertAdjacentHTML('beforeend',`<button class="tab-b" role="tab" aria-selected="false" data-act="tab" data-v="${i}"><span class="kap">${tx('kap.','ch.')} ${i+1}</span><span class="nm">${t.name}</span></button>`);
+  st.insertAdjacentHTML('beforeend',`<section class="tab" hidden data-t="${i}" style="${t.side?'--side:'+t.side+';':''}">${t.build()}</section>`);
+ });
+ ACT.tab=v=>go(+v);
+ TABS.forEach(t=>t.init&&t.init());
+ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
+ new ResizeObserver(()=>refresh()).observe(st);
+ matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{readC();refresh()});
+ window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1));if(n>=1&&n<=TABS.length&&n-1!==S.tab)go(n-1)});
+ const h=parseInt(location.hash.slice(1));go(h>=1&&h<=TABS.length?h-1:0);
+ document.fonts&&document.fonts.ready.then(()=>{readC();refresh()});
+}
+</script>
+<script>
+/* ===== společná data a výpočty ===== */
+const FM={
+ sd:{w:720,h:576,n:'SD 576'},
+ hd:{w:1280,h:720,n:'HD 720'},
+ fhd:{w:1920,h:1080,n:'Full HD'},
+ uhd:{w:3840,h:2160,n:'4K UHD'},
+ q8:{w:7680,h:4320,n:'8K UHD'},
+ d2:{w:2048,h:1080,n:'DCI 2K'},
+ d4:{w:4096,h:2160,n:'DCI 4K'}};
+const CH={'444':{s:3,n:'4:4:4'},'422':{s:2,n:'4:2:2'},'420':{s:1.5,n:'4:2:0'}};
+const px=f=>FM[f].w*FM[f].h;
+const raw=(f,fps,bits,ch)=>px(f)*fps*bits*CH[ch].s;               // bit/s, surový obraz
+function fR(b){                                                  // tok čitelně
+ if(b>=1e9)return nf(b/1e9,b>=1e10?1:2)+' Gb/s';
+ if(b>=1e6)return nf(b/1e6,b>=1e8?0:b>=1e7?1:2)+' Mb/s';
+ return nf(b/1e3,0)+' kb/s';
+}
+function fS(B){                                                  // velikost čitelně (bajty)
+ if(B>=1e12)return nf(B/1e12,2)+' TB';
+ if(B>=1e9)return nf(B/1e9,B>=1e11?0:1)+' GB';
+ if(B>=1e6)return nf(B/1e6,B>=1e8?0:1)+' MB';
+ return nf(B/1e3,0)+' kB';
+}
+/* kodeky: bpp = bitů na pixel pro stejný vizuální dojem (orientační model), rel = podíl toku proti MPEG-2 */
+const COD={
+ mpeg2:{n:'MPEG-2',rel:100,yr:1995,fam:'blok'},
+ avc:{n:'H.264 / AVC',rel:50,yr:2003,fam:'blok'},
+ hevc:{n:'H.265 / HEVC',rel:27,yr:2013,fam:'blok'},
+ av1:{n:'AV1',rel:22,yr:2018,fam:'blok'},
+ vvc:{n:'H.266 / VVC',rel:15,yr:2020,fam:'blok'}};
+const bpp=c=>.29*COD[c].rel/100;
+/* tok kodéru pro televizi: pixely za sekundu × bpp, větší obraz je o něco úspornější */
+const vrate=(f,fps,c)=>px(f)*fps*bpp(c)*Math.pow(2073600/px(f),.25);
+const DCPMAX=250e6;
+/* bitové kapacity (orientační) */
+const PIPE={
+ t2:{n:'DVB-T2',b:40e6,sub:()=>tx('multiplex, orientačně','multiplex, approx')},
+ s2:{n:'DVB-S2',b:45e6,sub:()=>tx('transpondér, orientačně','transponder, approx')},
+ st:{n:tx('Stream','Streaming'),b:15e6,sub:()=>tx('domácí linka pro 4K','home line for 4K')},
+ bd:{n:'Blu-ray',b:40e6,sub:()=>tx('video, nejvýš','video, at most')},
+ ubd:{n:'UHD Blu-ray',b:144e6,sub:()=>tx('celkem, nejvýš','total, at most')},
+ dcp:{n:'DCP',b:DCPMAX,sub:()=>tx('JPEG 2000, nejvýš','JPEG 2000, at most')}};
+const MEDIA=[
+ {n:'DVD',B:4.7e9},{n:'Blu-ray',B:25e9},{n:'BD 50',B:50e9},{n:'UHD BD',B:100e9},{n:'SSD 256',B:256e9}];
+</script>
+<script>
+/* ===== 1 Cesta obrazu ===== */
+(function(){
+const fps1=()=>S.chain==='tv'?(S.fmt1==='uhd'?50:25):24;
+const FMTS={tv:['fhd','uhd'],cin:['d2','d4']};
+function stages(){
+ const f=S.fmt1,fp=fps1();
+ if(S.chain==='tv'){
+  const stu=raw(f,fp,10,'422'),dist=vrate(f,fp,'hevc');
+  return[
+   {n:tx('Kamera','Camera'),c:tx('snímač, surová data RAW','sensor, RAW data'),b:px(f)*fp*12,k:'raw',
+    d:tx('Snímač kamery pod barevnou mozaikou dává jednu 12bitovou hodnotu na pixel. Barevný obraz z ní teprve vznikne.','The sensor under a colour mosaic gives one 12-bit value per pixel. The colour picture is only computed from it.')},
+   {n:tx('Studio','Studio'),c:tx('nekomprimovaně, 10 bitů, 4:2:2','uncompressed, 10 bit, 4:2:2'),b:stu,k:'raw',
+    d:tx('V režii a mezi přístroji běží obraz bez komprese po kabelech SDI nebo po síti IP. Proto jsou nutné gigabitové linky.','In the control room, picture runs uncompressed over SDI cables or an IP network. That needs gigabit links.')},
+   {n:tx('Archiv a výměna','Archive and exchange'),c:tx('ProRes, XDCAM, asi 5 : 1','ProRes, XDCAM, about 5:1'),b:stu/5,k:'comp',
+    d:tx('Pro střih a výměnu se každý snímek stlačí zvlášť. Kvalita je téměř beze ztráty a střih je rychlý, protože snímky na sobě nezávisí.','For editing and exchange every frame is compressed on its own. Quality is nearly lossless and cutting is fast, because frames do not depend on each other.')},
+   {n:tx('Kodér vysílače','Broadcast encoder'),c:'HEVC (H.265)',b:dist,k:'comp',
+    d:tx('Tady se tok rozhodne. Kodér využije podobnost sousedních snímků a vyhodí, co oko nepozná. Z gigabitů zbydou jednotky až desítky Mb/s.','This is where the rate is decided. The encoder exploits similarity of neighbouring frames and drops what the eye cannot see. Gigabits shrink to a few or tens of Mb/s.')},
+   {n:tx('Přenos domů','Delivery home'),c:tx('DVB-T2, satelit, stream','DVB-T2, satellite, stream'),b:dist,k:'comp',
+    d:tx('Do jednoho multiplexu se vejde několik programů. Tok k divákovi se už nezmenšuje a nesmí přesáhnout kapacitu kanálu.','Several programmes share one multiplex. The rate to the viewer no longer shrinks and must not exceed the channel capacity.')},
+   {n:tx('Televize','Television'),c:tx('dekodér a displej, 8 bitů RGB','decoder and display, 8 bit RGB'),b:raw(f,fp,8,'444'),k:'raw',
+    d:tx('Dekodér v televizi z malého toku dopočítá každý pixel všech snímků. Panel dostane obraz zase bez komprese.','The decoder in the TV rebuilds every pixel of every frame from the small stream. The panel gets uncompressed picture again.')}];
+ }
+ const mas=raw(f,24,12,'444');
+ return[
+  {n:tx('Kamera','Camera'),c:tx('snímač, surová data RAW','sensor, RAW data'),b:px(f)*24*12,k:'raw',
+   d:tx('Kinokamera zapisuje surová 12bitová data snímače, často na větším čipu a ve vyšším rozlišení, než má výsledné kino.','A cinema camera records raw 12-bit sensor data, often on a bigger chip and in higher resolution than the final cinema.')},
+  {n:tx('Střih a barvy','Edit and grade'),c:tx('12 bitů, 4:4:4, prostor XYZ','12 bit, 4:4:4, XYZ space'),b:mas,k:'raw',
+   d:tx('Kino má vlastní barevný prostor XYZ, 12 bitů na kanál a plné barvy v každém pixelu. Takový master je obrovský.','Cinema uses its own colour space XYZ, 12 bits per channel and full colour in every pixel. Such a master is enormous.')},
+  {n:tx('Kodér DCP','DCP encoder'),c:tx('JPEG 2000, nejvýš 250 Mb/s','JPEG 2000, at most 250 Mb/s'),b:DCPMAX,k:'comp',
+   d:tx('Kino používá vlnkovou kompresi JPEG 2000. Každý snímek je samostatný, bez predikce, a tok je přísně omezen. Soubor se šifruje a otevře ho jen klíč KDM.','Cinema uses JPEG 2000 wavelet compression. Every frame stands alone, with no prediction, and the rate is strictly capped. The file is encrypted and only a KDM key opens it.')},
+  {n:tx('Přeprava','Transport'),c:tx('disk, síť nebo satelit','drive, network or satellite'),b:DCPMAX,k:'comp',
+   d:tx('Film putuje do kina jako sada souborů DCP na disku nebo po síti. Velikost je řádově stovky GB.','The film travels to the cinema as a DCP file set on a drive or over a network. Size is of the order of hundreds of GB.')},
+  {n:tx('Kinoserver','Cinema server'),c:tx('dekódování JPEG 2000','JPEG 2000 decoding'),b:DCPMAX,k:'comp',
+   d:tx('Server soubor dešifruje a v reálném čase dekóduje. Každý snímek se dá rozbalit zvlášť, takže nejsou potřeba žádné odkazy na snímky okolní.','The server decrypts and decodes in real time. Every frame unpacks on its own, so no references to neighbouring frames are needed.')},
+  {n:tx('Projektor','Projector'),c:tx('nekomprimovaně do čipu','uncompressed to the chip'),b:mas,k:'raw',
+   d:tx('Projektor dostane znovu plná 12bitová data všech pixelů a promítne je. Komprese se po cestě vrátila na původní tok.','The projector again gets full 12-bit data of every pixel and projects it. The compression has been undone on the way back to the original rate.')}];
+}
+let G={};
+OUT.k1a=()=>{const s=stages();return fR(Math.max(...s.map(a=>a.b)))};
+OUT.k1a_s=()=>tx('Nejvyšší tok na cestě. Takhle velký je obraz, dokud se nestlačí.','Highest rate on the path. That is how large the picture is until it is compressed.');
+OUT.k1b=()=>{const s=stages();return fR(Math.min(...s.map(a=>a.b)))};
+OUT.k1b_s=()=>S.chain==='tv'?tx('Tok ke divákovi po stlačení kodekem HEVC (model).','Rate to the viewer after HEVC compression (model).'):tx('Strop toku v kině po stlačení JPEG 2000.','Rate ceiling in the cinema after JPEG 2000.');
+OUT.k1c=()=>{const s=stages();return`<span class="or">${nf(Math.max(...s.map(a=>a.b))/Math.min(...s.map(a=>a.b)),0)}</span><u>: 1</u>`};
+OUT.k1c_s=()=>tx('Tolikrát je surový obraz větší než stlačený.','The raw picture is this many times bigger than the compressed one.');
+OUT.fmts1=()=>FMTS[S.chain].map(f=>`<button class="chip${S.fmt1===f?' on':''}" data-k="fmt1" data-v="${f}">${FM[f].n}<small>${FM[f].w}×${FM[f].h} · ${f==='uhd'?50:S.chain==='tv'?25:24} fps</small></button>`).join('');
+OUT.stl1=()=>stages().map((a,i)=>`<button class="chip${S.st1===i?' on':''}" data-k="st1" data-v="${i}" style="text-align:left">${i+1} · ${a.n}</button>`).join('');
+OUT.d1=()=>{const a=stages()[S.st1];return`<b class="l">${a.n} · ${fR(a.b)}</b>${a.c}.<br>${a.d}`};
+OUT.chainseg=()=>[['tv',tx('Televize','Television')],['cin',tx('Kino','Cinema')]].map(a=>`<button class="chip${S.chain===a[0]?' on':''}" data-act="chain" data-v="${a[0]}">${a[1]}</button>`).join('');
+ACT.chain=v=>{S.chain=v;S.fmt1=v==='tv'?'fhd':'d4';S.st1=0;refresh()};
+TABS.push({name:tx('Cesta obrazu','Picture path'),side:'27rem',
+ build(){
+  return `<div class="split"><div class="col">
+   <div class="scope grow"><canvas id="c1"></canvas>
+    <div class="tag"><span><i class="a"></i>${tx('Nekomprimované','Uncompressed')}</span><span><i class="b"></i>${tx('Komprimované','Compressed')}</span><span><i></i>${tx('Vybraná etapa','Selected stage')}</span></div>
+    <div class="badge">${tx('tok v bitech za sekundu, logaritmická osa','rate in bits per second, log axis')}</div></div>
+   <div class="kpis">
+    <div class="card kpi"><span class="lbl">${tx('Surový obraz','Raw picture')}</span><div class="big" data-o="k1a"></div><small data-o="k1a_s"></small></div>
+    <div class="card kpi"><span class="lbl">${tx('Po kompresi','After compression')}</span><div class="big or" data-o="k1b"></div><small data-o="k1b_s"></small></div>
+    <div class="card kpi"><span class="lbl">${tx('Poměr','Ratio')}</span><div class="big" data-o="k1c"></div><small data-o="k1c_s"></small></div>
+   </div></div>
+   <div class="side card">
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Kam obraz míří','Where the picture goes')}</span></div>
+     <div class="seg" data-o="chainseg"></div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Formát','Format')}</span></div><div class="chips g2" data-o="fmts1"></div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Etapa cesty','Stage of the path')}</span></div><div class="chips g2" data-o="stl1"></div></div>
+    <div class="callout" data-o="d1"></div>
+    <div class="callout" style="margin-top:auto"><b class="l">${tx('Co z toho plyne','Takeaway')}</b>${tx('Obraz je na začátku i na konci cesty stejně velký. Komprese je jen prostřední úsek, kde se obraz musí vejít do kanálu nebo na disk.','The picture is equally big at the start and at the end of the path. Compression is only the middle section, where the picture has to fit into a channel or onto a disk.')}</div>
+   </div></div>`;
+ },
+ init(){
+  const cv=$('#c1');
+  cv.addEventListener('pointerdown',e=>{const p=ptr(e,cv);if(!G.rowH)return;const i=Math.floor((p.y-G.top)/G.rowH);if(i>=0&&i<6)set('st1',i)});
+ },
+ render(){
+  const cv=$('#c1');if(!cv)return;
+  const {x,w,h,R}=setup(cv);
+  const st=stages(),A=1e6,B=3e11,x0=R*17,x1=w-R*8.2,X=b=>lg(b,A,B,x0,x1);
+  const top=R*3.1,axisY=h-R*2.4,rowH=(axisY-top)/6;G={top,rowH};
+  for(let p=6;p<=11;p++){const pxx=X(10**p);line(x,pxx,top-R*.5,pxx,axisY,p%3?GR:GR2,1);
+   const lab=p<9?nf(10**(p-6))+' Mb/s':nf(10**(p-9))+' Gb/s';T(x,lab,pxx,axisY+R*.95,R*.72,TXT,'center')}
+  line(x,x0,axisY,x1,axisY,GR2,1.2);
+  st.forEach((a,i)=>{
+   const y=top+i*rowH,bh=Math.min(rowH*.62,R*3),cy=y+rowH/2,sel=i===S.st1;
+   if(sel){x.fillStyle='rgba(255,151,46,.13)';x.fillRect(R*.6,y+rowH*.04,w-R*1.2,rowH*.92)}
+   TH(x,(i+1)+' · '+a.n,R*1.2,cy-R*.5,R*.98,sel?C.orange:C.cream);
+   T(x,a.c.length>34?a.c.slice(0,33)+'…':a.c,R*1.2,cy+R*.62,R*.68,TXT);
+   const xb=X(a.b);
+   x.fillStyle=sel?C.orange:a.k==='raw'?C.analog:C.blue;x.beginPath();x.roundRect(x0,cy-bh/2,Math.max(3,xb-x0),bh,bh*.28);x.fill();
+   TH(x,fR(a.b),xb+R*.7,cy,R*1.0,sel?C.orange:C.cream);
+   if(i>0){const r=st[i-1].b/a.b;if(Math.abs(Math.log(r))>.2){
+    const t=r>1?'÷ '+nf(r,r>=10?0:1):'× '+nf(1/r,1/r>=10?0:1);
+    TH(x,t,w-R*1.2,cy,R*.95,r>1?C.blue:C.bad,'right')}}
+  });
+ }});
+})();
+</script>
+<script>
+/* ===== 2 Surový tok ===== */
+(function(){
+const RES=['sd','hd','fhd','uhd','q8','d2','d4'];
+const cur=()=>raw(S.res,S.fps,S.bits,S.chroma);
+const frameB=()=>px(S.res)*S.bits*CH[S.chroma].s/8;
+OUT.k2a=()=>fR(cur());
+OUT.k2a_s=()=>`${FM[S.res].w} × ${FM[S.res].h} × ${S.fps} ${tx('snímků','frames')} × ${S.bits} ${tx('bitů','bits')} × ${CH[S.chroma].s} ${tx('vzorku na pixel','samples per pixel')}`;
+OUT.k2b=()=>fS(frameB());
+OUT.k2b_s=()=>tx('Jeden snímek. Za sekundu jich je '+S.fps+'.','One frame. There are '+S.fps+' per second.');
+OUT.k2c=()=>fS(cur()/8*60);
+OUT.k2c_s=()=>tx('Jedna minuta nekomprimovaného obrazu. Film na 2 hodiny by měl '+fS(cur()/8*7200)+'.','One minute of uncompressed picture. A 2-hour film would be '+fS(cur()/8*7200)+'.');
+OUT.fpsv=()=>`<b>${S.fps}</b> fps`;
+OUT.pipes2=()=>Object.keys(PIPE).map(k=>`<button class="chip${S.pipe===k?' on':''}" data-k="pipe" data-v="${k}">${PIPE[k].n}</button>`).join('');
+OUT.d2=()=>{
+ const p=PIPE[S.pipe],r=cur()/p.b;
+ return`<b class="l">${p.n} · ${fR(p.b)}</b>${p.sub()}. ${tx('Obraz je '+nf(r,r>=10?0:1)+'× větší, takže ho komprese musí zmenšit nejméně '+nf(r,r>=10?0:1)+'×.','The picture is '+nf(r,r>=10?0:1)+'× bigger, so compression must shrink it at least '+nf(r,r>=10?0:1)+'×.')}`;
+};
+TABS.push({name:tx('Surový tok','Raw data rate'),side:'27rem',
+ build(){
+  return `<div class="split"><div class="col">
+   <div class="scope grow"><canvas id="c2"></canvas>
+    <div class="tag"><span><i class="a"></i>${tx('Surový obraz','Raw picture')}</span><span><i class="b"></i>${tx('Kapacita kanálu','Channel capacity')}</span></div>
+    <div class="badge">${tx('tok [bit/s], logaritmická osa','rate [bit/s], log axis')}</div></div>
+   <div class="kpis">
+    <div class="card kpi"><span class="lbl">${tx('Tok surového obrazu','Raw rate')}</span><div class="big or" data-o="k2a"></div><small data-o="k2a_s"></small></div>
+    <div class="card kpi"><span class="lbl">${tx('Snímek','Frame')}</span><div class="big" data-o="k2b"></div><small data-o="k2b_s"></small></div>
+    <div class="card kpi"><span class="lbl">${tx('Minuta','Minute')}</span><div class="big" data-o="k2c"></div><small data-o="k2c_s"></small></div>
+   </div></div>
+   <div class="side card">
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Rozlišení','Resolution')}</span></div>
+     <div class="chips g3">${RES.map(r=>`<button class="chip" data-k="res" data-v="${r}" style="padding:.4rem .1rem;font-size:.84rem">${FM[r].n}</button>`).join('')}</div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Snímková frekvence','Frame rate')}</span><span class="val" data-o="fpsv"></span></div>
+     <div class="chips g4">${[24,25,50,60].map(f=>`<button class="chip" data-k="fps" data-v="${f}">${f}</button>`).join('')}</div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Bitů na vzorek','Bits per sample')}</span></div>
+     <div class="chips g3">${[8,10,12].map(f=>`<button class="chip" data-k="bits" data-v="${f}">${f} bit</button>`).join('')}</div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Podvzorkování barev','Chroma subsampling')}</span></div>
+     <div class="chips g3">${['444','422','420'].map(f=>`<button class="chip" data-k="chroma" data-v="${f}">${CH[f].n}</button>`).join('')}</div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Porovnat s kanálem','Compare with channel')}</span></div><div class="chips g3" data-o="pipes2"></div></div>
+    <div class="callout" data-o="d2"></div>
+   </div></div>`;
+ },
+ render(){
+  const cv=$('#c2');if(!cv)return;
+  const {x,w,h,R}=setup(cv);
+  const A=1e6,B=2e11,x0=R*1.8,x1=w-R*1.8,X=b=>lg(b,A,B,x0,x1);
+  const axisY=h-R*2.4,top=R*4.2;
+  for(let p=6;p<=11;p++){const pxx=X(10**p);line(x,pxx,top-R*.6,pxx,axisY,p%3?GR:GR2,1);
+   T(x,p<9?nf(10**(p-6))+' Mb/s':nf(10**(p-9))+' Gb/s',pxx,axisY+R*.95,R*.72,TXT,'center')}
+  line(x,x0,axisY,x1,axisY,GR2,1.2);
+  const keys=Object.keys(PIPE),n=keys.length+1,rowH=(axisY-top)/n,bh=Math.min(rowH*.6,R*2.6);
+  // surový obraz
+  const rb=cur(),yr=top+rowH*.5;
+  x.fillStyle=C.analog;x.beginPath();x.roundRect(x0,yr-bh/2,Math.max(3,X(rb)-x0),bh,bh*.28);x.fill();
+  TH(x,tx('Surový obraz','Raw picture')+' · '+fR(rb),x0+R*.8,yr,R*1.0,'#17140F');
+  keys.forEach((k,i)=>{
+   const p=PIPE[k],y=top+rowH*(i+1.5),sel=S.pipe===k,xb=X(p.b);
+   x.fillStyle=sel?C.orange:C.blue;x.beginPath();x.roundRect(x0,y-bh/2,Math.max(3,xb-x0),bh,bh*.28);x.fill();
+   const lab=p.n+' · '+fR(p.b);x.font=`700 ${R*.95}px Montserrat,sans-serif`;const tw=x.measureText(lab).width,out=xb+R*.7+tw<x1;
+   TH(x,lab,out?xb+R*.7:xb-R*.7,y,R*.95,out?(sel?C.orange:C.cream):'#17140F',out?'left':'right');
+  });
+  // svislice vybraného kanálu
+  const sx=X(PIPE[S.pipe].b);line(x,sx,top-R*.4,sx,axisY,C.orange,1.5,[5,4]);
+  const r=rb/PIPE[S.pipe].b;
+  TH(x,'÷ '+nf(r,r>=10?0:1),sx,top-R*1.2,R*1.1,C.orange,'center');
+ }});
+})();
+</script>
+<script>
+/* ===== 3 Barvy a podvzorkování ===== */
+(function(){
+const W=128,H=72;
+let src=null,Y,CB,CR,oc1,oc2;
+function makeSrc(){
+ const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+ const gr=g.createLinearGradient(0,0,W,0);gr.addColorStop(0,'#1d8fa0');gr.addColorStop(1,'#2b4fb0');g.fillStyle=gr;g.fillRect(0,0,W,H);
+ g.fillStyle='#f2d34a';g.fillRect(0,H-14,W,14);
+ g.fillStyle='#d8261f';g.beginPath();g.arc(30,30,18,0,TAU);g.fill();
+ g.strokeStyle='#27c25a';g.lineWidth=1;g.beginPath();g.arc(30,30,21,0,TAU);g.stroke();
+ for(let i=0;i<16;i++){g.fillStyle=i%2?'#d8261f':'#ffffff';g.fillRect(62+i*2,8,1,22)}
+ g.fillStyle='#ffffff';g.font='700 15px Montserrat,Arial,sans-serif';g.textBaseline='top';g.fillText('KINO',58,42);
+ g.strokeStyle='#e83ea8';g.lineWidth=1;g.beginPath();g.moveTo(2,H-3);g.lineTo(124,H-18);g.stroke();
+ g.fillStyle='#8a2be2';g.fillRect(100,38,22,12);g.fillStyle='#ff7a00';g.fillRect(104,41,14,6);
+ src=g.getImageData(0,0,W,H);
+ const n=W*H;Y=new Float32Array(n);CB=new Float32Array(n);CR=new Float32Array(n);
+ for(let i=0;i<n;i++){const r=src.data[i*4],gg=src.data[i*4+1],b=src.data[i*4+2];
+  const y=.2126*r+.7152*gg+.0722*b;Y[i]=y;CB[i]=(b-y)/1.8556;CR[i]=(r-y)/1.5748}
+ oc1=document.createElement('canvas');oc1.width=W;oc1.height=H;oc2=document.createElement('canvas');oc2.width=W;oc2.height=H;
+}
+function sub(P,sch){
+ const o=new Float32Array(W*H);
+ if(sch==='444'){o.set(P);return o}
+ const bw=2,bh=sch==='420'?2:1;
+ for(let by=0;by<H;by+=bh)for(let bx=0;bx<W;bx+=bw){
+  let s=0;for(let j=0;j<bh;j++)for(let i=0;i<bw;i++)s+=P[(by+j)*W+bx+i];
+  s/=bw*bh;for(let j=0;j<bh;j++)for(let i=0;i<bw;i++)o[(by+j)*W+bx+i]=s}
+ return o;
+}
+function toRGB(y,cb,cr,out,i){
+ const r=y+1.5748*cr,b=y+1.8556*cb,g=(y-.2126*r-.0722*b)/.7152;
+ out[i*4]=clamp(r,0,255);out[i*4+1]=clamp(g,0,255);out[i*4+2]=clamp(b,0,255);out[i*4+3]=255;
+}
+let ERR=0;
+function build(sch,view){
+ const cb=sub(CB,sch),cr=sub(CR,sch);
+ const a=new ImageData(W,H),b=new ImageData(W,H);let e=0;
+ for(let i=0;i<W*H;i++){
+  if(view==='chroma'){toRGB(128,CB[i],CR[i],a.data,i);toRGB(128,cb[i],cr[i],b.data,i)}
+  else{
+   src&&(a.data[i*4]=src.data[i*4],a.data[i*4+1]=src.data[i*4+1],a.data[i*4+2]=src.data[i*4+2],a.data[i*4+3]=255);
+   toRGB(Y[i],cb[i],cr[i],b.data,i);
+   if(view==='diff'){for(let k=0;k<3;k++)b.data[i*4+k]=clamp(128+(b.data[i*4+k]-a.data[i*4+k])*4,0,255)}
+  }
+ }
+ // střední chyba vždy z výsledku proti originálu
+ const t=new Uint8ClampedArray(W*H*4);
+ for(let i=0;i<W*H;i++)toRGB(Y[i],cb[i],cr[i],t,i);
+ for(let i=0;i<W*H;i++)for(let k=0;k<3;k++)e+=Math.abs(t[i*4+k]-src.data[i*4+k]);
+ ERR=e/(W*H*3);
+ if(view==='diff')for(let i=0;i<W*H;i++)for(let k=0;k<3;k++)a.data[i*4+k]=128;
+ return[a,b];
+}
+const SAVE={'444':0,'422':1/3,'420':.5};
+OUT.k3a=()=>`${CH[S.cs].s}<u>${tx('vzorku / pixel','samples / pixel')}</u>`;
+OUT.k3a_s=()=>tx('Jas má vzorek v každém pixelu, barvu sdílí 1, 2 nebo 4 pixely.','Luma has a sample in every pixel, colour is shared by 1, 2 or 4 pixels.');
+OUT.k3b=()=>`<span class="or">${nf(SAVE[S.cs]*100,0)} %</span>`;
+OUT.k3b_s=()=>tx('Tolik dat ušetří podvzorkování, a to ještě před jakoukoli další kompresí.','This much data is saved by subsampling, before any other compression.');
+OUT.k3c=()=>{if(!src)makeSrc();build(S.cs,'res');return`${nf(ERR,1)}<u>/ 255</u>`};
+OUT.k3c_s=()=>tx('Průměrná chyba barvy v testovacím obrazu. Je největší na ostrých barevných hranách.','Mean colour error in the test picture. It is largest on sharp coloured edges.');
+OUT.d3=()=>({
+ '444':tx('Plné barvy v každém pixelu. Používá se při střihu, grafice a v kině (DCP má 4:4:4).','Full colour in every pixel. Used in editing, graphics and cinema (DCP is 4:4:4).'),
+ '422':tx('Barva má poloviční šířku. Je to standard studií (SDI, ProRes 422, XDCAM).','Colour has half the width. This is the studio standard (SDI, ProRes 422, XDCAM).'),
+ '420':tx('Barva má poloviční šířku i výšku. Takhle vysílá televize, takhle jsou stlačená videa na webu, disky Blu-ray i UHD Blu-ray.','Colour has half the width and height. This is how television broadcasts, how web videos, Blu-ray and UHD Blu-ray are stored.')}[S.cs]);
+function mini(){
+ const cv=$('#c3b');if(!cv)return;
+ const {x,w,h,R}=setup(cv);
+ const gw=4,gh=2,cw=Math.min(w/(gw+.6),h/(gh+.6)),ox=(w-cw*gw)/2,oy=(h-cw*gh)/2;
+ const bw=2,bh=S.cs==='420'?2:1;
+ x.lineWidth=1;
+ for(let j=0;j<gh;j++)for(let i=0;i<gw;i++){x.strokeStyle=C.line2;x.strokeRect(ox+i*cw,oy+j*cw,cw,cw);
+  if(S.cs==='444'){x.fillStyle=C.orange;x.globalAlpha=.35;x.fillRect(ox+i*cw+2,oy+j*cw+2,cw-4,cw-4);x.globalAlpha=1}}
+ if(S.cs!=='444')for(let j=0;j<gh;j+=bh)for(let i=0;i<gw;i+=bw){
+  x.fillStyle=C.orange;x.globalAlpha=.35;x.fillRect(ox+i*cw+2,oy+j*cw+2,cw*bw-4,cw*bh-4);x.globalAlpha=1;
+  dot(x,ox+(i+bw/2)*cw,oy+(j+bh/2)*cw,cw*.11,C.orange)}
+ for(let j=0;j<gh;j++)for(let i=0;i<gw;i++)dot(x,ox+(i+.5)*cw,oy+(j+.5)*cw,cw*.07,C.ink);
+}
+TABS.push({name:tx('Barvy','Colour'),side:'27rem',
+ build(){
+  return `<div class="split"><div class="col">
+   <div class="scope grow"><canvas id="c3"></canvas>
+    <div class="badge" data-o="b3"></div></div>
+   <div class="kpis">
+    <div class="card kpi"><span class="lbl">${tx('Data na pixel','Data per pixel')}</span><div class="big" data-o="k3a"></div><small data-o="k3a_s"></small></div>
+    <div class="card kpi"><span class="lbl">${tx('Úspora','Saving')}</span><div class="big" data-o="k3b"></div><small data-o="k3b_s"></small></div>
+    <div class="card kpi"><span class="lbl">${tx('Chyba barvy','Colour error')}</span><div class="big" data-o="k3c"></div><small data-o="k3c_s"></small></div>
+   </div></div>
+   <div class="side card">
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Podvzorkování','Subsampling')}</span></div>
+     <div class="chips g3">${['444','422','420'].map(f=>`<button class="chip" data-k="cs" data-v="${f}">${CH[f].n}</button>`).join('')}</div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Co ukázat','What to show')}</span></div>
+     <div class="seg"><button class="chip" data-k="v3" data-v="res">${tx('Výsledek','Result')}</button><button class="chip" data-k="v3" data-v="chroma">${tx('Jen barva','Colour only')}</button><button class="chip" data-k="v3" data-v="diff">${tx('Chyba ×4','Error ×4')}</button></div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Blok 4 × 2 pixely','Block of 4 × 2 pixels')}</span></div>
+     <div style="height:6.2rem;position:relative"><canvas id="c3b" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
+     <p class="n">${tx('Černá tečka je vzorek jasu, oranžová plocha je jeden vzorek barvy.','A black dot is a luma sample, an orange area is one colour sample.')}</p></div>
+    <div class="callout" data-o="d3"></div>
+    <div class="callout" style="margin-top:auto"><b class="l">${tx('Proč to funguje','Why it works')}</b>${tx('Oko má mnohem víc tyčinek pro jas než čípků pro barvu, a proto ostrost vnímáme hlavně z jasu. Barevné detaily jde ztratit skoro bez povšimnutí.','The eye has far more rods for luminance than cones for colour, so sharpness is mostly seen in luma. Colour detail can be lost almost unnoticed.')}</div>
+   </div></div>`;
+ },
+ init(){makeSrc()},
+ render(){
+  const cv=$('#c3');if(!cv)return;
+  const {x,w,h,R}=setup(cv);
+  const [a,b]=build(S.cs,S.v3);
+  oc1.getContext('2d').putImageData(a,0,0);oc2.getContext('2d').putImageData(b,0,0);
+  const gap=R*1.2,top=R*2.6,sc=Math.min((w-gap*3)/2/W,(h-top-R*1.2)/H);
+  const iw=W*sc,ih=H*sc,x0=(w-iw*2-gap)/2,y0=top+(h-top-R*1.2-ih)/2;
+  x.imageSmoothingEnabled=false;
+  x.drawImage(oc1,x0,y0,iw,ih);x.drawImage(oc2,x0+iw+gap,y0,iw,ih);
+  x.strokeStyle=C.line2;x.lineWidth=1;x.strokeRect(x0,y0,iw,ih);x.strokeRect(x0+iw+gap,y0,iw,ih);
+  const l1=S.v3==='diff'?tx('Bez chyby','No error'):S.v3==='chroma'?tx('Barva originálu','Original colour'):tx('Originál','Original');
+  const l2=S.v3==='diff'?tx('Rozdíl proti originálu, ×4','Difference from original, ×4'):CH[S.cs].n+' · '+(S.v3==='chroma'?tx('barva po podvzorkování','colour after subsampling'):tx('po podvzorkování','after subsampling'));
+  TH(x,l1,x0,y0-R*.8,R*.9,C.cream);TH(x,l2,x0+iw+gap,y0-R*.8,R*.9,C.orange);
+  mini();
+ }});
+OUT.b3=()=>'';
+})();
+</script>
+<script>
+/* ===== 4 Čas: snímky I, P, B ===== */
+(function(){
+const FPS=25;
+const MOT={still:{p:.07,b:.035,dx:0},mid:{p:.22,b:.1,dx:4},fast:{p:.48,b:.28,dx:10}};
+function gop(){
+ const N=S.gop,bf=S.bf;
+ const a=[];
+ for(let i=0;i<N;i++){
+  if(i===0)a.push('I');
+  else if(bf===0||N===1)a.push('P');
+  else a.push(i%(bf+1)===0?'P':'B');
+ }
+ if(N===1)return['I'];
+ return a;
+}
+const size=t=>t==='I'?1:t==='P'?MOT[S.mot].p:MOT[S.mot].b;
+const avg=()=>{const g=gop();return g.reduce((s,t)=>s+size(t),0)/g.length};
+/* ukázková scéna pro kompenzaci pohybu */
+const SW=96,SH=54,OS=22;
+function bgTex(x,y){return 90+60*Math.sin(x*.55)*Math.cos(y*.42)+25*Math.sin((x+y)*1.3)}
+function objTex(u,v){return 150+80*Math.sin(u*.9+v*.3)*Math.cos(v*.8)+((u+v)%5===0?-60:0)}
+const OX0=26,OY0=16;
+function scene(dx){
+ const f0=new Float32Array(SW*SH),f1=new Float32Array(SW*SH),pr=new Float32Array(SW*SH);
+ const draw=(f,ox)=>{for(let y=0;y<SH;y++)for(let x=0;x<SW;x++){
+  const u=x-ox,v=y-OY0;f[y*SW+x]=(u>=0&&u<OS&&v>=0&&v<OS)?objTex(u,v):bgTex(x,y)}};
+ draw(f0,OX0);draw(f1,OX0+dx);
+ for(let y=0;y<SH;y++)for(let x=0;x<SW;x++){
+  const u=x-(OX0+dx),v=y-OY0;
+  pr[y*SW+x]=(u>=0&&u<OS&&v>=0&&v<OS)?f0[y*SW+(x-dx)]:f0[y*SW+x]}
+ return{f0,f1,pr};
+}
+let SC=null,SCk=-1,res=0,resPct=0;
+function sceneUpdate(){
+ const dx=MOT[S.mot].dx;
+ if(SCk!==dx){SC=scene(dx);SCk=dx}
+ const out=new Float32Array(SW*SH);let e=0,nz=0;
+ const ref=S.mc?SC.pr:SC.f0;
+ for(let i=0;i<SW*SH;i++){const d=Math.abs(SC.f1[i]-ref[i]);out[i]=d;e+=d;if(d>8)nz++}
+ res=e/(SW*SH);resPct=nz/(SW*SH);
+ return out;
+}
+OUT.r4=()=>{
+ const g=gop(),m=avg(),iOnly=1;
+ return`<span>${tx('Skupina snímků (GOP)','Group of pictures (GOP)')}</span><b>${g.length} ${tx('snímků','frames')}</b>
+ <span>${tx('Průměrný snímek proti I','Average frame vs I')}</span><b class="hot">${nf(m*100,0)} %</b>
+ <span>${tx('Úspora proti samým I','Saving vs all-I')}</span><b>${nf((1-m)*100,0)} %</b>
+ <span>${tx('Čekání na přepnutí kanálu (nejhůř)','Channel-change wait (worst)')}</span><b class="${S.gop/FPS>1.2?'hot':''}">${nf(S.gop/FPS,2)} s</b>
+ <span>${tx('Nutné změny po pohybu','Changes left after motion')}</span><b>${nf(resPct*100,0)} %</b>`;
+};
+OUT.gopv=()=>`<b>${S.gop}</b> ${tx('snímků','frames')}`;
+OUT.d4=()=>S.gop===1
+ ?tx('Samé snímky I: každý je samostatný jako fotka. Střih na snímek přesně, rychlé přepnutí, ale velký tok. Tak funguje kino (JPEG 2000) a výměnné formáty (ProRes).','All I frames: each stands alone like a photo. Frame-accurate cutting and instant access, but a large rate. This is how cinema (JPEG 2000) and exchange formats (ProRes) work.')
+ :tx('Snímek I je celý obraz. P ukládá jen změny proti předchozímu snímku, B se dívá dopředu i dozadu a je nejmenší. Na kanál se vstoupí jen při dalším I, proto televize čeká.','An I frame is the whole picture. P stores only changes from the previous frame, B looks forwards and backwards and is the smallest. A channel can only be entered at the next I, which is why TV waits.');
+TABS.push({name:tx('Snímky I P B','I, P, B frames'),side:'27rem',
+ build(){
+  return `<div class="split"><div class="col">
+   <div class="scope grow"><canvas id="c4"></canvas>
+    <div class="tag"><span><i></i>I</span><span><i class="b"></i>P</span><span><i class="g"></i>B</span></div>
+    <div class="badge">${tx('výška sloupce = velikost snímku (I = 100 %)','bar height = frame size (I = 100 %)')}</div></div>
+   <div class="scope" style="flex:none;height:19rem"><canvas id="c4b"></canvas>
+    <div class="tag">${tx('Pohyb mezi dvěma snímky','Motion between two frames')}</div></div>
+   </div>
+   <div class="side card">
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Délka skupiny snímků','GOP length')}</span><span class="val" data-o="gopv"></span></div>
+     <div class="chips g5">${[1,6,12,25,50].map(f=>`<button class="chip" data-k="gop" data-v="${f}">${f===1?tx('jen I','I only'):f}</button>`).join('')}</div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Snímky B mezi P','B frames between P')}</span></div>
+     <div class="seg"><button class="chip" data-k="bf" data-v="0">0</button><button class="chip" data-k="bf" data-v="2">2</button></div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Pohyb v obraze','Motion in the picture')}</span></div>
+     <div class="seg"><button class="chip" data-k="mot" data-v="still">${tx('Stojí','Still')}</button><button class="chip" data-k="mot" data-v="mid">${tx('Střední','Medium')}</button><button class="chip" data-k="mot" data-v="fast">${tx('Rychlý','Fast')}</button></div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Predikce pohybu','Motion compensation')}</span></div>
+     <div class="seg"><button class="chip" data-k="mc" data-v="false">${tx('Vypnutá','Off')}</button><button class="chip" data-k="mc" data-v="true">${tx('Zapnutá','On')}</button></div></div>
+    <div class="rd" data-o="r4"></div>
+    <div class="callout" data-o="d4"></div>
+   </div></div>`;
+ },
+ render(){
+  const cv=$('#c4');if(!cv)return;
+  {const {x,w,h,R}=setup(cv);
+   const g=gop(),N=g.length,x0=R*1.8,x1=w-R*1.8,top=R*3.4,base=h-(N<=26?R*4.4:R*2.2),bw=(x1-x0)/N,bar=Math.min(bw*.78,R*3.2);
+   line(x,x0,base,x1,base,GR2,1.2);
+   const col={I:C.orange,P:C.blue,B:C.good};
+   const cx=i=>x0+bw*(i+.5);
+   // závislosti
+   if(N<=26&&N>1){
+    x.lineWidth=1.4;
+    let lastRef=0;
+    for(let i=0;i<N;i++){
+     const t=g[i];
+     if(t==='P'){const prev=g.slice(0,i).map((k,j)=>k!=='B'?j:-1).filter(j=>j>=0).pop();
+      arc(x,cx(i),cx(prev),base+R*.2,R*(1.2+Math.min(2,(i-prev)*.2)),C.blue,true)}
+     if(t==='B'){const prev=g.slice(0,i).map((k,j)=>k!=='B'?j:-1).filter(j=>j>=0).pop();
+      let nxt=-1;for(let j=i+1;j<N;j++)if(g[j]!=='B'){nxt=j;break}
+      if(prev>=0)arc(x,cx(i),cx(prev),base+R*.2,R*.8,C.good,false);
+      if(nxt>=0)arc(x,cx(i),cx(nxt),base+R*.2,R*.8,C.good,false)}
+    }
+   }
+   g.forEach((t,i)=>{
+    const hh=Math.max(R*.25,size(t)*(base-top));
+    x.fillStyle=col[t];x.beginPath();x.roundRect(cx(i)-bar/2,base-hh,bar,hh,Math.min(bar*.3,R*.3));x.fill();
+    if(N<=26)T(x,t,cx(i),base+R*.95,R*.8,TXT,'center');
+   });
+   // průměr
+   const m=avg()*(base-top),yy=base-m;
+   line(x,x0,yy,x1,yy,C.cream,1.5,[6,5]);
+   TH(x,tx('průměr ','average ')+nf(avg()*100,0)+' %',x1,yy-R*.8,R*.9,C.cream,'right');
+   if(N>1)TH(x,tx('Další I: čekání až ','Next I: wait up to ')+nf(N/FPS,2)+' s',x1,top-R*1.3,R*.9,N/FPS>1.2?C.bad:TXT,'right');
+  }
+  // pohyb
+  const cb=$('#c4b');
+  {const {x,w,h,R}=setup(cb);
+   const out=sceneUpdate();
+   const gap=R*1.2,top=R*3.2,sc=Math.min((w-gap*4)/3/SW,(h-top-R*.8)/SH),iw=SW*sc,ih=SH*sc,x0=(w-iw*3-gap*2)/2,y0=top+(h-top-R*.8-ih)/2;
+   const pan=(f,ox,fn)=>{const o=document.createElement('canvas');o.width=SW;o.height=SH;const gx=o.getContext('2d'),id=gx.createImageData(SW,SH);
+    for(let i=0;i<SW*SH;i++){const v=fn(f[i]);id.data[i*4]=v[0];id.data[i*4+1]=v[1];id.data[i*4+2]=v[2];id.data[i*4+3]=255}
+    gx.putImageData(id,0,0);x.imageSmoothingEnabled=false;x.drawImage(o,ox,y0,iw,ih);x.strokeStyle=C.line2;x.strokeRect(ox,y0,iw,ih)};
+   const g=v=>{v=clamp(v,0,255);return[v,v*.95,v*.85]};
+   pan(SC.f0,x0,g);pan(SC.f1,x0+iw+gap,g);
+   pan(out,x0+(iw+gap)*2,v=>{const k=clamp(v*3,0,255);return[k,k*.6,20]});
+   TH(x,tx('Snímek n','Frame n'),x0,y0-R*.8,R*.9,C.cream);
+   TH(x,tx('Snímek n + 1','Frame n + 1'),x0+iw+gap,y0-R*.8,R*.9,C.cream);
+   TH(x,(S.mc?tx('Zbytek s predikcí pohybu','Residual with motion compensation'):tx('Zbytek bez predikce','Residual without prediction'))+' · '+nf(resPct*100,0)+' %',x0+(iw+gap)*2,y0-R*.8,R*.9,S.mc?C.good:C.orange);
+  }
+ }});
+function arc(x,x1,x2,y,r,col,solid){
+ x.beginPath();x.strokeStyle=col;x.globalAlpha=solid?.9:.55;x.moveTo(x1,y);x.quadraticCurveTo((x1+x2)/2,y+r*2,x2,y);x.stroke();x.globalAlpha=1;
+}
+})();
+</script>
+<script>
+/* ===== 5 Prostor: blokové DCT × vlnka ===== */
+(function(){
+const W=128,H=72,N=W*H;
+let IMG=null;
+const QB=[16,11,10,16,24,40,51,61,12,12,14,19,26,58,60,55,14,13,16,24,40,57,69,56,14,17,22,29,51,87,80,62,18,22,37,56,68,109,103,77,24,35,55,64,81,104,113,92,49,64,78,87,103,121,120,101,72,92,95,98,112,100,103,99];
+const D=[];for(let u=0;u<8;u++){D[u]=new Float32Array(8);for(let x=0;x<8;x++)D[u][x]=(u===0?Math.SQRT1_2:1)*.5*Math.cos((2*x+1)*u*Math.PI/16)}
+function makeImg(){
+ const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+ const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#c9c9c9');gr.addColorStop(.6,'#6a6a6a');g.fillStyle=gr;g.fillRect(0,0,W,H);
+ g.fillStyle='#f4f4f4';g.beginPath();g.arc(98,16,9,0,TAU);g.fill();
+ g.fillStyle='#3b3b3b';g.beginPath();g.moveTo(0,52);g.lineTo(28,22);g.lineTo(52,50);g.lineTo(72,30);g.lineTo(100,54);g.lineTo(128,40);g.lineTo(128,72);g.lineTo(0,72);g.fill();
+ let s=7;const rnd=()=>(s=(s*16807)%2147483647)/2147483647;
+ for(let y=56;y<72;y++)for(let x=0;x<W;x++){const v=70+rnd()*110;g.fillStyle=`rgb(${v},${v},${v})`;g.fillRect(x,y,1,1)}
+ for(let i=0;i<14;i++){g.fillStyle=i%2?'#101010':'#f0f0f0';g.fillRect(8+i*2,6,1,16)}
+ g.fillStyle='#ffffff';g.font='700 13px Montserrat,Arial,sans-serif';g.textBaseline='top';g.fillText('KINO',40,6);
+ g.strokeStyle='#ffffff';g.lineWidth=1;g.beginPath();g.moveTo(4,70);g.lineTo(60,40);g.stroke();
+ const d=g.getImageData(0,0,W,H).data;IMG=new Float32Array(N);
+ for(let i=0;i<N;i++)IMG[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];
+}
+/* --- DCT 8×8 --- */
+function dctF(img){
+ const o=new Float32Array(N),b=new Float32Array(64),t=new Float32Array(64);
+ for(let by=0;by<H;by+=8)for(let bx=0;bx<W;bx+=8){
+  for(let y=0;y<8;y++)for(let x=0;x<8;x++)b[y*8+x]=img[(by+y)*W+bx+x]-128;
+  for(let v=0;v<8;v++)for(let x=0;x<8;x++){let s=0;for(let y=0;y<8;y++)s+=D[v][y]*b[y*8+x];t[v*8+x]=s}
+  for(let v=0;v<8;v++)for(let u=0;u<8;u++){let s=0;for(let x=0;x<8;x++)s+=D[u][x]*t[v*8+x];o[(by+v)*W+bx+u]=s}
+ }
+ return o;
+}
+function dctI(co){
+ const o=new Float32Array(N),b=new Float32Array(64),t=new Float32Array(64);
+ for(let by=0;by<H;by+=8)for(let bx=0;bx<W;bx+=8){
+  for(let v=0;v<8;v++)for(let u=0;u<8;u++)b[v*8+u]=co[(by+v)*W+bx+u];
+  for(let v=0;v<8;v++)for(let x=0;x<8;x++){let s=0;for(let u=0;u<8;u++)s+=D[u][x]*b[v*8+u];t[v*8+x]=s}
+  for(let y=0;y<8;y++)for(let x=0;x<8;x++){let s=0;for(let v=0;v<8;v++)s+=D[v][y]*t[v*8+x];o[(by+y)*W+bx+x]=clamp(s+128,0,255)}
+ }
+ return o;
+}
+const dctCtx=new Uint8Array(N);for(let y=0;y<H;y++)for(let x=0;x<W;x++)dctCtx[y*W+x]=(y%8)*8+(x%8);
+const dctStep=new Float32Array(N);for(let i=0;i<N;i++)dctStep[i]=QB[dctCtx[i]];
+/* --- vlnka 5/3, 3 úrovně --- */
+const tmp=new Float32Array(Math.max(W,H));
+function f1(a,off,st,n){
+ const h=n>>1;
+ for(let i=0;i<h;i++){const l=a[off+2*i*st],r=a[off+(2*i+2<n?2*i+2:2*i)*st];tmp[h+i]=a[off+(2*i+1)*st]-.5*(l+r)}
+ for(let i=0;i<h;i++){const dm=i>0?tmp[h+i-1]:tmp[h+i];tmp[i]=a[off+2*i*st]+.25*(dm+tmp[h+i])}
+ for(let i=0;i<n;i++)a[off+i*st]=tmp[i];
+}
+function i1(a,off,st,n){
+ const h=n>>1;
+ for(let i=0;i<h;i++){const dm=i>0?a[off+(h+i-1)*st]:a[off+(h+i)*st];tmp[2*i]=a[off+i*st]-.25*(dm+a[off+(h+i)*st])}
+ for(let i=0;i<h;i++){const l=tmp[2*i],r=2*i+2<n?tmp[2*i+2]:tmp[2*i];tmp[2*i+1]=a[off+(h+i)*st]+.5*(l+r)}
+ for(let i=0;i<n;i++)a[off+i*st]=tmp[i];
+}
+function wavF(img){
+ const a=new Float32Array(N);for(let i=0;i<N;i++)a[i]=img[i]-128;
+ for(let l=0;l<3;l++){const w=W>>l,h=H>>l;
+  for(let y=0;y<h;y++)f1(a,y*W,1,w);
+  for(let x=0;x<w;x++)f1(a,x,W,h)}
+ return a;
+}
+function wavI(co){
+ const a=Float32Array.from(co);
+ for(let l=2;l>=0;l--){const w=W>>l,h=H>>l;
+  for(let x=0;x<w;x++)i1(a,x,W,h);
+  for(let y=0;y<h;y++)i1(a,y*W,1,w)}
+ for(let i=0;i<N;i++)a[i]=clamp(a[i]+128,0,255);
+ return a;
+}
+const wavCtx=new Uint8Array(N),wavStep=new Float32Array(N);
+const WP={ll:.3,g:[0,1,1.4,1.6],hh:1.4,th:.3};
+for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+ let c=0;
+ if(!(x<W>>3&&y<H>>3)){
+  let L;
+  for(L=3;L>=1;L--){if(x<(W>>(L-1))&&y<(H>>(L-1)))break}
+  const inX=x>=(W>>L),inY=y>=(H>>L);
+  c=1+(3-L)*3+((inX&&!inY?1:!inX&&inY?2:3)-1);
+ }
+ wavCtx[y*W+x]=c;
+}
+function wavSetup(){
+ for(let i=0;i<N;i++){const c=wavCtx[i];let wt;
+  if(c===0)wt=WP.ll;else{const L=3-Math.floor((c-1)/3),type=(c-1)%3+1;wt=WP.g[L]*(type===3?WP.hh:1)}
+  wavStep[i]=wt}
+}
+wavSetup();
+/* --- kvantování a odhad velikosti --- */
+function quant(co,step,k,q,th=.5){for(let i=0;i<N;i++){const v=co[i]/(step[i]*k);q[i]=v<0?-Math.floor(-v+th):Math.floor(v+th)}}
+function entropy(q,ctx,nc,nb){
+ if(nb)nc*=3;
+ const maps=[];for(let c=0;c<nc;c++)maps.push(new Map());const cnt=new Int32Array(nc);
+ for(let i=0;i<N;i++){
+  let c=ctx[i];
+  if(nb){const x=i%W,y=(i/W)|0;let n=0;
+   if(x>0&&q[i-1])n++;if(x<W-1&&q[i+1])n++;if(y>0&&q[i-W])n++;if(y<H-1&&q[i+W])n++;
+   c=c*3+(n>2?2:n)}
+  const m=maps[c];m.set(q[i],(m.get(q[i])||0)+1);cnt[c]++}
+ let bits=0;for(let c=0;c<nc;c++){const n=cnt[c];if(!n)continue;maps[c].forEach(v=>{bits-=v*Math.log2(v/n)})}
+ return bits;
+}
+function solve(co,step,ctx,nc,target,th,nb){
+ const q=new Int32Array(N);let lo=Math.log(.02),hi=Math.log(200),k=1;
+ for(let it=0;it<22;it++){k=Math.exp((lo+hi)/2);quant(co,step,k,q,th);const b=entropy(q,ctx,nc,nb);if(b>target)lo=Math.log(k);else hi=Math.log(k)}
+ quant(co,step,k,q,th);
+ return{q,k,bits:entropy(q,ctx,nc,nb)};
+}
+function recon(q,step,k,inv){const c=new Float32Array(N);for(let i=0;i<N;i++)c[i]=q[i]*step[i]*k;return inv(c)}
+const d1=v=>(+v).toLocaleString(LANG==='en'?'en-US':'cs-CZ',{minimumFractionDigits:1,maximumFractionDigits:1});
+const psnr=(a,b)=>{let e=0;for(let i=0;i<N;i++){const d=a[i]-b[i];e+=d*d}e/=N;return e<1e-6?99:10*Math.log10(255*255/e)};
+let R5=null,key='',cD=null,cW=null;
+function compute(){
+ if(!IMG)makeImg();
+ if(!cD){cD=dctF(IMG);cW=wavF(IMG)}
+ const kk=S.q5;if(key===kk)return R5;key=kk;
+ const target=N*8/kk;
+ const d=solve(cD,dctStep,dctCtx,64,target,.5,false),w=solve(cW,wavStep,wavCtx,10,target,WP.th,true);
+ const rd=recon(d.q,dctStep,d.k,dctI),rw=recon(w.q,wavStep,w.k,wavI);
+ let zd=0,zw=0;for(let i=0;i<N;i++){if(!d.q[i])zd++;if(!w.q[i])zw++}
+ R5={rd,rw,pd:psnr(IMG,rd),pw:psnr(IMG,rw),bd:d.bits/N,bw:w.bits/N,zd:zd/N,zw:zw/N};
+ return R5;
+}
+OUT.k5a=()=>{const r=compute();return`${d1(r.pd)}<u>dB</u>`};
+OUT.k5a_s=()=>{const r=compute();return tx('Blokové DCT (televize). Nulových koeficientů '+nf(r.zd*100,0)+' %.','Block DCT (television). Zero coefficients '+nf(r.zd*100,0)+' %.')};
+OUT.k5b=()=>{const r=compute();return`<span class="or">${d1(r.pw)}</span><u>dB</u>`};
+OUT.k5b_s=()=>{const r=compute();return tx('Vlnka (kino, JPEG 2000). Nulových koeficientů '+nf(r.zw*100,0)+' %.','Wavelet (cinema, JPEG 2000). Zero coefficients '+nf(r.zw*100,0)+' %.')};
+OUT.k5c=()=>`${nf(8/S.q5,2)}<u>${tx('bitu / pixel','bit / pixel')}</u>`;
+OUT.k5c_s=()=>tx('Oba kodéry dostaly stejný rozpočet. Surový obraz má 8 bitů na pixel.','Both encoders got the same budget. The raw picture has 8 bits per pixel.');
+OUT.qv=()=>`<b>${S.q5}</b> : 1`;
+OUT.d5=()=>`<b class="l">${tx('Co je vidět','What to look for')}</b>`+(S.q5<20
+ ?tx('Při slabší kompresi jsou oba obrazy téměř stejné. Rozdíl je jen v tom, kde se chyba objeví.','At light compression both pictures look nearly equal. The difference is only where the error shows.')
+ :tx('Čísla v dB vycházejí podobně, ale chyba vypadá jinak. DCT rozbije obraz na čtverce 8 × 8 a vzniknou kostičky. Vlnka bloky nemá, celý obraz jen měkne a hrany zůstanou souvislé.','The dB values come out similar, but the error looks different. DCT breaks the picture into 8 × 8 squares and blocks appear. A wavelet has no blocks, the whole picture only softens and edges stay continuous.'));
+function panel(x,arr,ox,oy,pw,ph,err,label,sub,col,R){
+ const o=document.createElement('canvas');o.width=W;o.height=H;const g=o.getContext('2d'),id=g.createImageData(W,H);
+ for(let i=0;i<N;i++){let v=arr[i];if(err)v=clamp(128+(arr[i]-IMG[i])*5,0,255);id.data[i*4]=v;id.data[i*4+1]=v;id.data[i*4+2]=v;id.data[i*4+3]=255}
+ g.putImageData(id,0,0);x.imageSmoothingEnabled=false;x.drawImage(o,ox,oy,pw,ph);x.strokeStyle=C.line2;x.lineWidth=1;x.strokeRect(ox,oy,pw,ph);
+ TH(x,label,ox,oy-R*1.5,R*.95,col);T(x,sub,ox,oy-R*.55,R*.72,TXT);
+}
+TABS.push({name:tx('DCT a vlnka','DCT and wavelet'),side:'27rem',
+ build(){
+  return `<div class="split"><div class="col">
+   <div class="scope grow"><canvas id="c5"></canvas>
+    <div class="badge">${tx('stejná velikost dat, jen jas (šedá)','same data size, luma only (grey)')}</div></div>
+   <div class="kpis">
+    <div class="card kpi"><span class="lbl">${tx('Kvalita DCT','DCT quality')}</span><div class="big" data-o="k5a"></div><small data-o="k5a_s"></small></div>
+    <div class="card kpi"><span class="lbl">${tx('Kvalita vlnky','Wavelet quality')}</span><div class="big" data-o="k5b"></div><small data-o="k5b_s"></small></div>
+    <div class="card kpi"><span class="lbl">${tx('Rozpočet dat','Data budget')}</span><div class="big" data-o="k5c"></div><small data-o="k5c_s"></small></div>
+   </div></div>
+   <div class="side card">
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Míra komprese','Compression ratio')}</span><span class="val" data-o="qv"></span></div>
+     <input type="range" data-k="q5" min="4" max="80" step="1">
+     <div class="chips g4">${[8,16,32,64].map(v=>`<button class="chip" data-k="q5" data-v="${v}">${v} : 1</button>`).join('')}</div></div>
+    <div class="callout" data-o="d5"></div>
+    <div class="callout"><b class="l">${tx('Jak to funguje','How it works')}</b>${tx('Obraz se převede na koeficienty: DCT je počítá po blocích 8 × 8, vlnka po celém obraze ve třech úrovních. Kvantování zaokrouhlí koeficienty, drobné se vynulují a zbytek se zapíše úsporně.','The picture is turned into coefficients: DCT computes them in 8 × 8 blocks, a wavelet over the whole picture in three levels. Quantization rounds them, small ones become zero and the rest is stored compactly.')}</div>
+    <div class="callout" style="margin-top:auto"><b class="l">${tx('Pozor','Note')}</b>${tx('Jde o zjednodušený model. Kodéry HEVC a AV1 mají k DCT ještě filtry, které bloky vyhlazují.','This is a simplified model. HEVC and AV1 encoders add filters to the DCT that smooth the blocks.')}</div>
+   </div></div>`;
+ },
+ render(){
+  const cv=$('#c5');if(!cv)return;
+  const {x,w,h,R}=setup(cv);
+  const r=compute();
+  const gap=R*1.3,top=R*2.6,rg=R*3.2,sc=Math.min((w-gap*4)/3/W,(h-top-rg-R*1)/2/H),pw=W*sc,ph=H*sc,x0=(w-pw*3-gap*2)/2;
+  const y0=top+R*1.5+(h-top-R*1.5-R*1-2*ph-rg)/2,y1=y0+ph+rg;
+  panel(x,IMG,x0,y0,pw,ph,false,tx('Originál','Original'),tx('8 bitů na pixel','8 bits per pixel'),C.cream,R);
+  panel(x,r.rd,x0+pw+gap,y0,pw,ph,false,tx('Blokové DCT','Block DCT'),tx('televize · MPEG-2, AVC, HEVC','television · MPEG-2, AVC, HEVC')+' · '+d1(r.pd)+' dB',C.blue,R);
+  panel(x,r.rw,x0+(pw+gap)*2,y0,pw,ph,false,tx('Vlnka','Wavelet'),tx('kino · JPEG 2000','cinema · JPEG 2000')+' · '+d1(r.pw)+' dB',C.orange,R);
+  panel(x,r.rd,x0+pw+gap,y1,pw,ph,true,tx('Chyba DCT ×5','DCT error ×5'),tx('šedá = bez chyby','grey = no error'),C.blue,R);
+  panel(x,r.rw,x0+(pw+gap)*2,y1,pw,ph,true,tx('Chyba vlnky ×5','Wavelet error ×5'),tx('šedá = bez chyby','grey = no error'),C.orange,R);
+  TH(x,tx('Kolik se ztratilo','What was lost'),x0,y1+ph*.4,R*1.1,C.cream);
+  T(x,tx('Chyba je zvětšená pětkrát.','The error is magnified five times.'),x0,y1+ph*.4+R*1.5,R*.75,TXT);
+  T(x,tx('Skvrny jsou ztracený detail.','Spots are lost detail.'),x0,y1+ph*.4+R*2.6,R*.75,TXT);
+ }});
+})();
+</script>
+<script>
+/* ===== 6 Kodeky ===== */
+(function(){
+const FP=25,F='fhd';
+const CD=[
+ {id:'mpeg2',dom:'tv',n:'MPEG-2',yr:'1995',mode:'inter',fam:tx('DCT v blocích 16 × 16','DCT in 16 × 16 blocks'),b:()=>vrate(F,FP,'mpeg2'),
+  use:tx('DVD, starší vysílání DVB-T a SD programy','DVD, older DVB-T and SD programmes'),
+  d:tx('Dlouho nejrozšířenější kodek televize. Snímky I, P a B už zná, ale predikce je hrubá a tok velký.','For a long time the most common television codec. It knows I, P and B frames, but prediction is coarse and the rate high.')},
+ {id:'avc',dom:'tv',n:'H.264 / AVC',yr:'2003',mode:'inter',fam:tx('celočíselná transformace 4 × 4 a 8 × 8','integer transform 4 × 4 and 8 × 8'),b:()=>vrate(F,FP,'avc'),
+  use:tx('Blu-ray, HD vysílání, web a streaming','Blu-ray, HD broadcast, web and streaming'),
+  d:tx('Zhruba poloviční tok proti MPEG-2 při stejném dojmu. Dodnes ho umí každé zařízení.','About half the MPEG-2 rate at the same look. Every device still plays it.')},
+ {id:'hevc',dom:'tv',n:'H.265 / HEVC',yr:'2013',mode:'inter',fam:tx('stromové bloky do 64 × 64','tree blocks up to 64 × 64'),b:()=>vrate(F,FP,'hevc'),
+  use:tx('televize DVB-T2 v ČR, 4K, UHD Blu-ray, HDR','DVB-T2 in the Czech Republic, 4K, UHD Blu-ray, HDR'),
+  d:tx('Velké a proměnlivé bloky se hodí na 4K. Patenty se licencují, proto se prosazuje pomaleji.','Large, flexible blocks suit 4K. Patents are licensed, so it spread more slowly.')},
+ {id:'av1',dom:'tv',n:'AV1',yr:'2018',mode:'inter',fam:tx('stromové bloky do 128 × 128','tree blocks up to 128 × 128'),b:()=>vrate(F,FP,'av1'),
+  use:tx('streaming a web (např. videoportály)','streaming and web (e.g. video portals)'),
+  d:tx('Vznikl bez licenčních poplatků. Kóduje velmi pomalu, ale tok je ještě menší než u HEVC.','Made without licence fees. Encoding is very slow, but the rate is even lower than HEVC.')},
+ {id:'vvc',dom:'tv',n:'H.266 / VVC',yr:'2020',mode:'inter',fam:tx('stromové bloky do 128 × 128','tree blocks up to 128 × 128'),b:()=>vrate(F,FP,'vvc'),
+  use:tx('zatím málo nasazený','still little deployed'),
+  d:tx('Slibuje asi polovinu toku proti HEVC. Náročný výpočet a nejasné licence zpomalují nástup.','Promises about half the HEVC rate. Heavy computation and unclear licences slow its uptake.')},
+ {id:'prores',dom:'cin',n:'ProRes 422 HQ',yr:'2007',mode:'intra',fam:tx('DCT, každý snímek zvlášť','DCT, every frame alone'),b:()=>184e6,
+  use:tx('střih, výměna, archiv (televize i film)','editing, exchange, archive (TV and film)'),
+  d:tx('Žádná predikce mezi snímky, proto tok kolem 180 Mb/s pro Full HD. Střih na snímek přesně a rychlý přístup.','No prediction between frames, so about 180 Mb/s for Full HD. Frame-accurate editing and fast access.')},
+ {id:'j2k',dom:'cin',n:'JPEG 2000 (DCP)',yr:'2000',mode:'intra',fam:tx('vlnka, každý snímek zvlášť','wavelet, every frame alone'),b:()=>DCPMAX,
+  use:tx('digitální kino (DCI), 2K a 4K, 12 bitů XYZ','digital cinema (DCI), 2K and 4K, 12 bit XYZ'),
+  d:tx('Vlnková komprese bez bloků. Strop je 250 Mb/s, snímky na sobě nezávisí a soubor se šifruje.','Wavelet compression with no blocks. Capped at 250 Mb/s, frames do not depend on each other and the file is encrypted.')}];
+const cur=()=>CD.find(c=>c.id===S.cdc);
+OUT.cdl=()=>CD.map(c=>`<button class="chip${S.cdc===c.id?' on':''}" data-k="cdc" data-v="${c.id}" style="text-align:left;font-size:.88rem">${c.n}</button>`).join('');
+OUT.r6=()=>{const c=cur();return`<span>${tx('Rok','Year')}</span><b>${c.yr}</b>
+ <span>${tx('Transformace','Transform')}</span><b>${c.fam}</b>
+ <span>${tx('Predikce','Prediction')}</span><b>${c.mode==='inter'?tx('mezi snímky','between frames'):tx('jen uvnitř snímku','within a frame only')}</b>
+ <span>${tx('Full HD 25p','Full HD 25p')}</span><b class="hot">${fR(c.b())}</b>
+ <span>${tx('Použití','Used for')}</span><b>${c.use}</b>`};
+OUT.d6=()=>`<b class="l">${cur().n}</b>${cur().d}`;
+ACT.dom=v=>{S.dom=v;refresh()};
+TABS.push({name:tx('Kodeky','Codecs'),side:'27rem',
+ build(){
+  return `<div class="split"><div class="col">
+   <div class="scope grow"><canvas id="c6"></canvas>
+    <div class="tag"><span><i class="b"></i>${tx('S predikcí mezi snímky','With inter-frame prediction')}</span><span><i></i>${tx('Každý snímek zvlášť','Every frame alone')}</span></div>
+    <div class="badge">${tx('Full HD, 25 snímků za sekundu, stejný vizuální dojem, log. osa','Full HD, 25 frames per second, same visual quality, log axis')}</div></div>
+   </div>
+   <div class="side card">
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Zvýraznit','Highlight')}</span></div>
+     <div class="seg"><button class="chip" data-k="dom" data-v="tv">${tx('Televize','Television')}</button><button class="chip" data-k="dom" data-v="cin">${tx('Kino a střih','Cinema and edit')}</button><button class="chip" data-k="dom" data-v="all">${tx('Vše','All')}</button></div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Kodek','Codec')}</span></div><div class="chips g2" data-o="cdl"></div></div>
+    <div class="rd" data-o="r6"></div>
+    <div class="callout" data-o="d6"></div>
+    <div class="callout" style="margin-top:auto"><b class="l">${tx('Pozor','Note')}</b>${tx('Toky jsou orientační model podle běžných zkušeností. Skutečný tok závisí na obsahu, kodéru i nastavení.','The rates are an approximate model based on common experience. The real rate depends on content, encoder and settings.')}</div>
+   </div></div>`;
+ },
+ init(){
+  const cv=$('#c6');
+  cv.addEventListener('pointerdown',e=>{const p=ptr(e,cv);if(!G6.rowH)return;const i=Math.floor((p.y-G6.top)/G6.rowH);if(i>=0&&i<CD.length)set('cdc',CD[i].id)});
+ },
+ render(){
+  const cv=$('#c6');if(!cv)return;
+  const {x,w,h,R}=setup(cv);
+  const A=1e6,B=4e8,x0=R*14.5,x1=w-R*7,X=b=>lg(b,A,B,x0,x1);
+  const top=R*4,axisY=h-R*2.4,rowH=(axisY-top)/CD.length;G6={top,rowH};
+  [1,2,5,10,20,50,100,200].forEach(m=>{const pxx=X(m*1e6);line(x,pxx,top-R*.4,pxx,axisY,[1,10,100].includes(m)?GR2:GR,1);T(x,m+'',pxx,axisY+R*.95,R*.72,TXT,'center')});
+  TH(x,'Mb/s',x1+R*1.2,axisY+R*.95,R*.72,TXT,'left');
+  line(x,x0,axisY,x1,axisY,GR2,1.2);
+  CD.forEach((c,i)=>{
+   const y=top+i*rowH,cy=y+rowH/2,bh=Math.min(rowH*.6,R*2.6),sel=S.cdc===c.id,on=S.dom==='all'||S.dom===c.dom||(S.dom==='cin'&&c.id==='prores');
+   const xb=X(c.b());
+   x.globalAlpha=on?1:.32;
+   if(sel){x.fillStyle='rgba(255,151,46,.13)';x.fillRect(R*.6,y+rowH*.04,w-R*1.2,rowH*.92)}
+   TH(x,c.n,R*1.2,cy-R*.45,R*.98,sel?C.orange:C.cream);T(x,c.yr+' · '+(c.mode==='inter'?tx('predikce','prediction'):tx('snímek zvlášť','frame alone')),R*1.2,cy+R*.65,R*.68,TXT);
+   x.fillStyle=sel?C.orange:c.mode==='inter'?C.blue:C.analog;x.beginPath();x.roundRect(x0,cy-bh/2,Math.max(3,xb-x0),bh,bh*.28);x.fill();
+   TH(x,fR(c.b()),xb+R*.7,cy,R*1.0,sel?C.orange:C.cream);
+   if(c.mode==='inter'){const rel=c.b()/vrate(F,FP,'mpeg2');TH(x,nf(rel*100,0)+' %',w-R*1.2,cy,R*.95,TXT,'right')}
+   x.globalAlpha=1;
+  });
+  TH(x,tx('proti MPEG-2','vs MPEG-2'),w-R*1.2,top-R*.8,R*.78,TXT,'right');
+ }});
+let G6={};
+})();
+</script>
+<script>
+/* ===== 7 Kapacita a velikost ===== */
+(function(){
+const F7=['sd','hd','fhd','uhd'];
+const CODS=['mpeg2','avc','hevc','av1','vvc'];
+const FILM={
+ stream:{n:tx('Stream 4K','Streaming 4K'),b:()=>15e6},
+ tv:{n:tx('Televize (model)','TV (model)'),b:()=>vrate(S.f7,fps7(),S.c7)},
+ bd:{n:'Blu-ray',b:()=>35e6},
+ ubd:{n:'UHD Blu-ray',b:()=>90e6},
+ dcp:{n:'DCP',b:()=>DCPMAX}};
+const fps7=()=>S.f7==='uhd'?50:25;
+const rate=c=>vrate(S.f7,fps7(),c);
+const cap=()=>PIPE[S.mux].b;
+const fsize=()=>FILM[S.fm].b()/8*S.mins*60;
+OUT.t7=()=>`<span><i></i>${PIPE[S.mux].n} · ${fR(cap())} · ${FM[S.f7].n}</span>`;
+OUT.mins7=()=>`<b>${S.mins}</b> min`;
+OUT.r7=()=>{
+ const r=rate(S.c7),n=Math.floor(cap()/r),sz=fsize(),fits=MEDIA.filter(m=>m.B>=sz).map(m=>m.n);
+ return`<span>${tx('Tok jednoho programu','Rate of one programme')}</span><b class="hot">${fR(r)}</b>
+ <span>${tx('Programů v kanálu','Programmes in the channel')}</span><b class="hot">${n}</b>
+ <span>${tx('Při MPEG-2 by jich bylo','With MPEG-2 there would be')}</span><b>${Math.floor(cap()/rate('mpeg2'))}</b>
+ <span>${tx('Film','Film')} ${S.mins} min</span><b class="hot">${fS(sz)}</b>
+ <span>${tx('Nejmenší médium','Smallest medium')}</span><b>${fits[0]||tx('žádné z nabízených','none listed')}</b>`;
+};
+OUT.fmt7=()=>F7.map(f=>`<button class="chip${S.f7===f?' on':''}" data-k="f7" data-v="${f}" style="padding:.4rem .1rem;font-size:.86rem">${FM[f].n}</button>`).join('');
+OUT.d7=()=>{
+ const r=rate(S.c7),n=Math.floor(cap()/r);
+ return n<1?`<b class="l">${tx('Nevejde se','Does not fit')}</b>${tx('Jeden program je větší než celý kanál. Je třeba účinnější kodek nebo menší obraz.','One programme is bigger than the whole channel. A more efficient codec or a smaller picture is needed.')}`
+ :`<b class="l">${tx('Proč se to řeší','Why it matters')}</b>${tx('Kapacita kanálu je pevná, takže každý bit ušetřený kodekem znamená místo pro další program nebo lepší obraz. Proto televize přecházejí od MPEG-2 na HEVC.','Channel capacity is fixed, so every bit saved by the codec makes room for another programme or a better picture. That is why television moves from MPEG-2 to HEVC.')}`;
+};
+TABS.push({name:tx('Kapacita','Capacity'),side:'27rem',
+ build(){
+  return `<div class="split"><div class="col">
+   <div class="scope grow"><canvas id="c7"></canvas>
+    <div class="tag" data-o="t7"></div><div class="badge">${tx('programy v jednom kanálu','programmes in one channel')}</div></div>
+   <div class="scope grow"><canvas id="c7b"></canvas>
+    <div class="tag">${tx('Velikost filmu','Film size')}</div><div class="badge">${tx('log. osa, GB','log axis, GB')}</div></div>
+   </div>
+   <div class="side card">
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Rozlišení programu','Programme resolution')}</span></div><div class="chips g4" data-o="fmt7"></div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Kodek','Codec')}</span></div>
+     <div class="chips g3">${CODS.map(c=>`<button class="chip" data-k="c7" data-v="${c}" style="padding:.4rem .1rem;font-size:.84rem">${COD[c].n.replace('H.264 / ','').replace('H.265 / ','').replace('H.266 / ','')}</button>`).join('')}</div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Kanál','Channel')}</span></div>
+     <div class="seg"><button class="chip" data-k="mux" data-v="t2">DVB-T2</button><button class="chip" data-k="mux" data-v="s2">DVB-S2</button></div></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Délka filmu','Film length')}</span><span class="val" data-o="mins7"></span></div>
+     <input type="range" data-k="mins" data-map="mins" min="30" max="240" step="5"></div>
+    <div class="ctl"><div class="hd"><span class="lbl">${tx('Jak je film stlačen','How the film is compressed')}</span></div>
+     <div class="chips g3">${Object.keys(FILM).map(k=>`<button class="chip" data-k="fm" data-v="${k}" style="padding:.4rem .1rem;font-size:.82rem">${FILM[k].n}</button>`).join('')}</div></div>
+    <div class="rd" data-o="r7"></div>
+    <div class="callout" data-o="d7"></div>
+   </div></div>`;
+ },
+ render(){
+  const cv=$('#c7');if(cv){
+   const {x,w,h,R}=setup(cv);
+   const x0=R*10.2,x1=w-R*2,top=R*3,bot=h-R*.8,rowH=(bot-top)/CODS.length,bh=Math.min(rowH*.66,R*2.4);
+   const Cp=cap(),X=b=>x0+(x1-x0)*b/Cp;
+   CODS.forEach((c,i)=>{
+    const y=top+i*rowH+rowH/2,sel=S.c7===c,r=rate(c),n=Math.floor(Cp/r);
+    const nm=COD[c].n.replace('H.264 / ','').replace('H.265 / ','').replace('H.266 / ','');
+    TH(x,nm,R*1.2,y-R*.5,R*.98,sel?C.orange:C.cream);
+    T(x,n<1?tx('nevejde se','does not fit'):n+' × '+fR(r),R*1.2,y+R*.62,R*.7,n<1?C.bad:TXT);
+    x.fillStyle='rgba(244,241,234,.07)';x.beginPath();x.roundRect(x0,y-bh/2,x1-x0,bh,bh*.25);x.fill();
+    for(let k=0;k<n;k++){const a=X(k*r),b=X((k+1)*r);x.fillStyle=sel?C.orange:C.blue;x.globalAlpha=k%2?.8:1;x.beginPath();x.roundRect(a+1,y-bh/2,Math.max(1,b-a-2),bh,bh*.2);x.fill();x.globalAlpha=1}
+    if(n<1){x.fillStyle='rgba(255,106,77,.5)';x.beginPath();x.roundRect(x0,y-bh/2,x1-x0,bh,bh*.25);x.fill()}
+   });
+  }
+  const cb=$('#c7b');if(cb){
+   const {x,w,h,R}=setup(cb);
+   const A=1,B=600,x0=R*1.8,x1=w-R*5,X=g=>lg(g,A,B,x0,x1),axisY=h-R*2.2,top=R*5.4;
+   [1,2,5,10,20,50,100,200,500].forEach(g=>{const pxx=X(g);line(x,pxx,top-R*.8,pxx,axisY,[1,10,100].includes(g)?GR2:GR,1);T(x,g+'',pxx,axisY+R*.95,R*.72,TXT,'center')});
+   line(x,x0,axisY,x1,axisY,GR2,1.2);
+   const sz=fsize()/1e9,bh=Math.min((axisY-top)*.5,R*3),by=axisY-(axisY-top)/2;
+   x.fillStyle=C.orange;x.beginPath();x.roundRect(x0,by-bh/2,Math.max(3,X(Math.max(sz,A))-x0),bh,bh*.25);x.fill();
+   TH(x,fS(fsize()),X(Math.max(sz,A))+R*.8>x1-R*5?X(Math.max(sz,A))-R*.8:X(Math.max(sz,A))+R*.8,by,R*1.2,X(Math.max(sz,A))+R*.8>x1-R*5?'#17140F':C.orange,X(Math.max(sz,A))+R*.8>x1-R*5?'right':'left');
+   MEDIA.forEach((m,i)=>{
+    const g=m.B/1e9,pxx=X(g),fits=m.B>=fsize(),ly=top-R*(i%2?2.7:1.4);
+    line(x,pxx,ly+R*1.05,pxx,axisY,fits?C.good:C.bad,1.5,[4,4]);
+    TH(x,m.n,pxx,ly-R*.2,R*.78,fits?C.good:C.bad,'center');T(x,nf(g,g<10?1:0)+' GB',pxx,ly+R*.55,R*.66,TXT,'center');
+   });
+  }
+ }});
+})();
+</script>
+<script>boot();</script>
+</body>
+</html>
