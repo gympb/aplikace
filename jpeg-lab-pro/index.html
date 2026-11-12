@@ -37,7 +37,7 @@ b{font-weight:700}
 .back{font:600 .82rem/1 var(--f-head);color:var(--ink2);text-decoration:none;letter-spacing:.02em}
 .back:hover{color:var(--orange-t)}
 .brand b{font:800 1.7rem/1 var(--f-head);letter-spacing:-.01em}
-.brand b span{background:linear-gradient(transparent 58%,var(--orange) 58%,var(--orange) 92%,transparent 92%);padding:0 .1rem}
+.brand b span:not(.plus){background:linear-gradient(transparent 58%,var(--orange) 58%,var(--orange) 92%,transparent 92%);padding:0 .1rem}
 .brand small{font:700 .66rem/1 var(--f-head);letter-spacing:.22em;text-transform:uppercase;color:var(--orange-t)}
 .tabs{display:flex;gap:.2rem;justify-content:center;min-width:0}
 .tab-b{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;padding:.55rem .75rem .6rem;border-radius:1rem;min-width:0;flex:0 1 auto;min-height:3.6rem;transition:background .2s,color .2s}
@@ -148,7 +148,7 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 <body>
 <div class="app">
  <header class="top">
-  <div class="brand"><a class="back" href="../" id="tBack">← Všechny školní aplikace</a><b><span>JPEG</span> Lab Pro</b><small id="tSub">Gymnázium Příbram · Informatika · GymTV</small></div>
+  <div class="brand"><a class="back" href="../" id="tBack">← Všechny školní aplikace</a><b><span>JPEG</span> Lab Pro<span class="plus" id="tPlus">PLUS</span></b><small id="tSub">Gymnázium Příbram · Informatika · GymTV</small></div>
   <nav class="tabs" id="tabs" role="tablist" aria-label="Záložky"></nav>
   <div class="tools">
    <button class="ib q" id="bHelp" data-act="help"></button>
@@ -1057,6 +1057,11 @@ TABS.push({name:tx('Praxe','Practice'),side:'27rem',
 #help ul{margin:.2rem 0;padding-left:1.3rem}
 #help b{color:var(--ink)}
 #help .x{float:right;margin:-.3rem -.6rem 0 1rem;width:2.8rem;height:2.8rem;border-radius:50%;background:var(--bg);font:700 1.2rem/1 var(--f-head)}
+:root{--plus-bg:#1B2A4A;--plus-fg:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--plus-bg:#9DB0D8;--plus-fg:#0F161B}}
+:root[data-theme=dark]{--plus-bg:#9DB0D8;--plus-fg:#0F161B}
+.plus{display:inline-block;vertical-align:.2rem;margin-left:.5rem;padding:.25em .6em;border-radius:.3rem;background:var(--plus-bg);color:var(--plus-fg);font:700 .75rem/1.2 var(--f-head);letter-spacing:.08em;cursor:help}
+#help .pl{margin-top:1.2rem;padding:.8rem 1rem;border-radius:.9rem;background:var(--bg);border-left:.3rem solid var(--plus-bg);font-size:.95rem;line-height:1.4;color:var(--ink2)}
 #help .nav{display:flex;gap:.6rem;margin-top:1.2rem}
 #help .nav button{padding:.6rem 1rem;border-radius:.8rem;background:var(--bg);font:700 .9rem/1 var(--f-head)}
 </style>
@@ -1176,6 +1181,7 @@ function render(){
   ${h.e?`<h3>${h.eh}</h3>${h.e.map(x=>`<p>${x}</p>`).join('')}`:''}
   <h3>${tx('Co zkusit','What to try')}</h3><ul>${h.c.map(x=>`<li>${x}</li>`).join('')}</ul>
   <h3>${tx('Co si odnést','Takeaway')}</h3><p><b>${h.d}</b></p>
+  <div class="pl"><span class="plus" style="margin:0 .4rem 0 0;vertical-align:baseline">PLUS</span>${tx('značí obsah nad rámec učiva přiřazených ročníků. Celá tato aplikace je určena zájemcům o kompresi obrazu, ne povinné učivo.','marks content beyond the curriculum of the assigned years. This whole app is meant for those interested in image compression, not for required coursework.')}</div>
   <div class="nav"><button data-act="hnav" data-v="-1">← ${tx('Předchozí kapitola','Previous chapter')}</button><button data-act="hnav" data-v="1">${tx('Další kapitola','Next chapter')} →</button></div>`;
 }
 ACT.help=()=>{open=!open;const e=$('#help');e.hidden=!open;if(open){render();$('#help .x').focus()}else $('#bHelp').focus()};
@@ -1183,6 +1189,7 @@ ACT.hnav=v=>{go((S.tab+ +v+H.length)%H.length);render();$('#help .dlg').scrollTo
 document.addEventListener('keydown',e=>{if(open&&e.key==='Escape')ACT.help()});
 document.addEventListener('click',e=>{if(open&&e.target.id==='help')ACT.help()});
 window.jlpHelpInit=function(){
+ const p=$('#tPlus');p.title=tx('Aplikace obsahuje učivo nad rámec přiřazených ročníků','The app contains material beyond the assigned years\' curriculum');
  const b=$('#bHelp');b.textContent='?';b.setAttribute('aria-label',tx('Vysvětlení k této kapitole','Explanation of this chapter'));b.title=b.getAttribute('aria-label');
 };
 })();
