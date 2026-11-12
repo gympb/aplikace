@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JPEG Lab Pro</title>
+<meta name="description" content="Interaktivní laboratoř komprimace obrazu JPEG: cesta snímku od pixelů k souboru, barevné podvzorkování, DCT, kvantování, kódování, artefakty a velikost souboru. Určeno pro projekci a velké dotykové panely, pro mobily není vhodná.">
+<meta name="author" content="Ivo Bešťák">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/fonty/fonty.css">
+<style>
+:root{
+--f-head:'Montserrat','Segoe UI',system-ui,sans-serif;
+--f-body:'Atkinson Hyperlegible Next','Segoe UI',system-ui,sans-serif;
+--f-mono:'Atkinson Hyperlegible Mono',ui-monospace,Consolas,monospace;
+--orange:#FF972E;--orange-t:#B85800;--orange-soft:#FFE6C8;
+--bg:#F4F1EA;--card:#FFFFFF;--ink:#17140F;--ink2:#5A5446;--line:#E2DBCC;--line2:#CFC7B5;
+--scope:#16130E;--analog:#BDB6A7;--cream:#F4F1EA;--bad:#FF6A4D;--good:#5DB67F;--blue:#6EA8E0;
+--shadow:0 .06rem 0 rgba(60,40,10,.06),0 1.1rem 2.4rem -1.6rem rgba(60,40,10,.4);
+color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+--orange-t:#FFA94D;--orange-soft:#47311A;--bg:#12100C;--card:#1D1A14;--ink:#F4F1EA;--ink2:#B5AD9C;--line:#332F27;--line2:#463F34;
+--scope:#0A0907;--shadow:0 1.1rem 2.4rem -1.6rem rgba(0,0,0,.8);color-scheme:dark}}
+:root[data-theme=dark]{--orange-t:#FFA94D;--orange-soft:#47311A;--bg:#12100C;--card:#1D1A14;--ink:#F4F1EA;--ink2:#B5AD9C;--line:#332F27;--line2:#463F34;
+--scope:#0A0907;--shadow:0 1.1rem 2.4rem -1.6rem rgba(0,0,0,.8);color-scheme:dark}
+*{box-sizing:border-box}
+html{font-size:clamp(9px,min(calc(100vw/96),calc(100vh/54)),80px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1.1rem/1.38 var(--f-body);overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation;padding:0}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:.2rem solid var(--orange);outline-offset:.15rem}
+b{font-weight:700}
+[hidden]{display:none!important}
+.app{height:100vh;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+/* hlavička */
+.top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:1.6rem;padding:.9rem 2rem .6rem}
+.brand{display:flex;flex-direction:column;gap:.15rem;min-width:15rem}
+.back{font:600 .82rem/1 var(--f-head);color:var(--ink2);text-decoration:none;letter-spacing:.02em}
+.back:hover{color:var(--orange-t)}
+.brand b{font:800 1.7rem/1 var(--f-head);letter-spacing:-.01em}
+.brand b span{background:linear-gradient(transparent 58%,var(--orange) 58%,var(--orange) 92%,transparent 92%);padding:0 .1rem}
+.brand small{font:700 .66rem/1 var(--f-head);letter-spacing:.22em;text-transform:uppercase;color:var(--orange-t)}
+.tabs{display:flex;gap:.2rem;justify-content:center;min-width:0}
+.tab-b{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;padding:.55rem .75rem .6rem;border-radius:1rem;min-width:0;flex:0 1 auto;min-height:3.6rem;transition:background .2s,color .2s}
+.tab-b .kap{font:700 .6rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
+.tab-b .nm{font:700 1rem/1.1 var(--f-head);white-space:nowrap}
+.tab-b:hover{background:rgba(255,151,46,.14)}
+.tab-b[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.tab-b[aria-selected=true] .kap{color:var(--orange)}
+.tools{display:flex;gap:.5rem}
+.ib{width:3.1rem;height:3.1rem;border-radius:50%;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center}
+.ib svg{width:1.5rem;height:1.5rem;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ib:hover{background:var(--orange);color:#17140F}
+.lang{display:grid;grid-auto-flow:column;gap:.2rem;background:var(--card);box-shadow:var(--shadow);border-radius:1.6rem;padding:.25rem;height:3.1rem;align-items:center}
+.lang button{height:2.6rem;padding:0 .8rem;border-radius:1.3rem;font:800 .9rem Montserrat,sans-serif;letter-spacing:.04em;color:var(--ink2)}
+.lang button.on{background:var(--ink);color:var(--bg)}
+.lang button:not(.on):hover{background:var(--orange);color:#17140F}
+#stage{padding:.3rem 2rem .5rem;min-height:0;overflow:hidden}
+.foot{display:flex;justify-content:space-between;gap:1rem;padding:.2rem 2rem .7rem;font:500 .8rem/1 var(--f-mono);color:var(--ink2)}
+/* rozvržení */
+.tab{height:100%;display:grid;gap:1rem;min-height:0}
+.split{display:grid;grid-template-columns:minmax(0,1fr) var(--side,27rem);gap:1rem;min-height:0}
+.col{display:flex;flex-direction:column;gap:1rem;min-height:0;min-width:0}
+.col>.grow{flex:1;min-height:0}
+.card{background:var(--card);border-radius:1.2rem;padding:1rem 1.2rem;box-shadow:var(--shadow);min-width:0}
+.side{overflow:hidden}
+.side.card{display:flex;flex-direction:column;gap:.6rem}
+.side .callout{font-size:.86rem}
+.lbl{font:700 .68rem/1 var(--f-head);letter-spacing:.22em;text-transform:uppercase;color:var(--orange-t)}
+.ctl{display:flex;flex-direction:column;gap:.35rem}
+.ctl .hd{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem}
+.val{font:500 1.05rem/1 var(--f-mono);color:var(--ink)}
+.val b{font-weight:500;color:var(--orange-t)}
+p.n{margin:0;color:var(--ink2);font-size:.95rem;line-height:1.35}
+/* plátno */
+.scope{position:relative;border-radius:1.2rem;background:radial-gradient(120% 140% at 50% 0%,#241F17 0%,var(--scope) 62%);overflow:hidden;box-shadow:var(--shadow);min-height:0}
+.scope canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.tag{position:absolute;left:1rem;top:.8rem;font:700 .66rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--cream);opacity:.8;pointer-events:none;display:flex;gap:.8rem;align-items:center}
+.tag i{display:inline-block;width:.9rem;height:.28rem;border-radius:.2rem;background:var(--orange);margin-right:.35rem;vertical-align:.12rem}
+.tag i.a{background:var(--analog)}.tag i.b{background:var(--blue)}.tag i.g{background:var(--good)}.tag i.r{background:var(--bad)}.tag i.w{background:var(--cream)}
+.badge{position:absolute;right:1rem;top:.75rem;font:500 .8rem/1 var(--f-mono);color:var(--cream);opacity:.85;pointer-events:none;text-align:right}
+/* ovládací prvky */
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{min-height:2.7rem;padding:.45rem .95rem;border-radius:1.4rem;background:var(--bg);box-shadow:inset 0 0 0 .13rem var(--line2);font:600 .95rem/1.1 var(--f-head);transition:background .15s,color .15s,transform .1s;white-space:nowrap}
+.chip small{font:500 .78rem var(--f-body);opacity:.75;margin-left:.35rem}
+.chip:hover{box-shadow:inset 0 0 0 .13rem var(--orange)}
+.chip:active{transform:scale(.96)}
+.chip.on{background:var(--ink);color:var(--bg);box-shadow:none}
+.chips.g2{display:grid;grid-template-columns:repeat(2,1fr)}
+.chips.g3{display:grid;grid-template-columns:repeat(3,1fr)}
+.chips.g4{display:grid;grid-template-columns:repeat(4,1fr)}
+.chips.g2 .chip,.chips.g3 .chip,.chips.g4 .chip{padding:.45rem .25rem;text-align:center}
+.side .chip{min-height:2.4rem}
+.btn{min-height:3.3rem;padding:.6rem 1.4rem;border-radius:1.7rem;background:var(--orange);color:#17140F;font:700 1.05rem/1 var(--f-head);display:inline-flex;gap:.6rem;align-items:center;justify-content:center;box-shadow:0 .25rem 0 #C86D00;transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(.2rem);box-shadow:0 .05rem 0 #C86D00}
+.btn.on{background:var(--ink);color:var(--bg);box-shadow:none}
+.btn svg{width:1.1rem;height:1.1rem;fill:currentColor}
+.row{display:flex;gap:.6rem;align-items:center}
+.row>.btn{flex:1}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2.4rem;background:transparent;touch-action:pan-y;margin:0;--p:50%}
+input[type=range]::-webkit-slider-runnable-track{height:.65rem;border-radius:.4rem;background:linear-gradient(90deg,var(--orange) var(--p),var(--line) var(--p))}
+input[type=range]::-moz-range-track{height:.65rem;border-radius:.4rem;background:var(--line)}
+input[type=range]::-moz-range-progress{height:.65rem;border-radius:.4rem;background:var(--orange)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:2.2rem;height:2.2rem;border-radius:50%;background:var(--card);border:.28rem solid var(--orange);margin-top:-.78rem;box-shadow:0 .2rem .6rem rgba(0,0,0,.25)}
+input[type=range]::-moz-range-thumb{width:1.7rem;height:1.7rem;border-radius:50%;background:var(--card);border:.28rem solid var(--orange)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:.25rem;background:var(--bg);padding:.25rem;border-radius:1.5rem;box-shadow:inset 0 0 0 .13rem var(--line2)}
+.seg .chip{box-shadow:none;background:transparent;border-radius:1.2rem;text-align:center;padding:.4rem .3rem}
+.seg .chip.on{background:var(--ink);color:var(--bg)}
+.callout{border-radius:.9rem;background:var(--bg);padding:.7rem .9rem;border-left:.3rem solid var(--orange);font-size:.9rem;line-height:1.35;color:var(--ink2)}
+.callout b.l{display:block;font:700 .62rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t);margin-bottom:.3rem}
+.status{display:flex;align-items:center;gap:.7rem;padding:.7rem 1rem;border-radius:1rem;font:700 1.05rem/1.2 var(--f-head);background:rgba(93,182,127,.18);color:var(--ink)}
+.status i{width:1rem;height:1rem;border-radius:50%;background:var(--good);flex:none}
+.status.warn{background:rgba(255,151,46,.2)}.status.warn i{background:var(--orange)}
+.status.bad{background:rgba(255,106,77,.18)}.status.bad i{background:var(--bad)}
+.big{font:800 2.6rem/1 var(--f-head);letter-spacing:-.02em}
+.big u{font:600 .95rem var(--f-head);text-decoration:none;color:var(--ink2);margin-left:.4rem;letter-spacing:0}
+.or{color:var(--orange-t)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.kpi{display:flex;flex-direction:column;gap:.35rem;justify-content:center}
+.kpi small{font:400 .82rem/1.25 var(--f-body);color:var(--ink2)}
+/* tabulka formátů */
+/* kvíz kompatibility */
+/* metadata */
+.band{display:flex;height:1.7rem;border-radius:.5rem;overflow:hidden;gap:.12rem}
+.band i{display:block;height:100%;min-width:.2rem;font:600 .62rem/1.7rem var(--f-mono);font-style:normal;text-align:center;color:#17140F;overflow:hidden;white-space:nowrap}
+.brow{display:grid;grid-template-columns:7rem 1fr;gap:.8rem;align-items:center}
+.brow .nm{font:700 .85rem/1.1 var(--f-head)}
+.brow .nm small{display:block;font:400 .72rem var(--f-mono);color:var(--ink2);margin-top:.15rem}
+.legend{display:flex;gap:.9rem;flex-wrap:wrap;font:500 .72rem var(--f-mono);color:var(--ink2)}
+.legend i{display:inline-block;width:.8rem;height:.8rem;border-radius:.2rem;margin-right:.3rem;vertical-align:-.1rem}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.chips.g5{display:grid;grid-template-columns:repeat(5,1fr)}.chips.g5 .chip{padding:.45rem .1rem;text-align:center}
+.rd{display:grid;grid-template-columns:auto 1fr;gap:.3rem .9rem;font:500 .86rem/1.25 var(--f-mono)}
+.rd span{color:var(--ink2)}.rd b{font-weight:500;text-align:right}.rd b.hot{color:var(--orange-t)}
+.col>.scope.grow{min-height:9rem}
+
+/* JPEG Lab Pro */
+.bp{width:100%;height:8.2rem;border-radius:.7rem;background:var(--scope);display:block;touch-action:none;cursor:crosshair;box-shadow:inset 0 0 0 .13rem var(--line2)}
+.chip.up{background:var(--orange-soft);box-shadow:inset 0 0 0 .13rem var(--orange)}
+.chips.g6{display:grid;grid-template-columns:repeat(3,1fr)}.chips.g6 .chip{padding:.45rem .1rem;text-align:center}
+.side .lbl.sp{margin-top:.15rem}
+.hint{font:500 .74rem/1.3 var(--f-mono);color:var(--ink2)}
+@media (max-aspect-ratio:1/1){
+html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-height:100vh}#stage{overflow:visible}
+.split{grid-template-columns:1fr}.scope{min-height:34rem}.top{grid-template-columns:1fr}.tabs{flex-wrap:wrap}.kpis{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <header class="top">
+  <div class="brand"><a class="back" href="../" id="tBack">← Všechny školní aplikace</a><b><span>JPEG</span> Lab Pro</b><small id="tSub">Gymnázium Příbram · Informatika · GymTV</small></div>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Záložky"></nav>
+  <div class="tools">
+   <div class="lang" role="group" aria-label="Jazyk / Language"><button data-act="lang" data-v="cs" lang="cs">CZ</button><button data-act="lang" data-v="en" lang="en">EN</button></div>
+   <button class="ib" id="bThm" data-act="theme" aria-label="Světlý nebo tmavý vzhled"></button>
+   <button class="ib" id="bFul" data-act="full" aria-label="Celá obrazovka"></button>
+  </div>
+ </header>
+ <main id="stage"></main>
+ <footer class="foot"><span id="fL"></span><span id="fR"></span></footer>
+</div>
+<input type="file" id="fUp" accept="image/*" hidden>
+<script>
+'use strict';
+/* ========== pomocné funkce ========== */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const sstep=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)};
+let LANG='cs';try{LANG=localStorage.getItem('jlp-lang')||''}catch(e){}
+if(LANG!=='cs'&&LANG!=='en')LANG=/^cs|^sk/i.test(navigator.language||'cs')?'cs':'en';
+const tx=(c,e)=>LANG==='en'?e:c;
+const nf=(n,d=0)=>(+n).toLocaleString(LANG==='en'?'en-US':'cs-CZ',{maximumFractionDigits:d,minimumFractionDigits:0});
+const pct=(r,d=1)=>nf(r*100,r*100<1?2:d)+' %';
+const TAU=Math.PI*2;
+const log10=Math.log10;
+
+/* ========== barvy a plátno ========== */
+const C={};
+function readC(){const cs=getComputedStyle(document.documentElement);['orange','orange-t','bg','card','ink','ink2','line','line2','scope','analog','cream','bad','good','blue'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim())}
+const REM=()=>parseFloat(getComputedStyle(document.documentElement).fontSize)||16;
+function setup(cv){
+ const r=cv.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2);
+ const w=Math.max(20,Math.round(r.width)),h=Math.max(20,Math.round(r.height));
+ if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d)}
+ const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,h);
+ return{x,w,h,R:REM()};
+}
+function T(x,s,px,py,size,col,al='left',font='Atkinson Hyperlegible Mono',wt=500,base='middle'){x.font=`${wt} ${size}px "${font}",monospace`;x.fillStyle=col;x.textAlign=al;x.textBaseline=base;x.fillText(s,px,py)}
+function TH(x,s,px,py,size,col,al='left'){T(x,s,px,py,size,col,al,'Montserrat',700)}
+function line(x,x1,y1,x2,y2,col,w=1,dash){x.beginPath();x.strokeStyle=col;x.lineWidth=w;x.setLineDash(dash||[]);x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();x.setLineDash([])}
+function dot(x,px,py,r,col){x.beginPath();x.fillStyle=col;x.arc(px,py,r,0,TAU);x.fill()}
+const GR='rgba(244,241,234,.09)',GR2='rgba(244,241,234,.22)',TXT='rgba(244,241,234,.6)';
+/* souřadnice ukazatele uvnitř plátna */
+function ptr(e,cv){const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top,w:r.width,h:r.height}}
+function drag(cv,fn){
+ let on=false;
+ cv.addEventListener('pointerdown',e=>{on=true;cv.setPointerCapture(e.pointerId);fn(ptr(e,cv),e)});
+ cv.addEventListener('pointermove',e=>{if(on)fn(ptr(e,cv),e)});
+ const off=()=>{on=false};cv.addEventListener('pointerup',off);cv.addEventListener('pointercancel',off);
+}
+/* logaritmická osa */
+const lg=(L,a,b,p0,p1)=>p0+(log10(Math.max(L,1e-12))-log10(a))/(log10(b)-log10(a))*(p1-p0);
+
+/* ========== stav ========== */
+const MAPS={},IMAP={};
+const S={tab:0,
+ q:50,sub:'s420',img:'foto',
+ st:4,mp:12,                       // 1 Cesta obrazu
+ blk:'img',bx:8,by:7,nc:10,qt:'y',   // 3–5 blok
+ grid:false,rx:104,ry:60,rx7:20,ry7:6,            // 6 Laboratoř
+ art:'blok',img7:'foto',q7:8,sub7:'s444',gen:1,shift:false, // 7 Artefakty
+ fmt:'avif'};                        // 8 Praxe
+const OUT={},ACT={},TABS=[];
+function set(k,v){S[k]=v;refresh()}
+let _rq=0;
+function refresh(){if(_rq)return;_rq=requestAnimationFrame(()=>{_rq=0;sync();const t=TABS[S.tab];t&&t.render&&t.render()})}
+function sync(){
+ $$('[data-k][data-v]').forEach(el=>el.classList.toggle('on',String(S[el.dataset.k])===el.dataset.v));
+ $$('input[data-k]').forEach(el=>{let v=S[el.dataset.k];if(el.dataset.map)v=IMAP[el.dataset.map](v);el.value=v;el.style.setProperty('--p',((el.value-el.min)/(el.max-el.min)*100)+'%')});
+ $$('[data-o]').filter(el=>{const t=el.closest('.tab');return !t||!t.hidden}).forEach(el=>{const f=OUT[el.dataset.o];if(f){const h=f();if(el.innerHTML!==h)el.innerHTML=h}});
+}
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-k][data-v],[data-act]');if(!el)return;
+ if(el.dataset.act){ACT[el.dataset.act]&&ACT[el.dataset.act](el.dataset.v,el);return}
+ let v=el.dataset.v;if(/^-?\d+(\.\d+)?$/.test(v))v=+v;else if(v==='true')v=true;else if(v==='false')v=false;set(el.dataset.k,v);
+});
+document.addEventListener('input',e=>{
+ const el=e.target;if(el.type!=='range'||!el.dataset.k)return;
+ let v=+el.value;if(el.dataset.map)v=MAPS[el.dataset.map](v);set(el.dataset.k,v);
+});
+
+/* ========== rámec aplikace ========== */
+const ICON={
+ theme:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg>',
+ full:'<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+};
+const PLAYI='<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>';
+const STOPI='<svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>';
+function go(i){
+ if(S.play)ACT.play();
+ S.tab=i;
+ $$('#stage>.tab').forEach((s,j)=>s.hidden=j!==i);
+ $$('#tabs .tab-b').forEach((b,j)=>b.setAttribute('aria-selected',j===i));
+ if(location.hash!=='#'+(i+1))history.replaceState(null,'','#'+(i+1));
+ const t=TABS[i];if(t.enter)t.enter();
+ sync();requestAnimationFrame(()=>{sync();t.render&&t.render()});
+}
+ACT.theme=()=>{const d=document.documentElement;const dark=d.dataset.theme?d.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;d.dataset.theme=dark?'light':'dark';try{localStorage.setItem('jlp-theme',d.dataset.theme)}catch(e){}readC();refresh()};
+ACT.lang=v=>{if(v===LANG)return;try{localStorage.setItem('jlp-lang',v)}catch(e){}location.reload()};
+ACT.full=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()};
+function boot(){
+ try{const th=localStorage.getItem('jlp-theme');if(th==='dark'||th==='light')document.documentElement.dataset.theme=th}catch(e){}
+ document.documentElement.lang=LANG;document.title='JPEG Lab Pro';
+ $('meta[name=description]').content=tx('Interaktivní laboratoř komprimace obrazu JPEG: cesta snímku od pixelů k souboru, barevné podvzorkování, DCT, kvantování, kódování, artefakty a velikost souboru. Určeno pro projekci a velké dotykové panely, pro mobily není vhodná.','Interactive lab on JPEG image compression: the path of a picture from pixels to a file, chroma subsampling, DCT, quantization, entropy coding, artefacts and file size. Made for projection and large touch panels, not for phones.');
+ $('#tBack').textContent=tx('← Všechny školní aplikace','← All school apps');$('#tSub').textContent=tx('Gymnázium Příbram · Informatika · GymTV','Gymnázium Příbram · Computer science · GymTV');
+ $('#tabs').setAttribute('aria-label',tx('Záložky','Tabs'));
+ $('#bThm').setAttribute('aria-label',tx('Světlý nebo tmavý vzhled','Light or dark theme'));$('#bFul').setAttribute('aria-label',tx('Celá obrazovka','Fullscreen'));
+ $$('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.v===LANG));
+ $('#fL').textContent=tx('Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 12. 11. 2026','Author: Ivo Bešťák · License CC BY 4.0 · Updated: 12. 11. 2026');
+ $('#fR').textContent=tx('Počítá se v prohlížeči, nic se neodesílá ani neukládá. Velikosti jsou odhad, skutečný soubor se liší podle kodéru.','Computed in your browser, nothing is sent or stored. Sizes are estimates, a real file differs by encoder.');
+ readC();
+ $('#bThm').innerHTML=ICON.theme;$('#bFul').innerHTML=ICON.full;
+ const nav=$('#tabs'),st=$('#stage');
+ TABS.forEach((t,i)=>{
+  nav.insertAdjacentHTML('beforeend',`<button class="tab-b" role="tab" aria-selected="false" data-act="tab" data-v="${i}"><span class="kap">${tx('kap.','ch.')} ${i+1}</span><span class="nm">${t.name}</span></button>`);
+  st.insertAdjacentHTML('beforeend',`<section class="tab" hidden data-t="${i}" style="${t.side?'--side:'+t.side+';':''}">${t.build()}</section>`);
+ });
+ ACT.tab=v=>go(+v);
+ TABS.forEach(t=>t.init&&t.init());
+ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
+ new ResizeObserver(()=>refresh()).observe(st);
+ matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{readC();refresh()});
+ window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1));if(n>=1&&n<=TABS.length&&n-1!==S.tab)go(n-1)});
+ const h=parseInt(location.hash.slice(1));go(h>=1&&h<=TABS.length?h-1:0);
+ document.fonts&&document.fonts.ready.then(()=>{readC();refresh()});
+}
+</script>
+<script>
+/* ===== společná data, testovací obrazy a JPEG kodér ===== */
+const SUB={s444:{fx:1,fy:1,n:'4:4:4',v:3},s422:{fx:2,fy:1,n:'4:2:2',v:2},s420:{fx:2,fy:2,n:'4:2:0',v:1.5}};
+const ZZ=[0,1,8,16,9,2,3,10,17,24,32,25,18,11,4,5,12,19,26,33,40,48,41,34,27,20,13,6,7,14,21,28,35,42,49,56,57,50,43,36,29,22,15,23,30,37,44,51,58,59,52,45,38,31,39,46,53,60,61,54,47,55,62,63];
+const IZ=new Uint8Array(64);ZZ.forEach((n,k)=>IZ[n]=k);
+const QL=[16,11,10,16,24,40,51,61,12,12,14,19,26,58,60,55,14,13,16,24,40,57,69,56,14,17,22,29,51,87,80,62,18,22,37,56,68,109,103,77,24,35,55,64,81,104,113,92,49,64,78,87,103,121,120,101,72,92,95,98,112,100,103,99];
+const QC=new Array(64).fill(99);[[17,18,24,47],[18,21,26,66],[24,26,56],[47,66]].forEach((r,j)=>r.forEach((v,i)=>QC[j*8+i]=v));
+const scaleQ=(b,q)=>{q=clamp(Math.round(q),1,100);const s=q<50?5000/q:200-2*q;return b.map(v=>clamp(Math.floor((v*s+50)/100),1,255))};
+const qScale=q=>q<50?5000/clamp(q,1,100):200-2*q;
+const DM=new Float32Array(64);for(let u=0;u<8;u++)for(let x=0;x<8;x++)DM[u*8+x]=(u?1:Math.SQRT1_2)*.5*Math.cos((2*x+1)*u*Math.PI/16);
+const _t=new Float32Array(64);
+function fdct(b,o){
+ for(let v=0;v<8;v++)for(let x=0;x<8;x++){let s=0;for(let y=0;y<8;y++)s+=DM[v*8+y]*b[y*8+x];_t[v*8+x]=s}
+ for(let v=0;v<8;v++)for(let u=0;u<8;u++){let s=0;for(let x=0;x<8;x++)s+=DM[u*8+x]*_t[v*8+x];o[v*8+u]=s}
+}
+function idct(c,o){
+ for(let v=0;v<8;v++)for(let x=0;x<8;x++){let s=0;for(let u=0;u<8;u++)s+=DM[u*8+x]*c[v*8+u];_t[v*8+x]=s}
+ for(let y=0;y<8;y++)for(let x=0;x<8;x++){let s=0;for(let v=0;v<8;v++)s+=DM[v*8+y]*_t[v*8+x];o[y*8+x]=s}
+}
+const rnd0=v=>v<0?-Math.round(-v):Math.round(v);
+const cat=v=>{v=Math.abs(v);return v?32-Math.clz32(v):0};
+const d1=v=>nf(v,1);
+function fS(B){if(B>=1e9)return nf(B/1e9,B>=1e11?0:2)+' GB';if(B>=1e6)return nf(B/1e6,B>=1e8?0:B>=1e7?1:2)+' MB';if(B>=1e4)return nf(B/1e3,0)+' kB';return nf(B/1e3,1)+' kB'}
+/* orientační bitů na pixel pro typickou fotografii (4:2:0) */
+const BPQ=[[1,.25],[10,.5],[20,.8],[30,1.0],[40,1.25],[50,1.45],[60,1.7],[70,2.0],[75,2.25],[80,2.6],[85,3.2],[90,4.0],[95,5.6],[100,9.5]];
+function bppQ(q,sub){q=clamp(q,1,100);let b=BPQ[0][1];for(let i=0;i<BPQ.length-1;i++){if(q<=BPQ[i+1][0]){const t=(q-BPQ[i][0])/(BPQ[i+1][0]-BPQ[i][0]);b=lerp(BPQ[i][1],BPQ[i+1][1],t);break}}return b*({s420:1,s422:1.18,s444:1.4}[sub]||1)}
+
+/* --- testovací obrazy (vznikají v prohlížeči, nic se nestahuje) --- */
+const IW=256,IH=176,IM={};let _seed=11;
+const rnd=()=>(_seed=(_seed*16807)%2147483647)/2147483647;
+const cvs=(w,h,rf)=>{const c=document.createElement('canvas');c.width=w;c.height=h;if(rf)c.getContext('2d',{willReadFrequently:true});return c};
+let IMV=0;
+function finish(id,c){IMV++;IM[id]={id,w:c.width,h:c.height,d:c.getContext('2d').getImageData(0,0,c.width,c.height).data}}
+function poly(g,col,pts){g.fillStyle=col;g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();g.fill()}
+function genFoto(){
+ const c=cvs(IW,IH,1),g=c.getContext('2d');_seed=11;
+ let gr=g.createLinearGradient(0,0,0,112);gr.addColorStop(0,'#3f7fd0');gr.addColorStop(.55,'#9cc6ee');gr.addColorStop(1,'#f6dcb0');g.fillStyle=gr;g.fillRect(0,0,IW,IH);
+ const rg=g.createRadialGradient(198,46,2,198,46,48);rg.addColorStop(0,'rgba(255,252,230,1)');rg.addColorStop(.16,'rgba(255,242,196,.95)');rg.addColorStop(1,'rgba(255,230,170,0)');g.fillStyle=rg;g.fillRect(120,0,136,110);
+ for(let i=0;i<30;i++){const x=14+rnd()*150,y=12+rnd()*36,r=6+rnd()*13,cg=g.createRadialGradient(x,y,0,x,y,r);cg.addColorStop(0,'rgba(255,255,255,.5)');cg.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=cg;g.fillRect(x-r,y-r,2*r,2*r)}
+ poly(g,'#8197bb',[[0,108],[20,86],[34,98],[66,58],[92,94],[120,74],[150,102],[184,68],[214,100],[256,80],[256,124],[0,124]]);
+ poly(g,'#f2f5fa',[[66,58],[58,72],[64,70],[70,76],[76,70],[80,74]]);poly(g,'#f2f5fa',[[184,68],[176,82],[182,80],[188,86],[194,80],[198,84]]);
+ poly(g,'#4d7650',[[0,124],[26,104],[60,118],[104,98],[142,116],[190,100],[256,120],[256,152],[0,152]]);
+ const mg=g.createLinearGradient(0,118,0,IH);mg.addColorStop(0,'#78b04c');mg.addColorStop(1,'#356f2a');g.fillStyle=mg;g.fillRect(0,128,IW,IH-128);
+ poly(g,'#5f9a43',[[0,140],[60,128],[130,134],[200,126],[256,132],[256,150],[0,160]]);
+ for(let i=0;i<700;i++){const x=rnd()*IW,y=130+rnd()*46,l=2+rnd()*4;g.strokeStyle=`rgba(${30+rnd()*60|0},${90+rnd()*90|0},${20+rnd()*40|0},.7)`;g.beginPath();g.moveTo(x,y);g.lineTo(x+rnd()*2-1,y-l);g.stroke()}
+ for(let i=0;i<38;i++){g.fillStyle=['#e3322b','#f6d02a','#ffffff','#e977b8'][i%4];g.fillRect(rnd()*IW|0,138+rnd()*36|0,2,2)}
+ [[40,128,9],[56,132,7],[222,126,10],[238,130,8]].forEach(([x,y,r])=>{g.fillStyle='#4a3524';g.fillRect(x-1,y,2,9);g.fillStyle='#2f6b34';g.beginPath();g.arc(x,y-1,r,0,TAU);g.fill();g.fillStyle='rgba(120,190,90,.5)';g.beginPath();g.arc(x-2,y-3,r*.5,0,TAU);g.fill()});
+ const id=g.getImageData(0,0,IW,IH);for(let i=0;i<id.data.length;i+=4){const n=(rnd()-.5)*7;id.data[i]+=n;id.data[i+1]+=n;id.data[i+2]+=n}g.putImageData(id,0,0);
+ finish('foto',c);
+}
+function genText(){
+ const c=cvs(IW,IH,1),g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,IW,IH);
+ g.fillStyle='#111';g.textBaseline='alphabetic';g.font='800 58px Montserrat,Arial,sans-serif';g.fillText('JPEG',12,62);
+ g.font='700 11px Montserrat,Arial,sans-serif';g.fillText('Gymnázium Příbram · komprese obrazu',14,84);
+ g.font='400 8px "Atkinson Hyperlegible Next",Arial,sans-serif';
+ ['Obraz se dělí na bloky 8 × 8 pixelů. Každý blok se převede','na kosinové koeficienty, ty se zaokrouhlí a zakódují.','Na ostrých hranách písmen vzniká šum, kterému se říká','mušky nebo prstence. Fotografie je na tom líp.'].forEach((s,i)=>g.fillText(s,14,102+i*11));
+ g.lineWidth=1;g.strokeStyle='#111';for(let i=0;i<8;i++){g.beginPath();g.moveTo(150+i*3,12);g.lineTo(236+i*2,78);g.stroke()}
+ g.lineWidth=2;g.beginPath();g.arc(214,50,24,0,TAU);g.stroke();
+ g.fillStyle='#111';g.fillRect(14,152,228,1);for(let i=0;i<20;i++)g.fillRect(14+i*12,152,i%3?2:1,10+(i%4)*3);
+ finish('text',c);
+}
+function genBarvy(){
+ const c=cvs(IW,IH,1),g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,IW,IH);
+ const cols=['#e4202a','#ffd400','#1fa34a','#00a8d8','#2438d8','#d4208e'];cols.forEach((k,i)=>{g.fillStyle=k;g.fillRect(i*43,0,44,84)});
+ g.fillStyle='#e4202a';g.fillRect(0,92,128,84);g.fillStyle='#2438d8';g.fillRect(128,92,128,84);
+ g.textBaseline='alphabetic';g.fillStyle='#00e0ff';g.font='800 34px Montserrat,Arial,sans-serif';g.fillText('CMYK',6,134);
+ g.fillStyle='#ffe000';g.font='800 34px Montserrat,Arial,sans-serif';g.fillText('RGB',148,134);
+ g.lineWidth=1;g.strokeStyle='#ffffff';for(let i=0;i<10;i++){g.beginPath();g.moveTo(6+i*12,146);g.lineTo(6+i*12+30,172);g.stroke()}
+ g.strokeStyle='#ffd400';for(let i=0;i<10;i++){g.beginPath();g.moveTo(134+i*12,146);g.lineTo(134+i*12+30,172);g.stroke()}
+ finish('barvy',c);
+}
+function genPrechod(){
+ const c=cvs(IW,IH,1),g=c.getContext('2d');
+ let a=g.createLinearGradient(0,0,IW,0);a.addColorStop(0,'#101010');a.addColorStop(1,'#f0f0f0');g.fillStyle=a;g.fillRect(0,0,IW,58);
+ a=g.createLinearGradient(0,0,IW,0);['#d03030','#d0a030','#40b040','#30b0c0','#3050d0','#b040b0'].forEach((k,i)=>a.addColorStop(i/5,k));g.fillStyle=a;g.fillRect(0,58,IW,50);
+ const r=g.createRadialGradient(128,142,4,128,142,70);r.addColorStop(0,'#fff6d8');r.addColorStop(1,'#2a3a5a');g.fillStyle=r;g.fillRect(0,108,IW,68);
+ finish('prechod',c);
+}
+const GEN={foto:genFoto,text:()=>{genText();if(document.fonts&&!document.fonts.check('800 58px Montserrat'))document.fonts.load('800 58px Montserrat').then(()=>{delete IM.text;MEMO.clear();refresh()})},barvy:genBarvy,prechod:genPrechod};
+function img(id){if(!IM[id]&&GEN[id])GEN[id]();return IM[id]||img('foto')}
+const imgCv=id=>{const im=img(id);const c=cvs(im.w,im.h);c.getContext('2d').putImageData(new ImageData(im.d,im.w,im.h),0,0);return c};
+async function upload(file){
+ try{const bm=await createImageBitmap(file);const s=Math.min(1,384/bm.width,288/bm.height);
+  const w=Math.max(16,Math.floor(bm.width*s/16)*16),h=Math.max(16,Math.floor(bm.height*s/16)*16);
+  const c=cvs(w,h,1),g=c.getContext('2d');g.imageSmoothingQuality='high';g.drawImage(bm,0,0,w,h);finish('vlastni',c);MEMO.clear();
+  S.img='vlastni';S.rx=Math.max(0,(w-32)>>1);S.ry=Math.max(0,(h-24)>>1);S.bx=Math.min(S.bx,(w>>3)-1);S.by=Math.min(S.by,(h>>3)-1);refresh()}catch(e){}
+}
+
+/* --- kodér --- */
+const MEMO=new Map();
+function toPlanes(im){
+ const {w,h,d}=im,n=w*h,Y=new Float32Array(n),Cb=new Float32Array(n),Cr=new Float32Array(n);
+ for(let i=0,j=0;i<n;i++,j+=4){const r=d[j],g=d[j+1],b=d[j+2];Y[i]=.299*r+.587*g+.114*b;Cb[i]=128-.168736*r-.331264*g+.5*b;Cr[i]=128+.5*r-.418688*g-.081312*b}
+ return{Y,Cb,Cr};
+}
+function shrink(p,w,h,fx,fy){
+ if(fx===1&&fy===1)return{p,w,h};
+ const nw=w/fx,nh=h/fy,o=new Float32Array(nw*nh),k=1/(fx*fy);
+ for(let y=0;y<nh;y++)for(let x=0;x<nw;x++){let s=0;for(let dy=0;dy<fy;dy++)for(let dx=0;dx<fx;dx++)s+=p[(y*fy+dy)*w+x*fx+dx];o[y*nw+x]=s*k}
+ return{p:o,w:nw,h:nh};
+}
+function grow(s,W,H,fx,fy){
+ if(fx===1&&fy===1)return s.p;
+ const o=new Float32Array(W*H),p=s.p,sw=s.w;
+ for(let y=0;y<H;y++){const sy=clamp((y+.5)/fy-.5,0,s.h-1),y0=sy|0,y1=Math.min(y0+1,s.h-1),ty=sy-y0;
+  for(let x=0;x<W;x++){const sx=clamp((x+.5)/fx-.5,0,sw-1),x0=sx|0,x1=Math.min(x0+1,sw-1),tx=sx-x0;
+   o[y*W+x]=lerp(lerp(p[y0*sw+x0],p[y0*sw+x1],tx),lerp(p[y1*sw+x0],p[y1*sw+x1],tx),ty)}}
+ return o;
+}
+function codePlane(p,pw,ph,qt){
+ const nbx=pw>>3,nby=ph>>3,Q=new Int16Array(nbx*nby*64),rec=new Float32Array(pw*ph),b=new Float32Array(64),c=new Float32Array(64),r=new Float32Array(64);
+ for(let by=0;by<nby;by++)for(let bx=0;bx<nbx;bx++){
+  const o=(by*nbx+bx)*64;
+  for(let y=0;y<8;y++)for(let x=0;x<8;x++)b[y*8+x]=p[(by*8+y)*pw+bx*8+x]-128;
+  fdct(b,c);
+  for(let i=0;i<64;i++){const q=rnd0(c[i]/qt[i]);Q[o+i]=q;c[i]=q*qt[i]}
+  idct(c,r);
+  for(let y=0;y<8;y++)for(let x=0;x<8;x++)rec[(by*8+y)*pw+bx*8+x]=r[y*8+x]+128;
+ }
+ return{Q,rec};
+}
+function entropyBits(Qy,Qcs){
+ const dcY=new Int32Array(16),dcC=new Int32Array(16),acY=new Int32Array(256),acC=new Int32Array(256);let ex=0;
+ const run=(Q,dc,ac)=>{let prev=0;for(let o=0;o<Q.length;o+=64){const dd=Q[o]-prev;prev=Q[o];const c=cat(dd);dc[c]++;ex+=c;let r=0;
+  for(let k=1;k<64;k++){const v=Q[o+ZZ[k]];if(!v){r++;continue}while(r>15){ac[0xF0]++;r-=16}const s=cat(v);ac[(r<<4)|s]++;ex+=s;r=0}
+  if(r)ac[0]++}};
+ run(Qy,dcY,acY);Qcs.forEach(Q=>run(Q,dcC,acC));
+ const H=a=>{let n=0,b=0;for(const v of a)n+=v;for(const v of a)if(v)b-=v*Math.log2(v/n);return b};
+ return H(dcY)+H(acY)+H(dcC)+H(acC)+ex;
+}
+function psnrRGB(a,b){let e=0,n=0;for(let i=0;i<a.length;i+=4){for(let k=0;k<3;k++){const d=a[i+k]-b[i+k];e+=d*d}n+=3}e/=n;return e<1e-9?99:10*Math.log10(65025/e)}
+function codec(im,q,sub){
+ const key=im.id?im.id+'|'+q+'|'+sub:null;if(key&&MEMO.has(key))return MEMO.get(key);
+ const {w,h}=im,sb=SUB[sub],P=toPlanes(im),qy=scaleQ(QL,q),qc=scaleQ(QC,q);
+ const py=codePlane(P.Y,w,h,qy),cb=shrink(P.Cb,w,h,sb.fx,sb.fy),cr=shrink(P.Cr,w,h,sb.fx,sb.fy);
+ const pcb=codePlane(cb.p,cb.w,cb.h,qc),pcr=codePlane(cr.p,cr.w,cr.h,qc);
+ const Cb2=grow({p:pcb.rec,w:cb.w,h:cb.h},w,h,sb.fx,sb.fy),Cr2=grow({p:pcr.rec,w:cr.w,h:cr.h},w,h,sb.fx,sb.fy);
+ const d=new Uint8ClampedArray(w*h*4);
+ for(let i=0,j=0;i<w*h;i++,j+=4){const y=py.rec[i],cbv=Cb2[i]-128,crv=Cr2[i]-128;d[j]=y+1.402*crv;d[j+1]=y-.344136*cbv-.714136*crv;d[j+2]=y+1.772*cbv;d[j+3]=255}
+ const bits=entropyBits(py.Q,[pcb.Q,pcr.Q])+8*623,bytes=bits/8;
+ const res={d,w,h,bits,bytes,psnr:psnrRGB(im.d,d),ratio:w*h*3/bytes};
+ if(key){MEMO.set(key,res);if(MEMO.size>40)MEMO.delete(MEMO.keys().next().value)}
+ return res;
+}
+function errImg(a,b,k){const o=new Uint8ClampedArray(a.length);for(let i=0;i<a.length;i+=4){o[i]=Math.abs(a[i]-b[i])*k;o[i+1]=Math.abs(a[i+1]-b[i+1])*k;o[i+2]=Math.abs(a[i+2]-b[i+2])*k;o[i+3]=255}return o}
+function shift1(im){const {w,h,d}=im,o=new Uint8ClampedArray(d.length);for(let y=0;y<h;y++){const sy=Math.max(0,y-1);for(let x=0;x<w;x++){const sx=Math.max(0,x-1),a=(sy*w+sx)*4,b=(y*w+x)*4;o[b]=d[a];o[b+1]=d[a+1];o[b+2]=d[a+2];o[b+3]=255}}return{w,h,d:o}}
+const putCv=(d,w,h)=>{const c=cvs(w,h);c.getContext('2d').putImageData(new ImageData(d,w,h),0,0);return c};
+/* skutečný soubor z prohlížeče (pro porovnání s modelem) */
+const REAL={};
+function realSize(id,q){const k=id+'|'+q;if(k in REAL)return REAL[k];REAL[k]=null;
+ try{imgCv(id).toBlob(b=>{REAL[k]=b?b.size:-1;refresh()},'image/jpeg',q/100)}catch(e){REAL[k]=-1}return null}
+document.addEventListener('DOMContentLoaded',()=>{
+ const f=$('#fUp');f.addEventListener('change',()=>{if(f.files&&f.files[0])upload(f.files[0]);f.value=''});
+});
+ACT.upl=()=>$('#fUp').click();
+
+/* --- pomocné prvky rozhraní --- */
+const IMGL=()=>[['foto',tx('Krajina','Landscape')],['text',tx('Text','Text')],['barvy',tx('Barvy','Colours')],['prechod',tx('Přechod','Gradient')]];
+OUT.imgc=()=>{let a=IMGL();if(IM.vlastni)a=a.concat([['vlastni',tx('Vlastní','Own')]]);return a.map(([v,l])=>`<button class="chip${S.img===v?' on':''}" data-k="img" data-v="${v}">${l}</button>`).join('')+`<button class="chip up" data-act="upl">⇪ ${tx('Nahrát','Upload')}</button>`};
+const imgSel=()=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div><div class="chips g3" data-o="imgc"></div><span class="hint">${tx('Vlastní obrázek zůstane v prohlížeči.','Your picture stays in the browser.')}</span></div>`;
+const subSel=k=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Podvzorkování barev','Chroma subsampling')}</span></div><div class="chips g3">${Object.keys(SUB).map(v=>`<button class="chip" data-k="${k}" data-v="${v}">${SUB[v].n}</button>`).join('')}</div></div>`;
+const qSel=(k,chips=true)=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Kvalita JPEG','JPEG quality')}</span><span class="val" data-o="qv_${k}"></span></div><input type="range" data-k="${k}" min="1" max="100" step="1">${chips?`<div class="chips g5">${[5,25,50,75,95].map(v=>`<button class="chip" data-k="${k}" data-v="${v}">${v}</button>`).join('')}</div>`:''}</div>`;
+OUT.qv_q=()=>`<b>${S.q}</b> / 100`;OUT.qv_q7=()=>`<b>${S.q7}</b> / 100`;
+const gridSel=()=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Mřížka 8 × 8 v lupě','8 × 8 grid in zoom')}</span></div><div class="seg"><button class="chip" data-k="grid" data-v="true">${tx('Zapnuto','On')}</button><button class="chip" data-k="grid" data-v="false">${tx('Vypnuto','Off')}</button></div></div>`;
+</script>
+<script>
+/* ===== 1 Cesta obrazu ===== */
+(function(){
+const MPS=[2,12,24,48];
+function stages(){
+ const P=S.mp*1e6,raw=P*3,sv=SUB[S.sub].v/3,fin=P*bppQ(S.q,S.sub)/8,sn=SUB[S.sub].n;
+ return[
+ {n:[tx('Snímek','Picture'),'RGB'],lossy:0,B:raw,g:'rgb',note:tx('3 čísla na pixel','3 numbers per pixel'),
+  d:tx(`Barevný snímek je mřížka pixelů. Každý pixel má tři čísla 0 až 255: červenou, zelenou a modrou. ${nf(S.mp)} milionů pixelů je ${fS(raw)} dat.`,`A colour picture is a grid of pixels. Each pixel has three numbers 0 to 255: red, green and blue. ${nf(S.mp)} million pixels make ${fS(raw)} of data.`)},
+ {n:[tx('Jas a barva','Luma and'),'YCbCr'],lossy:0,B:raw,g:'ycc',note:tx('jen přeskupení čísel','numbers only rearranged'),
+  d:tx('Barvy se přepočítají na jas Y a dvě barevné složky Cb a Cr. Oko vnímá hlavně jas, a proto se barvy mohou později zjednodušit. V tomto kroku se nic neztrácí.','Colours are converted to luma Y and two chroma components Cb and Cr. The eye sees mostly luma, so colour can be simplified later. Nothing is lost in this step.')},
+ {n:[tx('Podvzorkování','Chroma'),tx('barev','subsampling')],lossy:1,B:raw*sv,g:'sub',note:sn,
+  d:tx(`Barevné složky se uloží v nižším rozlišení (${sn}). Několik pixelů sdílí jednu barvu, jas zůstane celý. Data klesnou na ${nf(sv*100,0)} % a oko si téměř ničeho nevšimne. První ztráta.`,`The chroma components are stored at lower resolution (${sn}). Several pixels share one colour, luma stays complete. Data drops to ${nf(sv*100,0)} % and the eye hardly notices. The first loss.`)},
+ {n:[tx('Bloky 8 × 8','8 × 8 blocks'),tx('a DCT','and DCT')],lossy:0,B:raw*sv,g:'dct',note:tx('stejný počet čísel','same count of numbers'),
+  d:tx('Každá složka se rozdělí na bloky 8 × 8 pixelů. Kosinová transformace (DCT) z nich udělá 64 koeficientů: kolik pomalých a rychlých změn jasu blok obsahuje. Počet čísel se nemění a výpočet jde téměř vrátit.','Each component is split into 8 × 8 pixel blocks. The discrete cosine transform (DCT) turns each into 64 coefficients: how much slow and fast brightness change the block holds. The count of numbers is unchanged and the step is almost reversible.')},
+ {n:[tx('Kvantování','Quantization')],lossy:1,B:raw*sv,g:'q',note:tx('většina čísel je nula','most numbers are zero'),
+  d:tx('Koeficienty se vydělí hodnotami z tabulky a zaokrouhlí na celá čísla. Jemné detaily tím zmizí a z koeficientů zbudou samé nuly. Tady vzniká hlavní ztráta a tady působí posuvník kvality.','Coefficients are divided by values from a table and rounded to integers. Fine detail vanishes and the coefficients become mostly zeros. This is the main loss, and this is where the quality slider acts.')},
+ {n:[tx('Kódování','Entropy'),tx('cik-cak, RLE','coding')],lossy:0,B:fin,g:'enc',note:tx('data se opravdu zmenší','data really shrinks'),
+  d:tx(`Koeficienty se čtou cik-cak od pomalých změn k rychlým. Dlouhé řady nul se zapíší jako jedno číslo (RLE) a čísla dostanou Huffmanovy kódy: častá kratší, vzácná delší. Výsledek je ${fS(fin)}, tedy asi ${nf(raw/fin,0)}× menší.`,`Coefficients are read in zigzag from slow to fast changes. Long runs of zeros are written as one number (RLE) and numbers get Huffman codes: frequent ones short, rare ones long. The result is ${fS(fin)}, about ${nf(raw/fin,0)} times smaller.`)}];
+}
+let G1=[];
+OUT.k1a=()=>fS(S.mp*3e6);
+OUT.k1b=()=>`<span class="or">${fS(S.mp*1e6*bppQ(S.q,S.sub)/8)}</span>`;
+OUT.k1c=()=>`1 : ${nf(24/bppQ(S.q,S.sub),0)}`;
+OUT.k1b_s=()=>tx('Orientačně pro typickou fotografii. Skutečný soubor závisí na obsahu.','Approximate for a typical photograph. A real file depends on content.');
+OUT.k1c_s=()=>tx('Surových 24 bitů na pixel proti '+nf(bppQ(S.q,S.sub),2)+' bitu po JPEG.','Raw 24 bits per pixel against '+nf(bppQ(S.q,S.sub),2)+' bits after JPEG.');
+OUT.d1=()=>{const s=stages()[S.st];return`<b class="l">${tx('Krok','Step')} ${S.st+1}: ${s.n.join(' ')} · ${s.lossy?tx('ztrátový','lossy'):tx('bez ztráty','lossless')}</b>${s.d}`};
+OUT.mpc=()=>MPS.map(v=>`<button class="chip${S.mp===v?' on':''}" data-k="mp" data-v="${v}">${v} MP</button>`).join('');
+TABS.push({name:tx('Cesta obrazu','Image path'),side:'27rem',
+ build(){return `<div class="split"><div class="col">
+  <div class="scope grow"><canvas id="c1"></canvas>
+   <div class="tag"><span><i class="b"></i>${tx('Bez ztráty','Lossless')}</span><span><i></i>${tx('Ztrátový krok','Lossy step')}</span></div>
+   <div class="badge">${tx('velikost dat po každém kroku · klepni na krok','data size after each step · tap a step')}</div></div>
+  <div class="kpis">
+   <div class="card kpi"><span class="lbl">${tx('Surový obraz','Raw picture')}</span><div class="big" data-o="k1a"></div><small>${tx('Počet pixelů × 3 bajty.','Pixels × 3 bytes.')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Soubor JPEG','JPEG file')}</span><div class="big" data-o="k1b"></div><small data-o="k1b_s"></small></div>
+   <div class="card kpi"><span class="lbl">${tx('Komprese','Compression')}</span><div class="big" data-o="k1c"></div><small data-o="k1c_s"></small></div>
+  </div></div>
+  <div class="side card">
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Rozlišení snímku','Picture size')}</span></div><div class="chips g4" data-o="mpc"></div></div>
+   ${qSel('q')}
+   ${subSel('sub')}
+   <div class="callout" data-o="d1"></div>
+  </div></div>`},
+ init(){const cv=$('#c1');cv.addEventListener('pointerdown',e=>{const p=ptr(e,cv);G1.forEach((r,i)=>{if(p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h)set('st',i)})})},
+ render(){
+  const cv=$('#c1');if(!cv)return;const {x,w,h,R}=setup(cv);
+  const st=stages(),n=st.length,pad=R*1.1,gap=R*.9,cw=(w-2*pad-(n-1)*gap)/n,top=R*2.4,bot=h-R*1.2,raw=st[0].B;
+  G1=[];
+  st.forEach((s,i)=>{
+   const x0=pad+i*(cw+gap),sel=S.st===i;
+   x.fillStyle=sel?'rgba(255,151,46,.13)':'rgba(244,241,234,.05)';x.beginPath();x.roundRect(x0,top,cw,bot-top,R*.8);x.fill();
+   if(sel){x.strokeStyle=C.orange;x.lineWidth=2;x.stroke()}
+   G1.push({x:x0,y:top,w:cw,h:bot-top});
+   dot(x,x0+R*1.2,top+R*1.3,R*.8,sel?C.orange:C.line2);TH(x,String(i+1),x0+R*1.2,top+R*1.35,R*.85,sel?'#17140F':C.cream,'center');
+   const tg=s.lossy?tx('ztrátově','lossy'):tx('bez ztráty','lossless');
+   x.font=`700 ${R*.62}px Montserrat,sans-serif`;const tw=x.measureText(tg.toUpperCase()).width+R*.9;
+   x.fillStyle=s.lossy?C.orange:'rgba(110,168,224,.35)';x.beginPath();x.roundRect(x0+cw-tw-R*.5,top+R*.7,tw,R*1.2,R*.6);x.fill();
+   TH(x,tg.toUpperCase(),x0+cw-tw/2-R*.5,top+R*1.33,R*.62,s.lossy?'#17140F':C.cream,'center');
+   s.n.forEach((l,j)=>TH(x,l,x0+R*.8,top+R*3.5+j*R*1.15,R*(i===3||i===5?.9:.98),C.cream));
+   glyph(x,s.g,x0+cw/2,top+R*7.2,R,cw);
+   // sloupec dat
+   const by0=top+R*10.9,bh=bot-by0-R*2.6,fr=Math.max(.012,s.B/raw),hh=Math.max(3,bh*fr);
+   line(x,x0+R*.8,by0+bh,x0+cw-R*.8,by0+bh,GR2,1);
+   x.fillStyle=i===n-1?C.orange:s.lossy?C.analog:C.blue;x.beginPath();x.roundRect(x0+cw*.25,by0+bh-hh,cw*.5,hh,R*.3);x.fill();
+   TH(x,fS(s.B),x0+cw/2,by0+bh-hh-R*.8,R*1.0,i===n-1?C.orange:C.cream,'center');
+   if(i>0&&i<n-1&&Math.abs(s.B-st[i-1].B)<1)T(x,'= '+nf(st[i-1].B/raw*100,0)+' %',x0+cw/2,by0+bh-hh-R*2.1,R*.66,TXT,'center');
+   const nt=s.note.split(' ');let l1='',l2='';nt.forEach(wd=>{if((l1+' '+wd).length<=17&&!l2)l1+=(l1?' ':'')+wd;else l2+=(l2?' ':'')+wd});
+   T(x,l1,x0+cw/2,bot-R*1.45,R*.62,TXT,'center');if(l2)T(x,l2,x0+cw/2,bot-R*.7,R*.62,TXT,'center');
+   if(i<n-1)TH(x,'›',x0+cw+gap/2,top+(bot-top)/2,R*1.4,C.line2,'center');
+  });
+ }});
+function glyph(x,g,cx,cy,R,cw){
+ const sq=(px,py,s,col,t,tc)=>{x.fillStyle=col;x.beginPath();x.roundRect(px,py,s,s,R*.25);x.fill();if(t)TH(x,t,px+s/2,py+s/2+R*.05,R*.6,tc||'#17140F','center')};
+ const s=R*1.9;
+ if(g==='rgb'){[['#e4423a','R'],['#4fae5a','G'],['#4a7fd6','B']].forEach((k,i)=>sq(cx-s*1.65+i*(s*1.15),cy-s/2,s,k[0],k[1],'#fff'))}
+ if(g==='ycc'){[['#c9c4b8','Y'],['#6ea8e0','Cb'],['#e08a6e','Cr']].forEach((k,i)=>sq(cx-s*1.65+i*(s*1.15),cy-s/2,s,k[0],k[1]))}
+ if(g==='sub'){for(let j=0;j<2;j++)for(let i=0;i<2;i++){x.fillStyle=C.analog;x.beginPath();x.arc(cx-R*2.4+i*R*1.2,cy-R*.6+j*R*1.2,R*.38,0,TAU);x.fill()}TH(x,'→',cx,cy,R*1.1,C.cream,'center');x.fillStyle=C.blue;x.beginPath();x.arc(cx+R*2.2,cy,R*.9,0,TAU);x.fill()}
+ if(g==='dct'){const c=R*.5,ox=cx-c*4,oy=cy-c*4;for(let j=0;j<8;j++)for(let i=0;i<8;i++){const a=.15+.85*Math.exp(-(i+j)/3);x.fillStyle=`rgba(255,151,46,${a})`;x.fillRect(ox+i*c,oy+j*c,c-1,c-1)}}
+ if(g==='q'){TH(x,'48 ÷ 16 → 3',cx,cy-R*1.1,R*.85,C.cream,'center');TH(x,'5 ÷ 24 → 0',cx,cy,R*.85,C.orange,'center');TH(x,'2 ÷ 40 → 0',cx,cy+R*1.1,R*.85,C.orange,'center')}
+ if(g==='enc'){TH(x,'0 0 0 0 0 5',cx,cy-R*.8,R*.85,C.cream,'center');TH(x,'↓',cx,cy+R*.1,R*.85,C.orange,'center');TH(x,'(5×0, 5)',cx,cy+R*1.1,R*.85,C.orange,'center')}
+}
+})();
+</script>
+<script>
+/* ===== 2 Barvy ===== */
+(function(){
+let K='',RR=null;
+function comp(){
+ const im=img(S.img),k=S.img+'|'+S.sub+'|'+im.w+'|'+im.h+'|'+IMV;if(k===K)return RR;K=k;
+ const sb=SUB[S.sub],P=toPlanes(im),w=im.w,h=im.h,n=w*h;
+ const cb=shrink(P.Cb,w,h,sb.fx,sb.fy),cr=shrink(P.Cr,w,h,sb.fx,sb.fy),Cb2=grow(cb,w,h,sb.fx,sb.fy),Cr2=grow(cr,w,h,sb.fx,sb.fy);
+ const yD=new Uint8ClampedArray(n*4),cbD=new Uint8ClampedArray(n*4),crD=new Uint8ClampedArray(n*4),rec=new Uint8ClampedArray(n*4);
+ const put=(o,j,y,b,r)=>{b-=128;r-=128;o[j]=y+1.402*r;o[j+1]=y-.344136*b-.714136*r;o[j+2]=y+1.772*b;o[j+3]=255};
+ for(let i=0,j=0;i<n;i++,j+=4){
+  const px=i%w,py=(i/w)|0,si=((py/sb.fy)|0)*cb.w+((px/sb.fx)|0);
+  yD[j]=yD[j+1]=yD[j+2]=P.Y[i];yD[j+3]=255;
+  put(cbD,j,128,cb.p[si],128);put(crD,j,128,128,cr.p[si]);put(rec,j,P.Y[i],Cb2[i],Cr2[i]);
+ }
+ RR={im,yD,cbD,crD,rec,err:errImg(im.d,rec,5),psnr:psnrRGB(im.d,rec),cw:cb.w,ch:cb.h};return RR;
+}
+OUT.k2a=()=>`${nf(SUB[S.sub].v,1)}<u>${tx('hodnoty / pixel','values / pixel')}</u>`;
+OUT.k2b=()=>`${nf(SUB[S.sub].v/3*100,0)} %`;
+OUT.k2c=()=>{const r=comp();return`<span class="or">${d1(r.psnr)}</span><u>dB</u>`};
+OUT.k2b_s=()=>tx('Podíl surových dat proti 4:4:4. Jas zůstává celý, ubývají jen barvy.','Share of raw data against 4:4:4. Luma stays complete, only colour is reduced.');
+OUT.k2c_s=()=>tx('Shoda s originálem jen po podvzorkování, bez DCT a kvantování.','Match with the original after subsampling only, without DCT and quantization.');
+OUT.d2=()=>{
+ const t={foto:tx('Na fotografii je rozdíl téměř neviditelný: přírodní barvy se mění pomalu.','On a photograph the difference is almost invisible: natural colours change slowly.'),
+  text:tx('Černobílý text nemá barvu, a proto podvzorkování vůbec nevadí.','Black and white text has no colour, so subsampling does no harm.'),
+  barvy:tx('Na ostrých barevných hranách se barva rozlévá do okolí. V chybové mapě vznikají barevné lemy.','On sharp colour edges the colour bleeds into the neighbourhood. The error map shows coloured fringes.'),
+  prechod:tx('Plynulé přechody barev snesou podvzorkování bez potíží.','Smooth colour gradients tolerate subsampling well.'),
+  vlastni:tx('Zkus hledat ostré barevné hrany, třeba červený nápis na modrém. Tam je chyba největší.','Look for sharp colour edges, such as red lettering on blue. That is where the error is largest.')};
+ return`<b class="l">${tx('Co je vidět','What to look for')}</b>`+(S.sub==='s444'?tx('Beze změny: každý pixel má vlastní barvu. Žádná úspora, žádná chyba.','No change: every pixel has its own colour. No saving, no error.'):t[S.img]||t.foto)};
+function six(cv,items,im){
+ const {x,w,h,R}=setup(cv);const W=im.w,H=im.h,gap=R*1.2,padX=R*1.2,labH=R*2.4;
+ let pw=(w-2*padX-2*gap)/3,ph=pw*H/W;const mh=(h-2*labH-R*.4)/2;if(ph>mh){ph=mh;pw=ph*W/H}
+ const x0=(w-3*pw-2*gap)/2,y0=(h-(2*(labH+ph)+R*.4))/2+labH;
+ x.imageSmoothingEnabled=false;
+ items.forEach((it,i)=>{const cx=x0+(i%3)*(pw+gap),cy=y0+((i/3)|0)*(ph+labH+R*.4);
+  x.drawImage(putCv(it.d,W,H),cx,cy,pw,ph);x.strokeStyle=C.line2;x.lineWidth=1;x.strokeRect(cx,cy,pw,ph);
+  TH(x,it.l,cx,cy-R*1.5,R*.95,it.c||C.cream);T(x,it.s,cx,cy-R*.55,R*.7,TXT)});
+}
+TABS.push({name:tx('Barvy','Colour'),side:'27rem',
+ build(){return `<div class="split"><div class="col">
+  <div class="scope grow"><canvas id="c2"></canvas>
+  </div>
+  <div class="kpis">
+   <div class="card kpi"><span class="lbl">${tx('Údaje na pixel','Values per pixel')}</span><div class="big" data-o="k2a"></div><small>${tx('Jas má každý pixel, barvu jen některé.','Every pixel has luma, only some have colour.')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Surová data','Raw data')}</span><div class="big" data-o="k2b"></div><small data-o="k2b_s"></small></div>
+   <div class="card kpi"><span class="lbl">${tx('Shoda s originálem','Match with original')}</span><div class="big" data-o="k2c"></div><small data-o="k2c_s"></small></div>
+  </div></div>
+  <div class="side card">
+   ${imgSel()}
+   ${subSel('sub')}
+   <div class="callout" data-o="d2"></div>
+   <div class="callout"><b class="l">${tx('Jak to funguje','How it works')}</b>${tx('Zápis 4:2:0 znamená: na čtyři pixely jas čtyřikrát, barvu Cb a Cr jen jednou. Oko je na jas mnohem citlivější než na barvu, proto se tak ušetří polovina dat.','The notation 4:2:0 means: for four pixels luma four times, colour Cb and Cr only once. The eye is far more sensitive to luma than to colour, which saves half the data.')}</div>
+   <div class="callout" style="margin-top:auto"><b class="l">${tx('Pozor','Note')}</b>${tx('Chroma panely jsou záměrně hrubé: ukazují, co kodér opravdu uloží.','The chroma panels are deliberately coarse: they show what the encoder really stores.')}</div>
+  </div></div>`},
+ render(){const cv=$('#c2');if(!cv)return;const r=comp(),sb=SUB[S.sub];
+  six(cv,[
+   {d:r.yD,l:tx('Jas Y','Luma Y'),s:tx('plné rozlišení','full resolution'),c:C.cream},
+   {d:r.cbD,l:'Cb',s:tx('modrá ↔ žlutá · ','blue ↔ yellow · ')+r.cw+' × '+r.ch,c:C.blue},
+   {d:r.crD,l:'Cr',s:tx('červená ↔ azurová · ','red ↔ cyan · ')+r.cw+' × '+r.ch,c:C.orange},
+   {d:r.im.d,l:tx('Originál','Original'),s:r.im.w+' × '+r.im.h+' px',c:C.cream},
+   {d:r.rec,l:tx('Po podvzorkování','After subsampling'),s:sb.n+' · '+d1(r.psnr)+' dB',c:C.orange},
+   {d:r.err,l:tx('Chyba ×5','Error ×5'),s:tx('černá = bez chyby','black = no error'),c:C.cream}],r.im);
+ }});
+})();
+</script>
+<script>
+/* ===== společné pro záložky 3–5: blok 8 × 8 ===== */
+const PRE={
+ hladka:(x,y)=>126+x*.6+y*.4+(((x*7+y*13)%5)-2),
+ prechod:(x,y)=>40+(x+y)*12.5,
+ hrana:(x,y)=>x<3?58:x>4?206:132,
+ pruhy:(x,y)=>((x>>1)&1)?205:55,
+ sum:(x,y)=>40+((((x+1)*73856093)^((y+1)*19349663))>>>0)%181};
+function getBlock(){
+ const o=new Float32Array(64);
+ if(S.blk==='img'){const im=img(S.img),bx=clamp(S.bx,0,(im.w>>3)-1),by=clamp(S.by,0,(im.h>>3)-1);
+  for(let y=0;y<8;y++)for(let x=0;x<8;x++){const j=((by*8+y)*im.w+bx*8+x)*4;o[y*8+x]=Math.round(.299*im.d[j]+.587*im.d[j+1]+.114*im.d[j+2])}return o}
+ const f=PRE[S.blk]||PRE.hrana;for(let y=0;y<8;y++)for(let x=0;x<8;x++)o[y*8+x]=clamp(Math.round(f(x,y)),0,255);return o;
+}
+function blockCoefs(b){const s=new Float32Array(64),c=new Float32Array(64);for(let i=0;i<64;i++)s[i]=b[i]-128;fdct(s,c);return c}
+function blockBack(c){const o=new Float32Array(64);idct(c,o);for(let i=0;i<64;i++)o[i]=clamp(Math.round(o[i]+128),0,255);return o}
+const qtab=(which)=>scaleQ(which==='c'?QC:QL,S.q);
+function quantBlock(co,qt){const q=new Int16Array(64);for(let i=0;i<64;i++)q[i]=rnd0(co[i]/qt[i]);return q}
+const gray=v=>{v=clamp(Math.round(v),0,255);return`rgb(${v},${v},${v})`};
+const cofC=(v,m)=>{const a=Math.min(1,Math.sqrt(Math.abs(v)/Math.max(m,1)));return v>=0?`rgba(255,151,46,${(.1+.8*a).toFixed(2)})`:`rgba(110,168,224,${(.1+.8*a).toFixed(2)})`};
+function mat(x,ox,oy,c,R,fn){
+ for(let j=0;j<8;j++)for(let i=0;i<8;i++){const o=fn(i,j);x.fillStyle=o[0];x.fillRect(ox+i*c,oy+j*c,c-1,c-1);if(o[1]!=null&&c>=R*1.6)T(x,String(o[1]),ox+i*c+c/2,oy+j*c+c/2,R*.74,o[2]||C.cream,'center')}
+ x.strokeStyle=C.line2;x.lineWidth=1;x.strokeRect(ox-.5,oy-.5,8*c+1,8*c+1);
+}
+const BLKL=()=>[['img',tx('Z obrázku','From picture')],['hladka',tx('Hladká','Smooth')],['prechod',tx('Přechod','Ramp')],['hrana',tx('Hrana','Edge')],['pruhy',tx('Pruhy','Stripes')],['sum',tx('Šum','Noise')]];
+OUT.blkc=()=>BLKL().map(([v,l])=>`<button class="chip${S.blk===v?' on':''}" data-k="blk" data-v="${v}">${l}</button>`).join('');
+const blkSel=(id,hint)=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Blok 8 × 8','8 × 8 block')}</span></div><div class="chips g6" data-o="blkc"></div><canvas class="bp" id="${id}"></canvas>${hint?`<span class="hint">${tx('Klepni do obrázku a vyber blok.','Tap the picture to choose a block.')}</span>`:''}</div>`;
+let PK=null;const LUM=new WeakMap();
+function lumaCv(im){let c=LUM.get(im);if(!c){const d=new Uint8ClampedArray(im.w*im.h*4);for(let i=0;i<im.w*im.h;i++){const v=.299*im.d[i*4]+.587*im.d[i*4+1]+.114*im.d[i*4+2];d[i*4]=d[i*4+1]=d[i*4+2]=v;d[i*4+3]=255}c=putCv(d,im.w,im.h);LUM.set(im,c)}return c}
+function drawPicker(id){
+ const cv=$('#'+id);if(!cv)return;const im=img(S.img),{x,w,h}=setup(cv);
+ const s=Math.min(w/im.w,h/im.h),ox=(w-im.w*s)/2,oy=(h-im.h*s)/2;PK={s,ox,oy,im};
+ x.imageSmoothingEnabled=false;x.drawImage(lumaCv(im),ox,oy,im.w*s,im.h*s);
+ if(s*8>=5){x.strokeStyle='rgba(244,241,234,.16)';x.lineWidth=1;x.beginPath();for(let i=0;i<=im.w;i+=8){x.moveTo(ox+i*s,oy);x.lineTo(ox+i*s,oy+im.h*s)}for(let j=0;j<=im.h;j+=8){x.moveTo(ox,oy+j*s);x.lineTo(ox+im.w*s,oy+j*s)}x.stroke()}
+ if(S.blk==='img'){x.strokeStyle=C.orange;x.lineWidth=2.5;x.strokeRect(ox+S.bx*8*s,oy+S.by*8*s,8*s,8*s)}
+}
+function pickInit(id){
+ const cv=$('#'+id);
+ drag(cv,p=>{if(!PK)return;const im=PK.im,bx=Math.floor((p.x-PK.ox)/PK.s/8),by=Math.floor((p.y-PK.oy)/PK.s/8);
+  if(bx<0||by<0||bx>=im.w>>3||by>=im.h>>3)return;if(S.blk==='img'&&S.bx===bx&&S.by===by)return;S.blk='img';S.bx=bx;S.by=by;refresh()});
+}
+/* kosinové vzory */
+const BAS=[];
+function basis(u,v){const k=v*8+u;if(!BAS[k]){const d=new Uint8ClampedArray(256);for(let y=0;y<8;y++)for(let x=0;x<8;x++){const a=Math.cos((2*x+1)*u*Math.PI/16)*Math.cos((2*y+1)*v*Math.PI/16),t=128+a*118,j=(y*8+x)*4;d[j]=d[j+1]=d[j+2]=u===0&&v===0?160:t;d[j+3]=255}BAS[k]=putCv(d,8,8)}return BAS[k]}
+const rms=(a,b)=>{let e=0;for(let i=0;i<64;i++){const d=a[i]-b[i];e+=d*d}return Math.sqrt(e/64)};
+</script>
+<script>
+/* ===== 3 DCT ===== */
+(function(){
+OUT.k3a=()=>`${S.nc}<u>${tx('z 64','of 64')}</u>`;
+OUT.k3b=()=>{const co=blockCoefs(getBlock());let a=0,t=0;for(let i=0;i<64;i++){const e=co[i]*co[i];t+=e;if(IZ[i]<S.nc)a+=e}return`<span class="or">${nf(t?a/t*100:100,1)} %</span>`};
+OUT.k3c=()=>{const b=getBlock(),co=blockCoefs(b),m=co.map((v,i)=>IZ[i]<S.nc?v:0);return`${nf(rms(b,blockBack(m)),1)}<u>${tx('úrovní jasu','brightness levels')}</u>`};
+OUT.d3=()=>{const n=S.nc;
+ return`<b class="l">${tx('Co je vidět','What to look for')}</b>`+(n===1?tx('Samotný koeficient DC vyplní blok jedním odstínem: průměrným jasem.','The DC coefficient alone fills the block with one tone: its average brightness.')
+  :n<10?tx('Několik pomalých vzorů vystihne hrubý tvar bloku. Hrany jsou ještě rozmazané.','A few slow patterns capture the rough shape of the block. Edges are still blurred.')
+  :n<64?tx('S dalšími vzory se detail zostřuje. Zbylé koeficienty už dělají jen drobné opravy.','With more patterns the detail sharpens. The remaining coefficients only make small corrections.')
+  :tx('Všech 64 koeficientů vrátí blok přesně. DCT sama o sobě nic neničí.','All 64 coefficients return the block exactly. The DCT itself destroys nothing.'))};
+TABS.push({name:'DCT',side:'27rem',
+ build(){return `<div class="split"><div class="col">
+  <div class="scope grow"><canvas id="c3"></canvas>
+  </div>
+  <div class="kpis">
+   <div class="card kpi"><span class="lbl">${tx('Použité koeficienty','Coefficients used')}</span><div class="big" data-o="k3a"></div><small>${tx('Řadí se cik-cak, od pomalých změn k rychlým.','Ordered in zigzag, from slow to fast changes.')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Zachycená energie','Energy captured')}</span><div class="big" data-o="k3b"></div><small>${tx('Podíl součtu čtverců koeficientů.','Share of the sum of squared coefficients.')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Chyba bloku','Block error')}</span><div class="big" data-o="k3c"></div><small>${tx('Efektivní odchylka rekonstrukce od originálu.','RMS deviation of the reconstruction from the original.')}</small></div>
+  </div></div>
+  <div class="side card">
+   ${blkSel('bp3',true)}
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Kolik koeficientů použít','How many coefficients to use')}</span><span class="val"><b data-o="ncv"></b></span></div>
+    <input type="range" data-k="nc" min="1" max="64" step="1">
+    <div class="chips g6">${[1,3,6,10,20,64].map(v=>`<button class="chip" data-k="nc" data-v="${v}">${v}</button>`).join('')}</div></div>
+   <div class="callout" data-o="d3"></div>
+  </div></div>`},
+ init(){pickInit('bp3')},
+ render(){
+  const cv=$('#c3');if(!cv)return;drawPicker('bp3');
+  const {x,w,h,R}=setup(cv),b=getBlock(),co=blockCoefs(b),N=S.nc;
+  const m=co.map((v,i)=>IZ[i]<N?v:0),rc=blockBack(m);
+  const lab=R*2.6,lab2=R*2.3,gap=R*3.6;
+  const c=Math.min((w-2*R*1.2-2*gap)/24,(h-lab-lab2-R*.6)/12.96),tot=24*c+2*gap,x0=(w-tot)/2,y0=lab,mx=Math.max(...co.map(Math.abs));
+  const px=[x0,x0+8*c+gap,x0+16*c+2*gap];
+  TH(x,tx('Blok 8 × 8','8 × 8 block'),px[0],y0-R*1.5,R*.95,C.cream);T(x,tx('jas 0 až 255','brightness 0 to 255'),px[0],y0-R*.55,R*.7,TXT);
+  mat(x,px[0],y0,c,R,(i,j)=>{const v=b[j*8+i];return[gray(v),Math.round(v),v>140?'#17140F':C.cream]});
+  TH(x,tx('Koeficienty DCT','DCT coefficients'),px[1],y0-R*1.5,R*.95,C.orange);T(x,tx('oranžová +, modrá −; vlevo nahoře DC','orange +, blue −; top left is DC'),px[1],y0-R*.55,R*.7,TXT);
+  mat(x,px[1],y0,c,R,(i,j)=>{const v=co[j*8+i],u=IZ[j*8+i]<N;return[u?cofC(v,mx):'rgba(244,241,234,.05)',Math.round(v),u?C.cream:'rgba(244,241,234,.35)']});
+  TH(x,tx('Rekonstrukce','Reconstruction'),px[2],y0-R*1.5,R*.95,C.cream);T(x,tx('jen prvních '+N+' koeficientů','first '+N+' coefficients only'),px[2],y0-R*.55,R*.7,TXT);
+  mat(x,px[2],y0,c,R,(i,j)=>{const v=rc[j*8+i];return[gray(v),Math.round(v),v>140?'#17140F':C.cream]});
+  TH(x,'DCT →',px[0]+8*c+gap/2,y0+4*c,R*.95,C.orange,'center');TH(x,'IDCT →',px[1]+8*c+gap/2,y0+4*c,R*.95,C.orange,'center');
+  // vzory
+  const mm=c*.62,my=y0+8*c+lab2;
+  TH(x,tx('64 základních vzorů','The 64 basic patterns'),px[1],my-R*1.1,R*.95,C.cream);
+  x.imageSmoothingEnabled=false;
+  for(let v=0;v<8;v++)for(let u=0;u<8;u++){const tx0=px[1]+u*mm,ty0=my+v*mm;x.drawImage(basis(u,v),tx0,ty0,mm-1,mm-1);
+   if(IZ[v*8+u]>=N){x.fillStyle='rgba(18,16,12,.62)';x.fillRect(tx0,ty0,mm-1,mm-1)}}
+  x.strokeStyle=C.line2;x.lineWidth=1;x.strokeRect(px[1]-.5,my-.5,8*mm+1,8*mm+1);
+  const tx1=px[1]+8*mm+R*1.4;
+  T(x,tx('vlevo nahoře: průměr bloku (DC)','top left: block average (DC)'),tx1,my+R*.7,R*.74,TXT);
+  T(x,tx('doprava: jemnější svislé pruhy','right: finer vertical stripes'),tx1,my+R*2.0,R*.74,TXT);
+  T(x,tx('dolů: jemnější vodorovné pruhy','down: finer horizontal stripes'),tx1,my+R*3.3,R*.74,TXT);
+  T(x,tx('vpravo dole: nejjemnější šachovnice','bottom right: the finest checkerboard'),tx1,my+R*4.6,R*.74,TXT);
+  T(x,tx('ztlumené vzory se nepoužijí','dimmed patterns are not used'),tx1,my+R*5.9,R*.74,C.orange);
+ }});
+OUT.ncv=()=>String(S.nc);
+})();
+</script>
+<script>
+/* ===== 4 Kvantování ===== */
+(function(){
+function calc(){const b=getBlock(),co=blockCoefs(b),qt=qtab(S.qt),q=quantBlock(co,qt),dq=new Float32Array(64);for(let i=0;i<64;i++)dq[i]=q[i]*qt[i];const rc=blockBack(dq);let z=0;for(let i=0;i<64;i++)if(!q[i])z++;return{b,co,qt,q,rc,z,e:rms(b,rc)}}
+OUT.k4a=()=>`${calc().z}<u>${tx('z 64 jsou nuly','of 64 are zeros')}</u>`;
+OUT.k4b=()=>`${nf(qScale(S.q),0)} %`;
+OUT.k4c=()=>`<span class="or">${nf(calc().e,1)}</span><u>${tx('úrovní jasu','brightness levels')}</u>`;
+OUT.d4=()=>{const r=calc();return`<b class="l">${tx('Co je vidět','What to look for')}</b>`+(r.z>=60?tx('Zbylo skoro jen DC. Blok je jednobarevná dlaždice a všechny detaily jsou pryč.','Almost only DC is left. The block is a flat tile and all detail is gone.')
+  :r.z>=40?tx('Většina koeficientů zmizela, hlavně ty v pravém dolním rohu. Blok je měkčí, ale hrubý tvar zůstal.','Most coefficients vanished, mainly those in the bottom right corner. The block is softer but its rough shape remains.')
+  :r.z>=15?tx('Vysoké frekvence se vynulovaly, nízké zůstaly. Právě to oko skoro nepozná.','High frequencies were zeroed, low ones remain. The eye hardly notices that.')
+  :tx('Zachovala se většina koeficientů. Blok je téměř přesný, ale nul je málo a soubor bude velký.','Most coefficients survived. The block is almost exact, but there are few zeros and the file will be large.'))};
+TABS.push({name:tx('Kvantování','Quantization'),side:'27rem',
+ build(){return `<div class="split"><div class="col">
+  <div class="scope grow"><canvas id="c4"></canvas>
+  </div>
+  <div class="kpis">
+   <div class="card kpi"><span class="lbl">${tx('Nulové koeficienty','Zero coefficients')}</span><div class="big" data-o="k4a"></div><small>${tx('Nuly se kódují téměř zadarmo.','Zeros cost almost nothing to encode.')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Síla tabulky','Table strength')}</span><div class="big" data-o="k4b"></div><small>${tx('Násobek základní tabulky. Kvalita 50 je 100 %.','Multiple of the base table. Quality 50 is 100 %.')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Chyba bloku','Block error')}</span><div class="big" data-o="k4c"></div><small>${tx('Tady vzniká ztráta. Nelze ji vrátit.','The loss happens here. It cannot be undone.')}</small></div>
+  </div></div>
+  <div class="side card">
+   ${qSel('q')}
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Tabulka','Table')}</span></div><div class="seg"><button class="chip" data-k="qt" data-v="y">${tx('Jas','Luma')}</button><button class="chip" data-k="qt" data-v="c">${tx('Barva','Chroma')}</button></div></div>
+   ${blkSel('bp4')}
+   <div class="callout" data-o="d4"></div>
+  </div></div>`},
+ init(){pickInit('bp4')},
+ render(){
+  const cv=$('#c4');if(!cv)return;drawPicker('bp4');
+  const {x,w,h,R}=setup(cv),r=calc();
+  const lab=R*2.6,gap=R*2.6;
+  const c=Math.min((w-2*R*1.2-2*gap)/24,(h-lab-R*4.4)/12),tot=24*c+2*gap,x0=(w-tot)/2,y0=lab,mx=Math.max(...r.co.map(Math.abs));
+  const px=[x0,x0+8*c+gap,x0+16*c+2*gap];
+  TH(x,tx('Koeficienty DCT','DCT coefficients'),px[0],y0-R*1.5,R*.95,C.orange);T(x,tx('před kvantováním','before quantization'),px[0],y0-R*.55,R*.7,TXT);
+  mat(x,px[0],y0,c,R,(i,j)=>{const v=r.co[j*8+i];return[cofC(v,mx),Math.round(v)]});
+  TH(x,tx('Tabulka ','Table ')+(S.qt==='y'?tx('jasu','luma'):tx('barvy','chroma')),px[1],y0-R*1.5,R*.95,C.cream);T(x,tx('dělitelé · kvalita ','divisors · quality ')+S.q,px[1],y0-R*.55,R*.7,TXT);
+  mat(x,px[1],y0,c,R,(i,j)=>{const v=r.qt[j*8+i];return['rgba(244,241,234,'+(.05+.4*Math.min(1,v/120)).toFixed(2)+')',v]});
+  TH(x,tx('Po kvantování','After quantization'),px[2],y0-R*1.5,R*.95,C.orange);T(x,tx('celá čísla · '+r.z+' nul','integers · '+r.z+' zeros'),px[2],y0-R*.55,R*.7,TXT);
+  mat(x,px[2],y0,c,R,(i,j)=>{const v=r.q[j*8+i];return v?[cofC(v,Math.max(...r.q.map(Math.abs))),v]:['rgba(244,241,234,.04)',0,'rgba(244,241,234,.3)']});
+  TH(x,'÷',px[0]+8*c+gap/2,y0+4*c,R*1.6,C.orange,'center');TH(x,'=',px[1]+8*c+gap/2,y0+4*c,R*1.6,C.orange,'center');
+  // blok před a po
+  const c2=c*.5,y1=y0+8*c+R*3.4;
+  TH(x,tx('Originální blok','Original block'),px[0],y1-R*1.1,R*.85,C.cream);
+  mat(x,px[0],y1,c2,R,(i,j)=>[gray(r.b[j*8+i]),null]);
+  TH(x,tx('Po zpětné transformaci','After the inverse transform'),px[1],y1-R*1.1,R*.85,C.orange);
+  mat(x,px[1],y1,c2,R,(i,j)=>[gray(r.rc[j*8+i]),null]);
+  TH(x,tx('Chyba ×4','Error ×4'),px[2],y1-R*1.1,R*.85,C.cream);
+  mat(x,px[2],y1,c2,R,(i,j)=>[gray(128+(r.rc[j*8+i]-r.b[j*8+i])*4),null]);
+  T(x,tx('šedá = bez chyby','grey = no error'),px[2]+8*c2+R*.8,y1+4*c2,R*.7,TXT);
+ }});
+})();
+</script>
+<script>
+/* ===== 5 Kódování ===== */
+(function(){
+const DCLEN=[2,3,3,3,3,3,4,5,6,7,8,9];
+const ACLEN={0x00:4,0x01:2,0x02:2,0x03:3,0x04:4,0x05:5,0x06:7,0x07:8,0x08:10,0x11:4,0x12:5,0x13:7,0x14:9,0x15:11,0x21:5,0x22:8,0x23:10,0x31:6,0x32:9,0x41:6,0x42:10,0x51:7,0x61:7,0x71:8,0x81:9,0x91:9,0xA1:9,0xB1:10,0xC1:10,0xD1:11,0xF0:11};
+const acLen=(r,s)=>ACLEN[(r<<4)|s]||16;
+function calc(){
+ const b=getBlock(),co=blockCoefs(b),q=quantBlock(co,qtab('y')),ac=[];let r=0;
+ for(let k=1;k<64;k++){const v=q[ZZ[k]];if(!v){r++;continue}while(r>15){ac.push({k,run:15,s:0,v:0,l:acLen(15,0),zrl:1});r-=16}const s=cat(v);ac.push({k,run:r,s,v,l:acLen(r,s)});r=0}
+ const eob=r>0,dc={v:q[0],s:cat(q[0]),l:DCLEN[cat(q[0])]};
+ let bits=dc.l+dc.s;ac.forEach(a=>bits+=a.l+a.s);if(eob)bits+=4;
+ let nz=0;for(let k=1;k<64;k++)if(q[k])nz++;
+ return{q,dc,ac,eob,bits,nz};
+}
+OUT.k5a=()=>{const r=calc();return`${r.ac.length+1+(r.eob?1:0)}<u>${tx('symbolů','symbols')}</u>`};
+OUT.k5b=()=>`<span class="or">${calc().bits}</span><u>${tx('bitů','bits')}</u>`;
+OUT.k5c=()=>`${nf(calc().bits/64,2)}<u>${tx('bitu / pixel','bit / pixel')}</u>`;
+OUT.d5=()=>{const r=calc();return`<b class="l">${tx('Co je vidět','What to look for')}</b>`+(r.nz<=3?tx('Z bloku zbylo jen pár čísel. Řada nul až do konce se nahradí jediným symbolem EOB.','Only a few numbers remain. The run of zeros to the end is replaced by a single EOB symbol.')
+ :r.nz<=12?tx('Několik nenulových koeficientů, mezi nimi řady nul. Každá řada nul se zapíše jako počet.','A few nonzero coefficients with runs of zeros between them. Each run of zeros is written as a count.')
+ :tx('Zůstává hodně nenulových čísel, a blok proto zabere víc bitů. Zkus snížit kvalitu a sleduj, jak se počet bitů mění.','Many nonzero numbers remain, so the block takes more bits. Try lowering the quality and watch the bit count change.'))};
+TABS.push({name:tx('Kódování','Coding'),side:'27rem',
+ build(){return `<div class="split"><div class="col">
+  <div class="scope grow"><canvas id="c5"></canvas>
+   <div class="badge">${tx('cik-cak → (nuly, velikost) → Huffmanův kód','zigzag → (zeros, size) → Huffman code')}</div></div>
+  <div class="kpis">
+   <div class="card kpi"><span class="lbl">${tx('Symbolů v bloku','Symbols in block')}</span><div class="big" data-o="k5a"></div><small>${tx('DC, každý nenulový AC a konec bloku.','DC, each nonzero AC and the end of block.')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Zakódovaný blok','Encoded block')}</span><div class="big" data-o="k5b"></div><small>${tx('Surový blok má 512 bitů (64 × 8).','The raw block has 512 bits (64 × 8).')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Průměr na pixel','Average per pixel')}</span><div class="big" data-o="k5c"></div><small>${tx('Surově 8 bitů na pixel jasu.','Raw 8 bits per luma pixel.')}</small></div>
+  </div></div>
+  <div class="side card">
+   ${qSel('q')}
+   ${blkSel('bp5')}
+   <div class="callout" data-o="d5"></div>
+   <div class="callout"><b class="l">${tx('Jak to funguje','How it works')}</b>${tx('Symbol (n, s) znamená: n nul a pak číslo o s bitech. Častým symbolům dá Huffmanova tabulka krátký kód. Za kód se připíše s bitů hodnoty.','Symbol (n, s) means: n zeros and then a number of s bits. The Huffman table gives frequent symbols short codes. s bits of the value follow the code.')}</div>
+  </div></div>`},
+ init(){pickInit('bp5')},
+ render(){
+  const cv=$('#c5');if(!cv)return;drawPicker('bp5');
+  const {x,w,h,R}=setup(cv),r=calc();
+  const lab=R*2.6,c=Math.min(R*2.9,(h-lab-R*9)/8),x0=R*1.6,y0=lab,mx=Math.max(1,...r.q.map(Math.abs));
+  TH(x,tx('Kvantované koeficienty','Quantized coefficients'),x0,y0-R*1.5,R*.95,C.orange);T(x,tx('čtou se cik-cak od DC','read in zigzag from DC'),x0,y0-R*.55,R*.7,TXT);
+  mat(x,x0,y0,c,R,(i,j)=>{const v=r.q[j*8+i];return v?[cofC(v,mx),v]:['rgba(244,241,234,.04)',0,'rgba(244,241,234,.3)']});
+  x.strokeStyle='rgba(255,151,46,.5)';x.lineWidth=Math.max(1.2,R*.1);x.lineJoin='round';x.beginPath();
+  ZZ.forEach((n,k)=>{const cx=x0+(n%8)*c+c/2,cy=y0+((n/8)|0)*c+c/2;k?x.lineTo(cx,cy):x.moveTo(cx,cy)});x.stroke();
+  dot(x,x0+c/2,y0+c/2,R*.35,C.orange);
+  // tabulka symbolů
+  const tx0=x0+8*c+R*3.2,rh=R*1.3,ty=y0-R*.2,fs=R*.78;
+  const cols=[tx0,tx0+R*6.2,tx0+R*15,tx0+R*22.5];
+  [tx('Co','What'),tx('(nul, velikost)','(zeros, size)'),tx('hodnota','value'),tx('bitů kód + hodnota','bits code + value')].forEach((s,i)=>T(x,s,cols[i],ty,R*.68,TXT));
+  line(x,tx0,ty+rh*.45,w-R*1.2,ty+rh*.45,GR2,1);
+  const maxRows=Math.max(3,Math.floor((h-ty-rh*.9-R*7.6)/rh));
+  const rows=[{a:'DC',b:'—',v:r.dc.v,c:r.dc.l,e:r.dc.s}];
+  const take=r.ac.length>maxRows-2?maxRows-3:r.ac.length;
+  r.ac.slice(0,take).forEach(a=>rows.push({a:'AC '+a.k,b:a.zrl?'(15, 0) ZRL':'('+a.run+', '+a.s+')',v:a.zrl?'—':a.v,c:a.l,e:a.s}));
+  if(take<r.ac.length)rows.push({a:'…',b:tx('dalších ','another ')+(r.ac.length-take),v:'',c:null});
+  if(r.eob)rows.push({a:'EOB',b:'(0, 0)',v:'—',c:4,e:0});
+  rows.forEach((o,i)=>{const yy=ty+rh*(i+1.15),hot=o.a==='EOB'||o.a==='DC';
+   T(x,o.a,cols[0],yy,fs,hot?C.orange:C.cream);T(x,String(o.b),cols[1],yy,fs,C.cream);T(x,String(o.v),cols[2],yy,fs,C.cream);
+   if(o.c!=null)T(x,o.c+' + '+o.e+' = '+(o.c+o.e),cols[3],yy,fs,C.cream)});
+  // sloupce: surově proti zakódovaně
+  const bw=w-2*R*1.6,by=h-R*5.4,bh=R*1.3;
+  T(x,tx('Surový blok','Raw block')+' · 512 b',R*1.6,by-R*.8,R*.75,TXT);
+  x.fillStyle=C.analog;x.beginPath();x.roundRect(R*1.6,by,bw,bh,bh*.3);x.fill();
+  T(x,tx('Zakódovaný blok','Encoded block')+' · '+r.bits+' b · '+tx('1 : ','1 : ')+nf(512/r.bits,1),R*1.6,by+bh+R*1.2,R*.75,C.orange);
+  x.fillStyle=C.orange;x.beginPath();x.roundRect(R*1.6,by+bh+R*1.7,Math.max(4,bw*r.bits/512),bh,bh*.3);x.fill();
+ }});
+})();
+</script>
+<script>
+/* ===== společné pro záložky 6 a 7: srovnání a lupa ===== */
+const GC={};
+const regionDims=im=>[32,Math.max(8,Math.round(32*im.h/im.w))];
+function compView(id,A,B,E,labs,rk=''){
+ const cv=$('#'+id);if(!cv)return;const {x,w,h,R}=setup(cv),W=A.w,H=A.h,[rw,rh]=regionDims(A);
+ const KX='rx'+rk,KY='ry'+rk;S[KX]=clamp(S[KX],0,W-rw);S[KY]=clamp(S[KY],0,H-rh);const RX=S[KX],RY=S[KY];
+ const gap=R*1.2,padX=R*1.2,labH=R*2.4;
+ let pw=(w-2*padX-2*gap)/3,ph=pw*H/W;const mh=(h-2*labH-R*.6)/2;if(ph>mh){ph=mh;pw=ph*W/H}
+ const zs=pw/rw,zh=rh*zs,x0=(w-3*pw-2*gap)/2,y0=(h-(2*labH+ph+zh+R*.6))/2+labH,y1=y0+ph+labH+R*.6,s=pw/W;
+ const cs=[putCv(A.d,W,H),putCv(B.d,W,H),putCv(E,W,H)];
+ x.imageSmoothingEnabled=false;
+ cs.forEach((c,i)=>{const px=x0+i*(pw+gap);
+  x.drawImage(c,px,y0,pw,ph);x.strokeStyle=C.line2;x.lineWidth=1;x.strokeRect(px,y0,pw,ph);
+  x.strokeStyle=C.orange;x.lineWidth=2;x.strokeRect(px+RX*s,y0+RY*s,rw*s,rh*s);
+  TH(x,labs[i].l,px,y0-R*1.5,R*.95,labs[i].c||C.cream);T(x,labs[i].s,px,y0-R*.55,R*.7,TXT);
+  x.drawImage(c,RX,RY,rw,rh,px,y1,pw,zh);x.strokeStyle=C.line2;x.lineWidth=1;x.strokeRect(px,y1,pw,zh);
+  if(S.grid){x.strokeStyle='rgba(255,255,255,.4)';x.lineWidth=1;x.beginPath();
+   for(let gx=Math.ceil(RX/8)*8;gx<RX+rw;gx+=8){const X=px+(gx-RX)*zs;x.moveTo(X,y1);x.lineTo(X,y1+zh)}
+   for(let gy=Math.ceil(RY/8)*8;gy<RY+rh;gy+=8){const Y=y1+(gy-RY)*zs;x.moveTo(px,Y);x.lineTo(px+pw,Y)}x.stroke()}
+  T(x,labs[i].z,px,y1-R*.6,R*.7,TXT)});
+ GC[id]={x0,y0,pw,ph,gap,W,H,rw,rh,R,KX,KY};
+}
+function lensInit(id){
+ const cv=$('#'+id);let ok=false;
+ drag(cv,(p,e)=>{const g=GC[id];if(!g)return;
+  if(e.type==='pointerdown')ok=p.x>=g.x0&&p.y>=g.y0&&p.y<=g.y0+g.ph+g.R;
+  if(!ok)return;
+  const i=clamp(Math.floor((p.x-g.x0)/(g.pw+g.gap)),0,2),s=g.pw/g.W,px=g.x0+i*(g.pw+g.gap);
+  const nx=clamp(Math.round((p.x-px)/s-g.rw/2),0,g.W-g.rw),ny=clamp(Math.round((p.y-g.y0)/s-g.rh/2),0,g.H-g.rh);
+  if(nx!==S[g.KX]||ny!==S[g.KY]){S[g.KX]=nx;S[g.KY]=ny;refresh()}});
+}
+</script>
+<script>
+/* ===== 6 Laboratoř ===== */
+(function(){
+function lab(){const im=img(S.img),r=codec(im,S.q,S.sub);return{im,r,E:errImg(im.d,r.d,5)}}
+OUT.k6a=()=>`<span class="or">${fS(lab().r.bytes)}</span>`;
+OUT.k6a_s=()=>{const rs=realSize(S.img,S.q);return tx('Model s ideálním Huffmanem. Soubor z prohlížeče: ','Model with ideal Huffman. Browser file: ')+(rs===null?'…':rs<0?tx('nedostupné','unavailable'):fS(rs))+'.'};
+OUT.k6b=()=>`1 : ${nf(lab().r.ratio,0)}`;
+OUT.k6b_s=()=>{const im=img(S.img);return tx('Surový obraz '+im.w+' × '+im.h+' × 3 B = '+fS(im.w*im.h*3)+'.','Raw picture '+im.w+' × '+im.h+' × 3 B = '+fS(im.w*im.h*3)+'.')};
+OUT.k6c=()=>`${d1(lab().r.psnr)}<u>dB</u>`;
+OUT.k6c_s=()=>{const p=lab().r.psnr;return p>=40?tx('Nad 40 dB je rozdíl téměř neviditelný.','Above 40 dB the difference is almost invisible.'):p>=33?tx('Kolem 35 dB je rozdíl vidět jen při zvětšení.','Around 35 dB the difference shows only when zoomed.'):p>=28?tx('Kolem 30 dB je ztráta znát při pozorném pohledu.','Around 30 dB the loss is noticeable on a close look.'):tx('Pod 28 dB je ztráta kvality zřejmá.','Below 28 dB the loss of quality is obvious.')};
+OUT.d6=()=>`<b class="l">${tx('Co je vidět','What to look for')}</b>`+(S.q<20?tx('Silné blokování a rozmazané hrany. Soubor je maličký, ale obraz už trpí.','Strong blocking and blurred edges. The file is tiny but the picture suffers.')
+ :S.q<50?tx('V hladkých plochách jsou vidět bloky 8 × 8 a kolem hran šum. Zapni mřížku.','Blocks of 8 × 8 show in smooth areas and noise around edges. Turn on the grid.')
+ :S.q<80?tx('Rozdíl je znát jen v lupě na ostrých hranách. Dobrý poměr mezi velikostí a kvalitou.','The difference shows only in the zoom on sharp edges. A good balance of size and quality.')
+ :tx('Téměř nepoznat od originálu, ale soubor roste. Poslední procenta kvality stojí hodně dat.','Almost indistinguishable from the original, but the file grows. The last percent of quality costs a lot of data.'));
+TABS.push({name:tx('Laboratoř','Laboratory'),side:'27rem',
+ build(){return `<div class="split"><div class="col">
+  <div class="scope grow"><canvas id="c6"></canvas>
+  </div>
+  <div class="kpis">
+   <div class="card kpi"><span class="lbl">${tx('Velikost souboru','File size')}</span><div class="big" data-o="k6a"></div><small data-o="k6a_s"></small></div>
+   <div class="card kpi"><span class="lbl">${tx('Komprese','Compression')}</span><div class="big" data-o="k6b"></div><small data-o="k6b_s"></small></div>
+   <div class="card kpi"><span class="lbl">${tx('Věrnost obrazu','Fidelity')}</span><div class="big" data-o="k6c"></div><small data-o="k6c_s"></small></div>
+  </div></div>
+  <div class="side card">
+   ${qSel('q')}
+   ${subSel('sub')}
+   ${imgSel()}
+   ${gridSel()}
+   <span class="hint">${tx('Tažením po horních obrázcích přesuneš lupu.','Drag over the top pictures to move the zoom.')}</span>
+   <div class="callout" data-o="d6"></div>
+  </div></div>`},
+ init(){lensInit('c6')},
+ render(){const L=lab();
+  compView('c6',L.im,L.r,L.E,[
+   {l:tx('Originál','Original'),s:L.im.w+' × '+L.im.h+' px',c:C.cream,z:tx('Lupa: originál','Zoom: original')},
+   {l:'JPEG',s:tx('kvalita ','quality ')+S.q+' · '+SUB[S.sub].n+' · '+fS(L.r.bytes),c:C.orange,z:tx('Lupa: JPEG','Zoom: JPEG')},
+   {l:tx('Chyba ×5','Error ×5'),s:tx('černá = bez chyby','black = no error'),c:C.cream,z:tx('Lupa: chyba','Zoom: error')}]);
+ }});
+})();
+</script>
+<script>
+/* ===== 7 Artefakty ===== */
+(function(){
+const ART=[
+ {id:'blok',n:tx('Bloky','Blocks'),img:'foto',q:8,sub:'s444',gen:1,shift:false,rx:20,ry:6,
+  t:tx('Při nízké kvalitě dostane každý blok jen pár vzorů a hranice mezi bloky vyniknou jako mřížka. Zapni mřížku: chyby sedí přesně v blocích 8 × 8.','At low quality every block keeps only a few patterns and the borders between blocks show as a grid. Turn on the grid: the errors sit exactly in 8 × 8 blocks.')},
+ {id:'prst',n:tx('Prstence','Ringing'),img:'text',q:15,sub:'s444',gen:1,rx:14,ry:26,
+  t:tx('Kolem ostrých hran písmen vznikají „mušky“. Ostrá hrana potřebuje mnoho vysokých frekvencí, ty se zaokrouhlí a chyba se rozlije po celém bloku.','Around sharp letter edges “mosquito noise” appears. A sharp edge needs many high frequencies, they get rounded and the error spreads over the whole block.')},
+ {id:'barva',n:tx('Barvy','Colour'),img:'barvy',q:70,sub:'s420',gen:1,rx:106,ry:84,
+  t:tx('Podvzorkování barev rozlévá barvu přes hranu. Kolem červeného a modrého pole vznikají lemy. Jas zůstává ostrý, proto je to jinak nenápadné.','Chroma subsampling spreads colour across an edge. Fringes appear around the red and blue fields. Luma stays sharp, so it is otherwise hard to notice.')},
+ {id:'schody',n:tx('Přechod','Gradient'),img:'prechod',q:12,sub:'s444',gen:1,rx:76,ry:30,
+  t:tx('Plynulý přechod se rozpadne na schody: každý blok dostane jen několik koeficientů, a sousední bloky mají proto lehce jiný odstín.','A smooth gradient breaks into steps: every block keeps only a few coefficients, so neighbouring blocks get a slightly different tone.')},
+ {id:'gen',n:tx('Generace','Generations'),img:'foto',q:55,sub:'s420',gen:12,shift:true,rx:56,ry:48,
+  t:tx('Každé uložení jako JPEG přidá ztrátu. Když se obraz mezitím posune o pixel (ořez), mřížka bloků se nesrovná a chyby se hromadí. Přepni na stejnou mřížku a ztráta se skoro zastaví.','Every save as JPEG adds loss. If the picture shifts a pixel in between (cropping), the block grid does not line up and errors pile up. Switch to the same grid and the loss almost stops.')}];
+ACT.art=v=>{const a=ART.find(o=>o.id===v);if(!a)return;Object.assign(S,{art:a.id,img7:a.img,q7:a.q,sub7:a.sub,gen:a.gen,shift:a.shift,rx7:a.rx,ry7:a.ry});refresh()};
+OUT.artc=()=>ART.map(a=>`<button class="chip${S.art===a.id?' on':''}" data-act="art" data-v="${a.id}">${a.n}</button>`).join('');
+let K7='',R7=null;
+function run7(){
+ const im=img(S.img7),key=[S.img7,S.q7,S.sub7,S.gen,S.shift,im.w,IMV].join('|');if(K7===key)return R7;K7=key;
+ let cur=im,ref=im,r=null;
+ for(let g=0;g<S.gen;g++){if(g>0&&S.shift){cur=shift1(cur);ref=shift1(ref)}r=codec(g===0?im:cur,S.q7,S.sub7);cur={w:im.w,h:im.h,d:r.d}}
+ R7={im,cur,ref,r,E:errImg(ref.d,cur.d,5),psnr:psnrRGB(ref.d,cur.d)};return R7;
+}
+OUT.k7a=()=>`<span class="or">${fS(run7().r.bytes)}</span>`;
+OUT.k7b=()=>`${d1(run7().psnr)}<u>dB</u>`;
+OUT.k7c=()=>`${S.gen}<u>${S.gen===1?tx('uložení','save'):tx('uložení','saves')}</u>`;
+OUT.k7c_s=()=>S.gen===1?tx('Jedno uložení.','One save.'):S.shift?tx('Mezi uloženími se obraz posune o 1 pixel, mřížka se nesrovná.','The picture shifts one pixel between saves, the grid does not line up.'):tx('Stejná mřížka při každém uložení.','The same grid at every save.');
+OUT.genv=()=>String(S.gen);
+OUT.d7=()=>{const a=ART.find(o=>o.id===S.art);return a?`<b class="l">${a.n}</b>${a.t}`:''};
+TABS.push({name:tx('Artefakty','Artefacts'),side:'27rem',
+ build(){return `<div class="split"><div class="col">
+  <div class="scope grow"><canvas id="c7"></canvas>
+  </div>
+  <div class="kpis">
+   <div class="card kpi"><span class="lbl">${tx('Velikost souboru','File size')}</span><div class="big" data-o="k7a"></div><small>${tx('Po posledním uložení, odhad modelu.','After the last save, model estimate.')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Věrnost obrazu','Fidelity')}</span><div class="big" data-o="k7b"></div><small>${tx('Proti originálu. Čím níž, tím víc chyb.','Against the original. The lower, the more errors.')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Opakovaná uložení','Repeated saves')}</span><div class="big" data-o="k7c"></div><small data-o="k7c_s"></small></div>
+  </div></div>
+  <div class="side card">
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Co hledat','What to look for')}</span></div><div class="chips g3" data-o="artc"></div></div>
+   ${qSel('q7',false)}
+   ${subSel('sub7')}
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Počet uložení','Number of saves')}</span><span class="val"><b data-o="genv"></b></span></div><input type="range" data-k="gen" min="1" max="20" step="1">
+    <div class="seg"><button class="chip" data-k="shift" data-v="false">${tx('Stejná mřížka','Same grid')}</button><button class="chip" data-k="shift" data-v="true">${tx('Posun o 1 px','Shift by 1 px')}</button></div></div>
+   ${gridSel()}
+   <span class="hint">${tx('Tažením po horních obrázcích přesuneš lupu.','Drag over the top pictures to move the zoom.')}</span>
+   <div class="callout" data-o="d7"></div>
+  </div></div>`},
+ init(){lensInit('c7')},
+ render(){const L=run7();
+  compView('c7',L.im,L.cur,L.E,[
+   {l:tx('Originál','Original'),s:L.im.w+' × '+L.im.h+' px',c:C.cream,z:tx('Lupa: originál','Zoom: original')},
+   {l:'JPEG',s:tx('kvalita ','quality ')+S.q7+' · '+SUB[S.sub7].n+(S.gen>1?' · '+S.gen+'×':''),c:C.orange,z:tx('Lupa: JPEG','Zoom: JPEG')},
+   {l:tx('Chyba ×5','Error ×5'),s:tx('černá = bez chyby','black = no error'),c:C.cream,z:tx('Lupa: chyba','Zoom: error')}],'7');
+ }});
+})();
+</script>
+<script>
+/* ===== 8 Praxe a formáty ===== */
+(function(){
+const MPS=[2,12,24,48];
+const FM=[
+ {id:'bmp',n:'BMP',yr:1986,ls:false,bpp:()=>24,tf:tx('žádná','none'),sup:tx('všude','everywhere'),
+  d:tx('Surové pixely bez komprese, tři bajty na pixel. Pro fotografie se nepoužívá, slouží jako reference.','Raw pixels without compression, three bytes per pixel. Not used for photographs, it serves as a reference.')},
+ {id:'png',n:'PNG',yr:1996,ls:false,bpp:()=>13,tf:tx('filtr + DEFLATE','filter + DEFLATE'),sup:tx('všude','everywhere'),
+  d:tx('Bezeztrátový. Skvělý na text, loga a snímky obrazovky. Fotografie vyjdou velké, protože šum se bezeztrátově stlačit nedá.','Lossless. Great for text, logos and screenshots. Photographs come out large because noise cannot be compressed losslessly.')},
+ {id:'jpg',n:'JPEG',yr:1992,ls:true,bpp:()=>bppQ(S.q,S.sub),tf:tx('DCT 8 × 8','DCT 8 × 8'),sup:tx('všude','everywhere'),
+  d:tx('Standard fotografie. Podporuje ho každé zařízení a program. Tento formát jsi právě zkoumal.','The standard for photographs. Every device and program supports it. This is the format you have just explored.')},
+ {id:'jpp',n:tx('JPEG progresivní','JPEG progressive'),yr:1992,ls:true,bpp:()=>bppQ(S.q,S.sub)*.93,tf:tx('DCT, jiné pořadí zápisu','DCT, different write order'),sup:tx('všude','everywhere'),
+  d:tx('Stejné koeficienty, jen v jiném pořadí: nejdřív hrubý obraz, pak detaily. Soubor je o několik procent menší a na webu se zobrazí postupně.','The same coefficients in a different order: first a rough picture, then details. The file is a few percent smaller and shows progressively on the web.')},
+ {id:'webp',n:'WebP',yr:2010,ls:true,bpp:()=>bppQ(S.q,S.sub)*.75,tf:tx('predikce + DCT (VP8)','prediction + DCT (VP8)'),sup:tx('prohlížeče, aplikace','browsers, apps'),
+  d:tx('Odhadovaný pixel se předpoví ze sousedů a kóduje se jen rozdíl. Soubor bývá asi o čtvrtinu menší než JPEG.','A pixel is predicted from its neighbours and only the difference is coded. The file is typically about a quarter smaller than JPEG.')},
+ {id:'heic',n:'HEIC',yr:2015,ls:true,bpp:()=>bppQ(S.q,S.sub)*.55,tf:tx('HEVC, bloky do 64 × 64','HEVC, blocks up to 64 × 64'),sup:tx('telefony, systémy','phones, systems'),
+  d:tx('Snímek kódovaný videokodekem HEVC v kontejneru HEIF. Výchozí formát fotek v mnoha telefonech, ale patentově zatížený.','A picture coded by the HEVC video codec in a HEIF container. The default photo format on many phones, but burdened by patents.')},
+ {id:'avif',n:'AVIF',yr:2019,ls:true,bpp:()=>bppQ(S.q,S.sub)*.5,tf:tx('AV1, bloky do 128 × 128','AV1, blocks up to 128 × 128'),sup:tx('prohlížeče, aplikace','browsers, apps'),
+  d:tx('Snímek z videokodeku AV1, bez licenčních poplatků. Soubor bývá asi poloviční proti JPEG. Kódování je pomalé.','A picture from the AV1 video codec, with no licence fees. The file is typically about half of a JPEG. Encoding is slow.')},
+ {id:'jxl',n:'JPEG XL',yr:2021,ls:true,bpp:()=>bppQ(S.q,S.sub)*.62,tf:tx('větší transformace','larger transforms'),sup:tx('různě podle prohlížeče','varies by browser'),
+  d:tx('Nástupce JPEG bez patentů. Umí bezeztrátově překódovat staré JPEG a ušetřit asi pětinu. Podpora v prohlížečích se zatím liší.','A successor to JPEG without patents. It can losslessly recode old JPEGs and save about a fifth. Browser support still varies.')}];
+const px8=()=>S.mp*1e6,sz=f=>px8()*f.bpp()/8,cur=()=>FM.find(f=>f.id===S.fmt)||FM[2];
+let G8=null;
+OUT.mpc8=()=>MPS.map(v=>`<button class="chip${S.mp===v?' on':''}" data-k="mp" data-v="${v}">${v} MP</button>`).join('');
+OUT.k8a=()=>`<span class="or">${fS(sz(FM[2]))}</span>`;
+OUT.k8b=()=>nf(Math.floor(64e9/sz(FM[2])),0);
+OUT.k8c=()=>nf(Math.floor(25e6/sz(FM[2])),0);
+OUT.d8=()=>{const f=cur();return`<b class="l">${f.n} · ${f.yr}</b>${f.d}<div class="rd" style="margin-top:.5rem"><span>${tx('Ztráta','Loss')}</span><b>${f.ls?tx('ztrátový','lossy'):tx('bez ztráty','lossless')}</b><span>${tx('Princip','Principle')}</span><b>${f.tf}</b><span>${tx('Podpora','Support')}</span><b>${f.sup}</b><span>${nf(S.mp)} MP</span><b class="hot">${fS(sz(f))}</b></div>`};
+TABS.push({name:tx('Praxe','Practice'),side:'27rem',
+ build(){return `<div class="split"><div class="col">
+  <div class="scope grow"><canvas id="c8"></canvas>
+   <div class="badge">${tx('stejný snímek v různých formátech · logaritmická osa','the same picture in various formats · log axis')}</div></div>
+  <div class="kpis">
+   <div class="card kpi"><span class="lbl">${tx('Fotka v JPEG','Photo as JPEG')}</span><div class="big" data-o="k8a"></div><small>${tx('Orientačně podle kvality a velikosti snímku.','Approximate for the chosen quality and picture size.')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Na kartu 64 GB','On a 64 GB card')}</span><div class="big" data-o="k8b"></div><small>${tx('fotografií', 'photographs')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Do e-mailu 25 MB','In a 25 MB e-mail')}</span><div class="big" data-o="k8c"></div><small>${tx('fotografií', 'photographs')}</small></div>
+  </div></div>
+  <div class="side card">
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Rozlišení snímku','Picture size')}</span></div><div class="chips g4" data-o="mpc8"></div></div>
+   ${qSel('q')}
+   <div class="callout" data-o="d8"></div>
+   <div class="callout" style="margin-top:auto"><b class="l">${tx('Pozor','Note')}</b>${tx('Poměry formátů jsou orientační pro stejný vizuální dojem. Skutečné soubory závisí na obsahu a kodéru.','Format ratios are approximate for the same visual quality. Real files depend on content and encoder.')}</div>
+  </div></div>`},
+ init(){const cv=$('#c8');cv.addEventListener('pointerdown',e=>{const p=ptr(e,cv);if(!G8)return;const i=Math.floor((p.y-G8.top)/G8.rowH);if(i>=0&&i<FM.length)set('fmt',FM[i].id)})},
+ render(){
+  const cv=$('#c8');if(!cv)return;const {x,w,h,R}=setup(cv);
+  const A=1e5,B=3e8,x0=R*13,x1=w-R*7.5,X=b=>lg(b,A,B,x0,x1);
+  const top=R*3.2,axisY=h-R*2.4,rowH=(axisY-top)/FM.length;G8={top,rowH};
+  [[1e5,'100 kB'],[1e6,'1 MB'],[1e7,'10 MB'],[1e8,'100 MB']].forEach(([b,l])=>{const p=X(b);line(x,p,top-R*.4,p,axisY,GR2,1);T(x,l,p,axisY+R*.95,R*.72,TXT,'center')});
+  [3e5,3e6,3e7].forEach(b=>line(x,X(b),top-R*.4,X(b),axisY,GR,1));
+  line(x,x0,axisY,x1,axisY,GR2,1.2);
+  const jb=sz(FM[2]);
+  FM.forEach((f,i)=>{
+   const y=top+i*rowH,cy=y+rowH/2,bh=Math.min(rowH*.6,R*2.2),sel=S.fmt===f.id,b=sz(f),xb=X(b);
+   if(sel){x.fillStyle='rgba(255,151,46,.13)';x.fillRect(R*.6,y+rowH*.04,w-R*1.2,rowH*.92)}
+   TH(x,f.n,R*1.2,cy-R*.4,R*.98,sel?C.orange:C.cream);T(x,f.yr+' · '+(f.ls?tx('ztrátový','lossy'):tx('bez ztráty','lossless')),R*1.2,cy+R*.7,R*.66,TXT);
+   x.fillStyle=sel?C.orange:f.ls?C.blue:C.analog;x.beginPath();x.roundRect(x0,cy-bh/2,Math.max(3,xb-x0),bh,bh*.28);x.fill();
+   TH(x,fS(b),xb+R*.7,cy,R*.95,sel?C.orange:C.cream);
+   if(f.ls&&f.id!=='jpg')TH(x,nf(b/jb*100,0)+' %',w-R*1.2,cy,R*.9,TXT,'right');
+  });
+  TH(x,tx('proti JPEG','vs JPEG'),w-R*1.2,top-R*.9,R*.75,TXT,'right');
+ }});
+})();
+</script>
+<script>boot();</script>
+</body>
+</html>
