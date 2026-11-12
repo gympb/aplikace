@@ -210,7 +210,7 @@ const MAPS={},IMAP={};
 const S={tab:0,
  q:50,sub:'s420',img:'foto',
  st:4,mp:12,                       // 1 Cesta obrazu
- blk:'img',bx:8,by:7,nc:10,qt:'y',   // 3–5 blok
+ blk:'img',bx:13,by:9,nc:10,qt:'y',   // 3–5 blok
  grid:false,rx:104,ry:60,rx7:20,ry7:6,            // 6 Laboratoř
  art:'blok',img7:'foto',q7:8,sub7:'s444',gen:1,shift:false, // 7 Artefakty
  fmt:'avif'};                        // 8 Praxe
@@ -357,7 +357,13 @@ function genPrechod(){
  const r=g.createRadialGradient(128,142,4,128,142,70);r.addColorStop(0,'#fff6d8');r.addColorStop(1,'#2a3a5a');g.fillStyle=r;g.fillRect(0,108,IW,68);
  finish('prechod',c);
 }
-const GEN={foto:genFoto,text:()=>{genText();if(document.fonts&&!document.fonts.check('800 58px Montserrat'))document.fonts.load('800 58px Montserrat').then(()=>{delete IM.text;MEMO.clear();refresh()})},barvy:genBarvy,prechod:genPrechod};
+let fotoReq=0;
+function realFoto(){if(fotoReq)return;fotoReq=1;const im=new Image();
+ im.onload=()=>{try{const c=cvs(IW,IH,1),g=c.getContext('2d');g.imageSmoothingQuality='high';
+  const sw=im.naturalHeight*IW/IH,sx=(im.naturalWidth-sw)/2;g.drawImage(im,sx,0,sw,im.naturalHeight,0,0,IW,IH);
+  finish('foto',c);MEMO.clear();refresh()}catch(e){}};
+ im.src='foto-krajina.jpg'}
+const GEN={foto:()=>{genFoto();realFoto()},text:()=>{genText();if(document.fonts&&!document.fonts.check('800 58px Montserrat'))document.fonts.load('800 58px Montserrat').then(()=>{delete IM.text;MEMO.clear();refresh()})},barvy:genBarvy,prechod:genPrechod};
 function img(id){if(!IM[id]&&GEN[id])GEN[id]();return IM[id]||img('foto')}
 const imgCv=id=>{const im=img(id);const c=cvs(im.w,im.h);c.getContext('2d').putImageData(new ImageData(im.d,im.w,im.h),0,0);return c};
 async function upload(file){
@@ -438,7 +444,7 @@ ACT.upl=()=>$('#fUp').click();
 /* --- pomocné prvky rozhraní --- */
 const IMGL=()=>[['foto',tx('Krajina','Landscape')],['text',tx('Text','Text')],['barvy',tx('Barvy','Colours')],['prechod',tx('Přechod','Gradient')]];
 OUT.imgc=()=>{let a=IMGL();if(IM.vlastni)a=a.concat([['vlastni',tx('Vlastní','Own')]]);return a.map(([v,l])=>`<button class="chip${S.img===v?' on':''}" data-k="img" data-v="${v}">${l}</button>`).join('')+`<button class="chip up" data-act="upl">⇪ ${tx('Nahrát','Upload')}</button>`};
-const imgSel=()=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div><div class="chips g3" data-o="imgc"></div><span class="hint">${tx('Vlastní obrázek zůstane v prohlížeči.','Your picture stays in the browser.')}</span></div>`;
+const imgSel=()=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div><div class="chips g3" data-o="imgc"></div><span class="hint">${tx('Krajina: fotografie z Unsplash (CC0). Vlastní obrázek zůstane v prohlížeči.','Landscape: photo from Unsplash (CC0). Your picture stays in the browser.')}</span></div>`;
 const subSel=k=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Podvzorkování barev','Chroma subsampling')}</span></div><div class="chips g3">${Object.keys(SUB).map(v=>`<button class="chip" data-k="${k}" data-v="${v}">${SUB[v].n}</button>`).join('')}</div></div>`;
 const qSel=(k,chips=true)=>`<div class="ctl"><div class="hd"><span class="lbl">${tx('Kvalita JPEG','JPEG quality')}</span><span class="val" data-o="qv_${k}"></span></div><input type="range" data-k="${k}" min="1" max="100" step="1">${chips?`<div class="chips g5">${[5,25,50,75,95].map(v=>`<button class="chip" data-k="${k}" data-v="${v}">${v}</button>`).join('')}</div>`:''}</div>`;
 OUT.qv_q=()=>`<b>${S.q}</b> / 100`;OUT.qv_q7=()=>`<b>${S.q7}</b> / 100`;
