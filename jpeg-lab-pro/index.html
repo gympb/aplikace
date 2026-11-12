@@ -151,12 +151,14 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
   <div class="brand"><a class="back" href="../" id="tBack">← Všechny školní aplikace</a><b><span>JPEG</span> Lab Pro</b><small id="tSub">Gymnázium Příbram · Informatika · GymTV</small></div>
   <nav class="tabs" id="tabs" role="tablist" aria-label="Záložky"></nav>
   <div class="tools">
+   <button class="ib q" id="bHelp" data-act="help"></button>
    <div class="lang" role="group" aria-label="Jazyk / Language"><button data-act="lang" data-v="cs" lang="cs">CZ</button><button data-act="lang" data-v="en" lang="en">EN</button></div>
    <button class="ib" id="bThm" data-act="theme" aria-label="Světlý nebo tmavý vzhled"></button>
    <button class="ib" id="bFul" data-act="full" aria-label="Celá obrazovka"></button>
   </div>
  </header>
  <main id="stage"></main>
+ <div id="help" hidden role="dialog" aria-modal="true"><div class="dlg"></div></div>
  <footer class="foot"><span id="fL"></span><span id="fR"></span></footer>
 </div>
 <input type="file" id="fUp" accept="image/*" hidden>
@@ -260,7 +262,7 @@ function boot(){
  $$('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.v===LANG));
  $('#fL').textContent=tx('Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 12. 11. 2026','Author: Ivo Bešťák · License CC BY 4.0 · Updated: 12. 11. 2026');
  $('#fR').textContent=tx('Počítá se v prohlížeči, nic se neodesílá ani neukládá. Velikosti jsou odhad, skutečný soubor se liší podle kodéru.','Computed in your browser, nothing is sent or stored. Sizes are estimates, a real file differs by encoder.');
- readC();
+ readC();window.jlpHelpInit&&jlpHelpInit();
  $('#bThm').innerHTML=ICON.theme;$('#bFul').innerHTML=ICON.full;
  const nav=$('#tabs'),st=$('#stage');
  TABS.forEach((t,i)=>{
@@ -269,7 +271,7 @@ function boot(){
  });
  ACT.tab=v=>go(+v);
  TABS.forEach(t=>t.init&&t.init());
- document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
+ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||!$('#help').hidden)return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
  new ResizeObserver(()=>refresh()).observe(st);
  matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{readC();refresh()});
  window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1));if(n>=1&&n<=TABS.length&&n-1!==S.tab)go(n-1)});
@@ -1008,6 +1010,102 @@ TABS.push({name:tx('Praxe','Practice'),side:'27rem',
   });
   TH(x,tx('proti JPEG','vs JPEG'),w-R*1.2,top-R*.9,R*.75,TXT,'right');
  }});
+})();
+</script>
+<style>
+.tab-b .kap{white-space:nowrap}
+.ib.q{font:800 1.4rem/1 var(--f-head)}
+#help{position:fixed;inset:0;z-index:50;background:rgba(10,9,7,.6);display:grid;place-items:center;padding:2rem}
+#help[hidden]{display:none}
+#help .dlg{width:min(62rem,100%);max-height:100%;overflow:auto;background:var(--card);color:var(--ink);border-radius:1.2rem;box-shadow:0 2rem 5rem rgba(0,0,0,.5);padding:1.6rem 2rem 1.8rem;user-select:text;-webkit-user-select:text}
+#help h2{margin:0 0 .2rem;font:800 1.6rem/1.15 var(--f-head)}
+#help .kap{font:700 .7rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
+#help h3{margin:1.1rem 0 .3rem;font:700 .8rem/1 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:var(--orange-t)}
+#help p,#help li{font-size:1.02rem;line-height:1.45;color:var(--ink2);margin:.25rem 0}
+#help ul{margin:.2rem 0;padding-left:1.3rem}
+#help b{color:var(--ink)}
+#help .x{float:right;margin:-.3rem -.6rem 0 1rem;width:2.8rem;height:2.8rem;border-radius:50%;background:var(--bg);font:700 1.2rem/1 var(--f-head)}
+#help .nav{display:flex;gap:.6rem;margin-top:1.2rem}
+#help .nav button{padding:.6rem 1rem;border-radius:.8rem;background:var(--bg);font:700 .9rem/1 var(--f-head)}
+</style>
+<script>
+/* ===== Nápověda ke kapitolám ===== */
+(function(){
+const H=[
+{t:tx('Cesta obrazu','Image path'),
+ a:tx('Fotografie je v paměti jen mřížka <b>pixelů</b>, u každého tři čísla 0 až 255 (červená, zelená, modrá). Obraz 12 Mpx (4000 × 3000) tak zabere 12 000 000 × 3 B = <b>36 MB</b>. JPEG ho zmenší zhruba na desetinu až dvacetinu tím, že vyhodí to, co oko skoro nevidí.','A photo in memory is just a grid of <b>pixels</b>, each with three numbers 0 to 255 (red, green, blue). A 12 Mpx image (4000 × 3000) therefore takes 12,000,000 × 3 B = <b>36 MB</b>. JPEG shrinks it roughly ten to twenty times by throwing away what the eye barely sees.'),
+ b:tx('Postup má pět kroků: převod na jas a barvu (<b>YCbCr</b>), zhrubení barev (<b>podvzorkování</b>), rozdělení na bloky 8 × 8 a <b>DCT</b>, <b>kvantování</b> (jediný krok, kde se opravdu ztrácí informace) a bezeztrátové <b>kódování</b>. Dekodér běží pozpátku, ale ztracené se už nevrátí.','The pipeline has five steps: conversion to brightness and colour (<b>YCbCr</b>), coarsening the colour (<b>subsampling</b>), splitting into 8 × 8 blocks and the <b>DCT</b>, <b>quantization</b> (the only step that really loses information) and lossless <b>coding</b>. The decoder runs backwards, but what was lost does not come back.'),
+ c:[tx('Klepej na jednotlivé kroky a sleduj, jak se mění velikost dat.','Tap the individual steps and watch how the data size changes.'),
+    tx('Změň kvalitu a obrázek a porovnej, který krok ušetří nejvíc.','Change the quality and the picture and compare which step saves the most.'),
+    tx('Posuň lupu na hranu nebo na hladkou plochu a porovnej s původním obrazem.','Move the lens over an edge or a smooth area and compare with the original.')],
+ d:tx('Bezeztrátově se komprimuje jen kódování. Všechna velká úspora vzniká ztrátou, kterou vybíráme tak, aby ji oko nepoznalo.','Only the coding step is lossless. All the big saving comes from loss, chosen so the eye does not notice it.')},
+{t:tx('Barvy','Colour'),
+ a:tx('Oko má mnohem víc buněk pro jas než pro barvu, takže ostrost vnímáme hlavně z jasu. JPEG proto přepočte RGB na <b>Y</b> (jas) a dvě barevné složky <b>Cb</b> a <b>Cr</b> (rozdíl modré a červené proti jasu).','The eye has far more cells for brightness than for colour, so we perceive sharpness mainly from brightness. JPEG therefore converts RGB to <b>Y</b> (luma) and two chroma components <b>Cb</b> and <b>Cr</b> (blue and red differences from luma).'),
+ b:tx('Barevné složky pak stačí ukládat s menším rozlišením. <b>4:4:4</b> nechává všechno, <b>4:2:2</b> půlí barvu vodorovně, <b>4:2:0</b> vodorovně i svisle (barva má čtvrtinu vzorků). Surová data tím klesnou na polovinu, a to téměř bez viditelné změny. Problémem jsou jen ostré barevné hrany, třeba červený text na modrém pozadí, kde barva „vytéká“.','The chroma components can then be stored at lower resolution. <b>4:4:4</b> keeps everything, <b>4:2:2</b> halves the colour horizontally, <b>4:2:0</b> both horizontally and vertically (colour has a quarter of the samples). Raw data drops to half with almost no visible change. The only trouble is sharp colour edges, such as red text on blue, where the colour bleeds.'),
+ c:[tx('Vyber obrázek s barevnými poli a sleduj, jak se mění shoda s originálem.','Pick the picture with colour patches and watch the match with the original change.'),
+    tx('Přepni podvzorkování na 4:2:0 a zobraz obrázek s barevným textem.','Switch subsampling to 4:2:0 and show the image with coloured text.'),
+    tx('Sleduj, kolik procent dat podvzorkování ušetří.','Watch what percentage of data subsampling saves.')],
+ d:tx('Podvzorkování je nejlevnější úspora: polovina dat za cenu, kterou u fotek nepoznáš, u barevných hran ano.','Subsampling is the cheapest saving: half of the data at a cost you cannot see in photos but can on colour edges.')},
+{t:tx('DCT','DCT'),
+ a:tx('Obraz se rozdělí na bloky <b>8 × 8 pixelů</b>. Každý blok je 64 čísel jasu. <b>Diskrétní kosinová transformace</b> (DCT) je přepíše na 64 koeficientů: kolik je v bloku průměrného jasu (DC) a kolik jednotlivých vlnění s rostoucí hustotou (AC).','The image is split into <b>8 × 8 pixel</b> blocks. Each block is 64 brightness numbers. The <b>discrete cosine transform</b> (DCT) rewrites them as 64 coefficients: how much average brightness (DC) the block has and how much of each wave pattern of increasing density (AC).'),
+ b:tx('Transformace sama nic neztrácí, jde o jiný zápis stejné informace. Výhoda je, že u běžných obrázků jsou většinou významné jen koeficienty vlevo nahoře (hrubé vzory), kdežto vpravo dole (jemné vzory) jsou blízko nuly. Hladký blok má skoro jen DC, blok s hranou potřebuje víc koeficientů. Bloky se zpracovávají samostatně, proto později vznikají viditelné čtverečky.','The transform itself loses nothing, it is a different notation for the same information. The advantage is that in typical images only the coefficients at top left (coarse patterns) are significant, while those at bottom right (fine patterns) are close to zero. A smooth block has almost only DC, a block with an edge needs more coefficients. Blocks are processed independently, which is why visible squares appear later.'),
+ c:[tx('Vyber různé bloky (nebe, hrana, text) a sleduj, kam se koeficienty soustředí.','Pick different blocks (sky, edge, text) and see where the coefficients concentrate.'),
+    tx('Přepínej, kolik koeficientů se použije (jen DC, několik, všech 64), a sleduj chybu bloku.','Switch how many coefficients are used (DC only, a few, all 64) and watch the block error.'),
+    tx('Klepni do obrázku na jiný blok a porovnej hladkou plochu s hranou.','Tap another block in the picture and compare a smooth area with an edge.')],
+ d:tx('DCT nic nekomprimuje, ale seřadí informaci podle důležitosti, takže jde nepodstatnou část vyhodit.','DCT compresses nothing, but it sorts information by importance so the unimportant part can be dropped.')},
+{t:tx('Kvantování','Quantization'),
+ a:tx('Každý koeficient se vydělí číslem z <b>kvantizační tabulky</b> a zaokrouhlí na celé číslo. Tady vzniká ztráta: z 63,7 se stane 64 a z 0,4 nula. Dekodér pak vynásobí zpět a dostane jen přibližnou hodnotu.','Each coefficient is divided by a number from the <b>quantization table</b> and rounded to an integer. This is where the loss happens: 63.7 becomes 64 and 0.4 becomes zero. The decoder multiplies back and gets only an approximate value.'),
+ b:tx('Tabulka má vpravo dole velká čísla (jemné detaily se ruší silně) a vlevo nahoře malá. Posuvník <b>kvality</b> tabulku násobí: nízká kvalita znamená velká čísla, hodně nul a malý soubor. Barevné složky mají vlastní, hrubší tabulku. Chyba se měří jako <b>PSNR</b> v decibelech: nad zhruba 40 dB je rozdíl těžko znatelný, pod zhruba 28 dB je zřejmý. Číslo kvality nemá přesný význam, každý program ho může počítat jinak.','The table has large numbers at bottom right (fine detail is suppressed strongly) and small at top left. The <b>quality</b> slider scales the table: low quality means large numbers, many zeros and a small file. The chroma components have their own, coarser table. Error is measured as <b>PSNR</b> in decibels: above roughly 40 dB the difference is hard to notice, below roughly 28 dB it is obvious. The quality number has no exact meaning, every program may compute it differently.'),
+ c:[tx('Posouvej kvalitu a sleduj, kolik koeficientů zůstane nenulových.','Move the quality and watch how many coefficients stay non-zero.'),
+    tx('Přepni mezi tabulkou jasu a barev a porovnej dělitele.','Switch between the luma and chroma tables and compare the divisors.'),
+    tx('Najdi kvalitu, při které se začnou objevovat čtverečky (mřížku zapneš v kapitole Laboratoř).','Find the quality at which squares begin to appear (the grid is switched on in the Laboratory chapter).')],
+ d:tx('Kvantování je jediné místo se ztrátou a jediné, které řídí kompromis mezi velikostí a kvalitou.','Quantization is the only lossy step and the only one that controls the trade-off between size and quality.')},
+{t:tx('Kódování','Coding'),
+ a:tx('Po kvantování je v bloku většina nul. Koeficienty se přečtou <b>cik-cak</b> od vlevo nahoře, takže nuly skončí pospolu na konci. Pak se místo dlouhé řady nul zapíše jen „<b>kolik nul, jaká hodnota</b>“ a konec bloku jedním znakem.','After quantization most of a block is zeros. The coefficients are read in a <b>zigzag</b> from top left, so the zeros end up together at the end. Instead of a long run of zeros, only “<b>how many zeros, what value</b>” is written, and the end of the block with a single symbol.'),
+ b:tx('Tyto dvojice se pak zapíšou <b>Huffmanovým kódem</b>: časté symboly dostanou krátké kódy, vzácné dlouhé. DC koeficienty sousedních bloků se ukládají jako rozdíl od předchozího, protože se málo liší. Tato fáze je bezeztrátová, rozbalením dostaneš přesně stejná čísla. Velikost v aplikaci je odhad podle ideálního Huffmanova kódu, skutečný soubor se liší hlavičkou a volbou kodéru.','These pairs are written with a <b>Huffman code</b>: frequent symbols get short codes, rare ones long codes. The DC coefficients of neighbouring blocks are stored as a difference from the previous one, because they differ little. This stage is lossless, unpacking gives exactly the same numbers. The size in the app is an estimate from an ideal Huffman code, a real file differs by header and encoder choice.'),
+ c:[tx('Klepni do obrázku na blok a sleduj pořadí cik-cak a délku zápisu v bitech.','Tap a block in the picture and watch the zigzag order and the length of the code in bits.'),
+    tx('Sniž kvalitu: nul přibude, zápis se zkrátí.','Lower the quality: more zeros, a shorter code.'),
+    tx('Porovnej odhad velikosti se skutečným souborem z prohlížeče.','Compare the size estimate with the real file from the browser.')],
+ d:tx('Kódování je jako zkratkopis: stejná informace, méně znaků. Čím víc nul kvantování vyrobilo, tím víc ušetří.','Coding is like shorthand: same information, fewer characters. The more zeros quantization produced, the more it saves.')},
+{t:tx('Laboratoř','Laboratory'),
+ a:tx('Tady se všechny kroky spojí. Nastavíš <b>kvalitu</b> a <b>podvzorkování</b> a vidíš výsledek vedle originálu: velikost, <b>kompresní poměr</b> (kolikrát je soubor menší než surová data), PSNR a rozdílový obraz.','Here all the steps come together. You set <b>quality</b> and <b>subsampling</b> and see the result next to the original: size, <b>compression ratio</b> (how many times smaller than the raw data), PSNR and a difference image.'),
+ b:tx('Závislost velikosti na kvalitě není přímá: při vysoké kvalitě přidáš hodně dat za malé zlepšení, při nízké malé množství dat rozhoduje o viditelnosti čtverečků. Různé obrázky se chovají různě. Hladký přechod je malý, ale blokuje ho banding, fotografie s drobnou texturou je velká a špatně se komprimuje, text a ostré hrany dělají artefakty už při střední kvalitě. Proto neexistuje jedno „správné“ nastavení.','The dependence of size on quality is not linear: at high quality you add a lot of data for a small improvement, at low quality a small amount of data decides whether squares are visible. Different images behave differently. A smooth gradient is small, but banding spoils it; a photo with fine texture is large and compresses badly; text and sharp edges produce artefacts already at medium quality. That is why there is no single “right” setting.'),
+ c:[tx('Najdi nejnižší kvalitu, při které nepoznáš rozdíl oproti originálu.','Find the lowest quality at which you cannot tell the difference from the original.'),
+    tx('Totéž udělej pro fotku, text a barevné plochy a porovnej výsledky.','Do the same for the photo, text and colour patches and compare.'),
+    tx('Táhni lupou po obrázku a v pohledu „chyba“ zjisti, kde JPEG chybuje nejvíc.','Drag the lens over the picture and in the “error” view see where JPEG errs the most.')],
+ d:tx('Kvalitu je třeba volit podle obrázku. Fotka zvládne 75, text nebo kresba s ostrými hranami často potřebuje víc nebo jiný formát.','Quality has to be chosen per image. A photo copes with 75, text or a line drawing with sharp edges often needs more, or a different format.')},
+{t:tx('Artefakty','Artefacts'),
+ a:tx('<b>Artefakt</b> je viditelná chyba, kterou komprese vyrobila. Nejtypičtější jsou <b>čtverečky</b> (hranice bloků 8 × 8 se rozejdou), <b>prstence</b> kolem ostrých hran (ztracené jemné vlnění se vrací jako šum) a <b>barevné skvrny</b> od podvzorkování.','An <b>artefact</b> is a visible error produced by compression. The most typical are <b>blocks</b> (the boundaries of 8 × 8 blocks drift apart), <b>ringing</b> around sharp edges (lost fine waves come back as noise) and <b>colour smudges</b> from subsampling.'),
+ b:tx('Na hladkých přechodech vznikají <b>schody</b>, protože sousední bloky zaokrouhlí jas každý trochu jinak. Když obrázek opakovaně ukládáš jako JPEG, ztráty se <b>sčítají</b>: každé uložení znovu kvantuje a chyby se hromadí. Nejhorší je posun o pár pixelů, protože se pak změní rozdělení na bloky. Proto se upravuje originál nebo bezeztrátový formát a JPEG je až poslední krok.','On smooth gradients <b>steps</b> appear, because neighbouring blocks round brightness each a little differently. When you save an image as JPEG repeatedly, the losses <b>add up</b>: each save quantizes again and the errors accumulate. A shift of a few pixels is worst, because the division into blocks then changes. That is why you edit the original or a lossless format and JPEG is the last step.'),
+ c:[tx('Zvol předvolbu (Bloky, Prstence, Barvy, Přechod) a posuň lupu na místo, kde se chyba projeví.','Choose a preset (Blocks, Ringing, Colour, Gradient) and move the lens to where the error shows.'),
+    tx('Zvyšuj počet opakovaných uložení a sleduj, jak se obraz zhoršuje.','Increase the number of repeated saves and watch the picture get worse.'),
+    tx('Přepni „Posun o 1 px“ a porovnej s volbou „Stejná mřížka“.','Switch “Shift by 1 px” and compare with “Same grid”.')],
+ d:tx('JPEG ztrácí při každém uložení. Originál si uschovej a upravený soubor ukládej jednou.','JPEG loses with every save. Keep the original and save the edited file only once.')},
+{t:tx('Praxe','Practice'),
+ a:tx('Která volba je nejlepší, závisí na účelu. <b>JPEG</b> se hodí na fotografie, <b>PNG</b> na text, schémata a snímky obrazovky (bezeztrátové), <b>BMP</b> je prakticky nekomprimované. Novější formáty (<b>WebP, HEIC, AVIF, JPEG XL</b>) dosáhnou při stejné kvalitě menšího souboru, ale mají omezenější podporu.','Which choice is best depends on the purpose. <b>JPEG</b> suits photographs, <b>PNG</b> suits text, diagrams and screenshots (lossless), <b>BMP</b> is practically uncompressed. Newer formats (<b>WebP, HEIC, AVIF, JPEG XL</b>) reach a smaller file at the same quality, but have more limited support.'),
+ b:tx('Osa je logaritmická, takže každý dílek je o řád větší. Čísla jsou orientační a platí pro typickou fotku, skutečný poměr závisí na obrázku a kodéru. <b>Progresivní JPEG</b> se načítá postupně od hrubého obrazu k jemnému a bývá o něco menší. Praktické otázky: kolik fotek se vejde na kartu 64 GB a jestli se příloha vejde do e-mailu s limitem 25 MB.','The axis is logarithmic, so each division is an order of magnitude larger. The numbers are indicative and apply to a typical photo, the real ratio depends on the image and encoder. <b>Progressive JPEG</b> loads gradually from a coarse picture to a fine one and is usually slightly smaller. Practical questions: how many photos fit on a 64 GB card and whether an attachment fits into an e-mail with a 25 MB limit.'),
+ c:[tx('Změň rozlišení a kvalitu a sleduj počet fotek na kartě i velikost přílohy.','Change resolution and quality and watch the number of photos on the card and the attachment size.'),
+    tx('Porovnej JPEG a PNG na textu a na fotce.','Compare JPEG and PNG on text and on a photo.'),
+    tx('Najdi formát, který se vejde pod 25 MB, a zvaž, zda ho příjemce otevře.','Find a format that fits under 25 MB and consider whether the recipient can open it.')],
+ d:tx('Fotky jako JPEG (nebo novější formát, pokud ho všichni otevřou), grafiku a text jako PNG. Nejlepší formát je ten, který příjemce skutečně otevře.','Photos as JPEG (or a newer format if everyone can open it), graphics and text as PNG. The best format is the one the recipient can really open.')}];
+let open=false;
+function render(){
+ const h=H[S.tab]||H[0];
+ const el=$('#help .dlg');
+ el.innerHTML=`<button class="x" data-act="help" aria-label="${tx('Zavřít','Close')}">✕</button>
+  <div class="kap">${tx('kap.','ch.')} ${S.tab+1} · ${tx('vysvětlení','explanation')}</div><h2>${h.t}</h2>
+  <h3>${tx('Co to je','What it is')}</h3><p>${h.a}</p><p>${h.b}</p>
+  <h3>${tx('Co zkusit','What to try')}</h3><ul>${h.c.map(x=>`<li>${x}</li>`).join('')}</ul>
+  <h3>${tx('Co si odnést','Takeaway')}</h3><p><b>${h.d}</b></p>
+  <div class="nav"><button data-act="hnav" data-v="-1">← ${tx('Předchozí kapitola','Previous chapter')}</button><button data-act="hnav" data-v="1">${tx('Další kapitola','Next chapter')} →</button></div>`;
+}
+ACT.help=()=>{open=!open;const e=$('#help');e.hidden=!open;if(open){render();$('#help .x').focus()}else $('#bHelp').focus()};
+ACT.hnav=v=>{go((S.tab+ +v+H.length)%H.length);render();$('#help .dlg').scrollTop=0};
+document.addEventListener('keydown',e=>{if(open&&e.key==='Escape')ACT.help()});
+document.addEventListener('click',e=>{if(open&&e.target.id==='help')ACT.help()});
+window.jlpHelpInit=function(){
+ const b=$('#bHelp');b.textContent='?';b.setAttribute('aria-label',tx('Vysvětlení k této kapitole','Explanation of this chapter'));b.title=b.getAttribute('aria-label');
+};
 })();
 </script>
 <script>boot();</script>
