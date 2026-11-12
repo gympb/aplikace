@@ -580,15 +580,28 @@ OUT.d3=()=>({
 function mini(){
  const cv=$('#c3b');if(!cv)return;
  const {x,w,h,R}=setup(cv);
- const gw=4,gh=2,cw=Math.min(w/(gw+.6),h/(gh+.6)),ox=(w-cw*gw)/2,oy=(h-cw*gh)/2;
- const bw=2,bh=S.cs==='420'?2:1;
- x.lineWidth=1;
- for(let j=0;j<gh;j++)for(let i=0;i<gw;i++){x.strokeStyle=C.line2;x.strokeRect(ox+i*cw,oy+j*cw,cw,cw);
-  if(S.cs==='444'){x.fillStyle=C.orange;x.globalAlpha=.35;x.fillRect(ox+i*cw+2,oy+j*cw+2,cw-4,cw-4);x.globalAlpha=1}}
- if(S.cs!=='444')for(let j=0;j<gh;j+=bh)for(let i=0;i<gw;i+=bw){
-  x.fillStyle=C.orange;x.globalAlpha=.35;x.fillRect(ox+i*cw+2,oy+j*cw+2,cw*bw-4,cw*bh-4);x.globalAlpha=1;
-  dot(x,ox+(i+bw/2)*cw,oy+(j+bh/2)*cw,cw*.11,C.orange)}
- for(let j=0;j<gh;j++)for(let i=0;i<gw;i++)dot(x,ox+(i+.5)*cw,oy+(j+.5)*cw,cw*.07,C.ink);
+ const sb={'444':{fx:1,fy:1},'422':{fx:2,fy:1},'420':{fx:2,fy:2}}[S.cs];
+ const N=16/(sb.fx*sb.fy),vals=16+2*N;
+ TH(x,tx('4 × 4 pixely: co se uloží','4 × 4 pixels: what is stored'),R*.9,R*1.2,R*.8,TXT);
+ const top=R*2.3,cell=Math.min((h-top-R*.9)/4,(w-R*2)*.36/4),gx=R*.9,gy=top;
+ for(let j=0;j<4;j++)for(let i=0;i<4;i++){
+  x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(gx+i*cell,gy+j*cell,cell,cell);
+  const m=cell*.39;x.fillStyle=C.cream;x.fillRect(gx+i*cell+m,gy+j*cell+m,cell*.22,cell*.22)}
+ for(let j=0;j<4;j+=sb.fy)for(let i=0;i<4;i+=sb.fx){
+  const px=gx+i*cell+cell*.05,py=gy+j*cell+cell*.05,pw=cell*sb.fx-cell*.1,ph=cell*sb.fy-cell*.1;
+  x.fillStyle='rgba(255,138,26,.16)';x.strokeStyle=C.orange;x.lineWidth=2;
+  x.beginPath();x.roundRect(px,py,pw,ph,cell*.1);x.fill();x.stroke();
+  x.beginPath();x.strokeStyle=C.orange;x.lineWidth=2;x.arc(gx+(i+sb.fx/2)*cell,gy+(j+sb.fy/2)*cell,cell*.2,0,TAU);x.stroke()}
+ const lx=gx+cell*4+R*1.2,sq=R*.7,fs=R*.8;let ly=gy+cell*.4;
+ x.fillStyle=C.cream;x.fillRect(lx,ly-sq/2,sq,sq);
+ T(x,tx('jas Y','luma Y'),lx+sq+R*.5,ly,fs,C.cream);
+ T(x,tx('16 hodnot, každý pixel svou','16 values, one per pixel'),lx,ly+R*1.3,fs*.9,TXT);
+ ly+=cell*1.25;x.beginPath();x.strokeStyle=C.orange;x.lineWidth=2;x.arc(lx+sq/2,ly,sq/2,0,TAU);x.stroke();
+ T(x,'Cb + Cr',lx+sq+R*.5,ly,fs,C.orange);
+ T(x,tx(N+' vzorků × 2 = '+(2*N)+' hodnot',N+' samples × 2 = '+(2*N)+' values'),lx,ly+R*1.3,fs*.9,TXT);
+ ly+=cell*1.25;
+ TH(x,tx('Celkem '+vals,'Total '+vals),lx,ly,R*1.1,C.cream);
+ T(x,tx(nf(vals/16,1)+' hodnoty na pixel',nf(vals/16,1)+' values per pixel'),lx,ly+R*1.4,fs*.9,TXT);
 }
 TABS.push({help:()=>`<h4>${tx('Jak to číst','How to read it')}</h4><p>${tx('Obraz se rozloží na jas (Y), který nese ostrost, a dva barevné rozdíly (Cb, Cr). Podvzorkování nechá jas v každém pixelu a barvu sdílí skupina pixelů. Čísla 4:2:0 popisují blok 4 × 2 pixely: kolik barevných vzorků je v horním a kolik ve spodním řádku. Podívej se na červený kruh a na pruhy, tam se chyba pozná nejlépe.','The picture is split into luma (Y), which carries sharpness, and two colour differences (Cb, Cr). Subsampling keeps luma in every pixel while a group of pixels shares colour. The numbers in 4:2:0 describe a block of 4 × 2 pixels: how many colour samples are in the top and in the bottom row. Look at the red circle and the stripes, the error shows best there.')}</p>`+`<h4>${tx('Proč to funguje','Why it works')}</h4><p>${tx('Oko má mnohem víc tyčinek pro jas než čípků pro barvu, a proto ostrost vnímáme hlavně z jasu. Barevné detaily jde ztratit skoro bez povšimnutí.','The eye has far more rods for luminance than cones for colour, so sharpness is mostly seen in luma. Colour detail can be lost almost unnoticed.')}</p>`,name:tx('Barvy','Colour'),side:'27rem',
  build(){
@@ -605,9 +618,7 @@ TABS.push({help:()=>`<h4>${tx('Jak to číst','How to read it')}</h4><p>${tx('Ob
      <div class="chips g3">${['444','422','420'].map(f=>`<button class="chip" data-k="cs" data-v="${f}">${CH[f].n}</button>`).join('')}</div></div>
     <div class="ctl"><div class="hd"><span class="lbl">${tx('Co ukázat','What to show')}</span></div>
      <div class="seg"><button class="chip" data-k="v3" data-v="res">${tx('Výsledek','Result')}</button><button class="chip" data-k="v3" data-v="chroma">${tx('Jen barva','Colour only')}</button><button class="chip" data-k="v3" data-v="diff">${tx('Chyba ×4','Error ×4')}</button></div></div>
-    <div class="ctl"><div class="hd"><span class="lbl">${tx('Blok 4 × 2 pixely','Block of 4 × 2 pixels')}</span></div>
-     <div style="height:6.2rem;position:relative"><canvas id="c3b" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
-     <p class="n">${tx('Černá tečka je vzorek jasu, oranžová plocha je jeden vzorek barvy.','A black dot is a luma sample, an orange area is one colour sample.')}</p></div>
+    <div class="scope grow" style="min-height:17rem"><canvas id="c3b"></canvas></div>
     <div class="callout" data-o="d3"></div>
    </div></div>`;
  },
