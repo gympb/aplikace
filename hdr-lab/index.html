@@ -37,7 +37,7 @@ b{font-weight:700}
 .back{font:600 .82rem/1 var(--f-head);color:var(--ink2);text-decoration:none;letter-spacing:.02em}
 .back:hover{color:var(--orange-t)}
 .brand b{font:800 1.7rem/1 var(--f-head);letter-spacing:-.01em}
-.brand b span{background:linear-gradient(transparent 58%,var(--orange) 58%,var(--orange) 92%,transparent 92%);padding:0 .1rem}
+.brand b span:not(.plus){background:linear-gradient(transparent 58%,var(--orange) 58%,var(--orange) 92%,transparent 92%);padding:0 .1rem}
 .brand small{font:700 .66rem/1 var(--f-head);letter-spacing:.22em;text-transform:uppercase;color:var(--orange-t)}
 .tabs{display:flex;gap:.2rem;justify-content:center;min-width:0}
 .tab-b{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;padding:.55rem .75rem .6rem;border-radius:1rem;min-width:0;flex:0 1 auto;min-height:3.6rem;transition:background .2s,color .2s}
@@ -174,15 +174,17 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 <body>
 <div class="app">
  <header class="top">
-  <div class="brand"><a class="back" href="../" id="tBack">← Všechny školní aplikace</a><b><span>HDR</span> Lab</b><small id="tSub">Gymnázium Příbram · GymTV · Informatika</small></div>
+  <div class="brand"><a class="back" href="../" id="tBack">← Všechny školní aplikace</a><b><span>HDR</span> Lab<span class="plus" id="tPlus">PLUS</span></b><small id="tSub">Gymnázium Příbram · GymTV · Informatika</small></div>
   <nav class="tabs" id="tabs" role="tablist" aria-label="Záložky"></nav>
   <div class="tools">
+   <button class="ib q" id="bHelp" data-act="help"></button>
    <div class="lang" role="group" aria-label="Jazyk / Language"><button data-act="lang" data-v="cs" lang="cs">CZ</button><button data-act="lang" data-v="en" lang="en">EN</button></div>
    <button class="ib" id="bThm" data-act="theme" aria-label="Světlý nebo tmavý vzhled"></button>
    <button class="ib" id="bFul" data-act="full" aria-label="Celá obrazovka"></button>
   </div>
  </header>
  <main id="stage"></main>
+ <div id="help" hidden role="dialog" aria-modal="true"><div class="dlg"></div></div>
  <footer class="foot"><span id="fL"></span><span id="fR"></span></footer>
 </div>
 <script>
@@ -314,7 +316,7 @@ function boot(){
  $$('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.v===LANG));
  $('#fL').textContent=tx('Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 12. 11. 2026','Author: Ivo Bešťák · License CC BY 4.0 · Updated: 12. 11. 2026');
  $('#fR').textContent=tx('Počítá se v prohlížeči, nic se neodesílá. Obrazovky HDR jen simulují.','Computed in your browser, nothing is sent. The screens only simulate HDR.');
- readC();
+ readC();window.hdrHelpInit&&hdrHelpInit();
  $('#bThm').innerHTML=ICON.theme;$('#bFul').innerHTML=ICON.full;
  const nav=$('#tabs'),st=$('#stage');
  TABS.forEach((t,i)=>{
@@ -323,7 +325,7 @@ function boot(){
  });
  ACT.tab=v=>go(+v);
  TABS.forEach(t=>t.init&&t.init());
- document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
+ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||!$('#help').hidden)return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
  new ResizeObserver(()=>refresh()).observe(st);
  matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{readC();refresh()});
  window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1));if(n>=1&&n<=TABS.length&&n-1!==S.tab)go(n-1)});
@@ -896,6 +898,93 @@ function timeline(){
  const ci=S.sc*NF+S.fr,cx=X(ci+.5);line(x,cx,y0-R*.8,cx,y1,C.cream,1.6);dot(x,cx,Y(PK[S.sc][S.fr]),R*.38,C.cream);
  T(x,tx('Lw = referenční maximum, které TV dostane v metadatech · klepni a vyber snímek','Lw = the reference maximum the TV receives in the metadata · tap to pick a frame'),x1,y1+R*.95,R*.68,TXT,'right');
 }
+})();
+</script>
+<style>
+:root{--plus-bg:#1B2A4A;--plus-fg:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--plus-bg:#9DB0D8;--plus-fg:#0F161B}}
+:root[data-theme=dark]{--plus-bg:#9DB0D8;--plus-fg:#0F161B}
+.plus{display:inline-block;vertical-align:.2rem;margin-left:.5rem;padding:.25em .6em;border-radius:.3rem;background:var(--plus-bg);color:var(--plus-fg);font:700 .75rem/1.2 var(--f-head);letter-spacing:.08em;cursor:help}
+.ib.q{font:800 1.4rem/1 var(--f-head)}
+#help{position:fixed;inset:0;z-index:50;background:rgba(10,9,7,.6);display:grid;place-items:center;padding:2rem}
+#help .dlg{width:min(62rem,100%);max-height:100%;overflow:auto;background:var(--card);color:var(--ink);border-radius:1.2rem;box-shadow:0 2rem 5rem rgba(0,0,0,.5);padding:1.6rem 2rem 1.8rem;user-select:text;-webkit-user-select:text}
+#help h2{margin:0 0 .2rem;font:800 1.6rem/1.15 var(--f-head)}
+#help .kap{font:700 .7rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
+#help h3{margin:1.1rem 0 .3rem;font:700 .8rem/1 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:var(--orange-t)}
+#help p,#help li{font-size:1.02rem;line-height:1.45;color:var(--ink2);margin:.25rem 0}
+#help ul{margin:.2rem 0;padding-left:1.3rem}
+#help b{color:var(--ink)}
+#help .x{float:right;margin:-.3rem -.6rem 0 1rem;width:2.8rem;height:2.8rem;border-radius:50%;background:var(--bg);font:700 1.2rem/1 var(--f-head)}
+#help .pl{margin-top:1.2rem;padding:.8rem 1rem;border-radius:.9rem;background:var(--bg);border-left:.3rem solid var(--plus-bg);font-size:.95rem;line-height:1.4;color:var(--ink2)}
+#help .nav{display:flex;gap:.6rem;margin-top:1.2rem}
+#help .nav button{padding:.6rem 1rem;border-radius:.8rem;background:var(--bg);font:700 .9rem/1 var(--f-head)}
+</style>
+<script>
+/* ===== Nápověda a štítek PLUS ===== */
+(function(){
+const H=[
+{t:tx('Světlo a jas','Light and nits'),
+ a:tx('Jas se měří v <b>nitech</b> (1 nit = 1 cd/m², svítivost na plochu). Oko zvládne rozsah mnoha řádů, od hvězdného světla po slunce, a dokáže ho vnímat zhruba logaritmicky. Proto je osa v aplikaci logaritmická: každý řádek žebříku je desetkrát jasnější než ten pod ním.','Luminance is measured in <b>nits</b> (1 nit = 1 cd/m², light intensity per area). The eye copes with many orders of magnitude, from starlight to the sun, and perceives them roughly logarithmically. That is why the axis here is logarithmic: every rung is ten times brighter than the one below.'),
+ b:tx('SDR se masteruje pro jas kolem 100 nit a černou blízko nuly. HDR (High Dynamic Range) rozšiřuje rozsah nahoru až k 10 000 nit v signálu a umožňuje současně tmavé stíny a oslnivé odlesky. Skutečné televize dnes dosahují řádově stovek až tisíců nit, OLED má černou téměř dokonalou, LCD s lokálním stmíváním (Mini-LED) vyšší vrchol.','SDR is mastered for about 100 nit with black near zero. HDR (High Dynamic Range) extends the signal up to 10,000 nit and allows deep shadows and dazzling highlights at the same time. Real TVs today reach hundreds to thousands of nits; OLED has near-perfect black, LCD with local dimming (Mini-LED) a higher peak.'),
+ c:[tx('Přepni typ panelu a sleduj efektivní černou a kontrast: LCD má vyšší vrchol, OLED nižší černou.','Switch the panel type and watch effective black and contrast: LCD has the higher peak, OLED the lower black.'),
+    tx('Zvyšuj osvětlení místnosti. Odrazy světla zvedají černou, takže i drahý panel ztrácí kontrast.','Raise the room lighting. Reflections lift the black, so even an expensive panel loses contrast.'),
+    tx('Sleduj poměr kontrastu a počet clon (EV): ukazuje, kolikrát se jas zdvojnásobí od černé k vrcholu.','Watch the contrast ratio and the number of stops (EV): it shows how many times luminance doubles from black to peak.')],
+ d:tx('Kontrast televize není jen údaj z krabice. Rozhoduje poměr vrcholu a černé včetně odrazů v místnosti. HDR vyžaduje ztlumit okolí.','A TV contrast is not just the number on the box. What matters is peak versus black including reflections in the room. HDR calls for a dimmed environment.')},
+{t:tx('Přenosová funkce','Transfer function'),
+ a:tx('<b>Přenosová funkce</b> převádí číslo v signálu (kód) na jas displeje. Dělení kódů má být takové, aby krok mezi sousedními kódy oko nevidělo jako schod. Klasická <b>gama</b> (BT.1886, přibližně 2,4) vznikla pro dnešním měřítkem malý jas a je relativní: 100 % signálu je vždy vrchol displeje.','The <b>transfer function</b> turns a number in the signal (code) into display luminance. The spacing of codes should keep the step between neighbours below what the eye notices. Classic <b>gamma</b> (BT.1886, about 2.4) was designed for what is by today\'s standards a low luminance and is relative: 100 % signal is always the display peak.'),
+ b:tx('<b>PQ</b> (SMPTE ST 2084) je absolutní: kód odpovídá pevnému jasu v nitech na jakékoli televizi a je odvozen od citlivosti oka na kontrast. Používají ho HDR10, HDR10+ i Dolby Vision. <b>HLG</b> (BT.2100, BBC a NHK) je relativní jako gama a nepotřebuje metadata, proto se hodí pro živé vysílání a zůstává zpětně kompatibilní se SDR.','<b>PQ</b> (SMPTE ST 2084) is absolute: a code means a fixed luminance in nits on any TV and is derived from the eye\'s contrast sensitivity. HDR10, HDR10+ and Dolby Vision all use it. <b>HLG</b> (BT.2100, BBC and NHK) is relative like gamma and needs no metadata, so it suits live broadcast and stays backward compatible with SDR.'),
+ c:[tx('Přepínej osu na lineární a logaritmickou. V lineární je vidět, jak malá část grafu zbývá stínům.','Switch the axis between linear and logarithmic. In linear you see how little of the graph is left for shadows.'),
+    tx('Posouvej sondu a porovnej, kolik nit každá křivka přiřadí stejné úrovni signálu.','Move the probe and compare how many nits each curve assigns to the same signal level.'),
+    tx('V pruzích dole sleduj, kolik kódů připadá na jednotlivá pásma jasu.','In the bars below see how many codes land in each luminance band.')],
+ d:tx('PQ věnuje většinu kódů pásmu pod 100 nit, tedy tomu, kde je oko nejcitlivější, a zbytek pokrývá až do 10 000 nit.','PQ spends most of its codes below 100 nit, where the eye is most sensitive, and covers the rest up to 10,000 nit.')},
+{t:tx('Bity a banding','Bits and banding'),
+ a:tx('Signál je uložen v konečném počtu úrovní: 8 bitů dává 256, 10 bitů 1 024, 12 bitů 4 096 úrovní. Když je krok mezi úrovněmi pro oko viditelný, vznikají v plynulých přechodech (obloha, kouř, stín) pruhy neboli <b>banding</b>.','The signal is stored in a finite number of levels: 8 bits give 256, 10 bits 1,024, 12 bits 4,096. When the step between levels is visible, smooth gradients (sky, smoke, shadow) show stripes, known as <b>banding</b>.'),
+ b:tx('Oko vidí změnu jasu zhruba od jednoho procenta (Weberův zákon, orientačně). Na grafu kroků proto čára kolem 1 % odděluje bezpečné a viditelné. Při 10 bitech zůstává PQ blízko hranice, u 8 bitů by ji překračoval. Proto se HDR distribuuje s 10 bity a Dolby Vision počítá až s 12. <b>Dithering</b> (rozptyl) přidá do obrazu šum, který pruhy rozbije a oku vrátí plynulý dojem.','The eye notices a luminance change from about one percent (Weber\'s law, approximately). On the step chart a line near 1 % therefore separates safe from visible. At 10 bits PQ stays near the limit, at 8 bits it would cross it. That is why HDR is delivered in 10 bits and Dolby Vision allows up to 12. <b>Dithering</b> adds noise that breaks up the stripes and restores a smooth impression.'),
+ c:[tx('Sniž bitovou hloubku na 6 nebo 8 a zapni lupu: úzký úsek se roztáhne a schody jsou vidět i na obyčejném monitoru.','Lower the bit depth to 6 or 8 and turn on the magnifier: the narrow range is stretched and steps show even on a plain monitor.'),
+    tx('Přepni úsek na stíny, středy a světla a sleduj, kolik odstínů v něm zbývá.','Switch the range between shadows, mids and highlights and see how many shades remain.'),
+    tx('Zapni rozptyl a všimni si, že stejný počet úrovní vypadá plynuleji.','Turn dithering on and notice that the same number of levels looks smoother.')],
+ d:tx('Více bitů neznamená jasnější obraz, ale jemnější odstupňování. HDR s 8 bity by pruhovalo.','More bits does not mean a brighter picture, only finer gradation. HDR with 8 bits would show banding.')},
+{t:tx('Barvy','Colour'),
+ a:tx('Barvy popisuje diagram <b>CIE 1931 xy</b>: podkova je rozsah všech barev, které člověk vidí, a trojúhelník ukazuje, co umí zobrazit konkrétní standard. Rohy trojúhelníku jsou tři základní barvy (primáry) displeje.','Colours are described by the <b>CIE 1931 xy</b> diagram: the horseshoe is the range of all colours people see and the triangle shows what a given standard can display. The corners of the triangle are the display\'s three primary colours.'),
+ b:tx('SDR používá gamut <b>BT.709</b> (stejné primáry jako sRGB). Digitální kino používá <b>DCI-P3</b> (plocha v diagramu asi 1,36×), HDR formáty ho obvykle nesou v kontejneru <b>BT.2020</b> (asi 1,89×). Kontejner neznamená, že televize pokryje celý prostor: dobré televize dnes zvládají většinu P3 a jen část BT.2020. Barvy mimo možnosti displeje se musí zmenšit (gamut mapping).','SDR uses the <b>BT.709</b> gamut (same primaries as sRGB). Digital cinema uses <b>DCI-P3</b> (about 1.36× the area in the diagram) and HDR formats usually carry it in a <b>BT.2020</b> container (about 1.89×). A container does not mean the TV covers the whole space: good TVs today cover most of P3 and only part of BT.2020. Colours outside the display\'s reach have to be compressed (gamut mapping).'),
+ c:[tx('Zapínej a vypínej trojúhelníky a porovnej jejich velikost.','Toggle the triangles and compare their sizes.'),
+    tx('Klepni do diagramu a vyber barvu: aplikace řekne, které gamuty ji obsahují.','Tap the diagram to pick a colour: the app says which gamuts contain it.'),
+    tx('Sleduj poměry ploch a vzorky nasycených barev, které SDR nezobrazí.','Watch the area ratios and the swatches of saturated colours SDR cannot show.')],
+ d:tx('Širší gamut znamená sytější barvy. Na běžném monitoru ho uvidíš jen přibližně, proto jsou vzorky orientační.','A wider gamut means more saturated colours. On an ordinary monitor you see it only approximately, so the swatches are indicative.')},
+{t:tx('Metadata','Metadata'),
+ a:tx('Televize má nižší vrcholový jas, než na jaký byl film vymaštrován. Musí proto jasy nad svým vrcholem stlačit (<b>tone mapping</b>). K tomu potřebuje vědět, jak jasný film vlastně je. Tuto informaci nesou <b>metadata</b>.','A TV has a lower peak than the film was mastered for. It has to compress luminances above its peak (<b>tone mapping</b>). To do that it needs to know how bright the film actually is. That information is carried by <b>metadata</b>.'),
+ b:tx('<b>HDR10</b> má metadata statická: jedna dvojice čísel (MaxCLL a MaxFALL, tedy nejjasnější bod a nejjasnější snímek) platí pro celý film. Když je jediný záblesk 4 000 nit, televize stlačuje i tmavé scény, jako by bylo třeba. <b>HDR10+</b> a <b>Dolby Vision</b> mají metadata dynamická: ta se mění po scénách, případně po snímcích, takže tmavá scéna zůstane téměř nedotčená. V aplikaci jsou oba dynamické formáty zjednodušeny: HDR10+ jako maximum scény, Dolby Vision jako maximum snímku.','<b>HDR10</b> has static metadata: one pair of numbers (MaxCLL and MaxFALL, the brightest point and the brightest frame) holds for the whole film. If a single flash reaches 4,000 nit, the TV compresses even dark scenes as if it were needed. <b>HDR10+</b> and <b>Dolby Vision</b> use dynamic metadata: it changes per scene, or per frame, so a dark scene stays almost untouched. In the app both dynamic formats are simplified: HDR10+ as the scene maximum, Dolby Vision as the frame maximum.'),
+ c:[tx('Vyber scénu (třeba zasněžená krajina) a změň vrchol televize. Statická metadata ztmaví větší část obrazu.','Choose a scene (for example the snowy landscape) and change the TV peak. Static metadata dims a larger part of the picture.'),
+    tx('Zapni označení zbytečně ztmavených míst: oranžová označuje body, které televize mohla zobrazit věrně, ale stlačila je.','Turn on the marking of needlessly dimmed areas: orange marks points the TV could have shown faithfully but compressed.'),
+    tx('Prohlédni si graf s křivkou stlačení a časovou osu filmu, kde je vidět, o co jasnější je statická hodnota než skutečná scéna.','Look at the tone-curve chart and the film timeline to see how much higher the static value is than the actual scene.')],
+ d:tx('Dynamická metadata nepřidávají jas. Jen přestávají tvrdit, že film je jasnější, než právě je.','Dynamic metadata adds no brightness. It just stops claiming that the film is brighter than it currently is.')},
+{t:tx('Formáty','Formats'),
+ a:tx('<b>HDR10</b> je základ: PQ, 10 bitů, BT.2020 a statická metadata, otevřený a povinný pro prakticky každou HDR televizi. <b>HDR10+</b> k němu přidává dynamická metadata a je kompatibilní s HDR10. <b>Dolby Vision</b> je licencovaný formát s dynamickými metadaty a až 12 bity. <b>HLG</b> je určen pro vysílání.','<b>HDR10</b> is the base: PQ, 10 bits, BT.2020 and static metadata, open and supported by practically every HDR TV. <b>HDR10+</b> adds dynamic metadata and is compatible with HDR10. <b>Dolby Vision</b> is a licensed format with dynamic metadata and up to 12 bits. <b>HLG</b> is meant for broadcast.'),
+ b:tx('Většina souborů s Dolby Vision (např. profil 8.1) nese i základ HDR10, takže televize bez Dolby Vision zobrazí HDR10. Profil 5 základ nemá a na televizi bez Dolby Vision vypadá fádně, protože se nepřevede. Co televize umí, musí podporovat jak její obrazový procesor, tak aplikace nebo přehrávač.','Most Dolby Vision files (for example profile 8.1) also carry an HDR10 base, so a TV without Dolby Vision shows HDR10. Profile 5 has no base and looks washed out on a TV without Dolby Vision because it is not converted. What the TV can do depends on both its image processor and the app or player.'),
+ c:[tx('V simulátoru vyber typ obsahu a zapni či vypni schopnosti televize.','In the simulator choose the content type and turn the TV\'s capabilities on or off.'),
+    tx('Sleduj, v jakém formátu se obsah nakonec zobrazí a co se ztratí.','Watch in which format the content is finally shown and what is lost.'),
+    tx('Zkus obsah Dolby Vision profil 5 na televizi bez Dolby Vision.','Try Dolby Vision profile 5 content on a TV without Dolby Vision.')],
+ d:tx('Zpětná kompatibilita funguje jen tehdy, když soubor základní vrstvu skutečně obsahuje.','Backward compatibility works only if the file really contains the base layer.')}];
+let open=false;
+function render(){
+ const h=H[S.tab]||H[0],last=S.tab>=H.length-1;
+ const el=$('#help .dlg');
+ el.innerHTML=`<button class="x" data-act="help" aria-label="${tx('Zavřít','Close')}">✕</button>
+  <div class="kap">${tx('kap.','ch.')} ${S.tab+1} · ${tx('vysvětlení','explanation')}</div><h2>${h.t}</h2>
+  <h3>${tx('Co to je','What it is')}</h3><p>${h.a}</p><p>${h.b}</p>
+  <h3>${tx('Co zkusit','What to try')}</h3><ul>${h.c.map(x=>`<li>${x}</li>`).join('')}</ul>
+  <h3>${tx('Co si odnést','Takeaway')}</h3><p><b>${h.d}</b></p>
+  <div class="pl"><span class="plus" style="margin:0 .4rem 0 0;vertical-align:baseline">PLUS</span>${tx('značí obsah nad rámec učiva přiřazených ročníků. Celá tato aplikace je určena zájemcům o techniku obrazu, ne povinné učivo.','marks content beyond the curriculum of the assigned years. This whole app is meant for those interested in display and image technology, not for required material.')}</div>
+  <div class="nav"><button data-act="hnav" data-v="-1">← ${tx('Předchozí kapitola','Previous chapter')}</button><button data-act="hnav" data-v="1">${tx('Další kapitola','Next chapter')} →</button></div>`;
+}
+ACT.help=()=>{open=!open;const e=$('#help');e.hidden=!open;if(open){render();$('#help .x').focus()}else $('#bHelp').focus()};
+ACT.hnav=v=>{go((S.tab+ +v+H.length)%H.length);render();$('#help .dlg').scrollTop=0};
+document.addEventListener('keydown',e=>{if(open&&e.key==='Escape')ACT.help()});
+document.addEventListener('click',e=>{if(open&&e.target.id==='help')ACT.help()});
+window.hdrHelpInit=function(){
+ const p=$('#tPlus');p.title=tx('Aplikace obsahuje učivo nad rámec přiřazených ročníků','The app contains material beyond the assigned years\' curriculum');
+ const b=$('#bHelp');b.textContent='?';b.setAttribute('aria-label',tx('Vysvětlení k této kapitole','Explanation of this chapter'));b.title=b.getAttribute('aria-label');
+};
 })();
 </script>
 <script>
