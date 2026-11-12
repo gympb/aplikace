@@ -235,26 +235,20 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 #c1{cursor:grab;touch-action:none}#c1:active{cursor:grabbing}
 .chips.mini{margin-top:.45rem;gap:.35rem}.chips.mini .chip{min-height:2rem;padding:.2rem .75rem;font-size:.8rem}
 
-.pill{width:3.1rem;height:3.1rem;padding:0;border-radius:50%;font-size:1.4rem!important;background:var(--orange);color:#17140F;box-shadow:var(--shadow);font:800 .95rem Montserrat,sans-serif;white-space:nowrap}
-.pill:hover{background:var(--ink);color:var(--bg)}
-.ovl{position:fixed;inset:0;background:rgba(15,12,8,.62);display:grid;place-items:center;z-index:50;padding:2rem}
-.inf{position:relative;background:var(--card);color:var(--ink);border-radius:1.4rem;box-shadow:0 1.5rem 4rem rgba(0,0,0,.4);width:min(58rem,100%);max-height:100%;overflow:auto;padding:1.8rem 2.2rem 2rem}
-.inf h3{font:800 1.05rem/1.2 var(--f-head);color:var(--orange-t);margin:1.1rem 0 .35rem;letter-spacing:.02em}
-.inf h3:first-child{margin-top:0;padding-right:3rem;font-size:1.4rem;color:var(--ink)}
-.inf p,.inf li{font-size:1.05rem;line-height:1.5;color:var(--ink2);margin:.3rem 0}
-.inf ul{margin:.2rem 0 0;padding-left:1.3rem}
-.inf .sep{height:.15rem;background:var(--line2);margin:1.2rem 0 .2rem;border-radius:1px}
-.inf .x{position:absolute;top:1rem;right:1rem;width:2.6rem;height:2.6rem;border-radius:50%;background:var(--bg);font-size:1.1rem;font-weight:800}
-.inf .x:hover{background:var(--orange);color:#17140F}
 
-.inf h2{margin:0 0 .2rem;font:800 1.7rem/1.15 var(--f-head);padding-right:3rem}
-.inf .kap{font:700 .7rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t);margin-bottom:.5rem}
-
-.inf h3{font-size:1.1rem;text-transform:none;letter-spacing:.01em}
-.inf b{color:var(--ink)}
-.inf .nav{display:flex;gap:.6rem;margin-top:1.4rem}
-.inf .nav button{padding:.65rem 1.1rem;border-radius:.8rem;background:var(--bg);font:700 .9rem/1 var(--f-head)}
-.inf .nav button:hover{background:var(--orange);color:#17140F}
+.ib.q{font:800 1.4rem/1 var(--f-head)}
+#help{position:fixed;inset:0;z-index:50;background:rgba(10,9,7,.6);display:grid;place-items:center;padding:2rem}
+#help[hidden]{display:none}
+#help .dlg{width:min(62rem,100%);max-height:100%;overflow:auto;background:var(--card);color:var(--ink);border-radius:1.2rem;box-shadow:0 2rem 5rem rgba(0,0,0,.5);padding:1.6rem 2rem 1.8rem;user-select:text;-webkit-user-select:text}
+#help h2{margin:0 0 .2rem;font:800 1.6rem/1.15 var(--f-head)}
+#help .kap{font:700 .7rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
+#help h3{margin:1.1rem 0 .3rem;font:700 .8rem/1 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:var(--orange-t)}
+#help p,#help li{font-size:1.02rem;line-height:1.45;color:var(--ink2);margin:.25rem 0}
+#help ul{margin:.2rem 0;padding-left:1.3rem}
+#help b{color:var(--ink)}
+#help .x{float:right;margin:-.3rem -.6rem 0 1rem;width:2.8rem;height:2.8rem;border-radius:50%;background:var(--bg);font:700 1.2rem/1 var(--f-head)}
+#help .nav{display:flex;gap:.6rem;margin-top:1.2rem}
+#help .nav button{padding:.6rem 1rem;border-radius:.8rem;background:var(--bg);font:700 .9rem/1 var(--f-head)}
 
 </style>
 </head>
@@ -264,7 +258,7 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
   <div class="brand"><a class="back" href="../" id="tBack">← Všechny školní aplikace</a><b><span>Sound Lab</span> Pro</b><small id="tSub">Gymnázium Příbram · Informatika</small></div>
   <nav class="tabs" id="tabs" role="tablist" aria-label="Záložky"></nav>
   <div class="tools">
-   <button class="pill" id="bInf" data-act="info"></button>
+   <button class="ib q" id="bHelp" data-act="help"></button>
    <div class="lang" role="group" aria-label="Jazyk / Language"><button data-act="lang" data-v="cs" lang="cs">CZ</button><button data-act="lang" data-v="en" lang="en">EN</button></div>
    <button class="ib" id="bSnd" data-act="sound" aria-pressed="true" aria-label="Zvuk zapnout nebo vypnout"></button>
    <button class="ib" id="bThm" data-act="theme" aria-label="Světlý nebo tmavý vzhled"></button>
@@ -272,7 +266,7 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
   </div>
  </header>
  <main id="stage"></main>
- <div class="ovl" id="info" hidden role="dialog" aria-modal="true"><div class="inf"><button class="x" id="infX" data-act="info0" aria-label="Zavřít / Close">✕</button><div id="infB"></div></div></div>
+ <div id="help" hidden role="dialog" aria-modal="true"><div class="dlg"></div></div></div>
  <footer class="foot"><span id="fL"></span><span id="fR"></span></footer>
 </div>
 <script>
@@ -437,7 +431,7 @@ const ICON={
 const PLAYI='<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>';
 const STOPI='<svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>';
 function go(i){
- stopAll();S.tab=i;{const o=$('#info');o&&(o.hidden=true)}
+ stopAll();S.tab=i;
  $$('#stage>.tab').forEach((s,j)=>s.hidden=j!==i);
  $$('#tabs .tab-b').forEach((b,j)=>b.setAttribute('aria-selected',j===i));
  if(location.hash!=='#'+(i+1))history.replaceState(null,'','#'+(i+1));
@@ -453,7 +447,7 @@ function boot(){
  try{const th=localStorage.getItem('slp-theme');if(th==='dark'||th==='light')document.documentElement.dataset.theme=th}catch(e){}
  document.documentElement.lang=LANG;document.title='Sound Lab Pro';
  $('meta[name=description]').content=tx('Interaktivní laboratoř digitalizace zvuku: cesta zvuku od mikrofonu k reproduktoru, analog a digitál, vzorkování, kvantování, datový tok a komprese. Určeno pro projekci a velké dotykové panely.','Interactive sound digitization lab: the path of sound from microphone to speaker, analog vs digital, sampling, quantization, bit rate and compression. Made for projection and large touch panels.');
- $('#bInf').textContent='?';$('#bInf').title=tx('Vysvětlení','Explanation');$('#bInf').setAttribute('aria-label',tx('Vysvětlení','Explanation'));$('#infX').setAttribute('aria-label',tx('Zavřít','Close'));
+ {const hb=$('#bHelp');hb.textContent='?';hb.setAttribute('aria-label',tx('Vysvětlení k této kapitole','Explanation of this chapter'));hb.title=hb.getAttribute('aria-label')}
  $('#tBack').textContent=tx('← Všechny školní aplikace','← All school apps');$('#tSub').textContent=tx('Gymnázium Příbram · Informatika','Gymnázium Příbram · Computer science');
  $('#tabs').setAttribute('aria-label',tx('Záložky','Tabs'));
  $('#bSnd').setAttribute('aria-label',tx('Zvuk zapnout nebo vypnout','Sound on or off'));$('#bThm').setAttribute('aria-label',tx('Světlý nebo tmavý vzhled','Light or dark theme'));$('#bFul').setAttribute('aria-label',tx('Celá obrazovka','Fullscreen'));
@@ -469,7 +463,7 @@ function boot(){
  });
  ACT.tab=v=>go(+v);
  TABS.forEach(t=>t.init&&t.init());
- document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
+ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||!$('#help').hidden)return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
  new ResizeObserver(()=>refresh()).observe(st);
  matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{readC();refresh()});
  window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1));if(n>=1&&n<=TABS.length&&n-1!==S.tab)go(n-1)});
@@ -1550,19 +1544,20 @@ const CH=[
  c:LI([['Zvol Scénář A a sleduj, které tóny jsou označeny ✕ (smazáno). Přetáhni silný tón jinam a uvidíš, jak se práh posune.','Choose Scenario A and see which tones are marked ✕ (deleted). Drag a strong tone elsewhere and watch the threshold move.'],['Klepnutím do grafu přidej tón. Slabý tón vedle silného zmizí, stejně slabý tón daleko od něj zůstane.','Tap the graph to add a tone. A weak tone next to a strong one disappears, the same weak tone far away stays.'],['Poslechni si Původní a Po kompresi: rozdíl je slyšet jen málo.','Listen to Original and After compression: the difference is barely audible.'],['V časovém grafu posouvej tichý zvuk před úder a za něj a poslouchej, kdy ho kodek smaže.','In the time chart move the quiet sound before and after the hit and listen to when the codec deletes it.']]),
  d:tx('Kodek smaže jen to, co by ucho stejně neslyšelo. Proto je ztrátová komprese tak úspěšná, ale také proto má své meze: hlučná prostředí a citlivé uši vady odhalí.','The codec deletes only what the ear would not hear anyway. That is why lossy compression is so successful, but also why it has limits: noisy environments and sensitive ears reveal the flaws.')}
 ];
+const EH=[['Co se děje na cestě zvuku','What happens along the path of sound'],['Proč se digitální zvuk neztrácí a kde přesto chyby vznikají','Why digital sound is not lost and where errors still arise'],['Proč Nyquist a odkud se vzaly běžné hodnoty','Why Nyquist and where the usual values come from'],['Jak jemně zaokrouhlovat a co se stane, když ne','How finely to round and what happens when we do not'],['Jak se počítá velikost a kde se hodnoty používají','How size is calculated and where the values are used'],['Jak komprese funguje a čeho si všimnout','How compression works and what to watch for'],['Proč ucho maskuje a jak toho kodek využívá','Why the ear masks and how a codec uses it']];
+let open=false;
 function render(){
- const n=S.tab,c=CH[n],t=TIT[n],last=n===CH.length-1;
- let h=`<button class="x" id="infX" data-act="info0" aria-label="${tx('Zavřít','Close')}">✕</button><div class="kap">${tx('kap.','ch.')} ${TABS[n].kap} · ${tx('vysvětlení','explanation')}</div><h2>${tx(t[0],t[1])}</h2><h3>${tx('Co to je','What it is')}</h3>${c.a}`;
+ const n=S.tab,c=CH[n],t=TIT[n];
+ let h=`<button class="x" data-act="help" aria-label="${tx('Zavřít','Close')}">✕</button><div class="kap">${tx('kap.','ch.')} ${TABS[n].kap} · ${tx('vysvětlení','explanation')}</div><h2>${tx(t[0],t[1])}</h2><h3>${tx('Co to je','What it is')}</h3>${c.a}`;
  if(n===0)h+=`<h3>${tx('Aktuální krok','Current step')}: ${STG1[S.stage].n}</h3>${ST[S.stage].join('')}`;
- h+=c.x.map(s=>`<h3>${tx(s[0][0],s[0][1])}</h3>${s[1]}`).join('');
- h+=`<h3>${tx('Co zkusit','What to try')}</h3>${c.c}<h3>${tx('Co si odnést','Takeaway')}</h3><p><b>${c.d}</b></p><div class="nav"><button data-act="inav" data-v="-1">← ${tx('Předchozí kapitola','Previous chapter')}</button><button data-act="inav" data-v="1">${tx('Další kapitola','Next chapter')} →</button></div>`;
- $('#infB').innerHTML=h;
+ h+=`<h3>${tx(EH[n][0],EH[n][1])}</h3>`+c.x.map(s=>s[1].replace('<p>','<p><b>'+tx(s[0][0],s[0][1])+'.</b> ')).join('');
+ h+=`<h3>${tx('Co zkusit','What to try')}</h3>${c.c}<h3>${tx('Co si odnést','Takeaway')}</h3><p><b>${c.d}</b></p><div class="nav"><button data-act="hnav" data-v="-1">← ${tx('Předchozí kapitola','Previous chapter')}</button><button data-act="hnav" data-v="1">${tx('Další kapitola','Next chapter')} →</button></div>`;
+ $('#help .dlg').innerHTML=h;
 }
-ACT.info=()=>{const o=$('#info');if(!o.hidden){o.hidden=true;return}render();o.hidden=false;o.querySelector('.inf').scrollTop=0;$('#infX').focus()};
-ACT.info0=()=>{$('#info').hidden=true};
-ACT.inav=v=>{go((S.tab+ +v+CH.length)%CH.length);ACT.info()};
-document.addEventListener('keydown',e=>{if(e.key==='Escape')ACT.info0()});
-document.addEventListener('click',e=>{if(e.target.id==='info')ACT.info0()});
+ACT.help=()=>{open=!open;const e=$('#help');e.hidden=!open;if(open){render();$('#help .dlg').scrollTop=0;$('#help .x').focus()}else $('#bHelp').focus()};
+ACT.hnav=v=>{go((S.tab+ +v+CH.length)%CH.length);render();$('#help .dlg').scrollTop=0};
+document.addEventListener('keydown',e=>{if(open&&e.key==='Escape')ACT.help()});
+document.addEventListener('click',e=>{if(open&&e.target.id==='help')ACT.help()});
 })();
 
 
