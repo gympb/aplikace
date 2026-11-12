@@ -138,6 +138,16 @@ input[type=range]::-moz-range-thumb{width:1.7rem;height:1.7rem;border-radius:50%
 @media (max-aspect-ratio:1/1){
 html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-height:100vh}#stage{overflow:visible}
 .split{grid-template-columns:1fr}.scope{min-height:34rem}.top{grid-template-columns:1fr}.tabs{flex-wrap:wrap}.kpis{grid-template-columns:1fr}}
+.hlp{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:1.2rem;background:rgba(10,8,5,.62)}
+.hlp[hidden]{display:none}
+.hlp .box{width:min(44rem,100%);max-height:calc(100vh - 2.4rem);overflow:auto;background:var(--card);color:var(--ink);border-radius:1.2rem;box-shadow:var(--shadow);padding:1.3rem 1.5rem 1.4rem;border-left:.35rem solid var(--orange)}
+.hlp .hh{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.4rem}
+.hlp .hh b{font:700 .7rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
+.hlp h3{margin:.1rem 0 .6rem;font:700 1.3rem/1.2 var(--f-head)}
+.hlp h4{margin:1rem 0 .25rem;font:700 .68rem/1 var(--f-head);letter-spacing:.18em;text-transform:uppercase;color:var(--orange-t)}
+.hlp p{margin:0;font-size:1rem;line-height:1.5;color:var(--ink2)}
+.ib.q{font:700 1.35rem/1 var(--f-head)}
+.ib.on{background:var(--orange);color:#17140F}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -148,11 +158,13 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
   <nav class="tabs" id="tabs" role="tablist" aria-label="Záložky"></nav>
   <div class="tools">
    <div class="lang" role="group" aria-label="Jazyk / Language"><button data-act="lang" data-v="cs" lang="cs">CZ</button><button data-act="lang" data-v="en" lang="en">EN</button></div>
+   <button class="ib q" id="bHlp" data-act="help" aria-haspopup="dialog">?</button>
    <button class="ib" id="bThm" data-act="theme" aria-label="Světlý nebo tmavý vzhled"></button>
    <button class="ib" id="bFul" data-act="full" aria-label="Celá obrazovka"></button>
   </div>
  </header>
  <main id="stage"></main>
+ <div class="hlp" id="hlp" hidden data-bg role="dialog" aria-modal="true" aria-labelledby="hlpT"><div class="box"><div class="hh"><b id="hlpK"></b><button class="ib" id="hlpX" data-act="helpx" aria-label="Zavřít">×</button></div><h3 id="hlpT"></h3><div id="hlpB"></div></div></div>
  <footer class="foot"><span id="fL"></span><span id="fR"></span></footer>
 </div>
 <script>
@@ -226,6 +238,7 @@ function sync(){
  $$('[data-o]').forEach(el=>{const f=OUT[el.dataset.o];if(f){const h=f();if(el.innerHTML!==h)el.innerHTML=h}});
 }
 document.addEventListener('click',e=>{
+ if(e.target.id==='hlp'){ACT.helpx();return}
  const el=e.target.closest('[data-k][data-v],[data-act]');if(!el)return;
  if(el.dataset.act){ACT[el.dataset.act]&&ACT[el.dataset.act](el.dataset.v,el);return}
  let v=el.dataset.v;if(/^-?\d+(\.\d+)?$/.test(v))v=+v;else if(v==='true')v=true;else if(v==='false')v=false;set(el.dataset.k,v);
@@ -254,6 +267,10 @@ function go(i){
 ACT.theme=()=>{const d=document.documentElement;const dark=d.dataset.theme?d.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;d.dataset.theme=dark?'light':'dark';try{localStorage.setItem('vlp-theme',d.dataset.theme)}catch(e){}readC();refresh()};
 ACT.lang=v=>{if(v===LANG)return;try{localStorage.setItem('vlp-lang',v)}catch(e){}location.reload()};
 ACT.full=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()};
+ACT.help=()=>{const h=$('#hlp');if(!h.hidden){ACT.helpx();return}const t=TABS[S.tab];
+ $('#hlpK').textContent=tx('Nápověda','Help')+' · '+tx('kap.','ch.')+' '+(S.tab+1);$('#hlpT').textContent=t.name;$('#hlpB').innerHTML=t.help?t.help():'';
+ h.hidden=false;$('#bHlp').classList.add('on');$('#hlpX').focus()};
+ACT.helpx=()=>{$('#hlp').hidden=true;$('#bHlp').classList.remove('on');$('#bHlp').focus()};
 function boot(){
  try{const th=localStorage.getItem('vlp-theme');if(th==='dark'||th==='light')document.documentElement.dataset.theme=th}catch(e){}
  document.documentElement.lang=LANG;document.title='Video Lab Pro';
@@ -261,6 +278,7 @@ function boot(){
  $('#tBack').textContent=tx('← Všechny školní aplikace','← All school apps');$('#tSub').textContent=tx('Gymnázium Příbram · GymTV · Informatika','Gymnázium Příbram · GymTV · Computer science');
  $('#tabs').setAttribute('aria-label',tx('Záložky','Tabs'));
  $('#tPlus').title=tx('Celá aplikace jde nad rámec učiva přiřazených ročníků','The whole app goes beyond the curriculum of the assigned years');
+ $('#bHlp').setAttribute('aria-label',tx('Nápověda k tomuto kroku','Help for this step'));$('#bHlp').title=tx('Nápověda k tomuto kroku (?)','Help for this step (?)');$('#hlpX').setAttribute('aria-label',tx('Zavřít','Close'));
  $('#bThm').setAttribute('aria-label',tx('Světlý nebo tmavý vzhled','Light or dark theme'));$('#bFul').setAttribute('aria-label',tx('Celá obrazovka','Fullscreen'));
  $$('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.v===LANG));
  $('#fL').textContent=tx('Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 12. 11. 2026','Author: Ivo Bešťák · License CC BY 4.0 · Updated: 12. 11. 2026');
@@ -274,7 +292,7 @@ function boot(){
  });
  ACT.tab=v=>go(+v);
  TABS.forEach(t=>t.init&&t.init());
- document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#hlp').hidden){ACT.helpx();return}if(!$('#hlp').hidden)return;if(e.target.tagName!=='INPUT'&&(e.key==='?'||e.key==='h')){ACT.help();return}if(e.target.tagName==='INPUT')return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
  new ResizeObserver(()=>refresh()).observe(st);
  matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{readC();refresh()});
  window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1));if(n>=1&&n<=TABS.length&&n-1!==S.tab)go(n-1)});
@@ -378,7 +396,7 @@ OUT.stl1=()=>stages().map((a,i)=>`<button class="chip${S.st1===i?' on':''}" data
 OUT.d1=()=>{const a=stages()[S.st1];return`<b class="l">${a.n} · ${fR(a.b)}</b>${a.c}.<br>${a.d}`};
 OUT.chainseg=()=>[['tv',tx('Televize','Television')],['cin',tx('Kino','Cinema')]].map(a=>`<button class="chip${S.chain===a[0]?' on':''}" data-act="chain" data-v="${a[0]}">${a[1]}</button>`).join('');
 ACT.chain=v=>{S.chain=v;S.fmt1=v==='tv'?'fhd':'d4';S.st1=0;refresh()};
-TABS.push({name:tx('Cesta obrazu','Picture path'),side:'27rem',
+TABS.push({help:()=>`<h4>${tx('Jak to číst','How to read it')}</h4><p>${tx('Každý pruh je jedna etapa cesty. Šedý pruh je obraz bez komprese, modrý je stlačený. Délka pruhu je tok v bitech za sekundu na logaritmické ose, takže každý dílek je desetkrát víc. Kodér obraz stlačuje, dekodér ho vrací.','Each bar is one stage of the path. A grey bar is uncompressed picture, a blue one is compressed. Bar length is the rate in bits per second on a log axis, so every step is ten times more. An encoder compresses the picture, a decoder restores it.')}</p>`+`<h4>${tx('Označení PLUS','PLUS label')}</h4><p>${tx('Celá aplikace jde nad rámec učiva přiřazených ročníků.','The whole app goes beyond the curriculum of the assigned years.')}</p>`+`<h4>${tx('Co z toho plyne','Takeaway')}</h4><p>${tx('Obraz je na začátku i na konci cesty stejně velký. Komprese je jen prostřední úsek, kde se obraz musí vejít do kanálu nebo na disk.','The picture is equally big at the start and at the end of the path. Compression is only the middle section, where the picture has to fit into a channel or onto a disk.')}</p>`,name:tx('Cesta obrazu','Picture path'),side:'27rem',
  build(){
   return `<div class="split"><div class="col">
    <div class="scope grow"><canvas id="c1"></canvas>
@@ -395,9 +413,6 @@ TABS.push({name:tx('Cesta obrazu','Picture path'),side:'27rem',
     <div class="ctl"><div class="hd"><span class="lbl">${tx('Formát','Format')}</span></div><div class="chips g2" data-o="fmts1"></div></div>
     <div class="ctl"><div class="hd"><span class="lbl">${tx('Etapa cesty','Stage of the path')}</span></div><div class="chips g2" data-o="stl1"></div></div>
     <div class="callout" data-o="d1"></div>
-    <div class="callout"><b class="l">${tx('Jak to číst','How to read it')}</b>${tx('Každý pruh je jedna etapa cesty. Šedý pruh je obraz bez komprese, modrý je stlačený. Délka pruhu je tok v bitech za sekundu na logaritmické ose, takže každý dílek je desetkrát víc. Kodér obraz stlačuje, dekodér ho vrací.','Each bar is one stage of the path. A grey bar is uncompressed picture, a blue one is compressed. Bar length is the rate in bits per second on a log axis, so every step is ten times more. An encoder compresses the picture, a decoder restores it.')}</div>
-    <div class="callout"><b class="l">${tx('Označení PLUS','PLUS label')}</b>${tx('Celá aplikace jde nad rámec učiva přiřazených ročníků.','The whole app goes beyond the curriculum of the assigned years.')}</div>
-    <div class="callout" style="margin-top:auto"><b class="l">${tx('Co z toho plyne','Takeaway')}</b>${tx('Obraz je na začátku i na konci cesty stejně velký. Komprese je jen prostřední úsek, kde se obraz musí vejít do kanálu nebo na disk.','The picture is equally big at the start and at the end of the path. Compression is only the middle section, where the picture has to fit into a channel or onto a disk.')}</div>
    </div></div>`;
  },
  init(){
@@ -445,7 +460,7 @@ OUT.d2=()=>{
  const p=PIPE[S.pipe],r=cur()/p.b;
  return`<b class="l">${p.n} · ${fR(p.b)}</b>${p.sub()}. ${tx('Obraz je '+nf(r,r>=10?0:1)+'× větší, takže ho komprese musí zmenšit nejméně '+nf(r,r>=10?0:1)+'×.','The picture is '+nf(r,r>=10?0:1)+'× bigger, so compression must shrink it at least '+nf(r,r>=10?0:1)+'×.')}`;
 };
-TABS.push({name:tx('Surový tok','Raw data rate'),side:'27rem',
+TABS.push({help:()=>`<h4>${tx('Jak to číst','How to read it')}</h4><p>${tx('Surový tok je součin pěti čísel: pixely na šířku a na výšku, snímky za sekundu, bity na vzorek a vzorky na pixel. Změň kterékoli z nich a sleduj, jak se tok mění. Oranžová čárka je kapacita zvoleného kanálu a číslo nad ní říká, kolikrát je třeba obraz zmenšit, aby se do kanálu vešel.','The raw rate is a product of five numbers: pixels across and down, frames per second, bits per sample and samples per pixel. Change any of them and watch the rate. The orange line is the capacity of the chosen channel and the number above it says how many times the picture must shrink to fit.')}</p>`,name:tx('Surový tok','Raw data rate'),side:'27rem',
  build(){
   return `<div class="split"><div class="col">
    <div class="scope grow"><canvas id="c2"></canvas>
@@ -467,7 +482,6 @@ TABS.push({name:tx('Surový tok','Raw data rate'),side:'27rem',
      <div class="chips g3">${['444','422','420'].map(f=>`<button class="chip" data-k="chroma" data-v="${f}">${CH[f].n}</button>`).join('')}</div></div>
     <div class="ctl"><div class="hd"><span class="lbl">${tx('Porovnat s kanálem','Compare with channel')}</span></div><div class="chips g3" data-o="pipes2"></div></div>
     <div class="callout" data-o="d2"></div>
-    <div class="callout"><b class="l">${tx('Jak to číst','How to read it')}</b>${tx('Surový tok je součin pěti čísel: pixely na šířku a na výšku, snímky za sekundu, bity na vzorek a vzorky na pixel. Změň kterékoli z nich a sleduj, jak se tok mění. Oranžová čárka je kapacita zvoleného kanálu a číslo nad ní říká, kolikrát je třeba obraz zmenšit, aby se do kanálu vešel.','The raw rate is a product of five numbers: pixels across and down, frames per second, bits per sample and samples per pixel. Change any of them and watch the rate. The orange line is the capacity of the chosen channel and the number above it says how many times the picture must shrink to fit.')}</div>
    </div></div>`;
  },
  render(){
@@ -574,7 +588,7 @@ function mini(){
   dot(x,ox+(i+bw/2)*cw,oy+(j+bh/2)*cw,cw*.11,C.orange)}
  for(let j=0;j<gh;j++)for(let i=0;i<gw;i++)dot(x,ox+(i+.5)*cw,oy+(j+.5)*cw,cw*.07,C.ink);
 }
-TABS.push({name:tx('Barvy','Colour'),side:'27rem',
+TABS.push({help:()=>`<h4>${tx('Jak to číst','How to read it')}</h4><p>${tx('Obraz se rozloží na jas (Y), který nese ostrost, a dva barevné rozdíly (Cb, Cr). Podvzorkování nechá jas v každém pixelu a barvu sdílí skupina pixelů. Čísla 4:2:0 popisují blok 4 × 2 pixely: kolik barevných vzorků je v horním a kolik ve spodním řádku. Podívej se na červený kruh a na pruhy, tam se chyba pozná nejlépe.','The picture is split into luma (Y), which carries sharpness, and two colour differences (Cb, Cr). Subsampling keeps luma in every pixel while a group of pixels shares colour. The numbers in 4:2:0 describe a block of 4 × 2 pixels: how many colour samples are in the top and in the bottom row. Look at the red circle and the stripes, the error shows best there.')}</p>`+`<h4>${tx('Proč to funguje','Why it works')}</h4><p>${tx('Oko má mnohem víc tyčinek pro jas než čípků pro barvu, a proto ostrost vnímáme hlavně z jasu. Barevné detaily jde ztratit skoro bez povšimnutí.','The eye has far more rods for luminance than cones for colour, so sharpness is mostly seen in luma. Colour detail can be lost almost unnoticed.')}</p>`,name:tx('Barvy','Colour'),side:'27rem',
  build(){
   return `<div class="split"><div class="col">
    <div class="scope grow"><canvas id="c3"></canvas>
@@ -593,8 +607,6 @@ TABS.push({name:tx('Barvy','Colour'),side:'27rem',
      <div style="height:6.2rem;position:relative"><canvas id="c3b" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
      <p class="n">${tx('Černá tečka je vzorek jasu, oranžová plocha je jeden vzorek barvy.','A black dot is a luma sample, an orange area is one colour sample.')}</p></div>
     <div class="callout" data-o="d3"></div>
-    <div class="callout"><b class="l">${tx('Jak to číst','How to read it')}</b>${tx('Obraz se rozloží na jas (Y), který nese ostrost, a dva barevné rozdíly (Cb, Cr). Podvzorkování nechá jas v každém pixelu a barvu sdílí skupina pixelů. Čísla 4:2:0 popisují blok 4 × 2 pixely: kolik barevných vzorků je v horním a kolik ve spodním řádku. Podívej se na červený kruh a na pruhy, tam se chyba pozná nejlépe.','The picture is split into luma (Y), which carries sharpness, and two colour differences (Cb, Cr). Subsampling keeps luma in every pixel while a group of pixels shares colour. The numbers in 4:2:0 describe a block of 4 × 2 pixels: how many colour samples are in the top and in the bottom row. Look at the red circle and the stripes, the error shows best there.')}</div>
-    <div class="callout" style="margin-top:auto"><b class="l">${tx('Proč to funguje','Why it works')}</b>${tx('Oko má mnohem víc tyčinek pro jas než čípků pro barvu, a proto ostrost vnímáme hlavně z jasu. Barevné detaily jde ztratit skoro bez povšimnutí.','The eye has far more rods for luminance than cones for colour, so sharpness is mostly seen in luma. Colour detail can be lost almost unnoticed.')}</div>
    </div></div>`;
  },
  init(){makeSrc()},
@@ -671,7 +683,7 @@ OUT.gopv=()=>`<b>${S.gop}</b> ${tx('snímků','frames')}`;
 OUT.d4=()=>S.gop===1
  ?tx('Samé snímky I: každý je samostatný jako fotka. Střih na snímek přesně, rychlé přepnutí, ale velký tok. Tak funguje kino (JPEG 2000) a výměnné formáty (ProRes).','All I frames: each stands alone like a photo. Frame-accurate cutting and instant access, but a large rate. This is how cinema (JPEG 2000) and exchange formats (ProRes) work.')
  :tx('Snímek I je celý obraz. P ukládá jen změny proti předchozímu snímku, B se dívá dopředu i dozadu a je nejmenší. Na kanál se vstoupí jen při dalším I, proto televize čeká.','An I frame is the whole picture. P stores only changes from the previous frame, B looks forwards and backwards and is the smallest. A channel can only be entered at the next I, which is why TV waits.');
-TABS.push({name:tx('Snímky I P B','I, P, B frames'),side:'27rem',
+TABS.push({help:()=>`<h4>${tx('Jak to číst','How to read it')}</h4><p>${tx('Snímek I je celý obraz jako fotka. P ukládá jen změny proti předchozímu snímku, B využívá snímek předchozí i následující. Dole je ukázka pohybu: bez predikce se uloží každá změna pixelu, s predikcí kodér jen určí, kam se předmět posunul, a uloží drobný zbytek.','An I frame is the whole picture like a photo. P stores only changes from the previous frame, B uses both the previous and the next one. Below is a motion demo: without prediction every pixel change is stored, with prediction the encoder only states where the object moved and stores a small residual.')}</p>`,name:tx('Snímky I P B','I, P, B frames'),side:'27rem',
  build(){
   return `<div class="split"><div class="col">
    <div class="scope grow"><canvas id="c4"></canvas>
@@ -691,7 +703,6 @@ TABS.push({name:tx('Snímky I P B','I, P, B frames'),side:'27rem',
      <div class="seg"><button class="chip" data-k="mc" data-v="false">${tx('Vypnutá','Off')}</button><button class="chip" data-k="mc" data-v="true">${tx('Zapnutá','On')}</button></div></div>
     <div class="rd" data-o="r4"></div>
     <div class="callout" data-o="d4"></div>
-    <div class="callout"><b class="l">${tx('Jak to číst','How to read it')}</b>${tx('Snímek I je celý obraz jako fotka. P ukládá jen změny proti předchozímu snímku, B využívá snímek předchozí i následující. Dole je ukázka pohybu: bez predikce se uloží každá změna pixelu, s predikcí kodér jen určí, kam se předmět posunul, a uloží drobný zbytek.','An I frame is the whole picture like a photo. P stores only changes from the previous frame, B uses both the previous and the next one. Below is a motion demo: without prediction every pixel change is stored, with prediction the encoder only states where the object moved and stores a small residual.')}</div>
    </div></div>`;
  },
  render(){
@@ -886,7 +897,7 @@ function panel(x,arr,ox,oy,pw,ph,err,label,sub,col,R){
  g.putImageData(id,0,0);x.imageSmoothingEnabled=false;x.drawImage(o,ox,oy,pw,ph);x.strokeStyle=C.line2;x.lineWidth=1;x.strokeRect(ox,oy,pw,ph);
  TH(x,label,ox,oy-R*1.5,R*.95,col);T(x,sub,ox,oy-R*.55,R*.72,TXT);
 }
-TABS.push({name:tx('DCT a vlnka','DCT and wavelet'),side:'27rem',
+TABS.push({help:()=>`<h4>${tx('Jak to funguje','How it works')}</h4><p>${tx('Obraz se převede na koeficienty: DCT je počítá po blocích 8 × 8, vlnka po celém obraze ve třech úrovních. Kvantování zaokrouhlí koeficienty, drobné se vynulují a zbytek se zapíše úsporně.','The picture is turned into coefficients: DCT computes them in 8 × 8 blocks, a wavelet over the whole picture in three levels. Quantization rounds them, small ones become zero and the rest is stored compactly.')}</p>`+`<h4>${tx('Jak to číst','How to read it')}</h4><p>${tx('Všechny tři obrazy jsou stejně velké v datech. Údaj v dB (PSNR) říká, jak blízko je výsledek originálu: čím víc, tím líp. Neříká však, jak chyba vypadá, proto je dole chyba zesílená pětkrát. Posuň míru komprese a sleduj, kdy se objeví kostičky.','All three pictures take the same amount of data. The dB value (PSNR) says how close the result is to the original: more is better. It does not tell how the error looks, so the error is magnified five times below. Move the compression ratio and see when blocks appear.')}</p>`+`<h4>${tx('Pozor','Note')}</h4><p>${tx('Jde o zjednodušený model. Kodéry HEVC a AV1 mají k DCT ještě filtry, které bloky vyhlazují.','This is a simplified model. HEVC and AV1 encoders add filters to the DCT that smooth the blocks.')}</p>`,name:tx('DCT a vlnka','DCT and wavelet'),side:'27rem',
  build(){
   return `<div class="split"><div class="col">
    <div class="scope grow"><canvas id="c5"></canvas>
@@ -901,9 +912,6 @@ TABS.push({name:tx('DCT a vlnka','DCT and wavelet'),side:'27rem',
      <input type="range" data-k="q5" min="4" max="80" step="1">
      <div class="chips g4">${[8,16,32,64].map(v=>`<button class="chip" data-k="q5" data-v="${v}">${v} : 1</button>`).join('')}</div></div>
     <div class="callout" data-o="d5"></div>
-    <div class="callout"><b class="l">${tx('Jak to funguje','How it works')}</b>${tx('Obraz se převede na koeficienty: DCT je počítá po blocích 8 × 8, vlnka po celém obraze ve třech úrovních. Kvantování zaokrouhlí koeficienty, drobné se vynulují a zbytek se zapíše úsporně.','The picture is turned into coefficients: DCT computes them in 8 × 8 blocks, a wavelet over the whole picture in three levels. Quantization rounds them, small ones become zero and the rest is stored compactly.')}</div>
-    <div class="callout"><b class="l">${tx('Jak to číst','How to read it')}</b>${tx('Všechny tři obrazy jsou stejně velké v datech. Údaj v dB (PSNR) říká, jak blízko je výsledek originálu: čím víc, tím líp. Neříká však, jak chyba vypadá, proto je dole chyba zesílená pětkrát. Posuň míru komprese a sleduj, kdy se objeví kostičky.','All three pictures take the same amount of data. The dB value (PSNR) says how close the result is to the original: more is better. It does not tell how the error looks, so the error is magnified five times below. Move the compression ratio and see when blocks appear.')}</div>
-    <div class="callout" style="margin-top:auto"><b class="l">${tx('Pozor','Note')}</b>${tx('Jde o zjednodušený model. Kodéry HEVC a AV1 mají k DCT ještě filtry, které bloky vyhlazují.','This is a simplified model. HEVC and AV1 encoders add filters to the DCT that smooth the blocks.')}</div>
    </div></div>`;
  },
  render(){
@@ -958,7 +966,7 @@ OUT.r6=()=>{const c=cur();return`<span>${tx('Rok','Year')}</span><b>${c.yr}</b>
  <span>${tx('Použití','Used for')}</span><b>${c.use}</b>`};
 OUT.d6=()=>`<b class="l">${cur().n}</b>${cur().d}`;
 ACT.dom=v=>{S.dom=v;refresh()};
-TABS.push({name:tx('Kodeky','Codecs'),side:'27rem',
+TABS.push({help:()=>`<h4>${tx('Jak to číst','How to read it')}</h4><p>${tx('Délka pruhu je tok pro Full HD při stejném vizuálním dojmu. Procenta vpravo ukazují tok proti MPEG-2. Kodeky s predikcí mezi snímky jsou úsporné, ale snímky na sobě závisejí. ProRes a JPEG 2000 ukládají každý snímek zvlášť: tok je mnohem vyšší, ale střih a přístup k libovolnému snímku jsou snadné.','Bar length is the rate for Full HD at the same visual quality. Percentages on the right show the rate against MPEG-2. Codecs with prediction between frames are economical, but frames depend on each other. ProRes and JPEG 2000 store each frame alone: the rate is much higher, but editing and access to any frame are easy.')}</p>`,name:tx('Kodeky','Codecs'),side:'27rem',
  build(){
   return `<div class="split"><div class="col">
    <div class="scope grow"><canvas id="c6"></canvas>
@@ -971,7 +979,6 @@ TABS.push({name:tx('Kodeky','Codecs'),side:'27rem',
     <div class="ctl"><div class="hd"><span class="lbl">${tx('Kodek','Codec')}</span></div><div class="chips g2" data-o="cdl"></div></div>
     <div class="rd" data-o="r6"></div>
     <div class="callout" data-o="d6"></div>
-    <div class="callout"><b class="l">${tx('Jak to číst','How to read it')}</b>${tx('Délka pruhu je tok pro Full HD při stejném vizuálním dojmu. Procenta vpravo ukazují tok proti MPEG-2. Kodeky s predikcí mezi snímky jsou úsporné, ale snímky na sobě závisejí. ProRes a JPEG 2000 ukládají každý snímek zvlášť: tok je mnohem vyšší, ale střih a přístup k libovolnému snímku jsou snadné.','Bar length is the rate for Full HD at the same visual quality. Percentages on the right show the rate against MPEG-2. Codecs with prediction between frames are economical, but frames depend on each other. ProRes and JPEG 2000 store each frame alone: the rate is much higher, but editing and access to any frame are easy.')}</div>
    </div></div>`;
  },
  init(){
@@ -1033,7 +1040,7 @@ OUT.d7=()=>{
  return n<1?`<b class="l">${tx('Nevejde se','Does not fit')}</b>${tx('Jeden program je větší než celý kanál. Je třeba účinnější kodek nebo menší obraz.','One programme is bigger than the whole channel. A more efficient codec or a smaller picture is needed.')}`
  :`<b class="l">${tx('Proč se to řeší','Why it matters')}</b>${tx('Kapacita kanálu je pevná, každý ušetřený bit znamená místo pro další program.','Channel capacity is fixed, every saved bit makes room for another programme.')}`;
 };
-TABS.push({name:tx('Kapacita','Capacity'),side:'27rem',
+TABS.push({help:()=>`<h4>${tx('Jak to číst','How to read it')}</h4><p>${tx('Nahoře: každý blok je jeden program v kanálu. Dole: velikost filmu je tok krát délka. Zelená čára = film se vejde, červená = nevejde.','Top: each block is one programme in the channel. Bottom: film size is rate times length. Green line = film fits, red = it does not.')}</p>`,name:tx('Kapacita','Capacity'),side:'27rem',
  build(){
   return `<div class="split"><div class="col">
    <div class="scope grow"><canvas id="c7"></canvas>
@@ -1052,7 +1059,6 @@ TABS.push({name:tx('Kapacita','Capacity'),side:'27rem',
     <div class="ctl"><div class="hd"><span class="lbl">${tx('Jak je film stlačen','How the film is compressed')}</span></div>
      <div class="chips g3">${Object.keys(FILM).map(k=>`<button class="chip" data-k="fm" data-v="${k}" style="padding:.4rem .1rem;font-size:.82rem">${FILM[k].n}</button>`).join('')}</div></div>
     <div class="rd" data-o="r7"></div>
-    <div class="callout"><b class="l">${tx('Jak to číst','How to read it')}</b>${tx('Nahoře: každý blok je jeden program v kanálu. Dole: velikost filmu je tok krát délka. Zelená čára = film se vejde, červená = nevejde.','Top: each block is one programme in the channel. Bottom: film size is rate times length. Green line = film fits, red = it does not.')}</div>
    </div></div>`;
  },
  render(){
