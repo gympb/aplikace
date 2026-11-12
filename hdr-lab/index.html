@@ -114,6 +114,7 @@ input[type=range]::-moz-range-thumb{width:1.7rem;height:1.7rem;border-radius:50%
 .big{font:800 2.6rem/1 var(--f-head);letter-spacing:-.02em}
 .big u{font:600 .95rem var(--f-head);text-decoration:none;color:var(--ink2);margin-left:.4rem;letter-spacing:0}
 .or{color:var(--orange-t)}
+.gmrow{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem}.gmc{padding:.6rem .85rem .7rem;border-top:.28rem solid var(--line);border-radius:.9rem;transition:opacity .2s}.gmc.off{opacity:.45}.gmc b{display:flex;flex-direction:column;gap:.1rem;font:700 .95rem/1.15 var(--f-head)}.gmc small{font:700 .64rem/1.2 var(--f-head);letter-spacing:.1em;text-transform:uppercase;color:var(--orange-t)}.gmc p{margin:.3rem 0 0;font-size:.8rem;line-height:1.3;color:var(--ink2)}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
 .kpi{display:flex;flex-direction:column;gap:.35rem;justify-content:center}
 .kpi small{font:400 .82rem/1.25 var(--f-body);color:var(--ink2)}
@@ -167,7 +168,7 @@ input[type=range]::-moz-range-thumb{width:1.7rem;height:1.7rem;border-radius:50%
 @media (max-aspect-ratio:1/1){
 html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-height:100vh}#stage{overflow:visible}
 .split{grid-template-columns:1fr}.scope{min-height:34rem}.top{grid-template-columns:1fr}.tabs{flex-wrap:wrap}
-.tvrow{grid-template-columns:1fr}.pair{grid-template-columns:1fr}.kpis{grid-template-columns:1fr}.fmt{overflow-x:auto}}
+.gmrow{grid-template-columns:1fr}.tvrow{grid-template-columns:1fr}.pair{grid-template-columns:1fr}.kpis{grid-template-columns:1fr}.fmt{overflow-x:auto}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -647,6 +648,11 @@ OUT.rd4=()=>{
  if(!inLoc(S.cx,S.cy))return `<span style="grid-column:1/3">${tx('Tohle už není viditelná barva: leží mimo podkovu.','This is not a visible colour: it lies outside the horseshoe.')}</span>`;
  return GM.map(g=>{const ok=inTri(S.cx,S.cy,g.p);return `<span><i class="k" style="background:${g.col}"></i>${g.n.split(' (')[0]}</span><b style="color:${ok?'var(--ink)':'var(--bad)'}">${ok?tx('✓ lze zobrazit','✓ reproducible'):tx('✗ mimo gamut','✗ out of gamut')}</b>`}).join('');
 };
+const GINFO={
+ '709':{h:tx('Základ dnešního obrazu','The baseline of today\'s picture'),t:tx('Standard HD televize (BT.709, 1990) a téměř totéž co sRGB. Používá se na webu, v monitorech, v počítačových hrách, ve fotografii a v SDR videu (HD vysílání, Blu-ray, streamování). Všechno, co je v SDR, je omezeno tímto trojúhelníkem.','The HD television standard (BT.709, 1990) and nearly the same as sRGB. It is used on the web, in monitors, computer games, photography and SDR video (HD broadcast, Blu-ray, streaming). Everything in SDR is limited to this triangle.')},
+ 'P3':{h:tx('Kino a moderní displeje','Cinema and modern displays'),t:tx('Vznikl pro digitální kina (DCI, 2007). Ve variantě s bílým bodem D65 (Display P3) ho mají telefony, tablety a notebooky, řada monitorů a většina HDR televizí a mistrovacích monitorů. V praxi je to mez, ve které se HDR obsah mistruje.','It was created for digital cinemas (DCI, 2007). In the variant with the D65 white point (Display P3) it is found in phones, tablets and laptops, many monitors and most HDR TVs and mastering monitors. In practice it is the limit within which HDR content is mastered.')},
+ '2020':{h:tx('Kontejner pro UHD a HDR','The container for UHD and HDR'),t:tx('Standard pro UHD a HDR (BT.2020, 2012), jehož primáry leží na okraji podkovy. Nese ho HDR10, HDR10+, Dolby Vision i HLG. Celý ho zobrazí jen laserová projekce, televize pokrývají jeho část a zbytek musí stlačit.','The standard for UHD and HDR (BT.2020, 2012), whose primaries lie on the edge of the horseshoe. It is carried by HDR10, HDR10+, Dolby Vision and HLG. Only laser projection shows all of it; TVs cover part of it and have to compress the rest.')}};
+OUT.gmc=()=>GM.map(g=>{const i=GINFO[g.id],on=S['gm'+g.id];return `<div class="gmc card${on?'':' off'}" style="border-top-color:${g.col}"><b>${g.n.split(' (')[0]}<small>${i.h}</small></b><p>${i.t}</p></div>`}).join('');
 OUT.ar=()=>GM.map((g,i)=>`<span><i class="k" style="background:${g.col}"></i>${g.n.split(' (')[0]}</span><b>${i?'× '+nf(AR[i],2):'× 1'}</b>`).join('');
 TABS.push({name:tx('Barvy','Colour'),side:'27rem',
  build(){
@@ -654,6 +660,7 @@ TABS.push({name:tx('Barvy','Colour'),side:'27rem',
    <div class="scope grow"><canvas id="c4"></canvas>
     <div class="tag">${GM.map(g=>`<span><i style="background:${g.col}"></i>${g.n}</span>`).join('')}</div>
     <div class="badge">${tx('CIE 1931 xy · klepni a tahej','CIE 1931 xy · tap and drag')}</div></div>
+   <div class="gmrow" data-o="gmc"></div>
    </div>
    <div class="side card">
     <div class="ctl"><div class="hd"><span class="lbl">${tx('Zobrazené gamuty','Gamuts shown')}</span></div>
