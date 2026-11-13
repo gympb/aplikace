@@ -174,6 +174,11 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 .split{grid-template-columns:1fr}.scope{min-height:34rem}.top{grid-template-columns:1fr}.tabs{flex-wrap:wrap}
 .gmrow{grid-template-columns:1fr}.tvrow{grid-template-columns:1fr}.pair{grid-template-columns:1fr}.kpis{grid-template-columns:1fr}.fmt{overflow-x:auto}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+#hdrt{position:fixed;inset:0;z-index:60;background:#000;color:#f4f1ea}
+#hdrt canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#hdrt .hbar{position:absolute;left:0;right:0;bottom:0;padding:.8rem 1.2rem;background:rgba(0,0,0,.72);font:500 1rem/1.4 var(--f-head)}
+#hdrt .hbar b{color:#fff}#hdrt .lab{position:absolute;top:2.2%;font:700 1rem/1 var(--f-mono);transform:translateX(-50%);color:#000;mix-blend-mode:normal}
+#hdrt .cl{position:absolute;top:1rem;right:1rem;width:3rem;height:3rem;border-radius:50%;background:#222;color:#fff;font:700 1.2rem/1 var(--f-head);border:2px solid #888}
 </style>
 </head>
 <body>
@@ -192,7 +197,8 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
  </header>
  <main id="stage"></main>
  <div id="help" hidden role="dialog" aria-modal="true"><div class="dlg"></div></div>
- <div id="tch" hidden role="dialog" aria-modal="true"><div class="dlg"></div></div>
+ <div id="hdrt" hidden role="dialog" aria-modal="true" aria-label="HDR test"><canvas id="hdrc"></canvas><div class="hbar"></div></div>
+<div id="tch" hidden role="dialog" aria-modal="true"><div class="dlg"></div></div>
 <div id="prof" hidden role="dialog" aria-modal="true"><div class="dlg"></div></div>
  <footer class="foot"><span id="fL"></span><span id="fR"></span></footer>
 </div>
@@ -352,7 +358,7 @@ function boot(){
  });
  ACT.tab=v=>go(+v);
  TABS.forEach(t=>t.init&&t.init());
- document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||!$('#help').hidden||!$('#prof').hidden||!$('#tch').hidden)return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
+ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||!$('#help').hidden||!$('#prof').hidden||!$('#tch').hidden||!$('#hdrt').hidden)return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
  new ResizeObserver(()=>refresh()).observe(st);
  matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{readC();refresh()});
  window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1));if(n>=1&&n<=TABS.length&&n-1!==S.tab)go(n-1)});
@@ -1177,7 +1183,7 @@ window.hdrHelpInit=function(){
 const PN={
  panel:{n:tx('Panel ve třídě','Classroom panel'),s:tx('Zrcadlení z počítače na interaktivní panel, 4K, bez HDR, světlá třída. Velké písmo a výrazné čáry. Výchozí volba.','Mirrored from a computer to an interactive panel, 4K, no HDR, bright classroom. Large text and strong lines. Default.'),short:tx('Panel','Panel')},
  monitor:{n:tx('Monitor','Monitor'),s:tx('Běžný monitor (například 24 palců), 8 bitů, bez HDR, běžná místnost.','An ordinary monitor (for example 24 inch), 8 bit, no HDR, ordinary room.'),short:tx('Monitor','Monitor')},
- hdr:{n:tx('Monitor nebo TV s HDR','HDR monitor or TV'),s:tx('Obrazovka s HDR a 10 bity, ztlumená místnost. Ukázky v aplikaci jsou i tak zatím simulované: skutečný HDR obraz aplikace nezobrazuje.','A screen with HDR and 10 bits, dimmed room. Demonstrations in the app are still simulated: the app does not output real HDR.'),short:tx('HDR','HDR')}};
+ hdr:{n:tx('Monitor nebo TV s HDR','HDR monitor or TV'),s:tx('Obrazovka s HDR a 10 bity, ztlumená místnost. Ukázky v kapitolách jsou i tak simulované. Skutečný HDR obraz ukáže jen samostatný test v tomto okně.','A screen with HDR and 10 bits, dimmed room. Demonstrations in the chapters are still simulated. Real HDR output comes only from the separate test in this window.'),short:tx('HDR','HDR')}};
 let open=false;
 function render(){
  const d=detectScr(),el=$('#prof .dlg');
@@ -1191,7 +1197,8 @@ function render(){
   <p>${tx('Volba nastaví výchozí jas obrazovky, typ panelu a osvětlení v kapitole 1 a projekční režim. Dá se pak upravit.','The choice sets the default screen luminance, panel type and lighting in chapter 1 and the projection mode. You can adjust them afterwards.')}</p>
   <h3>${tx('Projekční režim','Projection mode')}</h3>
   <div class="chips g2" style="margin:.3rem 0"><button class="chip${S.proj?' on':''}" data-act="projset" data-v="1">${tx('Zapnuto: větší písmo a čáry','On: larger text and lines')}</button><button class="chip${S.proj?'':' on'}" data-act="projset" data-v="0">${tx('Vypnuto','Off')}</button></div>
-  <div class="det${warn?' warn':''}">${det}</div>`;
+  <div class="det${warn?' warn':''}">${det}</div>
+  ${S.prof==='hdr'?`<h3>${tx('Skutečný HDR test','Real HDR test')}</h3><p>${tx('Celoobrazovkový test přes WebGPU: pole nad bílou SDR obrazovky. Pokud jsou nejjasnější pole stejná, vaše obrazovka další jas nezobrazí. Ověřeno jen v kódu, na skutečném HDR displeji zatím netestováno.','Full-screen test via WebGPU: patches above SDR white. If the brightest patches look the same, your screen cannot show more. Verified in code only, not yet tested on a real HDR display.')}</p><button class="opt" data-act="hdrtest"><b>${tx('Spustit HDR test','Start HDR test')}</b><span>${d.hdr?tx('Prohlížeč HDR hlásí.','The browser reports HDR.'):tx('Prohlížeč HDR nehlásí, test se přesto pokusí spustit.','The browser does not report HDR, the test will still try to run.')}</span></button>`:''}`;
 }
 function setOpen(v){open=v;$('#prof').hidden=!v;if(v){if(!$('#help').hidden)ACT.help();if(!$('#tch').hidden)ACT.tch();render();$('#prof .x').focus()}else $('#bProf').focus()}
 function label(){const b=$('#bProf');b.innerHTML='<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M9 20h6M12 16v4"/></svg>';b.title=tx('Obrazovka a promítání','Screen and projection');b.setAttribute('aria-label',b.title)}
@@ -1232,7 +1239,7 @@ function render(){
  <h3>${tx('Doporučený postup (asi 45 minut)','Suggested flow (about 45 minutes)')}</h3>
  <table><tr><th>#</th><th>${tx('Téma','Topic')}</th><th>${tx('Čas','Time')}</th><th>${tx('Co ukázat','What to show')}</th></tr>${PLAN.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('')}</table>
  <h3>${tx('Poznámky','Notes')}</h3>
- <ul><li>${tx('Aplikace HDR jen simuluje. Panel bez HDR ukáže rozdíly jen náznakem; skutečný HDR obraz ukažte na televizi nebo telefonu s HDR videem.','The app only simulates HDR. A panel without HDR shows differences only roughly; show real HDR on a TV or phone with HDR video.')}</li>
+ <ul><li>${tx('Aplikace HDR jen simuluje. Panel bez HDR ukáže rozdíly jen náznakem; skutečný HDR obraz ukáže test v okně Obrazovka (při profilu s HDR) nebo televize či telefon s HDR videem.','The app only simulates HDR. A panel without HDR shows differences only roughly; real HDR comes from the test in the Screen window (with the HDR profile) or from a TV or phone with HDR video.')}</li>
  <li>${tx('Ovládání: klávesy ← a → přepínají kapitoly, tlačítko ? otevře vysvětlení, tlačítko obrazovky nastaví promítání.','Controls: the ← and → keys switch chapters, the ? button opens the explanation, the screen button sets projection.')}</li></ul>`;
 }
 function setOpen(v){open=v;$('#tch').hidden=!v;if(v){['#help','#prof'].forEach(k=>{if(!$(k).hidden)ACT[k==='#help'?'help':'prof']()});render();$('#tch .x').focus()}else $('#bTch').focus()}
@@ -1263,6 +1270,57 @@ const _sync=window.sync;
 window.sync=sync=function(){_sync();a11y();a11yKeys()};
 const prev=window.hdrHelpInit;
 window.hdrHelpInit=function(){prev&&prev();const b=$('#bTch');b.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 5h16v11H4zM8 20h8M12 16v4M8 9h8M8 12h5"/></svg>';b.title=tx('Pro učitele: předvolby a postup','For teachers: presets and flow');b.setAttribute('aria-label',b.title)};
+})();
+</script>
+<script>
+/* ===== Skutečný HDR test (WebGPU, rozšířený rozsah) ===== */
+(function(){
+const V=[0.25,0.5,1,1.5,2,3,4,6,8];
+const SH=`struct U{w:f32,h:f32};@group(0)@binding(0) var<uniform> u:U;
+@vertex fn vs(@builtin(vertex_index) i:u32)->@builtin(position) vec4f{var p=array<vec2f,3>(vec2f(-1,-1),vec2f(3,-1),vec2f(-1,3));return vec4f(p[i],0,1);}
+var<private> V=array<f32,9>(0.25,0.5,1.0,1.5,2.0,3.0,4.0,6.0,8.0);
+@fragment fn fs(@builtin(position) p:vec4f)->@location(0) vec4f{
+ let x=p.x/u.w;let y=p.y/u.h;var v=0.0;
+ if(y<0.5){let k=min(u32(x*9.0),8u);let fx=fract(x*9.0);v=select(0.0,V[k],fx>0.04&&fx<0.96);}
+ else if(y<0.7){v=pow(9.0,x)-1.0;}
+ else{v=select(0.0,1.0,x<0.5);}
+ return vec4f(v,v,v,1.0);}`;
+let dev=null,ctx=null,pipe=null,ub=null,bg=null;
+function msg(t){$('#hdrt .hbar').innerHTML=t}
+async function init(){
+ if(!navigator.gpu)throw new Error(tx('Prohlížeč nemá WebGPU. Potřebujete Chrome nebo Edge 129 a novější.','The browser has no WebGPU. You need Chrome or Edge 129 or newer.'));
+ const ad=await navigator.gpu.requestAdapter();if(!ad)throw new Error(tx('WebGPU nenašlo grafickou kartu.','WebGPU found no graphics adapter.'));
+ dev=await ad.requestDevice();const c=$('#hdrc');ctx=c.getContext('webgpu');
+ try{ctx.configure({device:dev,format:'rgba16float',alphaMode:'opaque',colorSpace:'display-p3',toneMapping:{mode:'extended'}})}
+ catch(e){throw new Error(tx('Prohlížeč nepodporuje rozšířený rozsah (HDR) pro WebGPU.','The browser does not support extended range (HDR) for WebGPU.'))}
+ const m=dev.createShaderModule({code:SH});
+ pipe=dev.createRenderPipeline({layout:'auto',vertex:{module:m,entryPoint:'vs'},fragment:{module:m,entryPoint:'fs',targets:[{format:'rgba16float'}]},primitive:{topology:'triangle-list'}});
+ ub=dev.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+ bg=dev.createBindGroup({layout:pipe.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:ub}}]});
+}
+function draw(){
+ const c=$('#hdrc'),d=window.devicePixelRatio||1;c.width=Math.round(c.clientWidth*d);c.height=Math.round(c.clientHeight*d);
+ dev.queue.writeBuffer(ub,0,new Float32Array([c.width,c.height]));
+ const e=dev.createCommandEncoder(),pass=e.beginRenderPass({colorAttachments:[{view:ctx.getCurrentTexture().createView(),loadOp:'clear',storeOp:'store',clearValue:{r:0,g:0,b:0,a:1}}]});
+ pass.setPipeline(pipe);pass.setBindGroup(0,bg);pass.draw(3);pass.end();dev.queue.submit([e.finish()]);
+}
+function labels(){
+ $$('#hdrt .lab').forEach(n=>n.remove());
+ V.forEach((v,i)=>{const l=document.createElement('div');l.className='lab';l.style.left=((i+.5)/9*100)+'%';l.textContent='×'+String(v).replace('.',',');l.style.color='#fff';l.style.background='rgba(0,0,0,.7)';l.style.padding='.25rem .5rem';l.style.borderRadius='.4rem';$('#hdrt').appendChild(l)});
+}
+async function openT(){
+ const el=$('#hdrt');el.hidden=false;
+ el.querySelector('.cl')||el.insertAdjacentHTML('beforeend','<button class="cl" data-act="hdrtest" aria-label="'+tx('Zavřít HDR test','Close HDR test')+'">✕</button>');
+ labels();msg(tx('Spouštím WebGPU…','Starting WebGPU…'));
+ try{
+  if(!dev)await init();draw();
+  msg(tx('<b>Horní řada:</b> pole jsou násobky bílé SDR (×1 je běžná bílá, ×2 dvakrát jasnější a tak dále). Kolik polí se liší, tolik rezervy má obrazovka. <b>Pás uprostřed:</b> plynulý přechod nad bílou. <b>Dole:</b> levá půlka černá, pravá bílá SDR. Zavřete Esc nebo tlačítkem ✕.','<b>Top row:</b> patches are multiples of SDR white (×1 is ordinary white, ×2 twice as bright and so on). The number of distinguishable patches is your screen headroom. <b>Middle band:</b> a smooth ramp above white. <b>Bottom:</b> left half black, right half SDR white. Close with Esc or the ✕ button.'));
+ }catch(e){msg('<b>'+tx('HDR test nelze spustit.','The HDR test cannot run.')+'</b> '+(e&&e.message||e))}
+}
+function closeT(){$('#hdrt').hidden=true}
+ACT.hdrtest=()=>{if($('#hdrt').hidden){if(!$('#prof').hidden)ACT.prof();openT()}else closeT()};
+document.addEventListener('keydown',e=>{if(!$('#hdrt').hidden&&e.key==='Escape')closeT()});
+window.addEventListener('resize',()=>{if(dev&&!$('#hdrt').hidden)draw()});
 })();
 </script>
 <script>
