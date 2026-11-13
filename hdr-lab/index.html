@@ -182,6 +182,7 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
   <div class="brand"><a class="back" href="../" id="tBack">← Všechny školní aplikace</a><b><span>HDR</span> Lab Pro<span class="plus" id="tPlus">PLUS</span></b><small id="tSub">Gymnázium Příbram · GymTV · Informatika</small></div>
   <nav class="tabs" id="tabs" role="tablist" aria-label="Záložky"></nav>
   <div class="tools">
+   <button class="ib" id="bTch" data-act="tch"></button>
    <button class="ib" id="bProf" data-act="prof"></button>
    <button class="ib q" id="bHelp" data-act="help"></button>
    <div class="lang" role="group" aria-label="Jazyk / Language"><button data-act="lang" data-v="cs" lang="cs">CZ</button><button data-act="lang" data-v="en" lang="en">EN</button></div>
@@ -191,7 +192,8 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
  </header>
  <main id="stage"></main>
  <div id="help" hidden role="dialog" aria-modal="true"><div class="dlg"></div></div>
- <div id="prof" hidden role="dialog" aria-modal="true"><div class="dlg"></div></div>
+ <div id="tch" hidden role="dialog" aria-modal="true"><div class="dlg"></div></div>
+<div id="prof" hidden role="dialog" aria-modal="true"><div class="dlg"></div></div>
  <footer class="foot"><span id="fL"></span><span id="fR"></span></footer>
 </div>
 <script>
@@ -350,7 +352,7 @@ function boot(){
  });
  ACT.tab=v=>go(+v);
  TABS.forEach(t=>t.init&&t.init());
- document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||!$('#help').hidden||!$('#prof').hidden)return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
+ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||!$('#help').hidden||!$('#prof').hidden||!$('#tch').hidden)return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
  new ResizeObserver(()=>refresh()).observe(st);
  matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{readC();refresh()});
  window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1));if(n>=1&&n<=TABS.length&&n-1!==S.tab)go(n-1)});
@@ -967,26 +969,43 @@ function timeline(){
 :root[data-theme=dark]{--plus-bg:#9DB0D8;--plus-fg:#0F161B}
 .plus{display:inline-block;vertical-align:.2rem;margin-left:.5rem;padding:.25em .6em;border-radius:.3rem;background:var(--plus-bg);color:var(--plus-fg);font:700 .75rem/1.2 var(--f-head);letter-spacing:.08em;cursor:help}
 .ib.q{font:800 1.4rem/1 var(--f-head)}
-#help,#prof{position:fixed;inset:0;z-index:50;background:rgba(10,9,7,.6);display:grid;place-items:center;padding:2rem}
-#help .dlg,#prof .dlg{width:min(62rem,100%);max-height:100%;overflow:auto;background:var(--card);color:var(--ink);border-radius:1.2rem;box-shadow:0 2rem 5rem rgba(0,0,0,.5);padding:1.6rem 2rem 1.8rem;user-select:text;-webkit-user-select:text}
-#help h2,#prof h2{margin:0 0 .2rem;font:800 1.6rem/1.15 var(--f-head)}
-#help .kap,#prof .kap{font:700 .7rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
-#help h3,#prof h3{margin:1.1rem 0 .3rem;font:700 .8rem/1 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:var(--orange-t)}
-#help p,#help li,#prof p,#prof li{font-size:1.02rem;line-height:1.45;color:var(--ink2);margin:.25rem 0}
-#help ul,#prof ul{margin:.2rem 0;padding-left:1.3rem}
-#help b,#prof b{color:var(--ink)}
-#help .x,#prof .x{float:right;margin:-.3rem -.6rem 0 1rem;width:2.8rem;height:2.8rem;border-radius:50%;background:var(--bg);font:700 1.2rem/1 var(--f-head)}
-#help .pl,#prof .pl{margin-top:1.2rem;padding:.8rem 1rem;border-radius:.9rem;background:var(--bg);border-left:.3rem solid var(--plus-bg);font-size:.95rem;line-height:1.4;color:var(--ink2)}
-#help .nav,#prof .nav{display:flex;gap:.6rem;margin-top:1.2rem}
-#help .nav button,#prof .nav button{padding:.6rem 1rem;border-radius:.8rem;background:var(--bg);font:700 .9rem/1 var(--f-head)}
+#help,#prof,#tch{position:fixed;inset:0;z-index:50;background:rgba(10,9,7,.6);display:grid;place-items:center;padding:2rem}
+#help .dlg,#prof .dlg,#tch .dlg{width:min(62rem,100%);max-height:100%;overflow:auto;background:var(--card);color:var(--ink);border-radius:1.2rem;box-shadow:0 2rem 5rem rgba(0,0,0,.5);padding:1.6rem 2rem 1.8rem;user-select:text;-webkit-user-select:text}
+#help h2,#prof h2,#tch h2{margin:0 0 .2rem;font:800 1.6rem/1.15 var(--f-head)}
+#help .kap,#prof .kap,#tch .kap{font:700 .7rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
+#help h3,#prof h3,#tch h3{margin:1.1rem 0 .3rem;font:700 .8rem/1 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:var(--orange-t)}
+#help p,#help li,#prof p,#prof li,#tch p,#tch li{font-size:1.02rem;line-height:1.45;color:var(--ink2);margin:.25rem 0}
+#help ul,#prof ul,#tch ul{margin:.2rem 0;padding-left:1.3rem}
+#help b,#prof b,#tch b{color:var(--ink)}
+#help .x,#prof .x,#tch .x{float:right;margin:-.3rem -.6rem 0 1rem;width:2.8rem;height:2.8rem;border-radius:50%;background:var(--bg);font:700 1.2rem/1 var(--f-head)}
+#help .pl,#prof .pl,#tch .pl{margin-top:1.2rem;padding:.8rem 1rem;border-radius:.9rem;background:var(--bg);border-left:.3rem solid var(--plus-bg);font-size:.95rem;line-height:1.4;color:var(--ink2)}
+#help .nav,#prof .nav,#tch .nav{display:flex;gap:.6rem;margin-top:1.2rem}
+#help .nav button,#prof .nav button,#tch .nav button{padding:.6rem 1rem;border-radius:.8rem;background:var(--bg);font:700 .9rem/1 var(--f-head)}
 .ib.pill{width:auto;padding:0 1.1rem;border-radius:1.6rem;font:700 calc(.85rem*var(--z))/1 var(--f-head);white-space:nowrap}
-#prof .dlg{width:min(46rem,100%)}
+#prof .dlg,#tch .dlg{width:min(46rem,100%)}
+#tch .dlg{width:min(54rem,100%)}
+#tch .opt{display:block;width:100%;text-align:left;margin:.4rem 0;padding:.65rem 1rem;border-radius:.9rem;background:var(--bg);box-shadow:inset 0 0 0 .13rem var(--line2)}
+#tch .opt b{display:block;font:700 1.05rem/1.2 var(--f-head)}
+#tch .opt span{display:block;margin-top:.15rem;font-size:.92rem;line-height:1.35;color:var(--ink2)}
+#tch table{width:100%;border-collapse:collapse;margin:.3rem 0;font-size:.95rem}
+#tch td,#tch th{padding:.4rem .5rem;border-bottom:1px solid var(--line2);text-align:left;vertical-align:top;color:var(--ink2)}
+#tch th{font:700 .8rem/1.2 var(--f-head);color:var(--ink)}
 #prof .opt{display:block;width:100%;text-align:left;margin:.45rem 0;padding:.7rem 1rem;border-radius:.9rem;background:var(--bg);box-shadow:inset 0 0 0 .13rem var(--line2)}
 #prof .opt.on{box-shadow:inset 0 0 0 .2rem var(--orange);background:var(--orange-soft)}
 #prof .opt b{display:block;font:700 1.05rem/1.2 var(--f-head)}
 #prof .opt span{display:block;margin-top:.15rem;font-size:.92rem;line-height:1.35;color:var(--ink2)}
 #prof .det{margin-top:.8rem;padding:.7rem .9rem;border-radius:.9rem;background:var(--bg);font-size:.92rem;line-height:1.4;color:var(--ink2)}
 #prof .det.warn{border-left:.3rem solid var(--orange)}
+.fb{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:.5rem;margin:.7rem 0 .2rem}
+.fbox{padding:.55rem .8rem;border-radius:.8rem;background:var(--bg);font:500 .9rem/1.4 var(--f-mono);color:var(--ink);border-left:.25rem solid var(--orange)}
+.fbox b{display:block;font:700 .66rem/1.2 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:var(--orange-t);margin-bottom:.2rem}
+.toc{display:flex;flex-wrap:wrap;gap:.35rem .45rem;margin:.6rem 0 .1rem}
+.toc button,#help .lnk{padding:.35rem .75rem;border-radius:1rem;background:var(--bg);font:600 .85rem/1 var(--f-head)}
+#help h4{margin:1.2rem 0 .2rem;font:700 1.12rem/1.25 var(--f-head);color:var(--ink);scroll-margin-top:.5rem}
+#help .take{padding:.7rem .95rem;border-radius:.9rem;background:var(--orange-soft);font-weight:700;color:var(--ink);line-height:1.4}
+#help .gl{margin:.3rem 0}#help .gl dt{font-weight:700;color:var(--ink);font-size:1rem}#help .gl dd{margin:0 0 .4rem;color:var(--ink2);font-size:.98rem;line-height:1.4}
+#help .srcl{font-size:.92rem}
+#help .lnk{margin-top:.2rem}
 </style>
 <script>
 /* ===== Nápověda a štítek PLUS ===== */
@@ -1070,18 +1089,68 @@ const H=[
  tx('<b>Co se stane bez podpory.</b> Soubor s profilem 8.1 se na televizi bez Dolby Vision přehraje jako HDR10, protože nese kompatibilní základ. Profil 5 základ nemá a používá odlišný barevný model. Televize bez Dolby Vision mu nerozumí a obraz má typicky zelené a fialové odstíny nebo je vybledlý. <b>HLG</b> je jiná cesta: jeden signál bez metadat, který na televizi bez HDR vypadá přijatelně jako SDR a na HDR televizi využije její jas. Hodí se pro živé vysílání, kde nelze nic předem analyzovat, proto ho používají vysílatelé jako BBC a NHK.','<b>What happens without support.</b> A file with profile 8.1 plays as HDR10 on a TV without Dolby Vision, because it carries a compatible base. Profile 5 has no base and uses a different colour model. A TV without Dolby Vision does not understand it and the picture typically shows green and purple tones or looks washed out. <b>HLG</b> is a different path: a single signal without metadata that looks acceptable as SDR on a non-HDR TV and uses its brightness on an HDR TV. It suits live broadcast, where nothing can be analysed in advance, which is why broadcasters such as the BBC and NHK use it.'),
  tx('<b>Nálepka HDR na televizi nestačí.</b> Podpora formátu říká jen, že televize signál přijme, ne jak jasný bude obraz. Televize s „HDR10“ a špičkou 300 nit má na vrcholu daleko méně než ta s 2 000 nit a velkou část filmu musí stlačit. Proto vznikly certifikace: Ultra HD Premium (2016) vyžadovalo například nad 1 000 nit u LCD nebo nad 540 nit u OLED s odpovídající černou, a u monitorů VESA DisplayHDR s odstupňovanými úrovněmi jasu. Při výběru je proto lepší sledovat měřený špičkový jas a hloubku černé než jen seznam formátů.','<b>An HDR sticker on a TV is not enough.</b> Format support only says that the TV accepts the signal, not how bright the picture will be. A TV with “HDR10” and a 300 nit peak has far less at the top than one with 2,000 nit and has to compress a large part of the film. That is why certifications emerged: Ultra HD Premium (2016) required, for example, over 1,000 nit for LCD or over 540 nit for OLED with a matching black, and for monitors VESA DisplayHDR with graded luminance levels. When choosing it is therefore better to look at measured peak luminance and black depth than at a list of formats.')],
  d:tx('Zpětná kompatibilita funguje jen tehdy, když soubor základní vrstvu skutečně obsahuje.','Backward compatibility works only if the file really contains the base layer.')}];
-let open=false;
+const F=[
+ [[tx('Jednotka','Unit'),tx('1 nit = 1 cd/m²','1 nit = 1 cd/m²')],[tx('Clony','Stops'),tx('EV = log₂(L_max / L_min)','EV = log₂(L_max / L_min)')],[tx('Odraz místnosti','Room reflection'),tx('L_odraz ≈ ρ · E / π   (ρ odrazivost obrazovky, E osvětlení v lx)','L_refl ≈ ρ · E / π   (ρ screen reflectance, E illuminance in lx)')]],
+ [[tx('Gama (BT.1886)','Gamma (BT.1886)'),tx('L = L_w · V^2,4','L = L_w · V^2,4')],[tx('PQ (SMPTE ST 2084)','PQ (SMPTE ST 2084)'),tx('L = 10 000 · ( max(N^(1/m₂) − c₁, 0) / (c₂ − c₃ · N^(1/m₂)) )^(1/m₁)\nm₁ = 0,1593 · m₂ = 78,84 · c₁ = 0,8359 · c₂ = 18,85 · c₃ = 18,69','L = 10,000 · ( max(N^(1/m₂) − c₁, 0) / (c₂ − c₃ · N^(1/m₂)) )^(1/m₁)\nm₁ = 0.1593 · m₂ = 78.84 · c₁ = 0.8359 · c₂ = 18.85 · c₃ = 18.69')],[tx('Relativní krok mezi kódy','Relative step between codes'),tx('lineární uložení: 1 / kód   ·   gama 2,4: přibližně 2,4 / kód','linear storage: 1 / code   ·   gamma 2.4: about 2.4 / code')]],
+ [[tx('Úrovně','Levels'),tx('2ⁿ úrovní na kanál: 8 b = 256, 10 b = 1 024, 12 b = 4 096','2ⁿ levels per channel: 8 b = 256, 10 b = 1,024, 12 b = 4,096')],[tx('Kroky při lineárním uložení','Steps with linear storage'),tx('relativní krok = 1 / kód   ·   práh viditelnosti ≈ 1 % (orientačně)','relative step = 1 / code   ·   visibility threshold ≈ 1 % (approximate)')],[tx('Potřebný počet úrovní','Levels needed'),tx('úrovní ≈ 100 × kontrast (pro lineární uložení)','levels ≈ 100 × contrast (for linear storage)')]],
+ [[tx('CIE 1931 xy','CIE 1931 xy'),tx('x = X / (X + Y + Z)   ·   y = Y / (X + Y + Z)','x = X / (X + Y + Z)   ·   y = Y / (X + Y + Z)')],[tx('Bílý bod D65','White point D65'),tx('x = 0,3127   ·   y = 0,3290','x = 0.3127   ·   y = 0.3290')],[tx('Plochy trojúhelníků v xy','Triangle areas in xy'),tx('BT.709 = 1   ·   DCI-P3 ≈ 1,36   ·   BT.2020 ≈ 1,89','BT.709 = 1   ·   DCI-P3 ≈ 1,36   ·   BT.2020 ≈ 1,89')]],
+ [[tx('MaxCLL a MaxFALL','MaxCLL and MaxFALL'),tx('nejjasnější bod celého filmu a nejvyšší průměrný jas jednoho snímku (nit)','the brightest point of the whole film and the highest average luminance of one frame (nit)')],[tx('Tone mapping v aplikaci','Tone mapping in the app'),tx('koleno k = 1,5 · m − 0,5,  m = PQ⁻¹(L_d) / PQ⁻¹(L_w)\nnad kolenem Hermiteův spline v prostoru PQ (BT.2390)','knee k = 1.5 · m − 0.5,  m = PQ⁻¹(L_d) / PQ⁻¹(L_w)\nabove the knee a Hermite spline in PQ space (BT.2390)')],[tx('Zbytečně ztmavené místo','Needlessly dimmed point'),tx('L ≤ L_d   a zároveň   výstup < 0,95 · L','L ≤ L_d   and   output < 0.95 · L')]],
+ [[tx('HDR10','HDR10'),tx('PQ + 10 bitů + BT.2020 + statická metadata (ST 2086, MaxCLL, MaxFALL)','PQ + 10 bits + BT.2020 + static metadata (ST 2086, MaxCLL, MaxFALL)')],[tx('HDR10+','HDR10+'),tx('HDR10 + dynamická metadata (ST 2094-40)','HDR10 + dynamic metadata (ST 2094-40)')],[tx('Dolby Vision 8.1','Dolby Vision 8.1'),tx('základ HDR10 + dynamická metadata Dolby, jedna vrstva','HDR10 base + Dolby dynamic metadata, single layer')]],
+];
+const GL=[
+ [tx('Nit','Nit'),tx('Jednotka jasu, 1 cd/m².','Unit of luminance, 1 cd/m².'),[0,1]],
+ [tx('EV (clona)','EV (stop)'),tx('Zdvojnásobení jasu. Rozsah 1 000 : 1 je asi 10 clon.','A doubling of luminance. A range of 1,000:1 is about 10 stops.'),[0]],
+ [tx('SDR','SDR'),tx('Standardní dynamický rozsah: jas kolem 100 nit, gama, gamut BT.709.','Standard dynamic range: about 100 nit, gamma, BT.709 gamut.'),[0,1,5]],
+ [tx('HDR','HDR'),tx('Vysoký dynamický rozsah: jasy až do 10 000 nit v signálu, přenosová funkce PQ nebo HLG, širší gamut.','High dynamic range: luminances up to 10,000 nit in the signal, PQ or HLG transfer function, wider gamut.'),[0,1,5]],
+ [tx('Přenosová funkce','Transfer function'),tx('Vztah mezi číslem v signálu (kódem) a jasem. Kóduje se OETF (u kamery), zobrazuje EOTF (u displeje).','The relation between the number in the signal (code) and luminance. Encoded by the OETF (at the camera), displayed by the EOTF (at the display).'),[1]],
+ [tx('Gama','Gamma'),tx('Mocninná přenosová funkce, u SDR kolem 2,4 (BT.1886). Relativní: 100 % je vrchol displeje.','A power-law transfer function, around 2.4 for SDR (BT.1886). Relative: 100 % is the display peak.'),[1,2]],
+ [tx('PQ','PQ'),tx('Perceptual Quantizer, SMPTE ST 2084. Absolutní: kód odpovídá pevnému jasu v nitech.','Perceptual Quantizer, SMPTE ST 2084. Absolute: a code corresponds to a fixed luminance in nits.'),[1,2,4,5]],
+ [tx('HLG','HLG'),tx('Hybrid Log-Gamma, BT.2100. Relativní, bez metadat, vhodná pro vysílání.','Hybrid Log-Gamma, BT.2100. Relative, no metadata, suited for broadcast.'),[1,5]],
+ [tx('Kód','Code'),tx('Celé číslo uložené v signálu pro jeden kanál (u 10 bitů 0 až 1 023).','The integer stored in the signal for one channel (0 to 1,023 at 10 bits).'),[1,2]],
+ [tx('Bitová hloubka','Bit depth'),tx('Počet bitů na kanál; určuje počet úrovní 2ⁿ.','The number of bits per channel; sets the number of levels 2ⁿ.'),[2]],
+ [tx('Banding','Banding'),tx('Viditelné pruhy v plynulém přechodu, když je krok mezi úrovněmi vidět.','Visible stripes in a smooth gradient when the step between levels is visible.'),[2]],
+ [tx('Dithering (rozptyl)','Dithering'),tx('Přidání drobného šumu před zaokrouhlením, který pruhy rozbije.','Adding a little noise before rounding, which breaks up the stripes.'),[2]],
+ [tx('Gamut','Gamut'),tx('Množina barev, které standard nebo displej dokáže zobrazit.','The set of colours a standard or display can show.'),[3]],
+ [tx('Primáry','Primaries'),tx('Tři základní světla displeje (červená, zelená, modrá); jejich body tvoří trojúhelník gamutu.','The three base lights of a display (red, green, blue); their points form the gamut triangle.'),[3]],
+ [tx('Bílý bod D65','White point D65'),tx('Barevnost denního světla (x = 0,3127, y = 0,3290), referenční bílá pro SDR i HDR.','The chromaticity of daylight (x = 0.3127, y = 0.3290), the reference white for SDR and HDR.'),[3]],
+ [tx('CIE xy','CIE xy'),tx('Diagram barevností, ze kterého je odstraněn jas.','A chromaticity diagram with luminance removed.'),[3]],
+ [tx('BT.709','BT.709'),tx('Standard HD televize a téměř totéž co sRGB.','The HD television standard and nearly the same as sRGB.'),[3,5]],
+ [tx('DCI-P3','DCI-P3'),tx('Gamut digitálního kina, široce používaný pro HDR mistrování.','The digital cinema gamut, widely used for HDR mastering.'),[3,5]],
+ [tx('BT.2020','BT.2020'),tx('Gamut a kontejner pro UHD a HDR.','The gamut and container for UHD and HDR.'),[3,5]],
+ [tx('Tone mapping','Tone mapping'),tx('Stlačení jasu obsahu na schopnosti displeje.','Compressing the luminance of content to the capability of the display.'),[4]],
+ [tx('Statická metadata','Static metadata'),tx('Jedna sada údajů (MaxCLL, MaxFALL) pro celý film.','One set of values (MaxCLL, MaxFALL) for the whole film.'),[4,5]],
+ [tx('Dynamická metadata','Dynamic metadata'),tx('Údaje, které se mění po scénách nebo snímcích.','Values that change per scene or frame.'),[4,5]],
+ [tx('MaxCLL / MaxFALL','MaxCLL / MaxFALL'),tx('Nejjasnější bod filmu a nejvyšší průměr jednoho snímku.','The brightest point of the film and the highest average of one frame.'),[4]],
+ [tx('HDR10','HDR10'),tx('Základní formát HDR: PQ, 10 bitů, BT.2020, statická metadata.','The base HDR format: PQ, 10 bits, BT.2020, static metadata.'),[5]],
+ [tx('HDR10+','HDR10+'),tx('HDR10 s dynamickými metadaty (ST 2094-40).','HDR10 with dynamic metadata (ST 2094-40).'),[4,5]],
+ [tx('Dolby Vision','Dolby Vision'),tx('Licencovaný formát s dynamickými metadaty a až 12 bity.','A licensed format with dynamic metadata and up to 12 bits.'),[4,5]],
+ [tx('Profil Dolby Vision','Dolby Vision profile'),tx('Varianta formátu (5, 7, 8.1 a další), určuje vrstvy a kompatibilitu.','A variant of the format (5, 7, 8.1 and others) that sets layers and compatibility.'),[5]],
+ [tx('Mastering','Mastering'),tx('Konečné ladění obrazu na referenčním monitoru.','Final grading of the picture on a reference monitor.'),[4,5]]];
+let open=false,allGl=false;
+const esc2=t=>t;
 function render(){
- const h=H[S.tab]||H[0],last=S.tab>=H.length-1;
- const el=$('#help .dlg');
+ const i=S.tab,h=H[i]||H[0],el=$('#help .dlg'),n=i+1;
+ const secs=[];let k=1;
+ secs.push({id:'s'+k,t:`${n}.${k} ${tx('Co to je','What it is')}`,b:`<p>${h.a}</p><p>${h.b}</p>`});k++;
+ (h.e||[]).forEach(x=>{const m=x.match(/^<b>(.+?)<\/b>\s*([\s\S]*)$/);secs.push({id:'s'+k,t:`${n}.${k} ${m?m[1].replace(/[.:]$/,''):h.et}`,b:`<p>${m?m[2]:x}</p>`});k++});
+ secs.push({id:'s'+k,t:`${n}.${k} ${tx('Co zkusit','What to try')}`,b:`<ul>${h.c.map(x=>`<li>${x}</li>`).join('')}</ul>`});k++;
+ secs.push({id:'sT',t:tx('Co si odnést','Takeaway'),b:`<div class="take">${h.d}</div>`,plain:true});
+ const gl=GL.filter(g=>allGl||g[2].includes(i)),src=h.src||[];
+ const toc=secs.map(s=>`<button data-act="hgo" data-v="${s.id}">${s.t.replace(/^\d+\.\d+ /,'')}</button>`).join('')+`<button data-act="hgo" data-v="sG">${tx('Slovníček','Glossary')}</button>`+(src.length?`<button data-act="hgo" data-v="sS">${tx('Zdroje','Sources')}</button>`:'');
  el.innerHTML=`<button class="x" data-act="help" aria-label="${tx('Zavřít','Close')}">✕</button>
-  <div class="kap">${tx('kap.','ch.')} ${S.tab+1} · ${tx('vysvětlení','explanation')}</div><h2>${h.t}</h2>
-  <h3>${tx('Co to je','What it is')}</h3><p>${h.a}</p><p>${h.b}</p>
-  ${h.e?`<h3>${h.et}</h3>${h.e.map(x=>`<p>${x}</p>`).join('')}`:''}<h3>${tx('Co zkusit','What to try')}</h3><ul>${h.c.map(x=>`<li>${x}</li>`).join('')}</ul>
-  <h3>${tx('Co si odnést','Takeaway')}</h3><p><b>${h.d}</b></p>
-  <div class="pl"><span class="plus" style="margin:0 .4rem 0 0;vertical-align:baseline">PLUS</span>${tx('značí obsah nad rámec učiva přiřazených ročníků. Celá tato aplikace je určena zájemcům o techniku obrazu, ne povinné učivo.','marks content beyond the curriculum of the assigned years. This whole app is meant for those interested in display and image technology, not for required material.')}</div>
+  <div class="kap">${tx('kap.','ch.')} ${n} · ${tx('vysvětlení','explanation')}</div><h2>${h.t}</h2>
+  <div class="toc" aria-label="${tx('Obsah','Contents')}">${toc}</div>
+  <div class="fb">${F[i].map(f=>`<div class="fbox"><b>${f[0]}</b>${f[1].replace(/\n/g,'<br>')}</div>`).join('')}</div>
+  ${secs.map(s=>`<h4 id="${s.id}">${s.t}</h4>${s.b}`).join('')}
+  <h4 id="sG">${tx('Slovníček','Glossary')}${allGl?'':' · '+tx('této kapitoly','of this chapter')}</h4>
+  <dl class="gl">${gl.map(g=>`<dt>${g[0]}</dt><dd>${g[1]}</dd>`).join('')}</dl>
+  <button class="lnk" data-act="hgl">${allGl?tx('Jen pojmy této kapitoly','Only this chapter\'s terms'):tx('Zobrazit celý slovníček','Show the whole glossary')}</button>
+  ${src.length?`<h4 id="sS">${tx('Zdroje','Sources')}</h4><ul class="srcl">${src.map(s=>`<li>${s}</li>`).join('')}</ul>`:''}
+  <div class="pl"><span class="plus" style="margin:0 .4rem 0 0;vertical-align:baseline">PLUS</span>${tx('značí obsah nad rámec učiva přiřazených ročníků. Celá tato aplikace je určena zájemcům o techniku obrazu, ne povinné učivo.','marks content beyond the curriculum of the assigned years. This whole app is meant for those interested in image technology, not for required material.')}</div>
   <div class="nav"><button data-act="hnav" data-v="-1">← ${tx('Předchozí kapitola','Previous chapter')}</button><button data-act="hnav" data-v="1">${tx('Další kapitola','Next chapter')} →</button></div>`;
 }
+ACT.hgo=v=>{const e=$('#'+v,$('#help'));e&&e.scrollIntoView({block:'start'})};
+ACT.hgl=()=>{allGl=!allGl;render();ACT.hgo('sG')};
 ACT.help=()=>{open=!open;const e=$('#help');e.hidden=!open;if(open){render();$('#help .x').focus()}else $('#bHelp').focus()};
 ACT.hnav=v=>{go((S.tab+ +v+H.length)%H.length);render();$('#help .dlg').scrollTop=0};
 document.addEventListener('keydown',e=>{if(open&&e.key==='Escape')ACT.help()});
@@ -1114,7 +1183,7 @@ function render(){
   <div class="chips g2" style="margin:.3rem 0"><button class="chip${S.proj?' on':''}" data-act="projset" data-v="1">${tx('Zapnuto: větší písmo a čáry','On: larger text and lines')}</button><button class="chip${S.proj?'':' on'}" data-act="projset" data-v="0">${tx('Vypnuto','Off')}</button></div>
   <div class="det${warn?' warn':''}">${det}</div>`;
 }
-function setOpen(v){open=v;$('#prof').hidden=!v;if(v){if(!$('#help').hidden)ACT.help();render();$('#prof .x').focus()}else $('#bProf').focus()}
+function setOpen(v){open=v;$('#prof').hidden=!v;if(v){if(!$('#help').hidden)ACT.help();if(!$('#tch').hidden)ACT.tch();render();$('#prof .x').focus()}else $('#bProf').focus()}
 function label(){const b=$('#bProf');b.innerHTML='<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M9 20h6M12 16v4"/></svg>';b.title=tx('Obrazovka a promítání','Screen and projection');b.setAttribute('aria-label',b.title)}
 ACT.prof=()=>setOpen(!open);
 ACT.profset=v=>{applyProfile(v,true,true);label();render();refresh()};
@@ -1123,6 +1192,46 @@ document.addEventListener('keydown',e=>{if(open&&e.key==='Escape')setOpen(false)
 document.addEventListener('click',e=>{if(open&&e.target.id==='prof')setOpen(false)});
 const prev=window.hdrHelpInit;
 window.hdrHelpInit=function(){prev&&prev();label()};
+})();
+</script>
+<script>
+/* ===== Pro učitele: předvolby a postup hodiny ===== */
+(function(){
+let open=false;
+const PRE=[
+ {t:tx('Proč 8 bitů pruhuje','Why 8 bits band'),d:tx('Kapitola 3: 8 bitů, stíny, lupa zapnutá, bez rozptylu, křivka PQ.','Chapter 3: 8 bits, shadows, magnifier on, no dithering, PQ curve.'),f:()=>{Object.assign(S,{bits:8,reg:'dark',lupa:true,dith:false,pq3:true,pr3:.2});go(2)}},
+ {t:tx('Rozptyl pruhy zakryje','Dithering hides the stripes'),d:tx('Kapitola 3: 8 bitů, stíny, rozptyl zapnutý. Porovnejte s předchozí předvolbou.','Chapter 3: 8 bits, shadows, dithering on. Compare with the previous preset.'),f:()=>{Object.assign(S,{bits:8,reg:'dark',lupa:true,dith:true,pq3:true,pr3:.2});go(2)}},
+ {t:tx('Lineární uložení vs. PQ','Linear storage vs. PQ'),d:tx('Kapitola 2: lineární osa do 10 000 nit; vidět, kolik kódů dostanou stíny.','Chapter 2: linear axis up to 10,000 nit; shows how few codes shadows get.'),f:()=>{Object.assign(S,{ysc:'lin10k',code:256});go(1)}},
+ {t:tx('Světlá třída zhorší stíny','A bright room ruins the shadows'),d:tx('Kapitola 1: panel 400 nit, 400 lx (den).','Chapter 1: 400 nit panel, 400 lx (daytime).'),f:()=>{Object.assign(S,{pk1:400,pnl:'lcd',lux:400});go(0)}},
+ {t:tx('Tma: stejný panel, jiný dojem','Dark room: same panel, different impression'),d:tx('Kapitola 1: stejný panel, osvětlení 0 lx. Porovnejte s předchozí předvolbou.','Chapter 1: same panel, 0 lx. Compare with the previous preset.'),f:()=>{Object.assign(S,{pk1:400,pnl:'lcd',lux:0});go(0)}},
+ {t:tx('Šrafy: barvy, které panel nezobrazí','Hatching: colours the panel cannot show'),d:tx('Kapitola 4: všechny trojúhelníky a šrafy zapnuté.','Chapter 4: all triangles and hatching on.'),f:()=>{Object.assign(S,{gm709:true,gmP3:true,gm2020:true,fc:true});go(3)}},
+ {t:tx('Proč HDR10 ztmaví tmavou scénu','Why HDR10 dims a dark scene'),d:tx('Kapitola 5: televize 600 nit, překryv zapnutý; ukáže zbytečně ztmavená místa.','Chapter 5: 600 nit TV, overlay on; shows needlessly dimmed points.'),f:()=>{Object.assign(S,{tvp:600,ovl:true});go(4)}},
+ {t:tx('Přehled formátů','Format overview'),d:tx('Kapitola 6: srovnání HDR10, HDR10+, Dolby Vision a HLG.','Chapter 6: comparison of HDR10, HDR10+, Dolby Vision and HLG.'),f:()=>go(5)}];
+const PLAN=[
+ ['1',tx('Úvod: kolik světla zvládne obrazovka','Intro: how much light a screen handles'),'5 min',tx('Kap. 1, předvolby „Světlá třída“ a „Tma“.','Ch. 1, presets "Bright room" and "Dark room".')],
+ ['2',tx('Proč přenosová funkce','Why a transfer function'),'10 min',tx('Kap. 2, předvolba „Lineární vs. PQ“; vysvětlení v nápovědě 2.2 až 2.4.','Ch. 2, preset "Linear vs. PQ"; help sections 2.2 to 2.4.')],
+ ['3',tx('Bitová hloubka a pruhy','Bit depth and banding'),'8 min',tx('Kap. 3, předvolby „Proč 8 bitů pruhuje“ a „Rozptyl“.','Ch. 3, presets "Why 8 bits band" and "Dithering".')],
+ ['4',tx('Barvy a gamut','Colour and gamut'),'7 min',tx('Kap. 4, předvolba „Šrafy“; zeptat se, které barvy panel ztratí.','Ch. 4, preset "Hatching"; ask which colours the panel loses.')],
+ ['5',tx('Metadata a tone mapping','Metadata and tone mapping'),'8 min',tx('Kap. 5, předvolba „Proč HDR10 ztmaví“; přehrát scény.','Ch. 5, preset "Why HDR10 dims"; play the scenes.')],
+ ['6',tx('Formáty a shrnutí','Formats and summary'),'5 min',tx('Kap. 6; shrnutí „Co si odnést“ z nápovědy.','Ch. 6; takeaways from the help.')]];
+function render(){
+ $('#tch .dlg').innerHTML=`<button class="x" data-act="tch" aria-label="${tx('Zavřít','Close')}">✕</button>
+ <div class="kap">${tx('pro učitele','for teachers')}</div><h2>${tx('Předvolby a postup hodiny','Presets and lesson flow')}</h2>
+ <h3>${tx('Předvolby jedním klepnutím','One-tap presets')}</h3>
+ ${PRE.map((p,i)=>`<button class="opt" data-act="tchgo" data-v="${i}"><b>${p.t}</b><span>${p.d}</span></button>`).join('')}
+ <h3>${tx('Doporučený postup (asi 45 minut)','Suggested flow (about 45 minutes)')}</h3>
+ <table><tr><th>#</th><th>${tx('Téma','Topic')}</th><th>${tx('Čas','Time')}</th><th>${tx('Co ukázat','What to show')}</th></tr>${PLAN.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('')}</table>
+ <h3>${tx('Poznámky','Notes')}</h3>
+ <ul><li>${tx('Aplikace HDR jen simuluje. Panel bez HDR ukáže rozdíly jen náznakem; skutečný HDR obraz ukažte na televizi nebo telefonu s HDR videem.','The app only simulates HDR. A panel without HDR shows differences only roughly; show real HDR on a TV or phone with HDR video.')}</li>
+ <li>${tx('Ovládání: klávesy ← a → přepínají kapitoly, tlačítko ? otevře vysvětlení, tlačítko obrazovky nastaví promítání.','Controls: the ← and → keys switch chapters, the ? button opens the explanation, the screen button sets projection.')}</li></ul>`;
+}
+function setOpen(v){open=v;$('#tch').hidden=!v;if(v){['#help','#prof'].forEach(k=>{if(!$(k).hidden)ACT[k==='#help'?'help':'prof']()});render();$('#tch .x').focus()}else $('#bTch').focus()}
+ACT.tch=()=>setOpen(!open);
+ACT.tchgo=v=>{PRE[+v].f();setOpen(false);refresh();sync()};
+document.addEventListener('keydown',e=>{if(open&&e.key==='Escape')setOpen(false)});
+document.addEventListener('click',e=>{if(open&&e.target.id==='tch')setOpen(false)});
+const prev=window.hdrHelpInit;
+window.hdrHelpInit=function(){prev&&prev();const b=$('#bTch');b.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 5h16v11H4zM8 20h8M12 16v4M8 9h8M8 12h5"/></svg>';b.title=tx('Pro učitele: předvolby a postup','For teachers: presets and flow');b.setAttribute('aria-label',b.title)};
 })();
 </script>
 <script>
