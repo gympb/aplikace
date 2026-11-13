@@ -405,7 +405,7 @@ const STEPS=[
  {f:500,p:'mn',n:'Syntéza virových proteinů',tf:560,cap:'Na '+RS+'ribozomech'+E+' hostitelské buňky vznikají podle mRNA virové bílkoviny ('+RS+'translace'+E+'). Bílkoviny kapsidu putují zpět do jádra.'},
  {f:610,p:'out',n:'Kompletace virionů',tf:700,cap:'Z kopií DNA a bílkovin kapsidu se samovolně skládají nové '+RS+'viriony'+E+'.'},
  {f:720,p:'out',n:'Lyze buňky',tf:815,cap:'Hostitelská buňka se rozpadne ('+RS+'lyze'+E+') a uvolní nové viriony. Každý může napadnout další buňku.'}];
-function render(f,o){o=o||{};let w='',L='';const cam=camAt(K,f),T=(x,y)=>[(x-cam.x)*cam.z+400,(y-cam.y)*cam.z+310];
+function render(f,o){o=o||{};let w='',L='',bp=null;const cam=camAt(K,f),T=(x,y)=>[(x-cam.x)*cam.z+400,(y-cam.y)*cam.z+310];
  const burst=es(f,735,800),tA=es(f,0,60);
  w+=animalCell({burst,nucA:1-es(f,722,760)*.9,chromA:.32,ribos:RIB.slice(3),riboA:1-burst*.85});
  [-.085,0,.085].forEach(d=>{const s=site(PH0+d);w+=receptor(s.x,s.y,s.ang,1-burst)});
@@ -431,7 +431,7 @@ function render(f,o){o=o||{};let w='',L='';const cam=camAt(K,f),T=(x,y)=>[(x-cam
   w+=rna(p[0],p[1],46,an,{t1:g,col:C.mrna,tip:'mrna',a:1-burst*.8,amp:4,wl:18,w:3})}
  // translace: bílkoviny kapsidu putují do jádra
  if(f>=500&&f<660)for(let i=0;i<3;i++)for(let j=0;j<11;j++){const t0=504+j*8+i*3,t=(f-t0)/50;if(t<=0||t>=1)continue;
-  const p=along([[MR[i][0],MR[i][1]-12],nucPt(MR[i][2]),SLOT[(i*3+j)%8]],ease(t));w+=bead(p[0],p[1],cl(t*6)*cl((1-t)*5),5.6)}
+  const p=along([[MR[i][0],MR[i][1]-12],nucPt(MR[i][2]),SLOT[(i*3+j)%8]],ease(t));if(!bp&&i===0&&t>.2&&t<.6)bp=p;w+=bead(p[0],p[1],cl(t*6)*cl((1-t)*5),5.6)}
  {const sh=f>=500&&f<612?Math.sin((f-500)*.12)*10:0;[0,1,2].forEach(i=>{w+=ribo(MR[i][0]+sh,MR[i][1],1-burst*.85)})}
  // nové viriony
  for(let k=0;k<8;k++){const asm=es(f,612+6*k,672+6*k);if(asm<=0)continue;let x=SLOT[k][0],y=SLOT[k][1];
@@ -442,12 +442,13 @@ function render(f,o){o=o||{};let w='',L='';const cam=camAt(K,f),T=(x,y)=>[(x-cam
   L+=pill(...T(500,612),'hostitelská buňka',win(f,4,50));
   if((a=win(f,6,48))>0){p=T(cx,cy);L+=lead(p[0],p[1],p[0]+70,p[1]-52,'virion',a)}
   if((a=win(f,56,93))>0){p=T(cx+Rv*.75,cy-Rv*.6);L+=lead(p[0],p[1],p[0]+95,p[1]-70,'kapsid',a);p=T(cx,cy);L+=lead(p[0],p[1],p[0]-40,p[1]-128,'virová DNA',a);p=T(S.x+S.nx*8,S.y+S.ny*8+2);L+=lead(p[0],p[1],p[0]+30,p[1]+120,'receptor',a)}
-  if((a=win(f,128,192))>0){p=T(cx-rp*.7,cy+rp*.75);L+=lead(p[0],p[1],p[0]-30,p[1]+95,'váček',a)}
+  if((a=win(f,152,196))>0){p=T(cx-rp*.7,cy+rp*.75);L+=lead(p[0],p[1],p[0]-30,p[1]+95,'váček',a)}
   if((a=win(f,222,288))>0){p=T(...PORE);L+=lead(p[0],p[1],p[0]-40,p[1]+120,'jaderný pór',a);L+=pill(...T(NUC.x+40,NUC.y-NUC.r-26),'jádro',a)}
   if((a=win(f,268,300))>0){p=T(...dpos[7]);L+=lead(p[0],p[1],p[0]+60,p[1]-110,'virová DNA',a)}
   if((a=win(f,325,398))>0){p=T(...SLOT[1]);L+=lead(p[0],p[1],p[0]+30,p[1]-125,'kopie virové DNA',a)}
   if((a=win(f,418,498))>0&&mpos[0]){p=T(...mpos[0]);L+=lead(p[0],p[1],p[0]-20,p[1]-70,'mRNA',a)}
-  if((a=win(f,505,606))>0){p=T(MR[1][0],MR[1][1]);L+=lead(p[0],p[1],p[0]-30,p[1]+62,'ribozom',a);p=T(...nucPt(195,1.25));L+=lead(p[0],p[1],p[0]-40,p[1]-96,'bílkoviny kapsidu',a)}
+  if((a=win(f,505,606))>0){p=T(MR[1][0],MR[1][1]);L+=lead(p[0],p[1],p[0]-30,p[1]+62,'ribozom',a)}
+  if((a=win(f,522,600))>0&&bp){p=T(...bp);L+=lead(p[0],p[1],p[0]-40,p[1]-96,'bílkoviny kapsidu',a)}
   if((a=win(f,632,716))>0)L+=pill(400,52,'skládání nových virionů',a);
   if((a=win(f,765,838))>0){L+=pill(...T(500,380),'lyze buňky',a);if((a=win(f,806,840))>0){p=T(...dpos[1]);L+=lead(p[0],p[1],p[0]-60,p[1]+62,'nové viriony',a)}}}
  return wrap(cam,w,L)}
@@ -484,7 +485,7 @@ const STEPS=[
  {f:500,p:'out',n:'Skládání kapsidů',tf:585,cap:'Kolem každé kopie virové RNA se z bílkovin složí nový '+RS+'kapsid'+E+'.'},
  {f:590,p:'out',n:'Pučení',tf:648,cap:'Kapsidy vystupují z buňky '+RS+'pučením'+E+'. Obalí se přitom kouskem membrány hostitelské buňky s virovými glykoproteiny.'},
  {f:720,p:'out',n:'Nové viriony',tf:790,cap:'Obal virionu tedy pochází z '+RS+'hostitelské buňky'+E+'. Buňka nemusí hned zaniknout a může viriony uvolňovat dál.'}];
-function render(f,o){o=o||{};let w='',L='';const cam=camAt(K,f),T=(x,y)=>[(x-cam.x)*cam.z+400,(y-cam.y)*cam.z+310];
+function render(f,o){o=o||{};let w='',L='',bp=null;const cam=camAt(K,f),T=(x,y)=>[(x-cam.x)*cam.z+400,(y-cam.y)*cam.z+310];
  w+=animalCell({er:true,ribos:RIB.slice(2),chromA:.8});
  const recA=f<90?1:1-es(f,95,125)+es(f,190,230);[-.085,0,.085].forEach(d=>{const s=site(ENV.PH0+d);w+=receptor(s.x,s.y,s.ang,cl(recA))});
  const en=envEntry(f);w+=en.s;
@@ -505,7 +506,7 @@ function render(f,o){o=o||{};let w='',L='';const cam=camAt(K,f),T=(x,y)=>[(x-cam
  [0,2].forEach((k,q)=>{const t1=seg(f,346+12*q,372+12*q);if(t1<=0)return;const t=gk(k),x=lerp(GP[k][0],ENV.Q[k][0],t),y=lerp(GP[k][1],ENV.Q[k][1],t);
   w+=rna(x,y,lerp(74,40,t),0,{t1,a:gA(k),amp:lerp(5.5,4,t)});if(t1<1)w+=blob(x-37+74*t1,y,11,'gEnz',1,'rpol')});
  // translace
- if(f>=380&&f<560){[0,2].forEach((i,q)=>{for(let j=0;j<12;j++){const t0=386+j*9+q*4,t=(f-t0)/60;if(t<=0||t>=1)continue;const p=along([[M[i][0],M[i][1]-12],[285,330],ENV.Q[j%3]],ease(t));w+=bead(p[0],p[1],cl(t*6)*cl((1-t)*5),5.6)}})}
+ if(f>=380&&f<560){[0,2].forEach((i,q)=>{for(let j=0;j<12;j++){const t0=386+j*9+q*4,t=(f-t0)/60;if(t<=0||t>=1)continue;const p=along([[M[i][0],M[i][1]-12],[285,330],ENV.Q[j%3]],ease(t));if(!bp&&i===0&&t>.2&&t<.6)bp=p;w+=bead(p[0],p[1],cl(t*6)*cl((1-t)*5),5.6)}})}
  {const sh=f>=380&&f<500?Math.sin((f-380)*.12)*9:0;w+=ribo(M[0][0]+sh,M[0][1],1)+ribo(M[2][0]+sh,M[2][1],1)}
  w+=vesicle(f,402,446,site(240*RAD))+vesicle(f,446,490,site(252*RAD));
  // pučení
@@ -523,13 +524,14 @@ function render(f,o){o=o||{};let w='',L='';const cam=camAt(K,f),T=(x,y)=>[(x-cam
   if((a=win(f,112,176))>0){p=T(S.x-S.ny*40,S.y+S.nx*40);L+=lead(p[0],p[1],p[0]-80,p[1]-95,'obal splývá s membránou',a)}
   if((a=win(f,212,258))>0){p=T(gx,gy);L+=lead(p[0],p[1],p[0]+40,p[1]-80,'virová RNA',a)}
   if((a=win(f,268,322))>0){p=T(lerp(298,372,c1),G0[1]+6);L+=lead(p[0],p[1],p[0]+30,p[1]+110,'virová RNA-polymeráza',a)}
-  if((a=win(f,300,376))>0&&f<322){p=T(G0[0]-20,G0[1]+16);L+=lead(p[0],p[1],p[0]-130,p[1]+70,'mRNA',a)}
+  if((a=win(f,292,330))>0){p=T(G0[0]-10,G0[1]+18);L+=lead(p[0],p[1],p[0]-120,p[1]+70,'mRNA',a)}
   if((a=win(f,352,380))>0){p=T(GP[0][0],GP[0][1]);L+=lead(p[0],p[1],p[0]-20,p[1]-100,'nové kopie virové RNA',a)}
-  if((a=win(f,388,496))>0){p=T(M[0][0],M[0][1]);L+=lead(p[0],p[1],p[0]-20,p[1]+56,'ribozom',a);p=T(292,400);L+=lead(p[0],p[1],p[0]-60,p[1]-30,'bílkoviny kapsidu',a);
+  if((a=win(f,406,480))>0&&bp){p=T(...bp);L+=lead(p[0],p[1],p[0]-70,p[1]-40,'bílkoviny kapsidu',a)}
+  if((a=win(f,388,496))>0){p=T(M[0][0],M[0][1]);L+=lead(p[0],p[1],p[0]-20,p[1]+56,'ribozom',a);
    p=T(...nucPt(262,1.44));L+=lead(p[0],p[1],p[0]+150,p[1]-36,'endoplazmatické retikulum',a);p=T(...nucPt(230,.4));L+=pill(p[0]+40,p[1]+40,'jádro',a)}
   if((a=win(f,455,500))>0){const q=site(246*RAD);p=T(q.x+q.nx*14,q.y+q.ny*14);L+=lead(p[0],p[1],p[0]+110,p[1]-30,'glykoproteiny',a)}
-  if((a=win(f,535,588))>0&&vp[1]){p=T(...vp[1]);L+=lead(p[0],p[1],p[0]+150,p[1]+60,'nový kapsid s RNA',a)}
-  if((a=win(f,612,716))>0&&vp[0]){p=T(vp[0][0],vp[0][1]);L+=lead(p[0],p[1],p[0]-150,p[1]+10,'pučení',a)}
+  if((a=win(f,568,596))>0&&vp[1]){p=T(...vp[1]);L+=lead(p[0],p[1],p[0]+150,p[1]+60,'nový kapsid s RNA',a)}
+  if((a=win(f,636,716))>0&&vp[0]){p=T(vp[0][0],vp[0][1]);L+=lead(p[0],p[1],p[0]-150,p[1]+10,'pučení',a)}
   if((a=win(f,675,716))>0){const q=ENV.SO[1];p=T(q.x+q.nx*(R+20)+R*.7,q.y+q.ny*(R+20)-10);L+=lead(p[0],p[1],p[0]+150,p[1]+20,'obal z membrány buňky',a)}
   if((a=win(f,752,800))>0&&vp[1]){p=T(...vp[1]);L+=lead(p[0],p[1],p[0]+130,p[1]-10,'nové obalené viriony',a)}}
  return wrap(cam,w,L)}
@@ -555,7 +557,7 @@ const STEPS=[
  {f:510,p:'mn',n:'Transkripce proviru',tf:585,cap:'Buněčná '+RS+'RNA-polymeráza'+E+' přepisuje provirus do RNA. Část molekul slouží jako '+RS+'mRNA'+E+', část jako '+RS+'virová RNA'+E+' pro nové viriony.'},
  {f:610,p:'mn',n:'Syntéza virových proteinů',tf:690,cap:'Na ribozomech vznikají bílkoviny kapsidu a virové enzymy, na endoplazmatickém retikulu '+RS+'glykoproteiny'+E+' obalu.'},
  {f:710,p:'out',n:'Skládání a pučení',tf:800,cap:'U membrány se shromáždí dvě molekuly RNA, enzymy a bílkoviny kapsidu. Virion opouští buňku '+RS+'pučením'+E+'. Kapsid se dotvoří až po uvolnění (zrání virionu).'}];
-function render(f,o){o=o||{};let w='',L='';const cam=camAt(K,f),T=(x,y)=>[(x-cam.x)*cam.z+400,(y-cam.y)*cam.z+310];
+function render(f,o){o=o||{};let w='',L='',bp=null;const cam=camAt(K,f),T=(x,y)=>[(x-cam.x)*cam.z+400,(y-cam.y)*cam.z+310];
  const iw=es(f,470,506)*.26;
  const host=helixS(curveS(hostP(iw),0,1,74,t=>Math.abs(t-.5)<iw/2?1:0),{cols:HOSTCOL,tip:iw>0?'prov':'hdna',amp:5,wl:22,w:3.2});
  w+=animalCell({er:true,ribos:RIB.slice(1),chrom:CH2+host});
@@ -578,15 +580,15 @@ function render(f,o){o=o||{};let w='',L='';const cam=camAt(K,f),T=(x,y)=>[(x-cam
  const ix=f<400?bx+22:dp[0]+Math.cos(da)*dl/2,iy=f<400?by-18+(f>=240?-14:0):dp[1]+Math.sin(da)*dl/2-2;
  if(f>=178)w+=blob(ix,iy,8,'gInt',seg(f,178,192)*(1-es(f,500,512)),'int','#4f7310');
  // transkripce proviru: 2 mRNA + 4 virové RNA
- const P0=hostP(.26)(.5-.13),P1=hostP(.26)(.5+.13),pa=Math.atan2(P1[1]-P0[1],P1[0]-P0[0]),tp=[];
+ const P0=hostP(.26)(.5-.13),P1=hostP(.26)(.5+.13),pa=Math.atan2(P1[1]-P0[1],P1[0]-P0[0]),tp=[];let hp=null;
  for(let i=0;i<6;i++){const a0=515+15*i,g=seg(f,a0,a0+15);if(g<=0){tp.push(null);continue}const t=es(f,a0+15,a0+58),isM=i<2;
   const to=isM?[M[i][0],M[i][1]+13]:GW[i-2],pore=isM&&i===1?nucPt(240):PORE;
   const p=along([[HM[0]+Math.sin(pa)*13,HM[1]-Math.cos(pa)*13],pore,to],t),an=lerp(pa,isM&&i===1?-.5:0,ease(t));tp.push(p);
   if(!isM){const k=(i-2)>>1,q=es(f,716+45*k,748+45*k);if(q>=1)continue;const Q=ENV.Q[k?2:0];p[0]=lerp(p[0],Q[0]+((i&1)?6:-6),q);p[1]=lerp(p[1],Q[1]+((i&1)?7:-7),q)}
   w+=rna(p[0],p[1],lerp(58,isM?46:50,t),an,{t1:g,col:isM?C.mrna:C.vrna,tip:isM?'mrna':'vrna',amp:4,wl:20,w:3});
-  if(g<1)w+=blob(lerp(P0[0],P1[0],g),lerp(P0[1],P1[1],g)-4,13,'gPol',1,'hpol','#2b6a8f')}
+  if(g<1){hp=[lerp(P0[0],P1[0],g),lerp(P0[1],P1[1],g)-4];w+=blob(hp[0],hp[1],13,'gPol',1,'hpol','#2b6a8f')}}
  // translace
- if(f>=610&&f<760){for(let j=0;j<11;j++){const t0=616+j*10,t=(f-t0)/60;if(t<=0||t>=1)continue;const p=along([[M[0][0],M[0][1]-12],[285,330],ENV.Q[(j&1)?2:0]],ease(t)),a=cl(t*6)*cl((1-t)*5);w+=j%4===3?blob(p[0],p[1],6,'gEnz',a,'rt'):bead(p[0],p[1],a,5.6)}
+ if(f>=610&&f<760){for(let j=0;j<11;j++){const t0=616+j*10,t=(f-t0)/60;if(t<=0||t>=1)continue;const p=along([[M[0][0],M[0][1]-12],[285,330],ENV.Q[(j&1)?2:0]],ease(t)),a=cl(t*6)*cl((1-t)*5);if(!bp&&j%4!==3&&t>.2&&t<.6)bp=p;w+=j%4===3?blob(p[0],p[1],6,'gEnz',a,'rt'):bead(p[0],p[1],a,5.6)}
 }
  w+=ribo(M[0][0]+(f>=610&&f<715?Math.sin((f-610)*.12)*9:0),M[0][1],1);
  w+=vesicle(f,632,672,site(236*RAD))+vesicle(f,668,708,site(254*RAD));
@@ -603,18 +605,20 @@ function render(f,o){o=o||{};let w='',L='';const cam=camAt(K,f),T=(x,y)=>[(x-cam
    p=T(cx+rc*.55,cy+rc*.3);L+=lead(p[0],p[1],p[0]+125,p[1]+70,'kapsid',a);p=T(cx,cy+6);L+=lead(p[0],p[1],p[0]-70,p[1]+150,'2 molekuly RNA',a);p=T(cx+6,cy-4);L+=lead(p[0],p[1],p[0]+60,p[1]-150,'reverzní transkriptáza',a)}
   if((a=win(f,112,168))>0){p=T(S.x-S.ny*40,S.y+S.nx*40);L+=lead(p[0],p[1],p[0]-80,p[1]-95,'obal splývá s membránou',a)}
   if((a=win(f,205,250))>0){p=T(bx-30,by+2);L+=lead(p[0],p[1],p[0]-80,p[1]+100,'virová RNA',a);p=T(ix,iy);L+=lead(p[0],p[1],p[0]+110,p[1]-70,'integráza',a)}
-  if((a=win(f,246,300))>0){p=T(lerp(x1,x2,d1),by-8);L+=lead(p[0],p[1],p[0]-30,p[1]-110,'reverzní transkriptáza',a);p=T(x1+6,by+7);L+=lead(p[0],p[1],p[0]+10,p[1]+105,'nové vlákno DNA',a)}
+  if((a=win(f,246,300))>0){p=T(lerp(x1,x2,d1),by-8);L+=lead(p[0],p[1],p[0]-30,p[1]-110,'reverzní transkriptáza',a)}
+  if((a=win(f,264,300))>0){p=T(x1+8,by+7);L+=lead(p[0],p[1],p[0]+10,p[1]+105,'nové vlákno DNA',a)}
   if((a=win(f,300,326))>0)L+=pill(400,470,'hybrid RNA–DNA',a);
   if((a=win(f,326,348))>0)L+=pill(400,470,'RNA se rozloží',a);
   if((a=win(f,350,392))>0)L+=pill(400,470,'vzniká druhé vlákno DNA',a);
   if((a=win(f,390,440))>0){p=T(dp[0],dp[1]+8);L+=lead(p[0],p[1],p[0]-40,p[1]+105,'dvouvláknová virová DNA',a)}
   if((a=win(f,440,476))>0){p=T(...PORE);L+=lead(p[0],p[1],p[0]-90,p[1]+120,'jaderný pór',a);p=T(...hostP(0)(.86));L+=lead(p[0],p[1],p[0]+10,p[1]-120,'DNA buňky',a)}
   if((a=win(f,492,512))>0){p=T(HM[0],HM[1]+6);L+=lead(p[0],p[1],p[0]-20,p[1]+130,'provirus',a);L+=pill(...T(NUC.x,NUC.y-NUC.r+24),'jádro',a)}
-  if((a=win(f,518,604))>0){p=T(P1[0]+6,P1[1]-16);L+=lead(p[0],p[1],p[0]+60,p[1]-90,'RNA-polymeráza buňky',a);p=T(HM[0],HM[1]+8);L+=lead(p[0],p[1],p[0]+40,p[1]+120,'provirus',a)}
-  if((a=win(f,566,606))>0&&tp[0]){p=T(...tp[0]);L+=lead(p[0],p[1],p[0]-60,p[1]+60,'mRNA',a);if(tp[2]){p=T(...tp[2]);L+=lead(p[0],p[1],p[0]-90,p[1]-70,'virová RNA',a)}}
-  if((a=win(f,618,706))>0){p=T(M[0][0],M[0][1]);L+=lead(p[0],p[1],p[0]-20,p[1]+56,'ribozom',a);p=T(288,410);L+=lead(p[0],p[1],p[0]-66,p[1]+10,'virové proteiny',a);p=T(...GW[1]);L+=lead(p[0],p[1],p[0]+150,p[1]+90,'virová RNA',a)}
+  if((a=win(f,518,604))>0){if(hp){p=T(hp[0]+4,hp[1]-8);L+=lead(p[0],p[1],p[0]+60,p[1]-90,'RNA-polymeráza buňky',a)}p=T(HM[0],HM[1]+8);L+=lead(p[0],p[1],p[0]+40,p[1]+120,'provirus',a)}
+  if((a=win(f,526,556))>0&&tp[0]){p=T(...tp[0]);L+=lead(p[0],p[1],p[0]-70,p[1]+70,'mRNA',a)}
+  if((a=win(f,558,592))>0&&tp[2]){p=T(...tp[2]);L+=lead(p[0],p[1],p[0]-160,p[1]+30,'virová RNA',a)}
+  if((a=win(f,618,706))>0){p=T(M[0][0],M[0][1]);L+=lead(p[0],p[1],p[0]-20,p[1]+56,'ribozom',a);if(bp){p=T(...bp);L+=lead(p[0],p[1],p[0]-66,p[1]+40,'virové proteiny',a)}p=T(...GW[1]);L+=lead(p[0],p[1],p[0]+150,p[1]+90,'virová RNA',a)}
   if((a=win(f,680,712))>0){const q=site(246*RAD);p=T(q.x+q.nx*14,q.y+q.ny*14);L+=lead(p[0],p[1],p[0]+110,p[1]-30,'glykoproteiny',a)}
-  if((a=win(f,756,808))>0&&vp[0]){p=T(...vp[0]);L+=lead(p[0],p[1],p[0]-150,p[1]+30,'pučení',a)}
+  if((a=win(f,780,812))>0&&vp[0]){p=T(...vp[0]);L+=lead(p[0],p[1],p[0]-150,p[1]+30,'pučení',a)}
   if((a=win(f,818,850))>0&&vp[0]){p=T(vp[0][0]+10,vp[0][1]+10);L+=lead(p[0],p[1],p[0]-170,p[1]-10,'zrání: vzniká kapsid',a)}
   if((a=win(f,856,880))>0&&vp[1]){p=T(...vp[1]);L+=lead(p[0],p[1],p[0]+140,p[1]+40,'nové viriony HIV',a)}}
  return wrap(cam,w,L)}
@@ -641,7 +645,7 @@ const ST=[
  {f:580,p:'lt',n:'Replikace a syntéza proteinů',tf:690,cap:'Fágová DNA se mnohokrát zkopíruje. Na ribozomech bakterie vznikají bílkoviny '+RS+'hlaviček'+E+', '+RS+'ocásků'+E+' a '+RS+'vláken'+E+'.'},
  {f:700,p:'lt',n:'Kompletace virionů',tf:790,cap:'Do hlaviček se nabalí DNA, připojí se ocásky a vlákna. Vznikají desítky až stovky nových fágů.'},
  {f:800,p:'lt',n:'Lyze buňky',tf:880,cap:'Fágový enzym naruší buněčnou stěnu, bakterie praskne ('+RS+'lyze'+E+') a fágy se uvolní.'}];
-function render(f,o){o=o||{};const lyt=!!o.lytic;let w='',L='';const cam=camAt(lyt?KT:KL,f),T=(x,y)=>[(x-cam.x)*cam.z+400,(y-cam.y)*cam.z+310];
+function render(f,o){o=o||{};const lyt=!!o.lytic;let w='',L='',ring=null;const cam=camAt(lyt?KT:KL,f),T=(x,y)=>[(x-cam.x)*cam.z+400,(y-cam.y)*cam.z+310];
  const burst=es(f,808,860),sep=f<270||f>=490?0:es(f,285,385)*520+es(f,400,436)*420,two=sep>0&&f<490;
  w+=two?bacteria([BX,BX+sep]):bacteria([BX],{burst});
  // chromozom(y)
@@ -661,7 +665,7 @@ function render(f,o){o=o||{};const lyt=!!o.lytic;let w='',L='';const cam=camAt(l
  if(!lyt&&f>=172&&f<520){let a,x,y;
   if(f<400){a=seg(f,174,198)*(1-es(f,240,264));const t=es(f,202,238);x=lerp(CIR[0],PP[0],t);y=lerp(CIR[1],PP[1]+20,t)}
   else{a=es(f,452,474)*(1-es(f,496,516));const t=es(f,462,490);x=lerp(PP[0],CEN[0],t);y=lerp(PP[1]+20,CEN[1],t)}
-  if(a>0)w+=helixS(curveS(t=>[x+15*Math.cos(2*PI*t),y+15*Math.sin(2*PI*t)],0,1,28),{a,closed:true,amp:3,wl:12,w:2.6})}
+  ring=[x,y];if(a>0)w+=helixS(curveS(t=>[x+15*Math.cos(2*PI*t),y+15*Math.sin(2*PI*t)],0,1,28),{a,closed:true,amp:3,wl:12,w:2.6})}
  // UV záření
  if(!lyt&&f>=410&&f<462){const a=win(f,410,462,8)*(.75+.25*Math.sin(f*.9));for(let q=0;q<3;q++){const x0=430+q*46,y0=150;let d='M'+x0+' '+y0;for(let z=1;z<=6;z++)d+='L'+(x0+(z%2?9:-9)+z*4)+' '+(y0+z*22);
    w+='<path d="'+d+'" fill="none" stroke="#8b5cf6" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"'+op(a)+'/>'}}
@@ -681,16 +685,18 @@ function render(f,o){o=o||{};const lyt=!!o.lytic;let w='',L='';const cam=camAt(l
   L+=pill(...T(430,560),'bakterie',win(f,4,46));
   if((a=win(f,6,44))>0){p=T(lerp(150,PX,tA),lerp(60,TOP,tA)-70);L+=lead(p[0],p[1],p[0]+90,p[1]-20,'bakteriofág',a)}
   if((a=win(f,54,84))>0){p=T(PX+14,TOP-100);L+=lead(p[0],p[1],p[0]+130,p[1]-30,'hlavička (kapsid)',a);p=T(PX,TOP-98);L+=lead(p[0],p[1],p[0]-110,p[1]-40,'DNA',a);p=T(PX+7,TOP-32);L+=lead(p[0],p[1],p[0]+150,p[1]+10,'ocásek',a);p=T(PX-34,TOP-16);L+=lead(p[0],p[1],p[0]-110,p[1]+20,'příchytná vlákna',a);p=T(PX+90,TOP+3);L+=lead(p[0],p[1],p[0]+100,p[1]+70,'buněčná stěna',a)}
-  if((a=win(f,112,168))>0){p=T(PX+20,TOP+60);L+=lead(p[0],p[1],p[0]+140,p[1]+30,'fágová DNA',a);p=T(PX+20,TOP-78);L+=lead(p[0],p[1],p[0]+140,p[1]-40,'prázdný kapsid',a)}
+  if((a=win(f,138,176))>0){p=T(PX+22,TOP+58);L+=lead(p[0],p[1],p[0]+140,p[1]+30,'fágová DNA',a)}
+  if((a=win(f,152,196))>0){p=T(PX+20,TOP-78);L+=lead(p[0],p[1],p[0]+140,p[1]-40,'prázdný kapsid',a)}
   if(!lyt){
    if((a=win(f,180,236))>0){p=T(...chrP(BX)(.38));L+=lead(p[0],p[1],p[0]-10,p[1]+90,'DNA bakterie',a)}
    if((a=win(f,246,300))>0){p=T(PP[0],PP[1]);L+=lead(p[0],p[1],p[0]+90,p[1]-110,'profág',a)}
    if((a=win(f,340,400))>0){p=T(PP[0],PP[1]);L+=lead(p[0],p[1],p[0]-20,p[1]-100,'profág',a);p=T(PP[0]+sep,PP[1]);L+=lead(p[0],p[1],p[0]-20,p[1]-100,'profág',a);L+=pill(400,560,'dceřiné buňky',a)}
    if((a=win(f,412,462))>0)L+=pill(...T(520,130),'UV záření',a);
-   if((a=win(f,462,492))>0){p=T(CEN[0],CEN[1]);L+=lead(p[0],p[1],p[0]+10,p[1]+140,'vyštěpená fágová DNA',a)}}
+   if((a=win(f,462,492))>0&&ring){p=T(ring[0],ring[1]+15);L+=lead(p[0],p[1],p[0]+10,p[1]+130,'vyštěpená fágová DNA',a)}}
   if((a=win(f,512,576))>0)L+=pill(400,580,'DNA bakterie se rozpadá',a);
   if((a=win(f,596,640))>0){p=T(SL[1][0],SL[1][1]-14);L+=lead(p[0],p[1],p[0]+30,p[1]-150,'kopie fágové DNA',a)}
-  if((a=win(f,650,700))>0){p=T(SL[2][0]-18,SL[2][1]-28);L+=lead(p[0],p[1],p[0]+40,p[1]-130,'hlavičky',a);p=T(SL[5][0],SL[5][1]-22);L+=lead(p[0],p[1],p[0]+40,p[1]+140,'ocásky',a)}
+  if((a=win(f,664,708))>0){p=T(SL[1][0]-18,SL[1][1]-33);L+=lead(p[0],p[1],p[0]+40,p[1]-110,'hlavičky',a)}
+  if((a=win(f,682,712))>0){p=T(SL[5][0],SL[5][1]-20);L+=lead(p[0],p[1],p[0]+40,p[1]+130,'ocásky',a)}
   if((a=win(f,730,796))>0)L+=pill(400,585,'skládání nových fágů',a);
   if((a=win(f,834,898))>0){L+=pill(...T(430,410),'lyze bakterie',a);if((a=win(f,866,900))>0){p=T(...fp[1]);L+=lead(p[0],p[1],p[0]-70,p[1]+50,'nové fágy',a)}}}
  return wrap(cam,w,L)}
