@@ -728,15 +728,32 @@ function shape(k){const bg='<rect width="200" height="150" rx="12" fill="#f4f9fd
   b+=sc(100,64,1.25,envV(16,8,inner))+'<text x="100" y="142" text-anchor="middle" font-size="13" font-weight="600" fill="#20262F" '+FF+'>80–200 nm</text>'}
  else{b+=sc(100,118,.82,phage(0,0,1,0,{fib:1}))+'<text x="100" y="142" text-anchor="middle" font-size="13" font-weight="600" fill="#20262F" '+FF+'>80 × 225 nm</text>'}
  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150">'+DEFS+bg+b+'</svg>'}
-/* klíč a zámek */
-const KEYLOCK=(()=>{const S1={x:100,y:150,nx:0,ny:-1,ang:-PI/2},mem=x=>memStroke('M'+x+' 150h170','mem');
- const rc2=(x)=>'<path d="M'+x+' 150v-9M'+(x-7)+' 131h14v10h-14z" stroke="#b45309" stroke-width="3.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>';
- let b='<rect x="15" y="150" width="170" height="60" fill="'+C.cyto+'"/><rect x="215" y="150" width="170" height="60" fill="'+C.cyto+'"/>'+mem(15)+mem(215);
- [-.0,].forEach(()=>{});
- b+=[60,100,140].map(x=>receptor(x,147,-PI/2)).join('')+[260,300,340].map(rc2).join('');
- b+=sc(100,78,1,envV(12,9,capsid(0,0,19,{na:'rna'})))+sc(300,62,1,envV(12,9,capsid(0,0,19,{na:'rna'})));
- b+='<text x="100" y="196" text-anchor="middle" font-size="14" font-weight="700" fill="#15803d" '+FF+'>receptor odpovídá: infekce</text><text x="300" y="196" text-anchor="middle" font-size="14" font-weight="700" fill="#b91c1c" '+FF+'>jiný receptor: bez infekce</text>';
- return{w:400,h:215,alt:'Princip klíče a zámku',body:b}})();
+/* klíč a zámek: detail glykoproteinu viru a receptoru buňky */
+const KEYLOCK=(()=>{
+ const tx=(x,y,t,anc,col,fs=12.5,fw=600)=>'<text x="'+x+'" y="'+y+'" text-anchor="'+anc+'" font-size="'+fs+'" font-weight="'+fw+'" fill="'+col+'" '+FF+'>'+t+'</text>';
+ const panel=(cx,ok)=>{const vy=ok?50:26,hy=vy+58,dir=ok?1:-1;let p='';
+  // virion nahoře (výřez obalu s kapsidem)
+  p+='<circle cx="'+cx+'" cy="'+(vy-110)+'" r="110" fill="'+C.cyto+'"/>'+memStroke(circP(cx,vy-110,110),'env');
+  // buňka dole
+  p+='<rect x="'+(cx-88)+'" y="190" width="176" height="30" fill="'+C.cyto+'"/>';
+  // receptor (zámek)
+  const L=cx-28,Rr=cx+28,col=ok?C.rec:'#b45309',dk=ok?'#1d4f85':'#7c3a06';
+  const notch=ok?'V108A17 17 0 0 0 '+(cx+17)+' 108V98':'L'+cx+' 128L'+(cx+17)+' 98';
+  p+='<path data-tip="rec" d="M'+L+' 196V104Q'+L+' 98 '+(L+6)+' 98H'+(cx-17)+notch+'H'+(Rr-6)+'Q'+Rr+' 98 '+Rr+' 104V196Z" fill="'+col+'" stroke="'+dk+'" stroke-width="1.6" stroke-linejoin="round"/>';
+  p+=memStroke('M'+(cx-88)+' 190H'+(cx+88),'mem');
+  // glykoprotein (klíč)
+  p+='<g data-tip="gly"><path d="M'+cx+' '+vy+'V'+(hy-12)+'" stroke="#8c1f6e" stroke-width="9" stroke-linecap="round"/><circle cx="'+cx+'" cy="'+hy+'" r="16" fill="url(#gGly)" stroke="#7a1560" stroke-width="1.4"/></g>';
+  // popisky
+  const lx=cx+dir*36,anc=ok?'start':'end';
+  p+=tx(cx+dir*12,vy+22,'glykoprotein',anc,'#7a1560')+tx(cx+dir*12,vy+36,'viru',anc,'#7a1560');
+  p+=tx(lx,158,ok?'receptor':'jiný receptor',anc,dk)+tx(lx,172,'buňky',anc,dk);
+  p+=tx(cx,vy-11,'virion','middle','#8a5a10',12,700)+tx(cx-dir*60,212,'buňka','middle','#8a5a10',12,700);
+  // značka
+  const ix=cx+dir*58,iy=ok?112:92;
+  p+='<circle cx="'+ix+'" cy="'+iy+'" r="12" fill="'+(ok?'#15803d':'#b91c1c')+'"/><path d="'+(ok?'M'+(ix-5.5)+' '+iy+'l4 4.2 7-8':'M'+(ix-4.5)+' '+(iy-4.5)+'l9 9M'+(ix+4.5)+' '+(iy-4.5)+'l-9 9')+'" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>';
+  return p};
+ const capt=tx(100,241,'tvar odpovídá: virus se naváže','middle','#15803d',12.5,700)+tx(300,241,'tvar neodpovídá: bez infekce','middle','#b91c1c',12.5,700);
+ return{w:400,h:250,alt:'Princip klíče a zámku: glykoprotein viru a receptor buňky',body:'<clipPath id="kl"><rect width="400" height="224" rx="14"/></clipPath><g clip-path="url(#kl)">'+panel(100,true)+panel(300,false)+'</g><path d="M200 12V222" stroke="#cfd8e0" stroke-width="1.5" stroke-dasharray="4 4"/>'+capt}})();
 FIGS.key=KEYLOCK;
 return{W,H,C,DEFS,ANIMS,PHS,svgWrap,fig,FIGS,shape,cl,ease};
 })();
@@ -1015,7 +1032,7 @@ function viewBasics(q){const tab=q.split('-')[1]||'co';app.className='wide';
   h('div',{cls:'two'},
    card(H('Podle typu nukleové kyseliny'),h('div',{cls:'kl'},h('div',{},h('b',{cls:'kd'},'DNA viry'),h('span',{},'adenoviry, herpesviry (opar, plané neštovice), papilomaviry, virus pravých neštovic, virus hepatitidy B, většina bakteriofágů')),h('div',{},h('b',{cls:'kr'},'RNA viry'),h('span',{},'virus chřipky, koronaviry, virus spalniček, vztekliny, eboly, hepatitidy A a C, virus tabákové mozaiky, retroviry (HIV)')))),
    card(H('Podle buněk, které napadají'),h('div',{cls:'kl'},h('div',{},h('b',{},'Rostlinné viry'),h('span',{},'například virus tabákové mozaiky; žlutá místa na listech jsou odumřelé buňky napadené virem')),h('div',{},h('b',{},'Živočišné viry'),h('span',{},'například virus chřipky, HIV, virus vztekliny')),h('div',{},h('b',{},'Bakteriofágy'),h('span',{},'viry napadající bakterie, například fág T4'))))),
-  card(H('Klíč a zámek'),P('Každý typ viru infikuje jen určitý typ buněk. Bílkoviny na povrchu virionu totiž musí přesně zapadnout do '+r('receptorů')+' na povrchu buňky, podobně jako klíč do zámku. Proto virus tabákové mozaiky nenapadne člověka a HIV napadá jen některé bílé krvinky.'),h('div',{cls:'figw',style:'max-width:520px',html:GX.fig(GX.FIGS.key,'none')}))];
+  card(H('Klíč a zámek'),P('Každý typ viru infikuje jen určitý typ buněk. Bílkoviny na povrchu virionu totiž musí svým tvarem přesně zapadnout do '+r('receptorů')+' na povrchu buňky, podobně jako klíč do zámku. Když tvar neodpovídá, virus se na buňku nenaváže a nemůže do ní vstoupit. Proto virus tabákové mozaiky nenapadne člověka a HIV napadá jen některé bílé krvinky.'),h('div',{cls:'figw',style:'max-width:520px',html:GX.fig(GX.FIGS.key,'none')}))];
  else body=[h('div',{cls:'glos'},GLOS.map(g=>h('details',{cls:'card info'},h('summary',{},h('span',{cls:'ii'},g[0][0].toUpperCase()),g[0]),h('p',{html:g[1]}))))];
  const i=BTABS.findIndex(t=>t[0]===tab),nx=BTABS[i+1];
  app.append(backBtn(),h('h2',{},'Základy'),chips,...body,nx?h('button',{cls:'btn',on:{click:()=>go('zaklady-'+nx[0])}},'Dál: '+nx[1]+' →'):h('button',{cls:'btn',on:{click:()=>go('animace')}},'Spustit animace →'));
