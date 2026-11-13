@@ -233,6 +233,22 @@ html,body{overflow-x:clip}
 @media (pointer:fine){.swh{display:none}}
 .stage:fullscreen .ctl{border-top:1px solid #E3E5E9}.stage:fullscreen .sdots{padding-bottom:12px}
 
+.fcw{max-width:560px;margin:0 auto 14px}
+.fc{perspective:1200px;cursor:pointer;margin-bottom:10px;outline:none;touch-action:pan-y}
+.fci{position:relative;min-height:200px;transition:transform .5s;transform-style:preserve-3d}
+.fc.on .fci{transform:rotateY(180deg)}
+.fcf,.fcb{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:20px;padding:18px 20px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:10px;box-shadow:0 4px 14px #0000001a}
+.fcf{background:var(--hd);color:#fff}.fcb{background:var(--card);border:2px solid var(--pri);transform:rotateY(180deg)}
+.fcf small,.fcb small{position:absolute;top:12px;left:16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.7}
+.fcb small{color:var(--pri);opacity:1}
+.fterm{font-size:26px;font-weight:800;line-height:1.2}.fcf .fterm{color:#fff}.fcb .fterm{color:var(--pri)}
+.fdef{font-size:17px;line-height:1.45;font-weight:500}
+.fhint{position:absolute;bottom:12px;font-size:12px;opacity:.6}
+.fcc{border:0;background:none;padding:4px 14px 10px}
+.fcj{gap:8px}.fcj.off{visibility:hidden}
+.fct .row{flex-wrap:nowrap}.fct{padding:12px}.fct .seg{margin:0}
+@media (min-width:980px){.fci{min-height:280px}.fterm{font-size:32px}.fdef{font-size:20px}}
+
 </style>
 </head>
 <body>
@@ -1039,10 +1055,43 @@ function viewBasics(q){const tab=q.split('-')[1]||'co';app.className='wide';
    card(H('Podle typu nukleové kyseliny'),h('div',{cls:'kl'},h('div',{},h('b',{cls:'kd'},'DNA viry'),h('span',{},'adenoviry, herpesviry (opar, plané neštovice), papilomaviry, virus pravých neštovic, virus hepatitidy B, většina bakteriofágů')),h('div',{},h('b',{cls:'kr'},'RNA viry'),h('span',{},'virus chřipky, koronaviry, virus spalniček, vztekliny, eboly, hepatitidy A a C, virus tabákové mozaiky, retroviry (HIV)')))),
    card(H('Podle buněk, které napadají'),h('div',{cls:'kl'},h('div',{},h('b',{},'Rostlinné viry'),h('span',{},'například virus tabákové mozaiky; žlutá místa na listech jsou odumřelé buňky napadené virem')),h('div',{},h('b',{},'Živočišné viry'),h('span',{},'například virus chřipky, HIV, virus vztekliny')),h('div',{},h('b',{},'Bakteriofágy'),h('span',{},'viry napadající bakterie, například fág T4'))))),
   card(H('Klíč a zámek'),P('Každý typ viru infikuje jen určitý typ buněk. Bílkoviny na povrchu virionu totiž musí svým tvarem přesně zapadnout do '+r('receptorů')+' na povrchu buňky, podobně jako klíč do zámku. Když tvar neodpovídá, virus se na buňku nenaváže a nemůže do ní vstoupit. Proto virus tabákové mozaiky nenapadne člověka a HIV napadá jen některé bílé krvinky.'),h('div',{cls:'figw',style:'max-width:520px',html:GX.fig(GX.FIGS.key,'none')}))];
- else body=[h('div',{cls:'glos'},GLOS.map(g=>h('details',{cls:'card info'},h('summary',{},h('span',{cls:'ii'},g[0][0].toUpperCase()),g[0]),h('p',{html:g[1]}))))];
+ else body=[flashcards()];
  const i=BTABS.findIndex(t=>t[0]===tab),nx=BTABS[i+1];
  app.append(backBtn(),h('h2',{},'Základy'),chips,...body,nx?h('button',{cls:'btn',on:{click:()=>go('zaklady-'+nx[0])}},'Dál: '+nx[1]+' →'):h('button',{cls:'btn',on:{click:()=>go('animace')}},'Spustit animace →'));
 }
+
+
+/* ---------- kartičky s pojmy (flashcards) ---------- */
+function flashcards(){let rev=false,deck,k,known,flipped,again;
+ const wrap=h('div',{cls:'fcw'}),card=h('div',{cls:'fc',tabindex:'0',role:'button','aria-label':'Otočit kartičku'}),front=h('div',{cls:'fcf'}),back=h('div',{cls:'fcb'});
+ card.append(h('div',{cls:'fci'},front,back));
+ const cnt=h('span',{cls:'cnt'}),prog=h('div',{cls:'prog'},h('i'));
+ const bPrev=h('button',{cls:'ib','aria-label':'Předchozí kartička',html:IC.sprev}),bNext=h('button',{cls:'ib','aria-label':'Další kartička',html:IC.snext}),bFlip=h('button',{cls:'ib pl','aria-label':'Otočit',html:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3M20 4v4h-4M20 12a8 8 0 0 1-14 5.3M4 20v-4h4"/></svg>'});
+ const bNo=h('button',{cls:'btn s',style:'flex:1'},'Ještě ne'),bYes=h('button',{cls:'btn',style:'flex:1'},'Umím');
+ const judge=h('div',{cls:'row fcj'},bNo,bYes);
+ const mode=h('div',{cls:'seg'},[[false,'Pojem → význam'],[true,'Význam → pojem']].map(([v,n])=>h('button',{'data-k':String(v),on:{click:()=>{rev=v;start()}}},n)));
+ const top=h('div',{cls:'card fct'},h('div',{cls:'row'},h('div',{cls:'lab',style:'margin:0'},'Kartičky s pojmy'),h('button',{cls:'chip',on:{click:start}},'Zamíchat znovu')),h('p',{cls:'mut',style:'margin:4px 2px 10px'},'Klepni a kartičku otoč. Co ještě neumíš, vrátí se na konec balíčku.'),mode);
+ function start(){deck=shuf(GLOS.map((g,i)=>i));k=0;known=new Set();again=0;draw()}
+ function draw(){mode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===String(rev)));
+  prog.firstChild.style.width=(known.size/GLOS.length*100)+'%';
+  if(k>=deck.length){wrap.innerHTML='';const ok=again===0;if(ok){fanfare();mood('spark',900)}
+   wrap.append(h('div',{cls:'fb ok'},h('img',{src:MASC,alt:'',cls:'hop'}),h('div',{},h('b',{},ok?'Všechny pojmy umíš napoprvé!':'Hotovo, všechny pojmy umíš!'),h('p',{},'Pojmů: '+GLOS.length+(again?'. Opakovat jsi musel(a) '+again+'×.':'.')))),h('button',{cls:'btn s',style:'margin-bottom:10px',on:{click:start}},'Projít znovu'));return}
+  if(!wrap.contains(card)){wrap.innerHTML='';wrap.append(card,h('div',{cls:'ctl fcc'},bPrev,bFlip,bNext,cnt),judge)}
+  const g=GLOS[deck[k]];flipped=false;card.classList.remove('on');
+  front.innerHTML='<small>'+(rev?'Který pojem to je?':'Pojem')+'</small><div class="'+(rev?'fdef':'fterm')+'">'+(rev?g[1]:g[0])+'</div><span class="fhint">klepni a otoč</span>';
+  back.innerHTML='<small>'+(rev?'Pojem':'Význam')+'</small><div class="'+(rev?'fterm':'fdef')+'">'+(rev?g[0]:g[1])+'</div>';
+  cnt.textContent=(k+1)+' / '+deck.length;bPrev.disabled=k===0;judge.classList.add('off')}
+ const flip=()=>{flipped=!flipped;card.classList.toggle('on',flipped);if(flipped)judge.classList.remove('off')};
+ const move=d=>{k=Math.max(0,Math.min(deck.length-1,k+d));draw()};
+ card.onclick=flip;bFlip.onclick=flip;card.onkeydown=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();flip()}};
+ bPrev.onclick=()=>move(-1);bNext.onclick=()=>{if(k<deck.length-1)move(1)};
+ bYes.onclick=()=>{known.add(deck[k]);buzz(true);k++;draw()};
+ bNo.onclick=()=>{deck.push(deck[k]);again++;buzz(false);k++;draw()};
+ let sx=null,sy=0;card.addEventListener('touchstart',e=>{const t=e.touches[0];sx=t.clientX;sy=t.clientY},{passive:true});
+ card.addEventListener('touchend',e=>{if(sx===null)return;const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;sx=null;if(Math.abs(dx)>45&&Math.abs(dx)>1.5*Math.abs(dy)){e.preventDefault();if(dx<0){if(k<deck.length-1)move(1)}else move(-1)}});
+ const key=e=>{if(e.target.closest('input,textarea'))return;if(e.key==='ArrowRight'){if(k<deck.length-1)move(1)}else if(e.key==='ArrowLeft')move(-1)};
+ document.addEventListener('keydown',key);cleanup=()=>document.removeEventListener('keydown',key);
+ start();return h('div',{},top,prog,wrap)}
 
 /* ---------- animace ---------- */
 const OTIPS={
