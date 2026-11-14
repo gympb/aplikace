@@ -191,6 +191,9 @@ footer.foot p{margin:0 0 4px}
 @media (prefers-reduced-motion:no-preference){:root:not([data-rm]) .opt,:root:not([data-rm]) .btn,:root:not([data-rm]) .rung{transition:background-color .15s,border-color .15s}}
 @media print{.tabbar,.top,.nav2,.seg{display:none}body{background:#fff;color:#000}.card{break-inside:avoid;box-shadow:none}}
 @media (min-width:700px){body{font-size:18px}.shell{padding-top:8px}}
+
+sup{font-size:max(13px,.75em)}
+details.svp summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700}
 </style>
 </head>
 <body>
@@ -246,9 +249,9 @@ const isIec = u => IEC.includes(u) && u !== 'B';
 const KEY = 'bity-a-bajty:v1';
 const INT = [0, 1, 2, 4, 8, 16, 32];
 let S;
-function defState() { return { i: {}, st: {}, pl: null, g: { best: 0, n: 0 }, th: 'auto', rm: false, fl: {} }; }
+function defState() { return { i: {}, st: {}, pl: null, g: { best: 0, n: 0 }, th: 'auto', rm: false, fl: {}, cal: [0, 0, 0, 0, 0, 0, 0] }; }
 function load() {
-  try { const o = JSON.parse(localStorage.getItem(KEY)); if (o && typeof o === 'object') return Object.assign(defState(), o); } catch (e) {}
+  try { const o = JSON.parse(localStorage.getItem(KEY)); if (o && typeof o === 'object') { const d = Object.assign(defState(), o); if (!Array.isArray(d.cal) || d.cal.length !== 7 || d.cal.some(x => !Number.isFinite(x))) d.cal = [0, 0, 0, 0, 0, 0, 0]; return d; } } catch (e) {}
   return defState();
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
@@ -284,13 +287,13 @@ const calc = a => `<ol class="calc">${a.map(x => `<li>${x}</li>`).join('')}</ol>
 const GEN = {};
 GEN['bit-bajt'] = () => {
   if (Math.random() < .5) {
-    const n = pick([3, 5, 6, 12, 16, 25, 64, 125]);
+    const n = pick([3, 5, 6, 7, 9, 12, 14, 16, 20, 25, 32, 48, 64, 100, 125, 256, 300, 512]);
     return mk({ skill: 'bit-bajt', q: `Kolik bitů je <b class="mono">${n} B</b>?`, ans: n * 8, unit: 'bit',
       wrong: [[n / 8, 'Dělil jsi osmi. Bajt je větší než bit, takže bitů je víc: násobíš.'], [n * 10, 'Mezi bajtem a bitem je osmička, ne desítka.'], [n * 1024, 'Číslo 1 024 patří předponám kibi, mebi… Mezi bajtem a bitem je jen 8.'], [n * 4, 'Bajt má osm bitů, ne čtyři (čtyři má jen půlbajt, nibble).']],
       steps: ['Bajt je větší než bit, bitů bude víc → násobím.', '1 B = 8 bit.', `${n} · 8 = <b>${n * 8} bit</b>`],
       hint: 'Je bajt větší, nebo menší než bit? Podle toho násobíš, nebo dělíš.', hint2: 'Jeden bajt je osm bitů.', meta: { t: 'bit-bajt', v: n, from: 'B', to: 'bit' } });
   }
-  const b = pick([16, 24, 40, 64, 80, 128, 200, 1000]);
+  const b = 8 * pick([2, 3, 5, 6, 8, 10, 12, 15, 16, 20, 25, 32, 50, 64, 100, 125]);
   return mk({ skill: 'bit-bajt', q: `Kolik bajtů je <b class="mono">${b} bit</b>?`, ans: b / 8, unit: 'B',
     wrong: [[b * 8, 'Násobil jsi. Bit je menší než bajt, takže bajtů je míň: dělíš osmi.'], [b / 10, 'Mezi bitem a bajtem je osmička, ne desítka.'], [b / 4, 'Bajt má osm bitů, ne čtyři.'], [b, 'Bity a bajty se liší osmkrát, čísla tedy nemohou být stejná.']],
     steps: ['Bit je menší než bajt, bajtů bude míň → dělím.', '1 B = 8 bit.', `${b} : 8 = <b>${fmt(b / 8)} B</b>`],
@@ -304,7 +307,7 @@ GEN['hodnoty'] = () => {
     hint: 'Jeden bit má 2 hodnoty, dva bity 4, tři bity 8… Co se děje s každým dalším bitem?', hint2: 'Hodnot je 2 na počet bitů.', meta: { t: 'hodnoty', n } });
 };
 GEN['pocet-bajtu'] = () => {
-  const u = pick(['kB', 'MB', 'GB', 'KiB', 'MiB', 'GiB']);
+  const u = pick(['kB', 'MB', 'GB', 'TB', 'KiB', 'MiB', 'GiB', 'TiB']);
   const iec = isIec(u), idx = (iec ? IEC : SI).indexOf(u), base = iec ? 1024 : 1000;
   const ans = BYTES[u], other = (iec ? 1000 : 1024) ** idx;
   return mk({ skill: 'pocet-bajtu', q: `Kolik bajtů má <b class="mono">1 ${u}</b>?`, ans, unit: 'B', pos: true,
@@ -349,11 +352,11 @@ GEN['zebrik-iec'] = () => zebrik('iec');
 function zebrik(series) {
   const R = series === 'si' ? SI : IEC, base = series === 'si' ? 1000 : 1024, oth = series === 'si' ? 1024 : 1000;
   const skill = 'zebrik-' + series;
-  let i, j; do { i = ri(0, 4); j = ri(0, 4); } while (i === j || Math.abs(i - j) > 2);
+  let i, j; do { i = ri(0, 4); j = ri(0, 4); } while (i === j || Math.abs(i - j) > (j < i ? 3 : 2));
   const F = R[i], T = R[j], k = Math.abs(i - j), down = j < i; /* down = cíl je menší jednotka */
   let v, ans;
-  if (down) { v = pick([2, 3, 4, 5, 6, 7, 8, 9, 2.5, 1.5, 12]); ans = v * base ** k; }
-  else { ans = pick([2, 3, 4, 5, 6, 7, 8, 9, 2.5, 12]); v = ans * base ** k; }
+  if (down) { v = pick([2, 3, 4, 5, 6, 7, 8, 9, 2.5, 1.5, 12, 15, 20, 25, 30, 40, 50, 0.5, 0.25, 3.5, 4.5, 7.5, 1.2]); ans = v * base ** k; }
+  else { ans = pick([2, 3, 4, 5, 6, 7, 8, 9, 2.5, 12, 15, 20, 25, 1.5, 3.5, 7.5, 40, 50]); v = ans * base ** k; }
   const flip = down ? v / base ** k : v * base ** k;
   const wrongBase = down ? v * oth ** k : v / oth ** k;
   const sch = k === 1 ? 'schod' : 'schody';
@@ -366,20 +369,20 @@ function zebrik(series) {
 }
 GEN['rychlost'] = () => {
   if (Math.random() < .65) {
-    const n = pick([8, 16, 24, 40, 80, 100, 200, 400, 800, 1000]);
+    const n = pick([8, 12, 16, 24, 32, 40, 48, 64, 80, 100, 120, 160, 200, 240, 400, 500, 800, 1000]);
     return mk({ skill: 'rychlost', q: `Linka má rychlost <b class="mono">${fmt(n)} Mbit/s</b>. Kolik je to <b>MB/s</b>?`, ans: n / 8, unit: 'MB/s',
       wrong: [[n * 8, 'Násobil jsi. Z bitů na bajty se dělí osmi: bajt je osmkrát větší, takže bajtů je míň.'], [n, 'Zapomněl jsi osmičku. Malé b (bit) a velké B (bajt) se liší osmkrát.'], [n / 1000, 'Schod 1 000 je mezi sousedními předponami. Mezi bity a bajty je 8.'], [n * 1000 / 8, 'Mega zůstává megou; převádíš jen bity na bajty, tedy jednou děliš osmi.']],
       steps: ['Mbit/s → MB/s: z bitů na bajty, bajtů bude míň → dělím.', '1 B = 8 bit, tedy dělím osmi.', `${fmt(n)} : 8 = <b>${fmt(n / 8)} MB/s</b>`],
       hint: 'Z bitů na bajty: násobíš, nebo dělíš?', hint2: 'Jeden bajt je osm bitů, takže Mbit/s : 8 = MB/s.', meta: { t: 'rychlost', n, dir: 'bit2B' } });
   }
-  const m = pick([1, 2, 5, 10, 12.5, 25, 50, 125]);
+  const m = pick([1, 1.5, 2, 2.5, 4, 5, 6, 10, 12.5, 15, 20, 25, 30, 50, 75, 100, 125]);
   return mk({ skill: 'rychlost', q: `Disk čte rychlostí <b class="mono">${fmt(m)} MB/s</b>. Kolik je to <b>Mbit/s</b>?`, ans: m * 8, unit: 'Mbit/s',
     wrong: [[m / 8, 'Dělil jsi. Z bajtů na bity se násobí osmi: bit je osmkrát menší, takže bitů je víc.'], [m, 'Zapomněl jsi osmičku. B a b se liší osmkrát.'], [m * 1000, 'Schod 1 000 je mezi sousedními předponami. Mezi bajty a bity je 8.'], [m * 10, 'Mezi bajtem a bitem je osmička, ne desítka.']],
     steps: ['MB/s → Mbit/s: z bajtů na bity, bitů bude víc → násobím.', '1 B = 8 bit.', `${fmt(m)} · 8 = <b>${fmt(m * 8)} Mbit/s</b>`],
     hint: 'Z bajtů na bity: násobíš, nebo dělíš?', hint2: 'Jeden bajt je osm bitů.', meta: { t: 'rychlost', n: m, dir: 'B2bit' } });
 };
 GEN['cas-prenosu'] = () => {
-  const R = pick([8, 16, 24, 40, 80, 160]), t = pick([5, 8, 10, 12, 15, 20, 30, 40, 60]), S0 = R * t / 8, r = R / 8;
+  const R = pick([8, 16, 24, 32, 40, 48, 64, 80, 96, 160, 200]), t = pick([4, 5, 8, 10, 12, 15, 16, 20, 25, 30, 40, 60]), S0 = R * t / 8, r = R / 8;
   return mk({ skill: 'cas-prenosu', q: `Soubor má <b class="mono">${fmt(S0)} MB</b>, linka <b class="mono">${fmt(R)} Mbit/s</b>. Za kolik sekund se přenese (bez ztrát)?`, ans: t, unit: 's',
     wrong: [[S0 / R, 'Dělil jsi MB rychlostí v Mbit/s. Bajty a bity se nesmí míchat: nejdřív převeď rychlost na MB/s.'], [S0 * r, 'Násobil jsi velikost rychlostí. Čas je velikost <b>děleno</b> rychlost.'], [S0 / (R * 8), 'Rychlost jsi místo dělení osmi vynásobil. Mbit/s : 8 = MB/s.'], [t * 8, 'Převedl jsi nesprávně: výsledek vyšel osmkrát větší.']],
     steps: [`Rychlost na bajty: ${fmt(R)} Mbit/s : 8 = <b>${fmt(r)} MB/s</b>.`, `Čas = velikost : rychlost = ${fmt(S0)} : ${fmt(r)} = <b>${fmt(t)} s</b>.`],
@@ -404,15 +407,15 @@ GEN['mezi-radami'] = () => {
     hint: 'MiB je z dvojkové řady. Kolik schodů je od MiB do B?', hint2: '1 MiB = 1 024 KiB = 1 024 · 1 024 B.', meta: { t: 'mezi', v, from: 'MiB', to: 'B', round: 0 } });
 };
 GEN['disk'] = () => {
-  const C = pick([250, 500, 1000, 2000, 4000]), ans = Math.round(C * 1e9 / 1073741824);
+  const C = pick([120, 128, 240, 250, 256, 320, 480, 500, 512, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000]), ans = Math.round(C * 1e9 / 1073741824);
   return mk({ skill: 'disk', q: `Disk má na krabici <b class="mono">${fmt(C)} GB</b>. Kolik GiB ukáže počítač (zaokrouhli na celé)?`, ans, unit: 'GiB', tolAbs: 1,
     wrong: [[C, 'Nic se neztratilo? Ztratilo: výrobce počítá po 1 000, počítač po 1 024, takže číslo musí být menší.'], [Math.round(C * 1000 / 1024), 'Použil jsi 1 024 jen jednou. Mezi GB a GiB jsou tři schody: 1 000<sup>3</sup> : 1 024<sup>3</sup>.'], [Math.round(C * 1.073741824), 'Násobil jsi. Počítač dělí větší jednotkou, takže GiB vyjde míň než GB.']],
     steps: [`Výrobce: ${fmt(C)} GB = ${fmt(C)} · 10<sup>9</sup> B = ${fmt(C * 1e9)} B.`, 'Počítač: 1 GiB = 2<sup>30</sup> B = 1 073 741 824 B.', `${fmt(C * 1e9)} : 1 073 741 824 ≈ <b>${fmt(ans)} GiB</b> (rychlý odhad: GB · 0,93)`],
     hint: 'Výrobce a počítač počítají jinou řadou. Jdi přes bajty.', hint2: 'Počet bajtů vyděl počtem bajtů v jednom GiB.', meta: { t: 'disk', C } });
 };
 GEN['odhad'] = () => {
-  const it = pick([['fotek po 4 MB', 4, 'fotka'], ['písní po 4 MB', 4, 'píseň'], ['dokumentů po 2 MB', 2, 'dokument'], ['fotek po 5 MB', 5, 'fotka']]);
-  const C = pick([16, 32, 64, 128, 256]), s = it[1], ans = C * 1000 / s;
+  const it = pick([['fotek po 4 MB', 4, 'fotka'], ['písní po 4 MB', 4, 'píseň'], ['písní po 5 MB', 5, 'píseň'], ['dokumentů po 2 MB', 2, 'dokument'], ['fotek po 5 MB', 5, 'fotka'], ['skenů po 8 MB', 8, 'sken'], ['krátkých videí po 50 MB', 50, 'video'], ['záloh po 250 MB', 250, 'záloha']]);
+  const C = pick([16, 32, 64, 128, 256, 512]), s = it[1], ans = C * 1000 / s;
   return mk({ skill: 'odhad', q: `Kolik <b>${it[0]}</b> se vejde na kartu <b class="mono">${fmt(C)} GB</b>? (Použij řadu SI.)`, ans, unit: '', pos: true,
     wrong: [[ans / 1000, 'Zapomněl jsi převést GB na MB: v jednom GB je 1 000 MB.'], [ans * 1000, 'Převáděl jsi opačně: GB je větší než MB, takže MB je 1 000krát víc, ne míň velkých kousků.'], [C / s, `To je ${fmt(C)} : ${s} bez převodu GB na MB.`], [ans / 10, 'Řád nesedí: GB je 1 000 MB, ne 100.']],
     steps: [`${fmt(C)} GB = ${fmt(C * 1000)} MB (schod 1 000).`, `${fmt(C * 1000)} MB : ${s} MB = <b>${fmt(ans)}</b>.`], hint: 'Převeď kapacitu na stejnou jednotku, v jaké je jeden soubor.', hint2: '1 GB = 1 000 MB.', meta: { t: 'odhad', C, s } });
@@ -440,10 +443,186 @@ const SKILLS = {
   'znacky': 'Značky jednotek', 'zebrik-si': 'Převody v řadě SI', 'zebrik-iec': 'Převody v řadě IEC', 'rychlost': 'Mbit/s a MB/s', 'cas-prenosu': 'Čas přenosu',
   'mezi-radami': 'Převody mezi řadami', 'disk': 'Kapacita disku', 'odhad': 'Odhad počtu souborů', 'chyba': 'Hledání chyby'
 };
-const NUMERIC = new Set(['bit-bajt', 'pocet-bajtu', 'zebrik-si', 'zebrik-iec', 'rychlost', 'cas-prenosu', 'mezi-radami', 'disk', 'odhad']);
+const NUMERIC = new Set(['bit-bajt', 'hodnoty', 'pocet-bajtu', 'zebrik-si', 'zebrik-iec', 'rychlost', 'cas-prenosu', 'mezi-radami', 'disk', 'odhad']);
 /* způsob odpovídání podle zvládnutí: začátečník vybírá, pokročilý píše číslo */
 const modeFor = k => (NUMERIC.has(k) && (M(k) ? M(k).b >= 2 : false)) ? 'num' : 'choice';
 function taskFor(skill, mode) { const t = GEN[skill](); t.mode = mode === 'num' && t.kind === 'num' ? 'num' : 'choice'; return t; }
+
+/* ===== rozšíření zásoby úloh: další šablony ke stávajícím dovednostem ===== */
+const ADD = {};
+const ladderIdx = u => (isIec(u) ? IEC : SI).indexOf(u);
+const baseOf = u => isIec(u) ? 1024 : 1000;
+
+ADD['bit-bajt'] = [
+  () => { let b; do { b = ri(9, 250); } while (b % 8 === 0);
+    const ans = Math.ceil(b / 8);
+    return mk({ skill: 'bit-bajt', q: `Kolik <b>celých bajtů</b> je potřeba na uložení <b class="mono">${b} bit</b>? (Bajt se nedá rozpůlit.)`, ans, unit: 'B', pos: true,
+      wrong: [[Math.floor(b / 8), 'Zaokrouhlil jsi dolů. Pak by poslední bity nebyly kam uložit, je nutné přidat jeden celý bajt.'], [b / 8, 'Tohle je přesný podíl. Ptáme se ale na celé bajty, zbylé bity zabírají ještě jeden.'], [b * 8, 'Násobil jsi. Z bitů na bajty se dělí osmi.'], [Math.ceil(b / 8) + 1, 'To je o bajt víc, než je nutné. Stačí zaokrouhlit podíl nahoru.']],
+      steps: [`${b} : 8 = ${fmt(b / 8)}`, 'Bajt se nedá rozdělit, zaokrouhlím <b>nahoru</b>.', `<b>${ans} B</b>`],
+      hint: 'Vyděl počet bitů osmi. Zbyde něco?', hint2: 'Zbylé bity zabírají ještě jeden celý bajt.', meta: { t: 'ceilB', b } }); },
+  () => { const N = 8 * pick([8, 16, 25, 32, 40, 64, 100, 125, 200]);
+    return mk({ skill: 'bit-bajt', q: `Černobílý obrázek má <b class="mono">${fmt(N)} pixelů</b>, každý zabírá 1 bit. Kolik <b>bajtů</b> obrázek zabere?`, ans: N / 8, unit: 'B',
+      wrong: [[N, 'Pixelů je tolik, ale každý má jen jeden bit. Bajtů je osmkrát méně.'], [N * 8, 'Násobil jsi. Z bitů na bajty se dělí osmi.'], [N / 10, 'Mezi bitem a bajtem je osmička, ne desítka.'], [N / 4, 'Bajt má osm bitů, ne čtyři.']],
+      steps: ['Pixelů je tolik, kolik bitů (1 pixel = 1 bit).', 'Z bitů na bajty: dělím osmi.', `${fmt(N)} : 8 = <b>${fmt(N / 8)} B</b>`],
+      hint: 'Kolik bitů obrázek má? A kolik bitů je v bajtu?', hint2: 'Počet bitů vyděl osmi.', meta: { t: 'bit-bajt', v: N, from: 'bit', to: 'B' } }); },
+  () => { const n = pick([12, 20, 36, 50, 75, 90, 120, 250]);
+    return mk({ skill: 'bit-bajt', q: `Soubor má <b class="mono">${n} B</b>. Z kolika <b>bitů</b> se skládá?`, ans: n * 8, unit: 'bit',
+      wrong: [[n / 8, 'Dělil jsi. Bitů je víc než bajtů, takže násobíš.'], [n * 10, 'Mezi bajtem a bitem je osmička, ne desítka.'], [n * 1000, 'Schod 1 000 je mezi předponami (kilo, mega…). Mezi B a bit je 8.']],
+      steps: ['Bitů bude víc než bajtů → násobím.', '1 B = 8 bit.', `${n} · 8 = <b>${n * 8} bit</b>`],
+      hint: 'Má bajt víc, nebo míň bitů?', hint2: 'Jeden bajt je osm bitů.', meta: { t: 'bit-bajt', v: n, from: 'B', to: 'bit' } }); }
+];
+
+ADD['hodnoty'] = [
+  () => { const k = ri(2, 12), N = 2 ** k;
+    return mk({ skill: 'hodnoty', q: `Kolik <b>bitů</b> je nejméně potřeba, aby se rozlišilo <b class="mono">${fmt(N)}</b> různých hodnot?`, ans: k, unit: 'bit', pos: true,
+      wrong: [[k + 1, `S ${k + 1} bity by se vešlo ${fmt(2 ** (k + 1))} hodnot, což je zbytečně moc. Stačí ${k}.`], [k - 1, `S ${k - 1} bity se vejde jen ${fmt(2 ** (k - 1))} hodnot, to nestačí.`], [N / 2, 'To je počet hodnot s o bit méně, ne počet bitů. Ptáme se, kolik bitů, tedy kolikrát zdvojnásobit.'], [k * 2, 'Počet bitů se nenásobí dvěma. Každý bit hodnoty zdvojnásobí, hledáme exponent.']],
+      steps: ['Každý bit hodnoty zdvojnásobí: 1 bit 2, 2 bity 4, 3 bity 8…', `Hledám, kolikrát zdvojnásobit 1, abych dostal ${fmt(N)}.`, `2<sup>${k}</sup> = ${fmt(N)}, tedy <b>${k} bit</b>.`],
+      hint: 'Kolikrát musíš zdvojnásobit číslo 1, abys dostal tolik hodnot?', hint2: 'Hledáš exponent: 2 na kolikátou je tolik hodnot?', meta: { t: 'bitsfor', k } }); },
+  () => { const n = ri(3, 12), a = 2 ** n - 1;
+    return mk({ skill: 'hodnoty', q: `Jaké je <b>největší celé číslo</b>, které se vejde do <b class="mono">${n} bitů</b> (čísla začínají nulou)?`, ans: a, unit: '', pos: true,
+      wrong: [[a + 1, `${fmt(a + 1)} je počet hodnot. Protože se počítá od nuly, největší číslo je o jednu menší.`], [(2 ** n) / 2, `To je 2<sup>${n - 1}</sup>, tedy největší číslo pro o bit míň.`], [2 * n - 1, 'Tohle je jen dvojnásobek bitů. Hodnot je 2<sup>n</sup>.'], [n * n - 1, 'Počet bitů se nenásobí sám sebou. Hodnot je 2<sup>n</sup>.']],
+      steps: [`${n} bitů má 2<sup>${n}</sup> = ${fmt(2 ** n)} hodnot.`, 'Číslování začíná nulou: 0 až (počet hodnot − 1).', `Největší číslo je <b>${fmt(a)}</b>.`],
+      hint: 'Kolik hodnot se do n bitů vejde? A kde začíná číslování?', hint2: 'Čísla jdou od 0, takže největší je počet hodnot minus jedna.', meta: { t: 'maxnum', n } }); },
+  () => { const N = pick([1, 2, 3]), a = 256 ** N;
+    const nm = N === 1 ? 'jednoho bajtu' : N === 2 ? 'dvou bajtů' : 'tří bajtů';
+    return mk({ skill: 'hodnoty', q: `Kolik různých hodnot se vejde do <b class="mono">${nm}</b>?`, ans: a, unit: '', pos: true,
+      wrong: [[256 * N, 'To by byl součet. Bajty se neskládají sčítáním hodnot, ale násobením: každý bajt hodnoty ×256.'], [8 * N, 'To je počet bitů. Hodnot je 2 na počet bitů.'], [2 ** N, 'Dvojka se umocňuje na počet bitů (8 · bajtů), ne na počet bajtů.'], [a - 1, 'To je největší číslo. Hodnot je o jednu víc, počítá se i nula.']],
+      steps: [`${N} ${N === 1 ? 'bajt' : N < 5 ? 'bajty' : 'bajtů'} = ${8 * N} bitů.`, `2<sup>${8 * N}</sup> = <b>${fmt(a)}</b> hodnot.`],
+      hint: 'Kolik bitů je v tolika bajtech?', hint2: 'Hodnot je 2 na počet bitů.', meta: { t: 'valbytes', N } }); }
+];
+
+ADD['pocet-bajtu'] = [
+  () => { const iec = Math.random() < .5, R = iec ? IEC : SI, base = iec ? 1024 : 1000, k = pick([1, 2]), hi = ri(1 + k, 4);
+    const big = R[hi], small = R[hi - k], ans = base ** k;
+    return mk({ skill: 'pocet-bajtu', q: `Kolikrát víc bajtů má <b class="mono">1 ${big}</b> než <b class="mono">1 ${small}</b>?`, ans, unit: '', pos: true,
+      wrong: [[(iec ? 1000 : 1024) ** k, iec ? `Použil jsi 1 000. Jednotky s <b>i</b> mají schod 1 024.` : `Použil jsi 1 024. Jednotky bez <b>i</b> mají schod 1 000.`], [base ** (k + 1), `To je o schod víc. ${big} a ${small} jsou od sebe ${k === 1 ? 'jeden schod' : 'dva schody'}.`], [base * k, k === 1 ? 'Schod má správnou velikost, ale ještě ověř, kolik schodů je mezi jednotkami.' : 'Dva schody se násobí, ne sčítají: schod · schod.'], [base ** (k - 1) * 8, 'Osmička patří mezi bity a bajty. Tady jsou obě jednotky v bajtech.']],
+      steps: [`${big} a ${small} jsou ${iec ? 'z řady IEC (i), schod 1 024' : 'z řady SI (bez i), schod 1 000'}.`, `Mezi nimi ${k === 1 ? 'je 1 schod' : 'jsou 2 schody'}.`, k === 1 ? `<b>${fmt(base)}</b>` : `${fmt(base)} · ${fmt(base)} = <b>${fmt(ans)}</b>`],
+      hint: 'Je ve značkách písmeno <b>i</b>? Kolik schodů je mezi jednotkami?', hint2: 'Bez i je schod 1 000, s i 1 024. Dva schody se násobí.', meta: { t: 'ratio', big, small } }); },
+  () => { const u = pick(['kB', 'MB', 'KiB', 'MiB']), ans = BYTES[u] * 8, b = BYTES[u];
+    return mk({ skill: 'pocet-bajtu', q: `Kolik <b>bitů</b> má <b class="mono">1 ${u}</b>?`, ans, unit: 'bit', pos: true,
+      wrong: [[b, 'To jsou bajty. V bajtu je ještě osm bitů, takže je třeba násobit osmi.'], [b / 8, 'Dělil jsi. Bitů je víc než bajtů, násobíš osmi.'], [(isIec(u) ? 1000 : 1024) ** ladderIdx(u) * 8, isIec(u) ? 'Použil jsi schod 1 000, ale značka má <b>i</b>: schod je 1 024.' : 'Použil jsi schod 1 024, ale značka nemá <b>i</b>: schod je 1 000.'], [b * 10, 'Mezi bajtem a bitem je osmička, ne desítka.']],
+      steps: [`1 ${u} = ${fmt(b)} B.`, 'Každý bajt má 8 bitů.', `${fmt(b)} · 8 = <b>${fmt(ans)} bit</b>`],
+      hint: 'Nejdřív spočti bajty. Pak je převeď na bity.', hint2: 'Bity = bajty · 8.', meta: { t: 'bitsunit', u } }); }
+];
+
+ADD['poznej-radu'] = [
+  () => { const iecQ = Math.random() < .5, A = pick(iecQ ? IEC.slice(1) : SI.slice(1)), others = shuffle(iecQ ? SI.slice(1) : IEC.slice(1)).slice(0, 3);
+    return mkc({ skill: 'poznej-radu', q: `Která z jednotek patří do řady <b>${iecQ ? 'IEC (dvojková, schod 1 024)' : 'SI (desítková, schod 1 000)'}</b>?`,
+      opts: [{ t: A, ok: true }, ...others.map(o => ({ t: o, why: iecQ ? `${o} nemá ve značce písmeno <b>i</b>, patří do řady SI (schod 1 000).` : `${o} má ve značce písmeno <b>i</b>, patří do řady IEC (schod 1 024).` }))],
+      steps: [iecQ ? 'Do řady IEC patří jednotky s písmenem <b>i</b> (KiB, MiB, GiB, TiB).' : 'Do řady SI patří jednotky bez písmene <b>i</b> (kB, MB, GB, TB).', `Správně: <b>${A}</b>.`],
+      hint: 'Hledej písmeno <b>i</b> ve značce.', hint2: 'S i je řada IEC, bez i řada SI.', meta: { t: 'rada', A, iecQ } }); }
+];
+
+const ZT = [
+  ['kilobit', 'kbit', [['Kbit', 'Kilo se píše malým <b>k</b>.'], ['kB', 'Velké <b>B</b> je bajt. Kilobit je kbit.'], ['KB', 'Kilo je malé k a bit se nepíše velkým B.']]],
+  ['gigabit', 'Gbit', [['gbit', 'Giga se píše velkým <b>G</b>.'], ['GB', 'Velké <b>B</b> je bajt, ne bit.'], ['GiB', 'To je gibibajt (bajty, dvojková řada).']]],
+  ['gigabajt', 'GB', [['Gb', 'Malé <b>b</b> je bit. Bajt je velké B.'], ['gB', 'Giga je velké G a bajt velké B.'], ['GiB', 'Písmeno <b>i</b> znamená dvojkovou řadu (gibibajt).']]],
+  ['terabajt', 'TB', [['tB', 'Tera je velké <b>T</b>.'], ['Tb', 'Malé b je bit, ne bajt.'], ['TiB', 'Písmeno <b>i</b> znamená dvojkovou řadu (tebibajt).']]],
+  ['kibibajt', 'KiB', [['kiB', 'Kibi se píše velkým <b>K</b>, na rozdíl od malého k v kB.'], ['kB', 'To je kilobajt (1 000 B), bez <b>i</b>.'], ['KB', 'Takto se nepíše ani kilo, ani kibi.']]],
+  ['mebibajt', 'MiB', [['MB', 'To je megabajt (1 000 000 B), bez <b>i</b>.'], ['mib', 'Potřebuješ velké <b>M</b> i velké <b>B</b>.'], ['Mib', 'Malé <b>b</b> je bit, bajt je velké B.']]],
+  ['gibibajt', 'GiB', [['GB', 'To je gigabajt (bez <b>i</b>, řada SI).'], ['Gib', 'Malé <b>b</b> je bit.'], ['gib', 'Potřebuješ velké <b>G</b> i velké <b>B</b>.']]],
+  ['tebibajt', 'TiB', [['TB', 'To je terabajt (bez <b>i</b>, řada SI).'], ['Tib', 'Malé <b>b</b> je bit.'], ['tib', 'Potřebuješ velké <b>T</b> i velké <b>B</b>.']]],
+  ['megabajt', 'MB', [['mB', 'Mega je velké <b>M</b>; malé m by znamenalo mili.'], ['Mb', 'Malé <b>b</b> je bit; megabajt je MB.'], ['MiB', 'To je mebibajt (s <b>i</b>, dvojková řada).']]]
+];
+const ZCTX = [
+  ['Která značka se tradičně používá pro <b>rychlost</b> internetové linky?', 'Mbit/s', [['MB/s', 'MB/s je megabajt za sekundu. Poskytovatelé rychlost linky tradičně udávají v bitech: Mbit/s.'], ['MiB/s', 'MiB/s je mebibajt za sekundu, to se u linek nepoužívá.'], ['mB/s', 'Malé m by znamenalo mili a velké B bajt. Linky se udávají v Mbit/s.']]],
+  ['Která značka se tradičně používá pro <b>velikost souboru</b>?', 'MB', [['Mbit', 'Mbit je megabit, bity se používají hlavně u rychlosti linky. Velikost souboru je v bajtech.'], ['Mb', 'Malé <b>b</b> je bit, velikost souboru se udává v bajtech.'], ['mB', 'Mega je velké M.']]],
+  ['Která značka je správně pro <b>kilobit za sekundu</b>?', 'kbit/s', [['KB/s', 'Velké B je bajt a velké K není kilo.'], ['kB/s', 'Velké B je bajt, kilobit je kbit.'], ['Kbit/s', 'Kilo se píše malým <b>k</b>.']]]
+];
+ADD['znacky'] = [
+  () => { const [nm, sym, w] = pick(ZT);
+    return mkc({ skill: 'znacky', q: `Která značka je správně pro <b>${nm}</b>?`,
+      opts: [{ t: sym, ok: true }, ...w.map(([t, why]) => ({ t, why }))],
+      steps: [`${nm} se značí <b>${sym}</b>.`, 'Malé <b>k</b>, velké M, G, T; <b>B</b> je bajt, <b>b</b> je bit; <b>i</b> znamená dvojkovou řadu.'], hint: 'Rozhodují tři věci: velikost písmene předpony, B nebo b, a písmeno i.', meta: { t: 'znacky' } }); },
+  () => { const x = pick(ZT), others = shuffle(ZT.filter(y => y !== x)).slice(0, 3);
+    return mkc({ skill: 'znacky', q: `Co znamená značka <b class="mono">${x[1]}</b>?`,
+      opts: [{ t: x[0], ok: true }, ...others.map(y => ({ t: y[0], why: `${y[0][0].toUpperCase() + y[0].slice(1)} se značí ${y[1]}. Značka ${x[1]} je jiná jednotka.` }))],
+      steps: [`${x[1]} = ${x[0]}.`], hint: 'Všimni si předpony, B nebo b a případného i.', meta: { t: 'znacky' } }); },
+  () => { const [q, a, w] = pick(ZCTX);
+    return mkc({ skill: 'znacky', q, opts: [{ t: a, ok: true }, ...w.map(([t, why]) => ({ t, why }))], steps: [`Správně: <b>${a}</b>.`], hint: 'Rychlost linky se tradičně udává v bitech, velikost souboru v bajtech.', meta: { t: 'znacky' } }); }
+];
+
+ADD['rychlost'] = [
+  () => { const n = pick([0.5, 1, 2, 2.5, 5, 10]), ans = n * 125;
+    return mk({ skill: 'rychlost', q: `Optická linka má <b class="mono">${fmt(n)} Gbit/s</b>. Kolik je to <b>MB/s</b>?`, ans, unit: 'MB/s',
+      wrong: [[n * 1000, 'To jsou Mbit/s (z Gbit jeden schod 1 000). Ještě je třeba z bitů na bajty: dělit osmi.'], [n / 8, 'Dělil jsi jen osmi. Gbit je 1 000 Mbit, nejdřív násobíš tisícem.'], [n * 8000, 'Násobil jsi osmi. Z bitů na bajty se dělí.'], [n * 1000 / 8 / 1000, 'Zapomněl jsi, že Gbit je 1 000 Mbit.']],
+      steps: ['Gbit/s → Mbit/s: násobím 1 000.', `${fmt(n)} · 1 000 = ${fmt(n * 1000)} Mbit/s`, `Mbit/s → MB/s: dělím 8 → <b>${fmt(ans)} MB/s</b>`],
+      hint: 'Dva kroky: Gbit na Mbit (schod) a bity na bajty (osmička).', hint2: 'Gbit/s · 1 000 : 8 = MB/s.', meta: { t: 'gbps', n } }); }
+];
+
+ADD['cas-prenosu'] = [
+  () => { const R = pick([80, 100, 200, 400, 800]), S0 = pick([1, 2, 4, 5, 10]), t = S0 * 8000 / R, r = R / 8;
+    return mk({ skill: 'cas-prenosu', q: `Soubor má <b class="mono">${fmt(S0)} GB</b>, linka <b class="mono">${fmt(R)} Mbit/s</b>. Za kolik sekund se přenese (bez ztrát)?`, ans: t, unit: 's',
+      wrong: [[S0 * 1000 / R, 'Zapomněl jsi osmičku: rychlost v MB/s je Mbit/s : 8.'], [S0 * 8 / R, 'Nepřevedl jsi GB na MB: 1 GB = 1 000 MB.'], [t * 8, 'Rychlost jsi vydělil osmi dvakrát nebo ji místo toho vynásobil.'], [S0 * r, 'Čas je velikost <b>děleno</b> rychlost, ne násobek.']],
+      steps: [`GB na MB: ${fmt(S0)} GB = ${fmt(S0 * 1000)} MB.`, `Rychlost: ${fmt(R)} Mbit/s : 8 = ${fmt(r)} MB/s.`, `Čas = ${fmt(S0 * 1000)} : ${fmt(r)} = <b>${fmt(t)} s</b>.`],
+      hint: 'Převeď velikost na MB a rychlost na MB/s, pak dělej.', hint2: 'Čas = velikost : rychlost, obojí v bajtech.', meta: { t: 'cas', S: S0 * 1000, R } }); },
+  () => { const R = pick([8, 16, 24, 40, 80, 100, 160, 200]), t = pick([2, 4, 5, 8, 10, 16, 20, 30]), ans = R * t / 8;
+    return mk({ skill: 'cas-prenosu', q: `Linka má <b class="mono">${fmt(R)} Mbit/s</b>. Kolik <b>MB</b> se přenese za <b class="mono">${fmt(t)} s</b>?`, ans, unit: 'MB',
+      wrong: [[R * t, 'Zapomněl jsi převést bity na bajty. Mbit/s : 8 = MB/s.'], [R * t * 8, 'Násobil jsi osmi. Z bitů na bajty se dělí.'], [R / (8 * t), 'Rychlost jsi dělil časem. Přenesená velikost je rychlost <b>krát</b> čas.'], [R * 8 / t, 'Vzorec nesedí. Velikost = rychlost · čas, s rychlostí v MB/s.']],
+      steps: [`Rychlost: ${fmt(R)} Mbit/s : 8 = ${fmt(R / 8)} MB/s.`, `Velikost = rychlost · čas = ${fmt(R / 8)} · ${fmt(t)} = <b>${fmt(ans)} MB</b>.`],
+      hint: 'Převeď Mbit/s na MB/s. Pak rychlost vynásob časem.', hint2: 'Velikost = rychlost · čas.', meta: { t: 'velikost', R, tt: t } }); }
+];
+
+const MZ = [['GiB', 'MB', [2, 3, 5, 8, 12, 20]], ['MiB', 'kB', [2, 3, 5, 8, 12, 20]], ['GB', 'MiB', [2, 4, 8, 16, 32, 64]], ['MB', 'KiB', [2, 5, 10, 20, 50]], ['TB', 'GiB', [1, 2, 4, 8]], ['TiB', 'GB', [1, 2, 4]]];
+ADD['mezi-radami'] = [
+  () => { const [F, T, vs] = pick(MZ), v = pick(vs), exact = v * BYTES[F] / BYTES[T], ans = Math.round(exact);
+    const fi = ladderIdx(F), ti = ladderIdx(T), down = fi > ti, k = Math.abs(fi - ti), bf = baseOf(F), bt = baseOf(T);
+    const wa = Math.round(down ? v * bf ** k : v / bf ** k), wb = Math.round(down ? v * bt ** k : v / bt ** k), wc = Math.round(v * bt ** (k + 1));
+    return mk({ skill: 'mezi-radami', q: `<b class="mono">${fmt(v)} ${F}</b> = ? <b class="mono">${T}</b> (zaokrouhli na celé)`, ans, unit: T, tolAbs: 1, pos: true,
+      wrong: [[wa, `Použil jsi schod ${fmt(bf)} pro obě jednotky. ${T} je ale z ${isIec(T) ? 'řady IEC (schod 1 024)' : 'řady SI (schod 1 000)'}, proto jdi přes bajty.`], [wb, `Použil jsi schod ${fmt(bt)} pro obě jednotky. ${F} je ale z ${isIec(F) ? 'řady IEC (schod 1 024)' : 'řady SI (schod 1 000)'}, proto jdi přes bajty.`], [wc, `Přidal jsi jeden schod navíc. Mezi ${F} a ${T} ${k === 1 ? 'je jen jeden schod' : 'jsou ' + k + ' schody'}, a v bajtech to ověříš.`]],
+      steps: [`${fmt(v)} ${F} = ${fmt(v)} · ${fmt(BYTES[F])} B = ${fmt(v * BYTES[F])} B.`, `1 ${T} = ${fmt(BYTES[T])} B.`, `${fmt(v * BYTES[F])} : ${fmt(BYTES[T])} ≈ <b>${fmt(ans)} ${T}</b>`],
+      hint: 'Jednotky jsou z různých řad. Jdi přes bajty.', hint2: `1 ${F} = ${fmt(BYTES[F])} B, 1 ${T} = ${fmt(BYTES[T])} B.`, meta: { t: 'mezi', v, from: F, to: T, round: 1 } }); }
+];
+
+ADD['disk'] = [
+  () => { const X = pick([233, 465, 931, 1863, 3725]), ans = Math.round(X * 1073741824 / 1e9);
+    return mk({ skill: 'disk', q: `Počítač ukazuje disk <b class="mono">${fmt(X)} GiB</b>. Kolik GB je na krabici od výrobce (zaokrouhli na celé)?`, ans, unit: 'GB', tolAbs: 1,
+      wrong: [[X, 'Nic se nezměnilo? Změnilo: GiB je větší než GB, takže GB je víc.'], [Math.round(X * 1024 / 1000), 'Použil jsi jeden schod. Mezi GiB a GB jsou bajty: 2<sup>30</sup> : 10<sup>9</sup>.'], [Math.round(X / 1.073741824), 'Dělil jsi. GiB je větší jednotka, takže v GB je číslo větší.']],
+      steps: [`${fmt(X)} GiB = ${fmt(X)} · 1 073 741 824 B = ${fmt(X * 1073741824)} B.`, '1 GB = 1 000 000 000 B.', `${fmt(X * 1073741824)} : 1 000 000 000 ≈ <b>${fmt(ans)} GB</b>`],
+      hint: 'Jdi přes bajty. GiB je větší jednotka než GB.', hint2: 'Počet bajtů vyděl miliardou.', meta: { t: 'disk2', X } }); },
+  () => { const T = pick([1, 2, 4, 8]), ans = Math.round(T * 1e12 / 1073741824);
+    return mk({ skill: 'disk', q: `Disk má na krabici <b class="mono">${fmt(T)} TB</b>. Kolik <b>GiB</b> ukáže počítač (zaokrouhli na celé)?`, ans, unit: 'GiB', tolAbs: 1,
+      wrong: [[T * 1000, 'Tohle je přepočet na GB. Počítač ale používá GiB, takže číslo je menší.'], [Math.round(T * 1e12 / 1099511627776 * 1000), 'Převedl jsi na TiB a pak jen na tisíce. Mezi TiB a GiB je schod 1 024, ne 1 000.'], [Math.round(T * 1000 * 1.073741824), 'Násobil jsi. Počítač dělí větší jednotkou, takže GiB vyjde míň než GB.']],
+      steps: [`${fmt(T)} TB = ${fmt(T * 1e12)} B.`, '1 GiB = 1 073 741 824 B.', `${fmt(T * 1e12)} : 1 073 741 824 ≈ <b>${fmt(ans)} GiB</b>`],
+      hint: 'Jdi přes bajty. TB je z řady SI, GiB z IEC.', hint2: 'Bajty vyděl počtem bajtů v jednom GiB.', meta: { t: 'disk3', T } }); }
+];
+
+ADD['odhad'] = [
+  () => { const it = pick([['dokumentů po 500 kB', 500, 'kB'], ['fotek po 2 MB', 2, 'MB'], ['filmů po 4 GB', 4, 'GB'], ['záloh po 250 MB', 250, 'MB'], ['písní po 5 MB', 5, 'MB']]);
+    const T = pick([1, 2, 4, 8]), unitB = it[2] === 'kB' ? 1e3 : it[2] === 'MB' ? 1e6 : 1e9, ans = T * 1e12 / (it[1] * unitB);
+    const toU = it[2] === 'kB' ? 1e9 : it[2] === 'MB' ? 1e6 : 1e3;
+    return mk({ skill: 'odhad', q: `Kolik <b>${it[0]}</b> se vejde na disk <b class="mono">${fmt(T)} TB</b>? (Použij řadu SI.)`, ans, unit: '', pos: true,
+      wrong: [[ans / 1000, 'Ztratil jsi jeden schod: TB je 1 000 GB, 1 000 000 MB a 1 000 000 000 kB.'], [ans * 1000, 'Převáděl jsi opačně. TB je větší než soubor, takže souborů je hodně, ale ne o tolik.'], [T / it[1], 'To je dělení bez převodu TB na jednotku souboru.'], [ans / 1e6, 'Převedl jsi o dva schody málo. Spočti schody mezi TB a jednotkou souboru.']],
+      steps: [`${fmt(T)} TB = ${fmt(T * toU)} ${it[2]} (SI, schod 1 000).`, `${fmt(T * toU)} : ${fmt(it[1])} = <b>${fmt(ans)}</b>`], hint: 'Převeď TB na tutéž jednotku, v jaké je jeden soubor.', hint2: it[2] === 'GB' ? '1 TB = 1 000 GB.' : it[2] === 'MB' ? '1 TB = 1 000 000 MB.' : '1 TB = 1 000 000 000 kB.', meta: { t: 'odhad2', T, s: it[1], u: it[2] } }); }
+];
+
+/* šablony ke hledání chyby: každá vrací jednu úlohu "najdi řádek" */
+ADD['chyba'] = [];
+const CHYBA2 = [
+  () => { const v = pick([2, 3, 4, 6]); return { head: `<b class="mono">${v * 1024} MiB</b> na <b class="mono">GiB</b>`, lines: ['GiB je větší jednotka, takže násobím.', 'Schod v řadě IEC je 1 024.', `${fmt(v * 1024)} · 1 024 = ${fmt(v * 1024 * 1024)} GiB`], bad: 0, why: `GiB je <b>větší</b> jednotka než MiB, proto se <b>dělí</b>: ${fmt(v * 1024)} : 1 024 = ${v} GiB.` }; },
+  () => { const m = pick([5, 10, 25, 50]); return { head: `<b class="mono">${m} MB/s</b> na <b class="mono">Mbit/s</b>`, lines: ['Z bajtů na bity: bit je menší, takže násobím.', 'Mezi bajtem a bitem je schod 8.', `${m} : 8 = ${fmt(m / 8)} Mbit/s`], bad: 2, why: `Má se <b>násobit</b> osmi: ${m} · 8 = ${fmt(m * 8)} Mbit/s.` }; },
+  () => { const v = pick([2, 3, 5]); return { head: `<b class="mono">${v} TB</b> na <b class="mono">GB</b>`, lines: ['GB je menší jednotka, takže násobím.', 'Mezi TB a GB je schod 1 000 · 1 000.', `${v} · 1 000 · 1 000 = ${fmt(v * 1e6)} GB`], bad: 1, why: `Mezi TB a GB je jen <b>jeden</b> schod (TB → GB). Správně ${v} · 1 000 = ${fmt(v * 1000)} GB.` }; },
+  () => { const R = pick([24, 40, 80]), S0 = pick([60, 120, 300]); const r = R / 8; return { head: `Soubor <b class="mono">${S0} MB</b> při <b class="mono">${R} Mbit/s</b>`, lines: [`Rychlost: ${R} Mbit/s : 8 = ${fmt(r)} MB/s.`, `Čas = velikost : rychlost = ${S0} : ${fmt(r)}.`, `Vyjde ${fmt(S0 / r)} s.`], bad: -1, why: 'Postup je správný: rychlost převedena na MB/s, čas = velikost : rychlost.' }; },
+  () => { const v = pick([4, 5, 8]); return { head: `<b class="mono">${v} KiB</b> na <b class="mono">bit</b>`, lines: [`${v} KiB = ${v} · 1 024 = ${fmt(v * 1024)} B.`, 'Z bajtů na bity: násobím osmi.', `${fmt(v * 1024)} · 8 = ${fmt(v * 8192)} bit`], bad: -1, why: 'Postup je správný: KiB → B po 1 024, pak B → bit osmičkou.' }; },
+  () => { const k = pick([3000, 4500, 6000, 9000]); return { head: `<b class="mono">${fmt(k)} kB</b> na <b class="mono">MB</b>`, lines: ['MB je větší jednotka, takže dělím.', 'Schod v řadě SI je 1 024.', `${fmt(k)} : 1 024 ≈ ${fmt(k / 1024, 4)} MB`], bad: 1, why: `Jednotky kB a MB nemají v značce <b>i</b>, patří do řady SI: schod je <b>1 000</b>. Správně ${fmt(k)} : 1 000 = ${fmt(k / 1000)} MB.` }; },
+  () => { const n = pick([12, 24, 60]); return { head: `<b class="mono">${n} Mbit/s</b> na <b class="mono">MB/s</b>`, lines: ['Z bitů na bajty: bajt je větší, takže dělím.', 'Mezi bitem a bajtem je schod 8.', `${n} : 8 = ${fmt(n / 8)} MB/s`], bad: -1, why: 'Postup je správný: bajt je větší, dělím osmi.' }; },
+  () => { const g = pick([500, 1000, 2000]); return { head: `Disk <b class="mono">${fmt(g)} GB</b> v počítači`, lines: [`${fmt(g)} GB = ${fmt(g * 1e9)} B.`, '1 GiB = 1 000 000 000 B.', `${fmt(g * 1e9)} : 1 000 000 000 = ${fmt(g)} GiB`], bad: 1, why: `GiB je dvojková jednotka: 1 GiB = <b>1 073 741 824 B</b>. Správně vyjde asi ${fmt(Math.round(g * 1e9 / 1073741824))} GiB.` }; }
+];
+const CHYBA_ALL = () => {
+  /* spojení původních a nových šablon: původní jsou uvnitř GEN['chyba'], nové se použijí s pravděpodobností .5 */
+  const t = pick(CHYBA2)();
+  const opts = [0, 1, 2].map(i => ({ t: `Řádek ${i + 1}`, ok: t.bad === i, why: t.bad === i ? '' : (t.bad === -1 ? 'Tenhle řádek je v pořádku, postup je celý správně.' : 'Tenhle řádek je v pořádku. Chyba je jinde.') }));
+  opts.push({ t: 'Postup je správně', ok: t.bad === -1, why: 'Chyba tam je, projdi řádky ještě jednou.' });
+  return mkc({ skill: 'chyba', q: `Převod: ${t.head}.<br>Najdi řádek s chybou.`, lines: t.lines, opts,
+    steps: [t.why], hint: 'Zkontroluj po řádcích: směr (násobit, dělit), řadu (1 000, 1 024) a b/B.', hint2: 'Nejčastější chyby: 1 000 místo 1 024, násobení místo dělení, zapomenutá osmička.', meta: { t: 'chyba' } }, true);
+};
+ADD['chyba'].push(CHYBA_ALL);
+
+/* spojení: nové šablony tvoří zhruba polovinu úloh */
+for (const sk of Object.keys(ADD)) {
+  const base = GEN[sk];
+  GEN[sk] = () => Math.random() < .55 ? pick(ADD[sk])() : base();
+}
 
 /* ===== vizuální prvky ===== */
 const VIS = {};
@@ -520,22 +699,31 @@ function runTasks(host, specs, o) {
     const spec = specs[k], mode = spec.fixed ? 'choice' : (o.forceChoice ? 'choice' : modeFor(spec.skill));
     const t = spec.fixed || taskFor(spec.skill, mode);
     const isNum = t.mode === 'num' || (!spec.fixed && mode === 'num' && t.kind === 'num');
-    let hints = 0, answered = false;
+    if (window.__BB) window.__BB.cur = t;
+    let hints = 0, answered = false, conf = null; const rec = o.record !== false && !spec.fixed;
     host.innerHTML = `<div class="qbox"><span class="eyebrow">Úloha ${k + 1} z ${specs.length}${spec.retry ? ' · znovu' : ''}</span><span class="pill">${isNum ? 'napiš číslo' : 'vyber odpověď'}</span></div>
     <div class="card"><p class="q">${t.q}</p>${t.lines ? `<ol class="calc" style="margin-top:10px">${t.lines.map(l => `<li>${l}</li>`).join('')}</ol>` : ''}</div>
+    ${rec ? '<div class="conf" role="group" aria-label="Jak jsi si jistý odpovědí?"><p class="small muted" style="margin:0 0 6px">Jak jsi si jistý? (nepovinné)</p><div class="row"><button class="btn sm" data-c="s" aria-pressed="false">Jistě</button><button class="btn sm" data-c="m" aria-pressed="false">Spíš ano</button><button class="btn sm" data-c="g" aria-pressed="false">Hádám</button></div></div>' : ''}
     ${isNum ? `<div class="numrow"><input class="num" id="ans" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-label="Odpověď" placeholder="?"><span class="unit">${esc(t.unit || '')}</span></div><button class="btn primary block" id="chk">Zkontrolovat</button><p class="tiny" style="margin:8px 0 0">Desetinná čárka i mezery jsou v pořádku.</p>`
       : `<div class="opts">${t.opts.map((p, i) => `<button class="opt" data-i="${i}"><span class="k">${LETTER[i]}</span><span class="t">${p.t}</span></button>`).join('')}</div>`}
-    <div class="row" style="margin-top:6px">${t.hint ? '<button class="btn quiet sm" id="hintb">Nápověda</button>' : ''}</div><div id="hints"></div><div id="fb" aria-live="polite"></div>`;
-    const done = (ok, msgBad) => {
+    <div class="row" style="margin-top:6px">${t.hint ? '<button class="btn quiet sm" id="hintb">Nápověda</button>' : ''}${rec ? '<button class="btn quiet sm" id="nv">Nevím</button>' : ''}</div><div id="hints"></div><div id="fb" aria-live="polite"></div>`;
+    const done = (ok, msgBad, nevim) => {
       if (answered) return; answered = true;
-      if (o.record !== false) record(spec.skill, ok, hints > 0);
+      if (o.record !== false) {
+        record(spec.skill, ok, hints > 0);
+        if (!spec.fixed) { if (nevim) S.cal[6]++; else if (conf) { const j = { s: 0, m: 2, g: 4 }[conf]; S.cal[j + 1]++; if (ok && hints === 0) S.cal[j]++; } save(); }
+      }
+      $$('.conf .btn', host).forEach(b => b.disabled = true); const nvb = $('#nv', host); if (nvb) nvb.disabled = true;
       if (!spec.retry) firstTry.push(ok); else firstTry.push(null);
       if (!ok && !spec.retry && o.retry !== false && !spec.fixed) specs.push({ skill: spec.skill, retry: true });
       const right = isNum ? `${fmt(t.ans)} ${t.unit || ''}`.trim() : t.opts.find(p => p.ok).t;
       const sol = t.steps ? `<details class="sol" ${ok ? '' : 'open'}><summary>Postup</summary>${calc(t.steps)}</details>` : '';
-      $('#fb', host).innerHTML = ok
-        ? `<div class="fb ok"><h3>Správně${hints ? ' (s nápovědou)' : ''}</h3>${sol}</div>`
-        : `<div class="fb bad"><h3>Ještě ne</h3>${msgBad ? `<p>${msgBad}</p>` : ''}<p>Správně je <b class="mono">${right}</b>.</p>${sol}</div>`;
+      const cal = nevim ? '' : conf === 's' && !ok ? '<p class="small">Byl jsi si jistý, ale odpověď nesedí. To je užitečná informace: příště si ověř směr, řadu a b/B.</p>' : conf === 'g' && ok && !hints ? '<p class="small">Hádal jsi a trefil jsi. Zkus si to ještě ověřit postupem.</p>' : '';
+      $('#fb', host).innerHTML = nevim
+        ? `<div class="fb info"><h3>Nevím je v pořádku</h3><p>Správně je <b class="mono">${right}</b>.</p>${sol}</div>`
+        : ok
+        ? `<div class="fb ok"><h3>Správně${hints ? ' (s nápovědou)' : ''}</h3>${cal}${sol}</div>`
+        : `<div class="fb bad"><h3>Ještě ne</h3>${msgBad ? `<p>${msgBad}</p>` : ''}<p>Správně je <b class="mono">${right}</b>.</p>${cal}${sol}</div>`;
       const last = k + 1 >= specs.length || (!ok && !spec.retry && o.retry !== false && !spec.fixed ? false : k + 1 >= specs.length);
       $('#fb', host).insertAdjacentHTML('beforeend', `<button class="btn primary block" id="nxt" style="margin-top:12px">${k + 1 >= specs.length ? 'Zobrazit výsledek' : 'Další úloha'}</button>`);
       $('#nxt', host).onclick = () => { k++; next(); window.scrollTo(0, 0); };
@@ -564,6 +752,14 @@ function runTasks(host, specs, o) {
         done(!!p.ok, p.ok ? '' : p.why || '');
       };
     }
+    $$('.conf .btn', host).forEach(b => b.onclick = () => { if (answered) return; conf = b.dataset.c; $$('.conf .btn', host).forEach(x => { const on = x === b; x.classList.toggle('primary', on); x.setAttribute('aria-pressed', on); }); });
+    const nvb0 = $('#nv', host);
+    if (nvb0) nvb0.onclick = () => {
+      if (answered) return;
+      if (isNum) { const inp = $('#ans', host); inp.disabled = true; $('#chk', host).disabled = true; }
+      else $$('.opt', host).forEach((x, i) => { x.disabled = true; x.classList.add(t.opts[i].ok ? 'ok' : 'dim'); });
+      done(false, '', true);
+    };
     const hb = $('#hintb', host);
     if (hb) hb.onclick = () => {
       if (answered) return; hints++;
@@ -576,7 +772,7 @@ function runTasks(host, specs, o) {
 
 /* ===== obsah kroků ===== */
 const STEPS = [
-  { id: 1, title: 'Bit a bajt', goal: 'Co je bit, co je bajt a kolik hodnot se vejde do bitů.', skills: ['bit-bajt', 'hodnoty'], screens: [
+  { id: 1, title: 'Bit a bajt', goal: 'Co je bit, co je bajt a kolik hodnot se vejde do bitů.', can: ['Převést bity na bajty a naopak (1 B = 8 bit).', 'Spočítat, kolik hodnot se vejde do n bitů (2<sup>n</sup>).'], skills: ['bit-bajt', 'hodnoty'], screens: [
     { t: 'tip', q: 'Kolik <b>různých hodnot</b> (čísel) se vejde do jednoho bajtu?', opts: [{ t: '8', why: 'Osm je počet bitů v bajtu, ne počet hodnot.' }, { t: '64', why: '8 · 8 = 64 by byl jiný výpočet. Hodnot je víc.' }, { t: '256', ok: true }, { t: '1 024', why: '1 024 = 2<sup>10</sup>, tedy deset bitů. Bajt má bitů osm.' }], reveal: 'Za chvíli uvidíš proč: bajt má osm bitů a každý bit hodnoty zdvojnásobí.' },
     { t: 'txt', h: 'Bit je jedna ano/ne odpověď', html: `<p>Počítač zná jen dva stavy, třeba proud a bez proudu. Jedna taková číslice, <b>0</b> nebo <b>1</b>, se jmenuje <b>bit</b> (z <i>binary digit</i>).</p><p>Osm bitů pohromadě je jeden <b>bajt</b>. Přepínej bity a sleduj hodnotu:</p>${V('bits')}<p class="small muted">Odeber bity tlačítkem − a uvidíš, jak klesá počet hodnot.</p>` },
     { t: 'txt', h: 'Každý bit zdvojnásobí možnosti', html: `<p>Jeden bit má 2 hodnoty, dva bity 4 (00, 01, 10, 11), tři bity 8. <b>Každý další bit počet hodnot zdvojnásobí.</b></p><p>Pro <i>n</i> bitů je hodnot <b>2<sup>n</sup></b>. Jeden bajt má tedy 2<sup>8</sup> = <b>256</b> hodnot, čísla 0 až 255.</p><div class="card"><table class="t"><thead><tr><th>Bitů</th><th class="r">Hodnot</th></tr></thead><tbody>${[1, 2, 3, 4, 8, 10].map(n => `<tr><td>${n}</td><td class="r m">${fmt(2 ** n)}</td></tr>`).join('')}</tbody></table></div>` },
@@ -586,7 +782,7 @@ const STEPS = [
     { t: 'practice', skills: ['bit-bajt', 'hodnoty', 'bit-bajt', 'hodnoty'] },
     { t: 'sum', items: ['Bit je jedna číslice 0 nebo 1. Bajt je osm bitů: 1 B = 8 bit.', 'Do <i>n</i> bitů se vejde 2<sup>n</sup> hodnot. Bajt má 256 hodnot.', 'Malé b je bit, velké B je bajt. Rozdíl je osmkrát.'] }
   ] },
-  { id: 2, title: 'Předpony: kilo a kibi', goal: 'Dvě řady jednotek: 1 000 a 1 024. Jak je rozlišit.', skills: ['pocet-bajtu', 'poznej-radu', 'znacky'], screens: [
+  { id: 2, title: 'Předpony: kilo a kibi', goal: 'Dvě řady jednotek: 1 000 a 1 024. Jak je rozlišit.', can: ['Říct, kolik bajtů má kB, MB, GB, TB i KiB, MiB, GiB, TiB.', 'Podle písmene <b>i</b> poznat řadu SI (1 000) a IEC (1 024).', 'Správně zapsat značky (k, K, B, b, i).'], skills: ['pocet-bajtu', 'poznej-radu', 'znacky'], screens: [
     { t: 'tip', q: 'Kolik bajtů má <b class="mono">1 kB</b> (kilobajt: malé k, velké B)?', opts: [{ t: '1 000', ok: true }, { t: '1 024', why: '1 024 bajtů má 1 KiB (s písmenem i). Předpona kilo znamená 1 000.' }, { t: '8 000', why: '8 000 by byly bity v kilobajtu. Otázka je na bajty.' }, { t: '100', why: 'Kilo je tisíc, ne sto.' }], reveal: 'Dnes se u různých programů potkáš s 1 000 i 1 024. Teď se naučíš, jak je poznat.' },
     { t: 'txt', h: 'Předpony SI: schod 1 000', html: `<p>Předpony znáš z jiných jednotek: kilometr je tisíc metrů. Stejně fungují u bajtů: <span class="si-t">kB</span>, <span class="si-t">MB</span>, <span class="si-t">GB</span>, <span class="si-t">TB</span>. Každá další je <b>tisíckrát</b> větší.</p>${V('ladder-si')}<p class="small muted">Kilo se píše malým <b>k</b>, ostatní velkým (M, G, T).</p>` },
     { t: 'txt', h: 'Předpony IEC: schod 1 024', html: `<p>Paměť se staví po mocninách dvojky. Nejbližší tisíci je 2<sup>10</sup> = <b>1 024</b>. Pro takové násobky zavedla komise IEC vlastní předpony: kilo + binární = <b>kibi</b>.</p>${V('ladder-iec')}<p class="small">Poznáš je podle <b>písmene i</b> ve značce: <span class="iec-t">KiB, MiB, GiB, TiB</span>.</p>` },
@@ -596,7 +792,7 @@ const STEPS = [
     { t: 'practice', skills: ['pocet-bajtu', 'poznej-radu', 'znacky', 'pocet-bajtu', 'poznej-radu'] },
     { t: 'sum', items: ['SI (kB, MB, GB, TB): schod 1 000. IEC (KiB, MiB, GiB, TiB): schod 1 024.', 'Písmeno <b>i</b> ve značce znamená dvojkovou řadu.', 'Dvojková jednotka je větší: 1 GiB je o 7,4 % víc než 1 GB.'] }
   ] },
-  { id: 3, title: 'Převody po žebříčku', goal: 'Kdy násobit, kdy dělit a kolik schodů.', skills: ['zebrik-si', 'zebrik-iec'], screens: [
+  { id: 3, title: 'Převody po žebříčku', goal: 'Kdy násobit, kdy dělit a kolik schodů.', can: ['Rozhodnout, jestli při převodu násobit, nebo dělit.', 'Určit počet schodů mezi jednotkami a převést v řadě SI i IEC.'], skills: ['zebrik-si', 'zebrik-iec'], screens: [
     { t: 'tip', q: 'Kolik <b class="mono">MB</b> je <b class="mono">3 GB</b>?', opts: [{ t: '3', why: 'MB je menší jednotka, takže jich musí být víc než tři.' }, { t: '3 000', ok: true }, { t: '0,003', why: 'Dělil jsi. MB je ale menší jednotka, tedy kousků je víc.' }, { t: '3 072', why: '3 072 = 3 · 1 024 by platilo pro GiB → MiB. GB a MB jsou řada SI: schod 1 000.' }], reveal: 'Nezapomeň na jedinou větu: menší jednotka, víc kousků.' },
     { t: 'txt', h: 'Jedno pravidlo', html: `<p><b>Menší jednotka, víc kousků.</b></p><ol class="calc"><li>Je cíl <b>menší</b> jednotka (níž na žebříčku)? Násobíš.</li><li>Je cíl <b>větší</b> jednotka (výš)? Dělíš.</li><li>Jeden schod je 1 000 (řada SI) nebo 1 024 (řada IEC). Za každý schod násobíš nebo dělíš jednou.</li></ol><p>Vyzkoušej si to na žebříčku:</p>${V('ladder-si')}` },
     { t: 'txt', h: 'Příklady a zkratka', html: `<div class="card stack"><p><b>3 GB na MB:</b> MB je menší, jeden schod dolů: 3 · 1 000 = <b>3 000 MB</b>.</p><p><b>2,5 MiB na KiB:</b> jeden schod dolů: 2,5 · 1 024 = <b>2 560 KiB</b>.</p><p><b>4 096 MiB na GiB:</b> GiB je větší, jeden schod nahoru: 4 096 : 1 024 = <b>4 GiB</b>.</p><p><b>2 MiB na B:</b> dva schody dolů: 2 · 1 024 · 1 024 = <b>2 097 152 B</b>.</p></div><p><b>Zkratka jen pro SI:</b> násobit tisícem je posun desetinné čárky o tři místa doprava (2,5 GB = 2 500 MB). U IEC taková zkratka není, musíš opravdu počítat s 1 024.</p>` },
@@ -605,7 +801,7 @@ const STEPS = [
     { t: 'practice', skills: ['zebrik-si', 'zebrik-iec', 'zebrik-si', 'zebrik-iec', 'zebrik-si'] },
     { t: 'sum', items: ['Menší jednotka, víc kousků: násobím. Větší jednotka, méně kousků: dělím.', 'Počet schodů × velikost schodu (1 000 nebo 1 024).', 'U SI stačí posunout čárku o tři místa na schod, u IEC musíš počítat.'] }
   ] },
-  { id: 4, title: 'Bity a bajty: rychlost', goal: 'Mbit/s a MB/s a čas přenosu souboru.', skills: ['rychlost', 'cas-prenosu'], screens: [
+  { id: 4, title: 'Bity a bajty: rychlost', goal: 'Mbit/s a MB/s a čas přenosu souboru.', can: ['Převést Mbit/s na MB/s a zpět.', 'Spočítat čas přenosu souboru i velikost přenesenou za daný čas.'], skills: ['rychlost', 'cas-prenosu'], screens: [
     { t: 'tip', q: 'Internet má rychlost <b class="mono">100 Mbit/s</b>. Kolik <b>MB za sekundu</b> to je?', opts: [{ t: '800', why: 'Násobil jsi. Z bitů na bajty se dělí osmi.' }, { t: '100', why: 'Malé b a velké B se liší osmkrát, čísla tedy nejsou stejná.' }, { t: '12,5', ok: true }, { t: '0,1', why: 'Mezi bitem a bajtem je 8, ne 1 000.' }], reveal: 'Poskytovatel píše Mbit/s, prohlížeč ukazuje MB/s. Čísla se liší osmkrát.' },
     { t: 'txt', h: 'Osmička mezi bity a bajty', html: `<p><b>Rychlost</b> se udává v <b>bitech</b> za sekundu (Mbit/s). <b>Velikost souboru</b> v <b>bajtech</b> (MB). Aby se daly srovnat, převádíš mezi nimi pomocí <b>8</b>:</p><div class="card stack"><p><b class="mono">Mbit/s : 8 = MB/s</b></p><p><b class="mono">MB/s · 8 = Mbit/s</b></p></div><div class="card"><table class="t"><thead><tr><th>Rychlost</th><th class="r">v MB/s</th></tr></thead><tbody><tr><td>8 Mbit/s</td><td class="r m">1</td></tr><tr><td>100 Mbit/s</td><td class="r m">12,5</td></tr><tr><td>1 Gbit/s</td><td class="r m">125</td></tr></tbody></table></div>` },
     { t: 'txt', h: 'Čas = velikost : rychlost', html: `<p>Obě veličiny musí být ve stejných jednotkách, obě v bajtech.</p><ol class="calc"><li>Převeď rychlost na MB/s (Mbit/s : 8).</li><li>Vyděl velikost souboru touto rychlostí. Vyjde čas v sekundách.</li><li>Sekundy přepočítej na minuty (60 s = 1 min).</li></ol><p class="small muted">Skutečné stahování bývá pomalejší, než vyjde z výpočtu: část rychlosti odnese režie přenosu a Wi‑Fi bývá pomalejší než kabel.</p>` },
@@ -614,7 +810,7 @@ const STEPS = [
     { t: 'practice', skills: ['rychlost', 'cas-prenosu', 'rychlost', 'cas-prenosu'] },
     { t: 'sum', items: ['Rychlost je v bitech za sekundu, velikost souboru v bajtech.', 'Mbit/s : 8 = MB/s. 100 Mbit/s je 12,5 MB/s.', 'Čas = velikost : rychlost, obojí ve stejných jednotkách.'] }
   ] },
-  { id: 5, title: 'Mezi řadami a disk', goal: 'Převody SI ↔ IEC přes bajt a záhada „ztraceného“ místa.', skills: ['mezi-radami', 'disk', 'odhad'], screens: [
+  { id: 5, title: 'Mezi řadami a disk', goal: 'Převody SI ↔ IEC přes bajt a záhada „ztraceného“ místa.', can: ['Převést mezi řadami SI a IEC přes bajty.', 'Spočítat, kolik GiB ukáže počítač u disku s údajem v GB.', 'Odhadnout, kolik souborů se na médium vejde.'], skills: ['mezi-radami', 'disk', 'odhad'], screens: [
     { t: 'tip', q: 'Disk má na krabici <b class="mono">1 TB</b>. Kolik „GB“ ukáže Windows?', opts: [{ t: '1 000', why: 'Kdyby se jednotky shodovaly, ano. Ale výrobce počítá po 1 000, Windows po 1 024.' }, { t: '1 024', why: 'To by znamenalo, že disk je větší, než slíbil výrobce. Ukáže se méně.' }, { t: '931', ok: true }, { t: '976', why: '976 vyjde, když použiješ 1 024 jen jednou. Mezi TB a „GB“ jsou tři schody, ne jeden.' }], reveal: 'Žádné místo nezmizelo. Teď uvidíš, kam se „ztratilo“.' },
     { t: 'txt', h: 'Společné místo je bajt', html: `<p>Žebříček SI a žebříček IEC se potkávají jen v jednom místě: <b>v bajtu</b>. Proto jdeš přes něj:</p><ol class="calc"><li>Zdroj → bajty (vynásob počtem bajtů v jedné zdrojové jednotce).</li><li>Bajty → cíl (vyděl počtem bajtů v jedné cílové jednotce).</li><li>Zkontroluj odhadem: větší jednotka, menší číslo.</li></ol><div class="card"><p><b>2,5 GiB na MB:</b><br>2,5 · 1 073 741 824 = 2 684 354 560 B<br>2 684 354 560 : 1 000 000 = <b>2 684,35 MB</b><br><span class="small muted">Odhad sedí: GiB je asi o 7 % větší než GB, 2,5 GiB je asi 2,68 GB.</span></p></div>` },
     { t: 'txt', h: 'Záhada ztraceného místa', html: `${V('disk')}<p>Výrobce počítá desítkově: 1 TB = 10<sup>12</sup> B. Windows dělí dvojkově a výsledek označí „GB“, i když jde o GiB:</p><p class="mono" style="text-align:center">10<sup>12</sup> : 1 073 741 824 ≈ 931,3</p><p><b>Rychlý odhad:</b> kapacitu v GB vynásob 0,93 a máš GiB. U terabajtů je rozdíl větší: 1 TB je asi 0,91 TiB.</p><p class="small muted">Disk tedy není vadný a nic mu nechybí. Změnila se jen jednotka.</p>` },
@@ -623,7 +819,7 @@ const STEPS = [
     { t: 'practice', skills: ['mezi-radami', 'disk', 'odhad', 'mezi-radami', 'disk'] },
     { t: 'sum', items: ['Mezi řadami SI a IEC jdi přes bajt.', 'Disk na krabici (GB) ukáže počítač jako asi 0,93násobek v GiB.', 'Nic nechybí: výrobce a systém počítají jinou řadou.'] }
   ] },
-  { id: 6, title: 'Najdi chybu', goal: 'Poznej typické chyby v cizím postupu.', skills: ['chyba'], screens: [
+  { id: 6, title: 'Najdi chybu', goal: 'Poznej typické chyby v cizím postupu.', can: ['Najít chybu v cizím postupu (směr, řada, b/B, osmička).', 'Poznat, že je postup správně.'], skills: ['chyba'], screens: [
     { t: 'txt', h: 'Chybovat umí každý', html: `<p>Nejlepší způsob, jak si ověřit, že tématu rozumíš, je <b>najít chybu v cizím výpočtu</b>. Většina chyb se opakuje:</p><div class="card"><ol class="calc"><li><b>Zaměněné b a B:</b> bit a bajt se liší osmkrát.</li><li><b>1 000 místo 1 024</b> (nebo naopak): rozhoduje písmeno <b>i</b>.</li><li><b>Násobení místo dělení:</b> je cíl menší, nebo větší jednotka?</li><li><b>Špatný počet schodů:</b> TB → GB je jeden schod, TB → MB dva.</li><li><b>Zapomenutá osmička</b> u rychlosti.</li><li><b>Vzorec času naruby:</b> čas = velikost : rychlost.</li></ol></div><p>Před každou odpovědí si polož čtyři otázky: <b>směr</b>? <b>řada</b>? <b>b nebo B</b>? <b>odhad</b>?</p>` },
     { t: 'practice', skills: ['chyba', 'chyba', 'chyba', 'chyba', 'chyba'] },
     { t: 'sum', items: ['Kontroluj: směr (násobit, dělit), řadu (1 000, 1 024), b nebo B, odhad.', 'Co se ti nedaří, se ti ukáže v části Na dnešek a vrátí se po odstupu.'] }
@@ -653,18 +849,20 @@ function pips(st) { return `<div class="pips" aria-label="Dovednosti: ${st.skill
 function home() {
   const pl = S.pl;
   const inner = `<p class="lead">Šest krátkých kroků od bitu po disk, který „nemá, co měl mít“. Každý krok začíná otázkou, pak výklad, příklad a procvičení.</p>
-  ${pl ? '' : `<div class="card"><h3>Kde začít?</h3><p class="muted small">Tři otázky bez známkování. Podle nich ti doporučím první krok.</p><a class="btn block" href="#/test">Udělat krátký test</a></div>`}
-  <ol class="steps">${STEPS.map(st => { const done = S.st[st.id]; const rec = pl && pl.rec === st.id && !done; return `<li><a class="stepcard ${done ? 'done' : ''} ${rec ? 'rec' : ''}" href="#/krok/${st.id}/0"><span class="no">${done ? '✓' : st.id}</span><span><h3>${st.title}${rec ? ' <span class="pill si">doporučeno</span>' : ''}</h3><p>${st.goal}</p>${pips(st)}</span></a></li>`; }).join('')}</ol>`;
+  ${pl ? '' : `<div class="card"><h3>Kde začít?</h3><p class="muted small">Šest otázek bez známkování. Podle nich ti doporučím první krok.</p><a class="btn block" href="#/test">Udělat krátký test</a></div>`}
+  <ol class="steps">${STEPS.map(st => { const done = S.st[st.id]; const rec = pl && pl.rec === st.id && !done; return `<li><a class="stepcard ${done ? 'done' : ''} ${rec ? 'rec' : ''}" href="#/krok/${st.id}/0"><span class="no">${done ? '✓' : st.id}</span><span><h3>${st.title}${rec ? ' <span class="pill si">doporučeno</span>' : ''}</h3><p>${st.goal}</p>${pips(st)}</span></a></li>`; }).join('')}</ol>
+  <details class="card svp"><summary>Vazba na ŠVP</summary><p class="small" style="margin:8px 0">Informatika, ŠVP Gymnázia Příbram 2026/27:</p><ul class="small" style="margin:0 0 8px;padding-left:20px"><li style="margin:3px 0"><b>1. ročník (kvinta)</b>, 2.2 Kódování a přenos dat: bit jako jednotka informace, binární soustava, bity a bajty. Odpovídají kroky 1 a 2.</li><li style="margin:3px 0"><b>4. ročník (oktáva)</b>, 1.2 Kódování a přenos dat: výpočet velikosti kódovaných dat a datového toku. Souvisí s kroky 4 a 5.</li></ul><p class="tiny" style="margin:0">Předpony IEC (KiB, MiB…), převody mezi řadami a hledání chyb jsou v ŠVP výslovně neuvedeny.</p></details>`;
   mount('uc', inner);
 }
 
+const goalCard = (st, after) => `<div class="card goal"><h3>${after ? 'Umíš to teď?' : 'Cíl kroku'}</h3><p class="small muted" style="margin:0 0 4px">${after ? 'Cíl byl: po kroku umíš' : 'Po tomto kroku umíš:'}</p><ul class="small" style="margin:0;padding-left:20px">${st.can.map(x => `<li style="margin:3px 0">${x}</li>`).join('')}</ul><p class="tiny" style="margin:8px 0 0">${after ? 'Ověřil jsi to v procvičení. Co se nepovedlo, vrátí se v části Na dnešek.' : 'Ověříš to v procvičení na konci kroku.'}</p></div>`;
 function stepView(n, i) {
   const st = STEPS[n - 1]; if (!st) return home();
   const sc = st.screens[i]; if (!sc) return home();
   const total = st.screens.length, gating = ['tip', 'worked', 'fade', 'practice'].includes(sc.t);
   const last = i === total - 1;
   const inner = `<div class="prog" aria-hidden="true">${st.screens.map((_, k) => `<i class="${k < i ? 'on' : k === i ? 'cur' : ''}"></i>`).join('')}</div>
-  <p class="eyebrow">Krok ${n} · ${st.title}</p><h2 id="sh" style="margin-bottom:12px">${sc.h || ({ tip: 'Nejdřív tip', practice: 'Procvič si to', sum: 'Shrnutí' }[sc.t])}</h2><div id="body"></div>
+  <p class="eyebrow">Krok ${n} · ${st.title}</p>${i === 0 ? goalCard(st) : ''}<h2 id="sh" style="margin-bottom:12px">${sc.h || ({ tip: 'Nejdřív tip', practice: 'Procvič si to', sum: 'Shrnutí' }[sc.t])}</h2><div id="body"></div>${sc.t === 'sum' ? goalCard(st, true) : ''}
   <div class="nav2"><a class="btn back" ${i > 0 ? `href="#/krok/${n}/${i - 1}"` : 'href="#/"'} aria-label="Zpět">←</a><button class="btn primary" id="nx" ${gating ? 'disabled' : ''}>${last ? 'Hotovo' : 'Pokračovat'}</button></div>`;
   mount('uc', inner, m => {
     const body = $('#body', m), nx = $('#nx', m), unlock = () => { nx.disabled = false; };
@@ -728,34 +926,44 @@ function todayView() {
 /* ===== vstupní test ===== */
 function placement() {
   const Q = [
+    { step: 1, q: 'Kolik bitů je <b class="mono">3 B</b>?', opts: [{ t: '24 bit', ok: true }, { t: '3 bit', why: 'Bajt a bit nejsou totéž. 1 B = 8 bit, násobíš osmi.' }, { t: '0,375 bit', why: 'Dělil jsi osmi. Bitů je víc než bajtů, takže násobíš.' }] },
     { step: 2, q: 'Kolik bajtů má <b class="mono">1 KiB</b>?', opts: [{ t: '1 000', why: 'To by měl 1 kB. KiB (s písmenem i) má 1 024.' }, { t: '1 024', ok: true }, { t: '8', why: '8 je počet bitů v bajtu, ne bajtů v KiB.' }] },
+    { step: 3, q: 'Kolik <b class="mono">MB</b> je <b class="mono">4 GB</b>?', opts: [{ t: '4 000 MB', ok: true }, { t: '4 096 MB', why: 'GB (bez i) je z řady SI: schod je 1 000, ne 1 024.' }, { t: '0,004 MB', why: 'Dělil jsi. MB je menší jednotka než GB, takže MB je víc: násobíš.' }] },
     { step: 4, q: 'Linka má <b class="mono">100 Mbit/s</b>. Kolik je to <b>MB/s</b>?', opts: [{ t: '800 MB/s', why: 'Z bitů na bajty se dělí osmi.' }, { t: '100 MB/s', why: 'Malé b a velké B se liší osmkrát.' }, { t: '12,5 MB/s', ok: true }] },
-    { step: 5, q: 'Disk <b class="mono">1 TB</b> ukáže Windows jako přibližně…', opts: [{ t: '1 000 GB', why: 'Windows dělí dvojkově, výsledek bude menší.' }, { t: '931 GB', ok: true }, { t: '1 024 GB', why: 'To by byl disk větší než na krabici.' }] }
+    { step: 5, q: 'Disk <b class="mono">1 TB</b> ukáže Windows jako přibližně…', opts: [{ t: '1 000 GB', why: 'Windows dělí dvojkově, výsledek bude menší.' }, { t: '931 GB', ok: true }, { t: '1 024 GB', why: 'To by byl disk větší než na krabici.' }] },
+    { step: 6, q: 'Postup: <b class="mono">2 GiB = 2 · 1 000 MiB = 2 000 MiB</b>. Kde je chyba?', opts: [{ t: 'Schod u GiB je 1 024, ne 1 000', ok: true }, { t: 'MiB je menší, takže se má dělit', why: 'MiB je menší jednotka než GiB, takže se násobí. To je správně.' }, { t: 'Postup je správně', why: 'Není. Jednotky s písmenem i mají schod 1 024.' }] }
   ];
+  const NQ = Q.length;
   const specs = Q.map(x => ({ fixed: mkc({ skill: 'placement', q: x.q, opts: x.opts.map(o => ({ ...o })), steps: null, step: x.step }, true) }));
-  const inner = `<p class="eyebrow">Vstupní test</p><h2>Kde začít?</h2><p class="lead">Tři otázky bez známkování. Slouží jen k tomu, abych ti doporučil krok.</p><div id="run"></div>`;
+  const inner = `<p class="eyebrow">Vstupní test</p><h2>Kde začít?</h2><p class="lead">Šest otázek bez známkování. Slouží jen k tomu, abych ti doporučil krok. Odpověď „Nevím“ je v pořádku.</p><div id="run"></div>`;
   mount('uc', inner, m => {
     const res = [];
     // vlastní průchod, aby se nic nezapisovalo do postupu
     const host = $('#run', m); let k = 0;
     const ask = () => {
       const q = specs[k].fixed;
-      host.innerHTML = `<div class="qbox"><span class="eyebrow">Otázka ${k + 1} z 3</span></div><div class="card"><p class="q">${q.q}</p></div><div class="opts">${q.opts.map((p, i) => `<button class="opt" data-i="${i}"><span class="k">${LETTER[i]}</span><span class="t">${p.t}</span></button>`).join('')}</div><div id="fb"></div>`;
-      host.querySelector('.opts').onclick = e => {
-        const b = e.target.closest('.opt'); if (!b || b.disabled) return;
-        const p = q.opts[+b.dataset.i]; res.push(!!p.ok);
-        $$('.opt', host).forEach(x => x.disabled = true); b.classList.add(p.ok ? 'ok' : 'bad');
-        $('#fb', host).innerHTML = `<div class="fb ${p.ok ? 'ok' : 'info'}"><h3>${p.ok ? 'Správně' : 'Zatím ne'}</h3>${p.ok ? '' : `<p>${p.why}</p>`}</div><button class="btn primary block" id="n2" style="margin-top:12px">${k < 2 ? 'Další otázka' : 'Zobrazit doporučení'}</button>`;
-        $('#n2', host).onclick = () => { k++; if (k < 3) ask(); else finish(); window.scrollTo(0, 0); };
+      host.innerHTML = `<div class="qbox"><span class="eyebrow">Otázka ${k + 1} z ${NQ}</span></div><div class="card"><p class="q">${q.q}</p></div><div class="opts">${q.opts.map((p, i) => `<button class="opt" data-i="${i}"><span class="k">${LETTER[i]}</span><span class="t">${p.t}</span></button>`).join('')}</div><div class="row" style="margin-top:6px"><button class="btn quiet sm" id="nvp">Nevím</button></div><div id="fb" aria-live="polite"></div>`;
+      const reveal = (ok, why, nev, b) => {
+        res.push(ok);
+        $$('.opt', host).forEach((x, i) => { x.disabled = true; if (nev) x.classList.add(q.opts[i].ok ? 'ok' : 'dim'); else if (x === b) x.classList.add(ok ? 'ok' : 'bad'); });
+        $('#nvp', host).disabled = true;
+        const right = q.opts.find(p => p.ok).t;
+        $('#fb', host).innerHTML = `<div class="fb ${ok ? 'ok' : 'info'}"><h3>${ok ? 'Správně' : nev ? 'Nevím je v pořádku' : 'Zatím ne'}</h3>${ok ? '' : nev ? `<p>Správně je <b class="mono">${right}</b>.</p>` : `<p>${why}</p>`}</div><button class="btn primary block" id="n2" style="margin-top:12px">${k < NQ - 1 ? 'Další otázka' : 'Zobrazit doporučení'}</button>`;
+        $('#n2', host).onclick = () => { k++; if (k < NQ) ask(); else finish(); window.scrollTo(0, 0); };
         $('#n2', host).focus({ preventScroll: true });
       };
+      host.querySelector('.opts').onclick = e => {
+        const b = e.target.closest('.opt'); if (!b || b.disabled) return;
+        const p = q.opts[+b.dataset.i]; reveal(!!p.ok, p.why, false, b);
+      };
+      $('#nvp', host).onclick = () => { if (!$('#nvp', host).disabled) reveal(false, '', true); };
     };
     const finish = () => {
       const wrong = specs.map((s, i) => res[i] ? null : s.fixed.step).filter(Boolean);
       const rec = wrong.length ? Math.min(...wrong) : 6, score = res.filter(Boolean).length;
       S.pl = { score, rec, d: today() }; save();
       const st = STEPS[rec - 1];
-      host.innerHTML = `<div class="card"><h2>${score} z 3</h2><p>${wrong.length ? `Doporučuji začít krokem <b>${rec}: ${st.title}</b>. Kroky před ním si můžeš projít rychle.` : 'Základy umíš. Zkus krok <b>6: Najdi chybu</b> a pak část Na dnešek.'}</p></div><a class="btn primary block" href="#/krok/${rec}/0">Jít na krok ${rec}</a><a class="btn quiet block" style="margin-top:10px" href="#/">Zpět na přehled</a>`;
+      host.innerHTML = `<div class="card"><h2>${score} z ${NQ}</h2><p>${wrong.length ? `Doporučuji začít krokem <b>${rec}: ${st.title}</b>. Kroky před ním si můžeš projít rychle.` : 'Základy umíš. Zkus krok <b>6: Najdi chybu</b> a pak část Na dnešek.'}</p></div><a class="btn primary block" href="#/krok/${rec}/0">Jít na krok ${rec}</a><a class="btn quiet block" style="margin-top:10px" href="#/">Zpět na přehled</a>`;
     };
     ask();
   });
@@ -844,7 +1052,7 @@ function game(host) {
 
 /* ===== postup, záloha, nastavení ===== */
 function encode() {
-  const c = { v: 1, i: {}, st: S.st, g: S.g.best };
+  const c = { v: 1, i: {}, st: S.st, g: S.g.best, cal: S.cal };
   for (const k in S.i) { const m = S.i[k]; c.i[k] = [m.b, m.d, m.ok, m.bad]; }
   const j = JSON.stringify(c), b = btoa(unescape(encodeURIComponent(j))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   let h = 0; for (let i = 0; i < b.length; i++) h = (h * 31 + b.charCodeAt(i)) % 65521;
@@ -861,13 +1069,26 @@ function mergeIn(c) {
   for (const k in c.i) { if (!(k in SKILLS)) continue; const a = c.i[k]; if (!Array.isArray(a) || a.some(x => !Number.isFinite(x))) continue; const m = S.i[k]; if (!m || a[2] + a[3] > m.ok + m.bad) S.i[k] = { b: Math.max(0, Math.min(6, a[0])), d: a[1], ok: a[2], bad: a[3] }; }
   for (const k in (c.st || {})) if (+k >= 1 && +k <= STEPS.length && Number.isFinite(c.st[k])) S.st[k] = Math.min(S.st[k] || 1e9, c.st[k]);
   if (Number.isFinite(c.g)) S.g.best = Math.max(S.g.best, c.g);
+  if (Array.isArray(c.cal) && c.cal.length === 7 && c.cal.every(x => Number.isFinite(x) && x >= 0) && c.cal.reduce((a, b) => a + b, 0) > S.cal.reduce((a, b) => a + b, 0)) S.cal = c.cal.slice();
   save();
 }
 function applyTheme() { const r = document.documentElement; if (S.th === 'light' || S.th === 'dark') r.dataset.theme = S.th; else delete r.dataset.theme; if (S.rm) r.dataset.rm = '1'; else delete r.dataset.rm; }
+function calCard() {
+  const c = S.cal, tot = c[1] + c[3] + c[5], nv = c[6];
+  if (tot + nv === 0) return '<div class="card"><h3>Odhad jistoty</h3><p class="small muted">Při procvičování můžeš před odpovědí označit, jak jsi si jistý. Tady pak uvidíš, jestli tvoje jistota odpovídá výsledkům.</p></div>';
+  const rows = [['Jistě', 0], ['Spíš ano', 2], ['Hádám', 4]].map(([n, j]) => `<tr><td>${n}</td><td class="r">${c[j + 1] ? `${c[j]} z ${c[j + 1]}` : '–'}</td><td class="r">${c[j + 1] ? Math.round(100 * c[j] / c[j + 1]) + ' %' : ''}</td></tr>`).join('');
+  const pc = j => c[j + 1] ? c[j] / c[j + 1] : null;
+  let msg = 'Zatím je málo odpovědí na závěr. Pokračuj a přehled se zpřesní.';
+  if (c[1] >= 5 && pc(0) < .8) msg = 'Když si jsi jistý, mýlíš se častěji, než čekáš. Před odpovědí si ověř směr, řadu a b/B.';
+  else if (c[5] >= 5 && pc(4) >= .7) msg = 'Když hádáš, trefuješ se často. Umíš víc, než si myslíš.';
+  else if (c[1] >= 5 && pc(0) >= .8) msg = 'Tvoje jistota odpovídá výsledkům.';
+  return `<div class="card"><h3>Odhad jistoty</h3><table class="t"><thead><tr><th>Řekl jsi</th><th class="r">Správně</th><th class="r">Podíl</th></tr></thead><tbody>${rows}</tbody></table><p class="small" style="margin:10px 0 0">Odpovědí „Nevím“: <b>${nv}</b>. ${msg}</p><p class="tiny" style="margin:6px 0 0">Počítá se správně na první pokus, bez nápovědy.</p></div>`;
+}
 function progress(host) {
   const labels = { k: 'zvládnuto', w: 'slabé', p: 'učím se', '': 'nezačato' };
   const code = encode();
   host.innerHTML = `<div class="card"><h3>Dovednosti</h3><table class="t"><tbody>${Object.keys(SKILLS).map(k => { const s = pipState(k), m = M(k); return `<tr><td>${SKILLS[k]}</td><td class="r"><span class="pill ${s === 'k' ? 'ok' : s === 'w' ? 'warn' : s === 'p' ? 'si' : ''}">${labels[s]}</span>${m ? `<br><span class="tiny">další ${m.d <= today() ? 'dnes' : dateCz(m.d)}</span>` : ''}</td></tr>`; }).join('')}</tbody></table></div>
+  ${calCard()}
   <div class="card"><h3>Záloha postupu</h3><p class="small muted">Postup je jen v tomto prohlížeči. Zkopíruj kód a vlož ho na jiném zařízení.</p><textarea class="copybox" id="code" readonly aria-label="Kód zálohy">${code}</textarea><div class="row" style="margin:8px 0 16px"><button class="btn sm" id="cp">Kopírovat kód</button><span id="cpm" class="small muted" aria-live="polite"></span></div>
   <div class="field"><label for="imp">Vložit kód z jiného zařízení</label><textarea class="copybox" id="imp" style="min-height:70px" placeholder="BB1.…"></textarea></div><button class="btn sm" id="im">Načíst (sloučí se s tímto postupem)</button><p id="imm" class="small" aria-live="polite" style="margin-top:8px"></p></div>
   <div class="card"><h3>Přidat na plochu</h3><p class="small"><b>iPhone / iPad (Safari):</b> Sdílet → Přidat na plochu.<br><b>Android (Chrome):</b> menu ⋮ → Přidat na plochu / Instalovat.</p></div>
