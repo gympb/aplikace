@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bity a bajty</title>
+<meta name="description" content="Bity, bajty, kilobajty a kibibajty: šest krátkých kroků, převody po žebříčku, rychlost přenosu, kapacita disku a opakování, které se přizpůsobí tomu, co ti dělá potíže.">
+<meta name="author" content="Ivo Bešťák">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#FBFAF7">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+:root{
+  --bg:#FBFAF7;--card:#FFFFFF;--ink:#1B2230;--ink2:#505A6B;--ink3:#6B7486;--line:#E2DED4;--line2:#CFC9BB;
+  --si:#2457C5;--si-bg:#E6EDFB;--iec:#C2410C;--iec-bg:#FCEBDD;
+  --ok:#17794A;--ok-bg:#E3F2E9;--bad:#B3261E;--bad-bg:#FBE7E5;--warn:#8A5A00;--warn-bg:#FAF0D8;
+  --on:#FFFFFF;--focus:#1B2230;--shadow:0 1px 2px rgba(27,34,48,.06);
+  --font:'Atkinson Hyperlegible Next',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'Atkinson Hyperlegible Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14181F;--card:#1C222C;--ink:#E9ECF2;--ink2:#B4BCCB;--ink3:#8E98AA;--line:#2C3441;--line2:#3B4556;
+  --si:#8FB0FF;--si-bg:#202C4A;--iec:#FFA574;--iec-bg:#43291B;
+  --ok:#5DD39B;--ok-bg:#16332A;--bad:#FF8D84;--bad-bg:#40201F;--warn:#F0C265;--warn-bg:#3A2F15;
+  --on:#101420;--focus:#E9ECF2;--shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181F;--card:#1C222C;--ink:#E9ECF2;--ink2:#B4BCCB;--ink3:#8E98AA;--line:#2C3441;--line2:#3B4556;
+  --si:#8FB0FF;--si-bg:#202C4A;--iec:#FFA574;--iec-bg:#43291B;
+  --ok:#5DD39B;--ok-bg:#16332A;--bad:#FF8D84;--bad-bg:#40201F;--warn:#F0C265;--warn-bg:#3A2F15;
+  --on:#101420;--focus:#E9ECF2;--shadow:none;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.55 var(--font);min-height:100vh;min-height:100dvh}
+.shell{max-width:560px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom))}
+a{color:var(--si)}
+main:focus{outline:none}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+h1,h2,h3{line-height:1.25;margin:0}
+h1{font-size:28px;font-weight:700;letter-spacing:-.01em}
+h2{font-size:22px;font-weight:700}
+h3{font-size:18px;font-weight:700}
+p{margin:0 0 12px}
+b,strong{font-weight:700}
+.mono,code{font-family:var(--mono);font-size:.94em}
+.nb{white-space:nowrap}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 0 6px;font-size:15px}
+.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink2);text-decoration:none}
+.top a:hover{text-decoration:underline}
+.brand{display:flex;align-items:baseline;gap:8px;margin:2px 0 16px}
+.brand small{color:var(--ink3);font-size:15px}
+.lead{color:var(--ink2);margin:6px 0 18px}
+.muted{color:var(--ink2)}
+.small{font-size:15px}
+.tiny{font-size:13.5px;color:var(--ink3)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 12px;box-shadow:var(--shadow)}
+.card.flat{box-shadow:none;background:transparent}
+.card h3{margin-bottom:6px}
+.stack>*+*{margin-top:12px}
+.btn{appearance:none;font:inherit;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 18px;border-radius:12px;border:2px solid var(--ink);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;text-align:center}
+.btn.primary{background:var(--ink);color:var(--bg)}
+.btn.block{display:flex;width:100%}
+.btn.quiet{border-color:var(--line2);font-weight:400;color:var(--ink2)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.sm{min-height:44px;padding:8px 14px;font-size:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.split{justify-content:space-between}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:13.5px;font-weight:700;background:var(--line);color:var(--ink2)}
+.pill.si{background:var(--si-bg);color:var(--si)}.pill.iec{background:var(--iec-bg);color:var(--iec)}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.si-t{color:var(--si);font-weight:700}.iec-t{color:var(--iec);font-weight:700}
+
+/* přehled kroků */
+.steps{list-style:none;margin:0;padding:0}
+.stepcard{display:flex;gap:14px;align-items:flex-start;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;min-height:76px}
+.stepcard:hover{border-color:var(--line2)}
+.stepcard .no{flex:none;width:36px;height:36px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-weight:700}
+.stepcard.done .no{background:var(--ok);border-color:var(--ok);color:var(--on)}
+.stepcard.rec{border-color:var(--si);box-shadow:0 0 0 1px var(--si)}
+.stepcard h3{margin-bottom:2px}
+.stepcard p{margin:0;color:var(--ink2);font-size:15.5px}
+.pips{display:flex;gap:5px;margin-top:8px}
+.pip{width:18px;height:6px;border-radius:3px;background:var(--line);}
+.pip.k{background:var(--ok)}.pip.w{background:var(--warn)}.pip.p{background:var(--si)}
+
+/* průběh kroku */
+.prog{display:flex;gap:4px;margin:4px 0 14px}
+.prog i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.prog i.on{background:var(--ink)}
+.prog i.cur{background:var(--si)}
+.eyebrow{font-size:14px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.nav2{display:flex;gap:10px;margin-top:16px}
+.nav2 .btn{flex:1}
+.nav2 .btn.back{flex:none;min-width:56px}
+
+/* odpovědi */
+.opts{display:grid;gap:10px;margin:14px 0}
+.opt{appearance:none;font:inherit;text-align:left;min-height:56px;padding:12px 16px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:12px}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{flex:none;width:28px;height:28px;border-radius:8px;background:var(--line);display:grid;place-items:center;font-weight:700;font-size:14px;color:var(--ink2)}
+.opt .t{flex:1}
+.opt.ok{border-color:var(--ok);background:var(--ok-bg)}
+.opt.ok .k{background:var(--ok);color:var(--on)}
+.opt.bad{border-color:var(--bad);background:var(--bad-bg)}
+.opt.bad .k{background:var(--bad);color:var(--on)}
+.opt.dim{opacity:.55}
+.opt[disabled]{cursor:default}
+.numrow{display:flex;gap:10px;margin:14px 0 8px}
+.num{flex:1;min-width:0;font:600 22px var(--mono);min-height:56px;padding:8px 14px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink)}
+.num:focus{border-color:var(--ink);outline:none}
+.unit{align-self:center;font:600 18px var(--mono);color:var(--ink2);min-width:3ch}
+.fb{border-radius:12px;padding:14px 16px;margin:12px 0;border:2px solid}
+.fb.ok{background:var(--ok-bg);border-color:var(--ok)}
+.fb.bad{background:var(--bad-bg);border-color:var(--bad)}
+.fb.info{background:var(--warn-bg);border-color:var(--warn)}
+.fb h3{font-size:17px;margin-bottom:4px}
+.fb p:last-child{margin-bottom:0}
+.hint{background:var(--si-bg);border-radius:12px;padding:10px 14px;margin:10px 0;font-size:16px}
+details.sol{margin:8px 0 0}
+details.sol summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
+ol.calc{margin:6px 0 0;padding-left:22px}
+ol.calc li{margin:4px 0}
+.q{font-size:19px;font-weight:600;line-height:1.4}
+.q .mono{font-weight:600}
+
+/* pracovní prvky */
+.worked li{margin:0 0 10px}
+.wk{list-style:none;padding:0;margin:0}
+.wk li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 8px;display:flex;gap:10px}
+.wk li b.n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:14px}
+.wk li.res{border-color:var(--ok);background:var(--ok-bg)}
+.wk li.res b.n{background:var(--ok);color:var(--on)}
+.wk li.blank{border-style:dashed}
+table.t{width:100%;border-collapse:collapse;font-size:15.5px}
+table.t th,table.t td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.t th{font-size:13.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+table.t td.r,table.t th.r{text-align:right}
+table.t td.m{font-family:var(--mono);font-size:14.5px}
+.scroll{overflow-x:auto}
+
+/* žebříček */
+.ladder{display:flex;flex-direction:column;align-items:stretch;gap:0;margin:8px 0}
+.rung{appearance:none;font:inherit;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:6px 16px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink);cursor:pointer;text-align:left}
+.rung b{font-family:var(--mono);font-size:18px}
+.rung span{font-size:14px;color:var(--ink3)}
+.ladder.si .rung.sel{border-color:var(--si);background:var(--si-bg)}
+.ladder.iec .rung.sel{border-color:var(--iec);background:var(--iec-bg)}
+.ladder .gap{display:flex;align-items:center;justify-content:center;height:26px;font:600 14px var(--mono);color:var(--ink3)}
+.ladder.si .gap{color:var(--si)}.ladder.iec .gap{color:var(--iec)}
+.lres{min-height:52px}
+
+/* bity */
+.bits{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+.bit{appearance:none;font:700 24px var(--mono);height:56px;min-width:40px;border-radius:10px;border:2px solid var(--line2);background:var(--card);color:var(--ink3);cursor:pointer}
+.bit.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.bitval{text-align:center;font:600 20px var(--mono)}
+.stepper{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0}
+.stepper b{font:700 20px var(--mono);min-width:7ch;text-align:center}
+.sq{width:44px;height:44px;padding:0}
+
+/* konvertor */
+.field{display:grid;gap:6px;margin-bottom:12px}
+.field label{font-weight:700;font-size:15px;color:var(--ink2)}
+select,input.txt{font:inherit;font-size:18px;min-height:52px;padding:8px 12px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink);width:100%}
+input.txt{font-family:var(--mono);font-weight:600}
+.res{font:700 26px/1.3 var(--mono);word-break:break-word}
+.seg{display:flex;gap:4px;background:var(--line);padding:4px;border-radius:12px;margin-bottom:14px}
+.seg a{flex:1;text-align:center;text-decoration:none;color:var(--ink2);min-height:44px;display:grid;place-items:center;border-radius:9px;font-weight:700;font-size:15px}
+.seg a.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.swap{align-self:end}
+.bars{display:grid;gap:6px;margin-top:6px}
+.bar{height:14px;border-radius:7px}
+.bar.si{background:var(--si)}.bar.iec{background:var(--iec)}
+.cmp{display:grid;grid-template-columns:70px 1fr;gap:6px 10px;align-items:center;font-size:15px}
+.cmp b{font-family:var(--mono)}
+
+/* spodní lišta */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabbar nav{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+.tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:62px;color:var(--ink3);text-decoration:none;font-size:13.5px;font-weight:700;position:relative}
+.tabbar a svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tabbar a.on{color:var(--ink)}
+.tabbar a.on::before{content:"";position:absolute;top:0;left:30%;right:30%;height:3px;border-radius:0 0 3px 3px;background:var(--ink)}
+.badge{position:absolute;top:6px;left:calc(50% + 8px);min-width:20px;height:20px;border-radius:10px;background:var(--bad);color:var(--on);font-size:12px;display:grid;place-items:center;padding:0 5px}
+footer.foot{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);font-size:14px;color:var(--ink3)}
+footer.foot p{margin:0 0 4px}
+.copybox{font:500 13px/1.4 var(--mono);width:100%;min-height:96px;padding:10px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink);resize:vertical;word-break:break-all}
+.big{font:700 40px/1 var(--mono)}
+.qbox{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){:root:not([data-rm]) .opt,:root:not([data-rm]) .btn,:root:not([data-rm]) .rung{transition:background-color .15s,border-color .15s}}
+@media print{.tabbar,.top,.nav2,.seg{display:none}body{background:#fff;color:#000}.card{break-inside:avoid;box-shadow:none}}
+@media (min-width:700px){body{font-size:18px}.shell{padding-top:8px}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<noscript><p style="padding:16px">Aplikace potřebuje zapnutý JavaScript.</p></noscript>
+<script>
+'use strict';
+/* ===== pomocné funkce ===== */
+const NB = ' ';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const near = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
+const today = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 864e5);
+const dateCz = d => { const x = new Date(d * 864e5); return x.getUTCDate() + '. ' + (x.getUTCMonth() + 1) + '. ' + x.getUTCFullYear(); };
+
+/* číslo v české úpravě: mezera po tisících, desetinná čárka */
+function fmt(n, sig = 10) {
+  if (!isFinite(n)) return '–';
+  if (n === 0) return '0';
+  const neg = n < 0, a = Math.abs(n);
+  let s;
+  if (Number.isInteger(a) && a < 9007199254740992) s = String(a);
+  else {
+    const r = parseFloat(a.toPrecision(sig));
+    s = (r >= 1e21 || r < 1e-9) ? r.toExponential() : r.toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 20 });
+  }
+  let [i, d] = s.split('.');
+  i = i.replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+  return (neg ? '−' : '') + i + (d ? ',' + d : '');
+}
+const pw = (b, e) => `${b}<sup>${e}</sup>`;
+/* vstup od žáka: čárka nebo tečka, mezery se ignorují */
+function parseNum(s) {
+  s = String(s).trim().replace(/[\s  ]/g, '').replace(',', '.').replace('−', '-');
+  if (!/^-?\d+(\.\d+)?$/.test(s)) return NaN;
+  return Number(s);
+}
+
+/* ===== jednotky ===== */
+const BYTES = { bit: 1 / 8, kbit: 125, Mbit: 125e3, Gbit: 125e6, B: 1, kB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12, KiB: 1024, MiB: 1048576, GiB: 1073741824, TiB: 1099511627776 };
+const SI = ['B', 'kB', 'MB', 'GB', 'TB'];
+const IEC = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
+const NAMES = { bit: 'bit', kbit: 'kilobit', Mbit: 'megabit', Gbit: 'gigabit', B: 'bajt', kB: 'kilobajt', MB: 'megabajt', GB: 'gigabajt', TB: 'terabajt', KiB: 'kibibajt', MiB: 'mebibajt', GiB: 'gibibajt', TiB: 'tebibajt' };
+const conv = (v, f, t) => v * BYTES[f] / BYTES[t];
+const unitHtml = u => IEC.includes(u) && u !== 'B' ? `<span class="iec-t">${u}</span>` : (SI.includes(u) && u !== 'B' ? `<span class="si-t">${u}</span>` : u);
+const isIec = u => IEC.includes(u) && u !== 'B';
+
+/* ===== úložiště postupu ===== */
+const KEY = 'bity-a-bajty:v1';
+const INT = [0, 1, 2, 4, 8, 16, 32];
+let S;
+function defState() { return { i: {}, st: {}, pl: null, g: { best: 0, n: 0 }, th: 'auto', rm: false, fl: {} }; }
+function load() {
+  try { const o = JSON.parse(localStorage.getItem(KEY)); if (o && typeof o === 'object') return Object.assign(defState(), o); } catch (e) {}
+  return defState();
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+S = load();
+const M = k => S.i[k] || null;
+function record(skill, ok, hinted) {
+  const t = today(), m = S.i[skill] || { b: 0, d: t, ok: 0, bad: 0 };
+  if (ok) { m.ok++; if (hinted) { m.d = Math.max(m.d, t + 1); } else { m.b = Math.min(m.b + 1, 6); m.d = t + INT[m.b]; } }
+  else { m.bad++; m.b = 0; m.d = t; }
+  S.i[skill] = m; save();
+}
+const dueList = () => Object.keys(S.i).filter(k => S.i[k].d <= today()).sort((a, b) => (S.i[a].b - S.i[b].b) || (S.i[a].d - S.i[b].d));
+const pipState = k => { const m = M(k); if (!m) return ''; if (m.b >= 2) return 'k'; if (m.b === 0 && m.bad > 0) return 'w'; return 'p'; };
+
+/* ===== generování úloh ===== */
+const lab = (v, unit, sig) => fmt(v, sig || 10) + (unit ? NB + unit : '');
+/* numerická úloha s možnostmi výběru: wrong = [[hodnota, vysvětlení chyby], ...] */
+function mk(o) {
+  const sig = o.sig || 10;
+  const opts = [{ v: o.ans, t: lab(o.ans, o.unit, sig), ok: true }];
+  for (const [v, why] of o.wrong) {
+    if (!isFinite(v) || v <= 0 && o.pos !== false || near(v, o.ans) || opts.some(x => near(x.v, v))) continue;
+    opts.push({ v, t: lab(v, o.unit, sig), why });
+    if (opts.length === 4) break;
+  }
+  o.opts = shuffle(opts); o.kind = 'num';
+  return o;
+}
+/* úloha s výběrem: opts = [{t, ok, why}] */
+function mkc(o, keepOrder) { o.opts = keepOrder ? o.opts : shuffle(o.opts); o.kind = 'choice'; return o; }
+const calc = a => `<ol class="calc">${a.map(x => `<li>${x}</li>`).join('')}</ol>`;
+
+const GEN = {};
+GEN['bit-bajt'] = () => {
+  if (Math.random() < .5) {
+    const n = pick([3, 5, 6, 12, 16, 25, 64, 125]);
+    return mk({ skill: 'bit-bajt', q: `Kolik bitů je <b class="mono">${n} B</b>?`, ans: n * 8, unit: 'bit',
+      wrong: [[n / 8, 'Dělil jsi osmi. Bajt je větší než bit, takže bitů je víc: násobíš.'], [n * 10, 'Mezi bajtem a bitem je osmička, ne desítka.'], [n * 1024, 'Číslo 1 024 patří předponám kibi, mebi… Mezi bajtem a bitem je jen 8.'], [n * 4, 'Bajt má osm bitů, ne čtyři (čtyři má jen půlbajt, nibble).']],
+      steps: ['Bajt je větší než bit, bitů bude víc → násobím.', '1 B = 8 bit.', `${n} · 8 = <b>${n * 8} bit</b>`],
+      hint: 'Je bajt větší, nebo menší než bit? Podle toho násobíš, nebo dělíš.', hint2: 'Jeden bajt je osm bitů.', meta: { t: 'bit-bajt', v: n, from: 'B', to: 'bit' } });
+  }
+  const b = pick([16, 24, 40, 64, 80, 128, 200, 1000]);
+  return mk({ skill: 'bit-bajt', q: `Kolik bajtů je <b class="mono">${b} bit</b>?`, ans: b / 8, unit: 'B',
+    wrong: [[b * 8, 'Násobil jsi. Bit je menší než bajt, takže bajtů je míň: dělíš osmi.'], [b / 10, 'Mezi bitem a bajtem je osmička, ne desítka.'], [b / 4, 'Bajt má osm bitů, ne čtyři.'], [b, 'Bity a bajty se liší osmkrát, čísla tedy nemohou být stejná.']],
+    steps: ['Bit je menší než bajt, bajtů bude míň → dělím.', '1 B = 8 bit.', `${b} : 8 = <b>${fmt(b / 8)} B</b>`],
+    hint: 'Je bit větší, nebo menší než bajt? Podle toho násobíš, nebo dělíš.', hint2: 'Jeden bajt je osm bitů.', meta: { t: 'bit-bajt', v: b, from: 'bit', to: 'B' } });
+};
+GEN['hodnoty'] = () => {
+  const n = ri(3, 10), a = 2 ** n;
+  return mkc({ skill: 'hodnoty', q: `Kolik různých hodnot se vejde do <b class="mono">${n} bitů</b>?`,
+    opts: [{ t: fmt(a), ok: true }, { t: fmt(2 * n), why: 'To je jen dvojnásobek počtu bitů. Každý další bit hodnoty zdvojnásobí, takže jde o 2<sup>n</sup>.' }, (n * n === a ? { t: fmt(a * 2), why: `To je 2<sup>${n + 1}</sup>, tedy hodnot pro o jeden bit víc.` } : { t: fmt(n * n), why: 'Umocnil jsi počet bitů, ale základ je 2: hodnot je 2<sup>n</sup>.' }), { t: fmt(a - 1), why: `${fmt(a - 1)} je největší zapsatelné číslo. Hodnot je o jednu víc, protože se počítá i nula.` }],
+    steps: ['Každý bit má dvě možnosti: 0 nebo 1.', `Každý další bit počet možností zdvojnásobí: 2 · 2 · … (${n}×) = 2<sup>${n}</sup>.`, `2<sup>${n}</sup> = <b>${fmt(a)}</b> hodnot (čísla od 0 do ${fmt(a - 1)}).`],
+    hint: 'Jeden bit má 2 hodnoty, dva bity 4, tři bity 8… Co se děje s každým dalším bitem?', hint2: 'Hodnot je 2 na počet bitů.', meta: { t: 'hodnoty', n } });
+};
+GEN['pocet-bajtu'] = () => {
+  const u = pick(['kB', 'MB', 'GB', 'KiB', 'MiB', 'GiB']);
+  const iec = isIec(u), idx = (iec ? IEC : SI).indexOf(u), base = iec ? 1024 : 1000;
+  const ans = BYTES[u], other = (iec ? 1000 : 1024) ** idx;
+  return mk({ skill: 'pocet-bajtu', q: `Kolik bajtů má <b class="mono">1 ${u}</b>?`, ans, unit: 'B', pos: true,
+    wrong: [[other, iec ? `Použil jsi desítkový schod. ${u} má ve značce <b>i</b>, tedy dvojkovou řadu: schod 1 024.` : `Použil jsi dvojkový schod. ${u} nemá ve značce <b>i</b>, patří do řady SI: schod 1 000.`], [ans * base, `To je o schod víc: tolik bajtů má další jednotka v řadě.`], [ans * 8, 'Tohle jsou bity. Otázka se ptá na bajty, takže 8 nepřipadá v úvahu.'], [ans / base, 'To je o schod míň: tolik bajtů má předchozí jednotka v řadě.']],
+    steps: [`${u} ${iec ? 'má ve značce <b>i</b> → dvojková řada IEC, schod 1 024.' : 'nemá ve značce <b>i</b> → řada SI, schod 1 000.'}`, `Od bajtu je to ${idx} ${idx === 1 ? 'schod' : 'schody'}: ${Array(idx).fill(fmt(base)).join(' · ')}`, `1 ${u} = <b>${fmt(ans)} B</b>`],
+    hint: `Je ve značce ${u} písmeno <b>i</b>?`, hint2: `Bez i jde každý schod o 1 000, s i o 1 024. Kolik schodů je od B po ${u}?`, meta: { t: 'pocet-bajtu', u } });
+};
+GEN['poznej-radu'] = () => {
+  if (Math.random() < .55) {
+    const k = ri(1, 4), s = SI[k], i = IEC[k], swap = Math.random() < .5;
+    const A = swap ? i : s, B = swap ? s : i;
+    const pct = ((BYTES[i] / BYTES[s] - 1) * 100);
+    return mkc({ skill: 'poznej-radu', q: `Která jednotka je větší: <b class="mono">${A}</b>, nebo <b class="mono">${B}</b>?`,
+      opts: [{ t: A, ok: A === i, why: A === s ? `Opačně. ${s} jsou desítkové (schod 1 000), ${i} dvojkové (schod 1 024), a dvojková je vždy větší.` : '' }, { t: B, ok: B === i, why: B === s ? `Opačně. ${s} jsou desítkové (schod 1 000), ${i} dvojkové (schod 1 024), a dvojková je vždy větší.` : '' }, { t: 'Jsou stejné', ok: false, why: `Stejné nejsou. 1 ${i} = ${fmt(BYTES[i])} B, ale 1 ${s} = ${fmt(BYTES[s])} B.` }],
+      steps: [`${i} má ve značce <b>i</b> → schod 1 024, ${s} schod 1 000.`, `1 ${i} = ${fmt(BYTES[i])} B, 1 ${s} = ${fmt(BYTES[s])} B.`, `<b>${i}</b> je větší o ${fmt(pct, 3)} %.`],
+      hint: 'Která z nich má ve značce písmeno <b>i</b>?', hint2: 'Jednotka s i počítá po 1 024, bez i po 1 000.', meta: { t: 'poznej-radu', big: i, small: s } }, true);
+  }
+  const u = pick([...SI.slice(1), ...IEC.slice(1)]), iec = isIec(u);
+  return mkc({ skill: 'poznej-radu', q: `Jednotka <b class="mono">${u}</b> patří do řady…`,
+    opts: [{ t: 'SI (desítková): schod 1 000', ok: !iec, why: iec ? `${u} má ve značce <b>i</b>, patří do dvojkové řady IEC se schodem 1 024.` : '' }, { t: 'IEC (dvojková): schod 1 024', ok: iec, why: !iec ? `${u} nemá ve značce <b>i</b>, patří do desítkové řady SI se schodem 1 000.` : '' }],
+    steps: [`${u} ${iec ? 'má' : 'nemá'} ve značce písmeno <b>i</b>.`, iec ? `Patří do řady <b>IEC</b>, schod 1 024.` : `Patří do řady <b>SI</b>, schod 1 000.`],
+    hint: 'Podívej se, jestli je ve značce písmeno <b>i</b>.', hint2: 'S i je řada IEC, bez i řada SI.', meta: { t: 'poznej-radu', u } }, true);
+};
+GEN['znacky'] = () => {
+  const t = ri(0, 3);
+  if (t === 0) return mkc({ skill: 'znacky', q: 'Která značka je správně pro <b>kilobajt</b>?',
+    opts: [{ t: 'kB', ok: true }, { t: 'KB', why: 'Kilo se píše malým <b>k</b>. Velká písmena mají až M, G, T.' }, { t: 'kb', why: 'Malé <b>b</b> je bit, ne bajt. Bajt je velké <b>B</b>.' }, { t: 'Kb', why: 'Velké K se používá jen u kibi (KiB) a malé b by byl bit.' }],
+    steps: ['Kilo = malé <b>k</b>, bajt = velké <b>B</b>.', 'Správná značka je <b>kB</b>.'], hint: 'Kilo se značí malým písmenem, bajt velkým.', meta: { t: 'znacky' } });
+  if (t === 1) return mkc({ skill: 'znacky', q: 'Která značka je správně pro <b>megabit</b>?',
+    opts: [{ t: 'Mbit', ok: true }, { t: 'MB', why: 'Velké <b>B</b> je bajt. Megabit se píše Mbit.' }, { t: 'mbit', why: 'Mega se píše velkým <b>M</b>. Malé m by znamenalo mili.' }, { t: 'MiB', why: 'To je mebibajt, bajty ve dvojkové řadě.' }],
+    steps: ['Mega = velké <b>M</b>, bit = <b>bit</b> (nebo malé b).', 'Správná značka je <b>Mbit</b>.'], hint: 'Mega je velké M. A bit se píše „bit“ nebo malým b.', meta: { t: 'znacky' } });
+  if (t === 2) { const u = pick(['MiB', 'GiB', 'KiB']); const nm = NAMES[u]; const wrong = u === 'MiB' ? ['megabajt', 'megabit'] : u === 'GiB' ? ['gigabajt', 'gigabit'] : ['kilobajt', 'kilobit'];
+    return mkc({ skill: 'znacky', q: `Co znamená značka <b class="mono">${u}</b>?`,
+      opts: [{ t: `${nm} (${fmt(BYTES[u])} B)`, ok: true }, { t: `${wrong[0]} (${fmt(BYTES[wrong[0] === 'megabajt' ? 'MB' : wrong[0] === 'gigabajt' ? 'GB' : 'kB'])} B)`, why: `Písmeno <b>i</b> ve značce znamená dvojkovou řadu. ${wrong[0][0].toUpperCase() + wrong[0].slice(1)} by se psal ${u.replace('i', '')}.` }, { t: wrong[1], why: 'Velké <b>B</b> na konci je bajt, ne bit.' }],
+      steps: [`<b>i</b> ve značce → dvojková řada, <b>B</b> → bajty.`, `${u} = ${nm}, ${fmt(BYTES[u])} B.`], hint: 'Písmeno i prozradí řadu, velké B jednotku.', meta: { t: 'znacky' } }); }
+  return mkc({ skill: 'znacky', q: 'Rozdíl mezi <b class="mono">b</b> a <b class="mono">B</b> je…',
+    opts: [{ t: 'osmkrát: B je bajt, b je bit', ok: true }, { t: 'žádný, jsou to dva zápisy téhož', why: 'Nejsou. Malé b je bit, velké B bajt, a 1 B = 8 bit.' }, { t: 'tisíckrát', why: 'Tisíckrát se liší sousední předpony (kilo, mega…), ne bit a bajt.' }, { t: 'čtyřikrát', why: 'Bajt má osm bitů. Čtyři bity jsou půlbajt (nibble).' }],
+    steps: ['Malé <b>b</b> = bit, velké <b>B</b> = bajt.', '1 B = 8 bit, takže rozdíl je osmkrát.'], hint: 'Kolik bitů má jeden bajt?', meta: { t: 'znacky' } });
+};
+GEN['zebrik-si'] = () => zebrik('si');
+GEN['zebrik-iec'] = () => zebrik('iec');
+function zebrik(series) {
+  const R = series === 'si' ? SI : IEC, base = series === 'si' ? 1000 : 1024, oth = series === 'si' ? 1024 : 1000;
+  const skill = 'zebrik-' + series;
+  let i, j; do { i = ri(0, 4); j = ri(0, 4); } while (i === j || Math.abs(i - j) > 2);
+  const F = R[i], T = R[j], k = Math.abs(i - j), down = j < i; /* down = cíl je menší jednotka */
+  let v, ans;
+  if (down) { v = pick([2, 3, 4, 5, 6, 7, 8, 9, 2.5, 1.5, 12]); ans = v * base ** k; }
+  else { ans = pick([2, 3, 4, 5, 6, 7, 8, 9, 2.5, 12]); v = ans * base ** k; }
+  const flip = down ? v / base ** k : v * base ** k;
+  const wrongBase = down ? v * oth ** k : v / oth ** k;
+  const sch = k === 1 ? 'schod' : 'schody';
+  const wrongK = down ? v * base ** (k === 1 ? 2 : 1) : v / base ** (k === 1 ? 2 : 1);
+  const otherName = series === 'si' ? `Použil jsi 1 024. Jednotky ${F} a ${T} jsou z řady SI (bez <b>i</b>), schod je 1 000.` : `Použil jsi 1 000. Jednotky s <b>i</b> patří do řady IEC, schod je 1 024.`;
+  return mk({ skill, q: `<b class="mono">${fmt(v)} ${F}</b> = ? <b class="mono">${T}</b>`, ans, unit: T,
+    wrong: [[wrongBase, otherName], [flip, down ? `Dělil jsi. ${T} je menší jednotka než ${F}, takže kousků je víc: násobíš.` : `Násobil jsi. ${T} je větší jednotka než ${F}, takže kousků je míň: dělíš.`], [wrongK, `Nesedí počet schodů. Mezi ${F} a ${T} ${k === 1 ? 'je jeden schod' : 'jsou dva schody'}.`]],
+    steps: [`Cíl <b>${T}</b> je ${down ? 'menší' : 'větší'} jednotka (${down ? 'níž' : 'výš'} na žebříčku) → ${down ? 'násobím' : 'dělím'}.`, `Schodů: ${k} (${sch}), každý ${fmt(base)} → ${k === 2 ? `${fmt(base)} · ${fmt(base)} = ` : ''}<b>${fmt(base ** k)}</b>.`, down ? `${fmt(v)} · ${fmt(base ** k)} = <b>${fmt(ans)} ${T}</b>` : `${fmt(v)} : ${fmt(base ** k)} = <b>${fmt(ans)} ${T}</b>`],
+    hint: 'Je cílová jednotka menší, nebo větší? Kolik schodů je mezi nimi?', hint2: `Jeden schod je ${fmt(base)}. ${down ? 'Do menší jednotky násobíš.' : 'Do větší jednotky dělíš.'}`, meta: { t: 'zebrik', v, from: F, to: T } });
+}
+GEN['rychlost'] = () => {
+  if (Math.random() < .65) {
+    const n = pick([8, 16, 24, 40, 80, 100, 200, 400, 800, 1000]);
+    return mk({ skill: 'rychlost', q: `Linka má rychlost <b class="mono">${fmt(n)} Mbit/s</b>. Kolik je to <b>MB/s</b>?`, ans: n / 8, unit: 'MB/s',
+      wrong: [[n * 8, 'Násobil jsi. Z bitů na bajty se dělí osmi: bajt je osmkrát větší, takže bajtů je míň.'], [n, 'Zapomněl jsi osmičku. Malé b (bit) a velké B (bajt) se liší osmkrát.'], [n / 1000, 'Schod 1 000 je mezi sousedními předponami. Mezi bity a bajty je 8.'], [n * 1000 / 8, 'Mega zůstává megou; převádíš jen bity na bajty, tedy jednou děliš osmi.']],
+      steps: ['Mbit/s → MB/s: z bitů na bajty, bajtů bude míň → dělím.', '1 B = 8 bit, tedy dělím osmi.', `${fmt(n)} : 8 = <b>${fmt(n / 8)} MB/s</b>`],
+      hint: 'Z bitů na bajty: násobíš, nebo dělíš?', hint2: 'Jeden bajt je osm bitů, takže Mbit/s : 8 = MB/s.', meta: { t: 'rychlost', n, dir: 'bit2B' } });
+  }
+  const m = pick([1, 2, 5, 10, 12.5, 25, 50, 125]);
+  return mk({ skill: 'rychlost', q: `Disk čte rychlostí <b class="mono">${fmt(m)} MB/s</b>. Kolik je to <b>Mbit/s</b>?`, ans: m * 8, unit: 'Mbit/s',
+    wrong: [[m / 8, 'Dělil jsi. Z bajtů na bity se násobí osmi: bit je osmkrát menší, takže bitů je víc.'], [m, 'Zapomněl jsi osmičku. B a b se liší osmkrát.'], [m * 1000, 'Schod 1 000 je mezi sousedními předponami. Mezi bajty a bity je 8.'], [m * 10, 'Mezi bajtem a bitem je osmička, ne desítka.']],
+    steps: ['MB/s → Mbit/s: z bajtů na bity, bitů bude víc → násobím.', '1 B = 8 bit.', `${fmt(m)} · 8 = <b>${fmt(m * 8)} Mbit/s</b>`],
+    hint: 'Z bajtů na bity: násobíš, nebo dělíš?', hint2: 'Jeden bajt je osm bitů.', meta: { t: 'rychlost', n: m, dir: 'B2bit' } });
+};
+GEN['cas-prenosu'] = () => {
+  const R = pick([8, 16, 24, 40, 80, 160]), t = pick([5, 8, 10, 12, 15, 20, 30, 40, 60]), S0 = R * t / 8, r = R / 8;
+  return mk({ skill: 'cas-prenosu', q: `Soubor má <b class="mono">${fmt(S0)} MB</b>, linka <b class="mono">${fmt(R)} Mbit/s</b>. Za kolik sekund se přenese (bez ztrát)?`, ans: t, unit: 's',
+    wrong: [[S0 / R, 'Dělil jsi MB rychlostí v Mbit/s. Bajty a bity se nesmí míchat: nejdřív převeď rychlost na MB/s.'], [S0 * r, 'Násobil jsi velikost rychlostí. Čas je velikost <b>děleno</b> rychlost.'], [S0 / (R * 8), 'Rychlost jsi místo dělení osmi vynásobil. Mbit/s : 8 = MB/s.'], [t * 8, 'Převedl jsi nesprávně: výsledek vyšel osmkrát větší.']],
+    steps: [`Rychlost na bajty: ${fmt(R)} Mbit/s : 8 = <b>${fmt(r)} MB/s</b>.`, `Čas = velikost : rychlost = ${fmt(S0)} : ${fmt(r)} = <b>${fmt(t)} s</b>.`],
+    hint: 'Mají velikost a rychlost stejné jednotky? Mbit/s převeď na MB/s.', hint2: 'Čas = velikost : rychlost, obojí v bajtech.', meta: { t: 'cas', S: S0, R } });
+};
+GEN['mezi-radami'] = () => {
+  const t = ri(0, 2);
+  if (t === 0) { const v = pick([2, 3, 4, 8, 16]), ans = Math.round(v * 1073.741824);
+    return mk({ skill: 'mezi-radami', q: `<b class="mono">${v} GiB</b> = ? <b class="mono">MB</b> (zaokrouhli na celé MB)`, ans, unit: 'MB', tolAbs: 1,
+      wrong: [[v * 1024, 'To je převod na MiB (dvojková řada). MB jsou desítkové, musíš jít přes bajty.'], [v * 1000, 'GiB je větší než GB, takže MB vyjde víc než v · 1 000.'], [Math.round(v * 931.322575), 'Dělil jsi místo násobení: GiB je větší než GB.']],
+      steps: [`1 GiB = 1 073 741 824 B, tedy ${v} GiB = ${fmt(v * 1073741824)} B.`, '1 MB = 1 000 000 B.', `${fmt(v * 1073741824)} : 1 000 000 ≈ <b>${fmt(ans)} MB</b>`],
+      hint: 'Jednotky jsou z různých řad. Jdi přes bajty.', hint2: '1 GiB = 1 073 741 824 B, 1 MB = 1 000 000 B.', meta: { t: 'mezi', v, from: 'GiB', to: 'MB', round: 1 } }); }
+  if (t === 1) { const v = pick([500, 1000, 2000, 4000]), ans = Math.round(v * 1e6 / 1048576);
+    return mk({ skill: 'mezi-radami', q: `<b class="mono">${fmt(v)} MB</b> = ? <b class="mono">MiB</b> (zaokrouhli na celé MiB)`, ans, unit: 'MiB', tolAbs: 1,
+      wrong: [[v * 1024 / 1000, 'Tohle by bylo, kdyby MiB byly menší než MB. MiB je větší, takže jich vyjde míň.'], [v, 'MB a MiB nejsou totéž: MiB je o 4,9 % větší, takže jich bude o to míň.'], [Math.round(v * 1.048576), 'Násobil jsi. MiB je větší jednotka než MB, takže je jich míň: dělíš.']],
+      steps: [`${fmt(v)} MB = ${fmt(v)} · 1 000 000 B = ${fmt(v * 1e6)} B.`, '1 MiB = 1 048 576 B.', `${fmt(v * 1e6)} : 1 048 576 ≈ <b>${fmt(ans)} MiB</b>`],
+      hint: 'Jdi přes bajty: zdroj → bajty → cíl.', hint2: '1 MB = 1 000 000 B, 1 MiB = 1 048 576 B.', meta: { t: 'mezi', v, from: 'MB', to: 'MiB', round: 1 } }); }
+  const v = pick([2, 3, 5, 7, 12]);
+  return mk({ skill: 'mezi-radami', q: `<b class="mono">${v} MiB</b> = ? <b class="mono">B</b>`, ans: v * 1048576, unit: 'B',
+    wrong: [[v * 1000000, 'Použil jsi 1 000 000. MiB má ve značce <b>i</b>, tedy 1 048 576.'], [v * 1024, 'To je jen jeden schod (KiB). Do bajtů jsou schody dva.'], [v * 1048576 * 8, 'To jsou bity. Otázka se ptá na bajty.']],
+    steps: ['MiB → B: dvě řady IEC dolů, tedy dva schody po 1 024.', `1 MiB = 1 024 · 1 024 = 1 048 576 B.`, `${v} · 1 048 576 = <b>${fmt(v * 1048576)} B</b>`],
+    hint: 'MiB je z dvojkové řady. Kolik schodů je od MiB do B?', hint2: '1 MiB = 1 024 KiB = 1 024 · 1 024 B.', meta: { t: 'mezi', v, from: 'MiB', to: 'B', round: 0 } });
+};
+GEN['disk'] = () => {
+  const C = pick([250, 500, 1000, 2000, 4000]), ans = Math.round(C * 1e9 / 1073741824);
+  return mk({ skill: 'disk', q: `Disk má na krabici <b class="mono">${fmt(C)} GB</b>. Kolik GiB ukáže počítač (zaokrouhli na celé)?`, ans, unit: 'GiB', tolAbs: 1,
+    wrong: [[C, 'Nic se neztratilo? Ztratilo: výrobce počítá po 1 000, počítač po 1 024, takže číslo musí být menší.'], [Math.round(C * 1000 / 1024), 'Použil jsi 1 024 jen jednou. Mezi GB a GiB jsou tři schody: 1 000<sup>3</sup> : 1 024<sup>3</sup>.'], [Math.round(C * 1.073741824), 'Násobil jsi. Počítač dělí větší jednotkou, takže GiB vyjde míň než GB.']],
+    steps: [`Výrobce: ${fmt(C)} GB = ${fmt(C)} · 10<sup>9</sup> B = ${fmt(C * 1e9)} B.`, 'Počítač: 1 GiB = 2<sup>30</sup> B = 1 073 741 824 B.', `${fmt(C * 1e9)} : 1 073 741 824 ≈ <b>${fmt(ans)} GiB</b> (rychlý odhad: GB · 0,93)`],
+    hint: 'Výrobce a počítač počítají jinou řadou. Jdi přes bajty.', hint2: 'Počet bajtů vyděl počtem bajtů v jednom GiB.', meta: { t: 'disk', C } });
+};
+GEN['odhad'] = () => {
+  const it = pick([['fotek po 4 MB', 4, 'fotka'], ['písní po 4 MB', 4, 'píseň'], ['dokumentů po 2 MB', 2, 'dokument'], ['fotek po 5 MB', 5, 'fotka']]);
+  const C = pick([16, 32, 64, 128, 256]), s = it[1], ans = C * 1000 / s;
+  return mk({ skill: 'odhad', q: `Kolik <b>${it[0]}</b> se vejde na kartu <b class="mono">${fmt(C)} GB</b>? (Použij řadu SI.)`, ans, unit: '', pos: true,
+    wrong: [[ans / 1000, 'Zapomněl jsi převést GB na MB: v jednom GB je 1 000 MB.'], [ans * 1000, 'Převáděl jsi opačně: GB je větší než MB, takže MB je 1 000krát víc, ne míň velkých kousků.'], [C / s, `To je ${fmt(C)} : ${s} bez převodu GB na MB.`], [ans / 10, 'Řád nesedí: GB je 1 000 MB, ne 100.']],
+    steps: [`${fmt(C)} GB = ${fmt(C * 1000)} MB (schod 1 000).`, `${fmt(C * 1000)} MB : ${s} MB = <b>${fmt(ans)}</b>.`], hint: 'Převeď kapacitu na stejnou jednotku, v jaké je jeden soubor.', hint2: '1 GB = 1 000 MB.', meta: { t: 'odhad', C, s } });
+};
+GEN['chyba'] = () => {
+  const T = [
+    () => { const v = pick([2, 3, 5, 8]); return { head: `<b class="mono">${v} GiB</b> na <b class="mono">MiB</b>`, lines: ['MiB je menší jednotka, takže násobím.', 'Schod mezi GiB a MiB je 1 000.', `${v} · 1 000 = ${fmt(v * 1000)} MiB`], bad: 1, why: `Jednotky s <b>i</b> patří do řady IEC, schod je <b>1 024</b>. Správně ${v} · 1 024 = ${fmt(v * 1024)} MiB.` }; },
+    () => { const n = pick([40, 80, 100, 200]); return { head: `<b class="mono">${n} Mbit/s</b> na <b class="mono">MB/s</b>`, lines: ['Z bitů na bajty: bajt je větší, takže dělím.', 'Mezi bitem a bajtem je schod 8.', `${n} · 8 = ${fmt(n * 8)} MB/s`], bad: 2, why: `Má se <b>dělit</b> osmi, ne násobit: ${n} : 8 = ${fmt(n / 8)} MB/s.` }; },
+    () => { const v = pick([3, 4, 6, 7]); return { head: `<b class="mono">${v} MB</b> na <b class="mono">kB</b>`, lines: ['kB je menší jednotka, takže násobím.', 'Schod v řadě SI je 1 000.', `${v} · 1 000 = ${fmt(v * 1000)} kB`], bad: -1, why: 'Postup je správný: menší jednotka → násobím, řada SI → 1 000.' }; },
+    () => ({ head: 'Disk <b class="mono">1 TB</b> v počítači', lines: ['1 TB = 10<sup>12</sup> B', '1 GiB = 2<sup>30</sup> B = 1 073 741 824 B', '10<sup>12</sup> · 1 073 741 824 B = ukáže se asi 931 GiB'], bad: 2, why: 'Bajty výrobce se musí <b>vydělit</b> bajty v jednom GiB: 10<sup>12</sup> : 1 073 741 824 ≈ 931 GiB.' }),
+    () => { const S0 = pick([100, 200, 400]), R = pick([40, 80]); const r = R / 8; return { head: `Soubor <b class="mono">${S0} MB</b> při <b class="mono">${R} Mbit/s</b>`, lines: [`Rychlost: ${R} Mbit/s : 8 = ${fmt(r)} MB/s.`, `Čas = rychlost : velikost = ${fmt(r)} : ${S0}.`, `Vyjde ${fmt(r / S0)} s.`], bad: 1, why: `Vzorec je obrácený: čas = <b>velikost : rychlost</b> = ${S0} : ${fmt(r)} = ${fmt(S0 / r)} s.` }; },
+    () => { const v = pick([2, 3, 5]); return { head: `<b class="mono">${v} KiB</b> na <b class="mono">B</b>`, lines: ['B je menší jednotka, takže násobím.', 'KiB má schod 1 024.', `${v} · 1 024 = ${fmt(v * 1024)} B`], bad: -1, why: 'Postup je správný: menší jednotka → násobím, řada IEC → 1 024.' }; },
+    () => ({ head: '<b class="mono">2,5 GB</b> na <b class="mono">MiB</b>', lines: ['1 GB = 10<sup>9</sup> B, tedy 2,5 GB = 2 500 000 000 B.', '1 MiB = 1 000 000 B.', '2 500 000 000 : 1 000 000 = 2 500 MiB'], bad: 1, why: 'MiB má ve značce <b>i</b>: 1 MiB = <b>1 048 576 B</b>. Správně 2 500 000 000 : 1 048 576 ≈ 2 384 MiB.' }),
+    () => { const n = pick([3, 4, 5]); return { head: `<b class="mono">${n} B</b> na <b class="mono">bit</b>`, lines: ['Bit je menší než bajt, bitů bude víc → násobím.', '1 B = 10 bit.', `${n} · 10 = ${n * 10} bit`], bad: 1, why: `Bajt má <b>8</b> bitů, ne 10. Správně ${n} · 8 = ${n * 8} bit.` }; }
+  ];
+  const t = pick(T)();
+  const opts = [0, 1, 2].map(i => ({ t: `Řádek ${i + 1}`, ok: t.bad === i, why: t.bad === i ? '' : (t.bad === -1 ? 'Tenhle řádek je v pořádku, postup je celý správně.' : 'Tenhle řádek je v pořádku. Chyba je jinde.') }));
+  opts.push({ t: 'Postup je správně', ok: t.bad === -1, why: 'Chyba tam je, projdi řádky ještě jednou.' });
+  return mkc({ skill: 'chyba', q: `Převod: ${t.head}.<br>Najdi řádek s chybou.`, lines: t.lines, opts,
+    steps: [t.why], hint: 'Zkontroluj po řádcích: směr (násobit, dělit), řadu (1 000, 1 024) a b/B.', hint2: 'Nejčastější chyby: 1 000 místo 1 024, násobení místo dělení, zapomenutá osmička.', meta: { t: 'chyba' } }, true);
+};
+
+const SKILLS = {
+  'bit-bajt': 'Převod bitů a bajtů', 'hodnoty': 'Počet hodnot v n bitech', 'pocet-bajtu': 'Kolik bajtů má jednotka', 'poznej-radu': 'SI a IEC: poznej řadu',
+  'znacky': 'Značky jednotek', 'zebrik-si': 'Převody v řadě SI', 'zebrik-iec': 'Převody v řadě IEC', 'rychlost': 'Mbit/s a MB/s', 'cas-prenosu': 'Čas přenosu',
+  'mezi-radami': 'Převody mezi řadami', 'disk': 'Kapacita disku', 'odhad': 'Odhad počtu souborů', 'chyba': 'Hledání chyby'
+};
+const NUMERIC = new Set(['bit-bajt', 'pocet-bajtu', 'zebrik-si', 'zebrik-iec', 'rychlost', 'cas-prenosu', 'mezi-radami', 'disk', 'odhad']);
+/* způsob odpovídání podle zvládnutí: začátečník vybírá, pokročilý píše číslo */
+const modeFor = k => (NUMERIC.has(k) && (M(k) ? M(k).b >= 2 : false)) ? 'num' : 'choice';
+function taskFor(skill, mode) { const t = GEN[skill](); t.mode = mode === 'num' && t.kind === 'num' ? 'num' : 'choice'; return t; }
+
+/* ===== vizuální prvky ===== */
+const VIS = {};
+VIS.bits = host => {
+  let n = 8; const on = Array(8).fill(false);
+  const draw = () => {
+    const val = on.slice(0, n).reduce((a, b, i) => a + (b ? 2 ** (n - 1 - i) : 0), 0);
+    host.innerHTML = `<div class="card"><div class="stepper"><button class="btn sq" data-d="-1" aria-label="Méně bitů" ${n <= 1 ? 'disabled' : ''}>−</button><b>${n} ${n === 1 ? 'bit' : n < 5 ? 'bity' : 'bitů'}</b><button class="btn sq" data-d="1" aria-label="Více bitů" ${n >= 8 ? 'disabled' : ''}>+</button></div>
+    <div class="bits" role="group" aria-label="Bity">${on.slice(0, n).map((b, i) => `<button class="bit ${b ? 'on' : ''}" data-i="${i}" aria-pressed="${b}" aria-label="Bit ${i + 1}: ${b ? 1 : 0}">${b ? 1 : 0}</button>`).join('')}</div>
+    <p class="bitval">= ${val}</p>
+    <p class="small muted" style="text-align:center;margin:6px 0 0">${n} ${n === 1 ? 'bit' : n < 5 ? 'bity' : 'bitů'} → 2<sup>${n}</sup> = <b>${fmt(2 ** n)}</b> hodnot (čísla 0 až ${fmt(2 ** n - 1)})${n === 8 ? '. To je jeden bajt.' : ''}</p></div>`;
+  };
+  host.onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.i != null) { on[+b.dataset.i] = !on[+b.dataset.i]; }
+    else if (b.dataset.d) { n = Math.max(1, Math.min(8, n + +b.dataset.d)); }
+    draw(); const nb = b.dataset.i != null ? host.querySelector(`[data-i="${b.dataset.i}"]`) : host.querySelector(`[data-d="${b.dataset.d}"]:not([disabled])`); if (nb) nb.focus();
+  };
+  draw();
+};
+function ladderMount(host, series) {
+  const R = series === 'si' ? SI : IEC, base = series === 'si' ? 1000 : 1024, rev = R.slice().reverse();
+  let sel = [];
+  const draw = () => {
+    let h = `<div class="ladder ${series}" role="group" aria-label="Žebříček jednotek ${series === 'si' ? 'SI' : 'IEC'}">`;
+    rev.forEach((u, i) => {
+      h += `<button class="rung ${sel.includes(u) ? 'sel' : ''}" data-u="${u}" aria-pressed="${sel.includes(u)}"><b>${u}</b><span>${NAMES[u]} · ${fmt(BYTES[u])} B</span></button>`;
+      if (i < rev.length - 1) h += `<div class="gap" aria-hidden="true">↓ × ${fmt(base)} &nbsp; ↑ : ${fmt(base)}</div>`;
+    });
+    h += `</div><div class="lres small" aria-live="polite">${res()}</div>`;
+    host.innerHTML = h;
+  };
+  const res = () => {
+    if (sel.length < 2) return '<span class="muted">Klepni na dvě příčky a uvidíš, kolikrát je jedna větší než druhá.</span>';
+    const [a, b] = sel, k = Math.abs(R.indexOf(a) - R.indexOf(b)), down = R.indexOf(b) < R.indexOf(a);
+    return `<b class="mono">1 ${a} = ${fmt(conv(1, a, b))} ${b}</b><br>${k} ${k === 1 ? 'schod' : 'schody'} ${down ? 'dolů, každý krát' : 'nahoru, každý děleno'} ${fmt(base)}.`;
+  };
+  host.onclick = e => {
+    const b = e.target.closest('.rung'); if (!b) return;
+    const u = b.dataset.u;
+    if (sel.length >= 2 || sel.includes(u)) sel = sel.includes(u) && sel.length === 1 ? [] : [u]; else sel.push(u);
+    draw(); const f = host.querySelector(`[data-u="${u}"]`); if (f) f.focus();
+  };
+  draw();
+}
+VIS['ladder-si'] = h => ladderMount(h, 'si');
+VIS['ladder-iec'] = h => ladderMount(h, 'iec');
+VIS.both = host => {
+  const rows = [['kilo', 'kB', 'KiB', 3, 10], ['mega', 'MB', 'MiB', 6, 20], ['giga', 'GB', 'GiB', 9, 30], ['tera', 'TB', 'TiB', 12, 40]];
+  host.innerHTML = `<div class="card"><table class="t"><thead><tr><th>Předpona</th><th><span class="si-t">SI</span></th><th><span class="iec-t">IEC</span></th><th class="r">Rozdíl</th></tr></thead><tbody>${rows.map(([p, s, i, a, b]) => `<tr><td>${p}</td><td class="m">${unitHtml(s)}<br>${pw(10, a)}</td><td class="m">${unitHtml(i)}<br>${pw(2, b)}</td><td class="r"><b>${fmt((BYTES[i] / BYTES[s] - 1) * 100, 3)} %</b></td></tr>`).join('')}</tbody></table>
+  <p class="small muted" style="margin:10px 0 0">Dvojková jednotka je vždy větší. Rozdíl roste s každým schodem.</p></div>`;
+};
+VIS.disk = host => {
+  const pct = (1e12 / BYTES.TiB) * 100;
+  host.innerHTML = `<div class="card"><p class="small" style="margin-bottom:6px"><b>Krabice:</b> <span class="si-t">1 TB</span> = 10<sup>12</sup> B</p><div class="bar si" style="width:100%"></div>
+  <p class="small" style="margin:14px 0 6px"><b>Počítač:</b> 10<sup>12</sup> B : 2<sup>30</sup> B = <span class="iec-t">931,3 GiB</span>, napíše ale „GB“</p><div class="bar iec" style="width:${pct.toFixed(1)}%"></div>
+  <p class="small muted" style="margin:12px 0 0">Obě úsečky jsou stejně velký disk. Liší se jen jednotka, kterou se měří.</p></div>`;
+};
+function mountVis(root) { $$('[data-vis]', root).forEach(h => VIS[h.dataset.vis](h)); }
+const V = n => `<div data-vis="${n}"></div>`;
+
+/* ===== přehrávání úloh ===== */
+const LETTER = ['A', 'B', 'C', 'D'];
+function runTasks(host, specs, o) {
+  specs = specs.map(s => ({ ...s })); let k = 0; const firstTry = [];
+  const next = () => { if (k >= specs.length) return finish(); show(); };
+  const finish = () => {
+    const ok = firstTry.filter(Boolean).length;
+    const weak = [...new Set(specs.filter((s, i) => firstTry[i] === false).map(s => SKILLS[s.skill] || ''))].filter(Boolean);
+    host.innerHTML = `<div class="card"><h2>${o.doneTitle || 'Hotovo'}</h2><p class="lead" style="margin-bottom:8px">Správně na první pokus: <b>${ok} z ${firstTry.length}</b>.</p>${weak.length ? `<p class="small">K opakování: ${weak.join(', ')}. Vrátí se v části <b>Na dnešek</b>.</p>` : '<p class="small">Bez chyby. Dobrá práce.</p>'}</div>`;
+    if (o.onFinish) o.onFinish(ok, firstTry.length);
+  };
+  const show = () => {
+    const spec = specs[k], mode = spec.fixed ? 'choice' : (o.forceChoice ? 'choice' : modeFor(spec.skill));
+    const t = spec.fixed || taskFor(spec.skill, mode);
+    const isNum = t.mode === 'num' || (!spec.fixed && mode === 'num' && t.kind === 'num');
+    let hints = 0, answered = false;
+    host.innerHTML = `<div class="qbox"><span class="eyebrow">Úloha ${k + 1} z ${specs.length}${spec.retry ? ' · znovu' : ''}</span><span class="pill">${isNum ? 'napiš číslo' : 'vyber odpověď'}</span></div>
+    <div class="card"><p class="q">${t.q}</p>${t.lines ? `<ol class="calc" style="margin-top:10px">${t.lines.map(l => `<li>${l}</li>`).join('')}</ol>` : ''}</div>
+    ${isNum ? `<div class="numrow"><input class="num" id="ans" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-label="Odpověď" placeholder="?"><span class="unit">${esc(t.unit || '')}</span></div><button class="btn primary block" id="chk">Zkontrolovat</button><p class="tiny" style="margin:8px 0 0">Desetinná čárka i mezery jsou v pořádku.</p>`
+      : `<div class="opts">${t.opts.map((p, i) => `<button class="opt" data-i="${i}"><span class="k">${LETTER[i]}</span><span class="t">${p.t}</span></button>`).join('')}</div>`}
+    <div class="row" style="margin-top:6px">${t.hint ? '<button class="btn quiet sm" id="hintb">Nápověda</button>' : ''}</div><div id="hints"></div><div id="fb" aria-live="polite"></div>`;
+    const done = (ok, msgBad) => {
+      if (answered) return; answered = true;
+      if (o.record !== false) record(spec.skill, ok, hints > 0);
+      if (!spec.retry) firstTry.push(ok); else firstTry.push(null);
+      if (!ok && !spec.retry && o.retry !== false && !spec.fixed) specs.push({ skill: spec.skill, retry: true });
+      const right = isNum ? `${fmt(t.ans)} ${t.unit || ''}`.trim() : t.opts.find(p => p.ok).t;
+      const sol = t.steps ? `<details class="sol" ${ok ? '' : 'open'}><summary>Postup</summary>${calc(t.steps)}</details>` : '';
+      $('#fb', host).innerHTML = ok
+        ? `<div class="fb ok"><h3>Správně${hints ? ' (s nápovědou)' : ''}</h3>${sol}</div>`
+        : `<div class="fb bad"><h3>Ještě ne</h3>${msgBad ? `<p>${msgBad}</p>` : ''}<p>Správně je <b class="mono">${right}</b>.</p>${sol}</div>`;
+      const last = k + 1 >= specs.length || (!ok && !spec.retry && o.retry !== false && !spec.fixed ? false : k + 1 >= specs.length);
+      $('#fb', host).insertAdjacentHTML('beforeend', `<button class="btn primary block" id="nxt" style="margin-top:12px">${k + 1 >= specs.length ? 'Zobrazit výsledek' : 'Další úloha'}</button>`);
+      $('#nxt', host).onclick = () => { k++; next(); window.scrollTo(0, 0); };
+      $('#nxt', host).focus({ preventScroll: true });
+      $('#fb', host).scrollIntoView({ block: 'nearest', behavior: S.rm ? 'auto' : 'smooth' });
+    };
+    if (isNum) {
+      const inp = $('#ans', host), check = () => {
+        if (answered) return;
+        const u = parseNum(inp.value);
+        if (!isFinite(u)) { $('#fb', host).innerHTML = '<div class="fb info"><p>Zapiš číslo, např. 2560 nebo 12,5.</p></div>'; inp.focus(); return; }
+        const tol = Math.max(t.tolAbs || 0, 1e-9 * Math.abs(t.ans));
+        const ok = Math.abs(u - t.ans) <= tol;
+        let why = '';
+        if (!ok) { const w = t.opts.find(p => !p.ok && Math.abs(p.v - u) <= Math.max(t.tolAbs || 0, 1e-9 * Math.abs(p.v))); why = w ? w.why : ''; }
+        inp.disabled = true; $('#chk', host).disabled = true; done(ok, why);
+      };
+      $('#chk', host).onclick = check;
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
+      inp.focus({ preventScroll: true });
+    } else {
+      host.querySelector('.opts').onclick = e => {
+        const b = e.target.closest('.opt'); if (!b || answered) return;
+        const p = t.opts[+b.dataset.i];
+        $$('.opt', host).forEach((x, i) => { x.disabled = true; if (t.opts[i].ok) x.classList.add('ok'); else if (x === b) x.classList.add('bad'); else x.classList.add('dim'); });
+        done(!!p.ok, p.ok ? '' : p.why || '');
+      };
+    }
+    const hb = $('#hintb', host);
+    if (hb) hb.onclick = () => {
+      if (answered) return; hints++;
+      $('#hints', host).innerHTML = `<div class="hint">${hints === 1 || !t.hint2 ? t.hint : t.hint + '<br><b>Ještě víc:</b> ' + t.hint2}</div>`;
+      if (hints >= 2 || !t.hint2) hb.disabled = true;
+    };
+  };
+  show();
+}
+
+/* ===== obsah kroků ===== */
+const STEPS = [
+  { id: 1, title: 'Bit a bajt', goal: 'Co je bit, co je bajt a kolik hodnot se vejde do bitů.', skills: ['bit-bajt', 'hodnoty'], screens: [
+    { t: 'tip', q: 'Kolik <b>různých hodnot</b> (čísel) se vejde do jednoho bajtu?', opts: [{ t: '8', why: 'Osm je počet bitů v bajtu, ne počet hodnot.' }, { t: '64', why: '8 · 8 = 64 by byl jiný výpočet. Hodnot je víc.' }, { t: '256', ok: true }, { t: '1 024', why: '1 024 = 2<sup>10</sup>, tedy deset bitů. Bajt má bitů osm.' }], reveal: 'Za chvíli uvidíš proč: bajt má osm bitů a každý bit hodnoty zdvojnásobí.' },
+    { t: 'txt', h: 'Bit je jedna ano/ne odpověď', html: `<p>Počítač zná jen dva stavy, třeba proud a bez proudu. Jedna taková číslice, <b>0</b> nebo <b>1</b>, se jmenuje <b>bit</b> (z <i>binary digit</i>).</p><p>Osm bitů pohromadě je jeden <b>bajt</b>. Přepínej bity a sleduj hodnotu:</p>${V('bits')}<p class="small muted">Odeber bity tlačítkem − a uvidíš, jak klesá počet hodnot.</p>` },
+    { t: 'txt', h: 'Každý bit zdvojnásobí možnosti', html: `<p>Jeden bit má 2 hodnoty, dva bity 4 (00, 01, 10, 11), tři bity 8. <b>Každý další bit počet hodnot zdvojnásobí.</b></p><p>Pro <i>n</i> bitů je hodnot <b>2<sup>n</sup></b>. Jeden bajt má tedy 2<sup>8</sup> = <b>256</b> hodnot, čísla 0 až 255.</p><div class="card"><table class="t"><thead><tr><th>Bitů</th><th class="r">Hodnot</th></tr></thead><tbody>${[1, 2, 3, 4, 8, 10].map(n => `<tr><td>${n}</td><td class="r m">${fmt(2 ** n)}</td></tr>`).join('')}</tbody></table></div>` },
+    { t: 'txt', h: 'Pozor na b a B', html: `<p>Malé <b class="mono">b</b> (nebo <b class="mono">bit</b>) je <b>bit</b>. Velké <b class="mono">B</b> je <b>bajt</b>.</p><div class="card"><p class="q" style="margin:0"><span class="mono">1 B = 8 bit</span></p></div><p>Z toho plyne pravidlo: <b>větší jednotka, méně kousků.</b> Bajt je větší než bit, takže bajtů je vždy osmkrát míň než bitů.</p>` },
+    { t: 'worked', h: 'Řešený příklad', q: 'Kolik bitů je <b class="mono">5 B</b>?', steps: ['Bajt je větší než bit, bitů bude víc → <b>násobím</b>.', '1 B = 8 bit.', '5 · 8 = <b>40 bit</b>'] },
+    { t: 'fade', h: 'Doplň poslední krok', q: 'Kolik bajtů je <b class="mono">64 bit</b>?', shown: ['Bit je menší než bajt, bajtů bude míň → <b>dělím</b>.', '1 B = 8 bit.'], blank: '64 : 8 =', ans: 8, unit: 'B' },
+    { t: 'practice', skills: ['bit-bajt', 'hodnoty', 'bit-bajt', 'hodnoty'] },
+    { t: 'sum', items: ['Bit je jedna číslice 0 nebo 1. Bajt je osm bitů: 1 B = 8 bit.', 'Do <i>n</i> bitů se vejde 2<sup>n</sup> hodnot. Bajt má 256 hodnot.', 'Malé b je bit, velké B je bajt. Rozdíl je osmkrát.'] }
+  ] },
+  { id: 2, title: 'Předpony: kilo a kibi', goal: 'Dvě řady jednotek: 1 000 a 1 024. Jak je rozlišit.', skills: ['pocet-bajtu', 'poznej-radu', 'znacky'], screens: [
+    { t: 'tip', q: 'Kolik bajtů má <b class="mono">1 kB</b> (kilobajt: malé k, velké B)?', opts: [{ t: '1 000', ok: true }, { t: '1 024', why: '1 024 bajtů má 1 KiB (s písmenem i). Předpona kilo znamená 1 000.' }, { t: '8 000', why: '8 000 by byly bity v kilobajtu. Otázka je na bajty.' }, { t: '100', why: 'Kilo je tisíc, ne sto.' }], reveal: 'Dnes se u různých programů potkáš s 1 000 i 1 024. Teď se naučíš, jak je poznat.' },
+    { t: 'txt', h: 'Předpony SI: schod 1 000', html: `<p>Předpony znáš z jiných jednotek: kilometr je tisíc metrů. Stejně fungují u bajtů: <span class="si-t">kB</span>, <span class="si-t">MB</span>, <span class="si-t">GB</span>, <span class="si-t">TB</span>. Každá další je <b>tisíckrát</b> větší.</p>${V('ladder-si')}<p class="small muted">Kilo se píše malým <b>k</b>, ostatní velkým (M, G, T).</p>` },
+    { t: 'txt', h: 'Předpony IEC: schod 1 024', html: `<p>Paměť se staví po mocninách dvojky. Nejbližší tisíci je 2<sup>10</sup> = <b>1 024</b>. Pro takové násobky zavedla komise IEC vlastní předpony: kilo + binární = <b>kibi</b>.</p>${V('ladder-iec')}<p class="small">Poznáš je podle <b>písmene i</b> ve značce: <span class="iec-t">KiB, MiB, GiB, TiB</span>.</p>` },
+    { t: 'txt', h: 'Dvě řady vedle sebe', html: `<p>Jsou blízko sebe, ale <b>nejsou stejné</b>. Dvojková je vždy větší a rozdíl roste:</p>${V('both')}<p><b>Pravidlo:</b> je ve značce <b>i</b>? Počítej 1 024. Není? Počítej 1 000.</p><p class="small muted">Desítkově (SI) počítají výrobci disků, mobilní data a macOS. Operační paměť se prodává po mocninách dvojky. Windows počítá dvojkově, ale píše „GB“. To rozebereme v kroku 5.</p>` },
+    { t: 'worked', h: 'Řešený příklad', q: 'Která je větší: <b class="mono">1 GB</b>, nebo <b class="mono">1 GiB</b>?', steps: ['GiB má ve značce <b>i</b> → schod 1 024. GB nemá → schod 1 000.', '1 GB = 1 000 000 000 B, 1 GiB = 1 073 741 824 B.', '<b>GiB je větší</b>, přibližně o 7,4 %.'] },
+    { t: 'fade', h: 'Doplň poslední krok', q: 'Kolik bajtů má <b class="mono">1 MiB</b>?', shown: ['MiB má ve značce <b>i</b> → schod 1 024.', 'Od bajtu jsou to dva schody (KiB, MiB).'], blank: '1 024 · 1 024 =', ans: 1048576, unit: 'B' },
+    { t: 'practice', skills: ['pocet-bajtu', 'poznej-radu', 'znacky', 'pocet-bajtu', 'poznej-radu'] },
+    { t: 'sum', items: ['SI (kB, MB, GB, TB): schod 1 000. IEC (KiB, MiB, GiB, TiB): schod 1 024.', 'Písmeno <b>i</b> ve značce znamená dvojkovou řadu.', 'Dvojková jednotka je větší: 1 GiB je o 7,4 % víc než 1 GB.'] }
+  ] },
+  { id: 3, title: 'Převody po žebříčku', goal: 'Kdy násobit, kdy dělit a kolik schodů.', skills: ['zebrik-si', 'zebrik-iec'], screens: [
+    { t: 'tip', q: 'Kolik <b class="mono">MB</b> je <b class="mono">3 GB</b>?', opts: [{ t: '3', why: 'MB je menší jednotka, takže jich musí být víc než tři.' }, { t: '3 000', ok: true }, { t: '0,003', why: 'Dělil jsi. MB je ale menší jednotka, tedy kousků je víc.' }, { t: '3 072', why: '3 072 = 3 · 1 024 by platilo pro GiB → MiB. GB a MB jsou řada SI: schod 1 000.' }], reveal: 'Nezapomeň na jedinou větu: menší jednotka, víc kousků.' },
+    { t: 'txt', h: 'Jedno pravidlo', html: `<p><b>Menší jednotka, víc kousků.</b></p><ol class="calc"><li>Je cíl <b>menší</b> jednotka (níž na žebříčku)? Násobíš.</li><li>Je cíl <b>větší</b> jednotka (výš)? Dělíš.</li><li>Jeden schod je 1 000 (řada SI) nebo 1 024 (řada IEC). Za každý schod násobíš nebo dělíš jednou.</li></ol><p>Vyzkoušej si to na žebříčku:</p>${V('ladder-si')}` },
+    { t: 'txt', h: 'Příklady a zkratka', html: `<div class="card stack"><p><b>3 GB na MB:</b> MB je menší, jeden schod dolů: 3 · 1 000 = <b>3 000 MB</b>.</p><p><b>2,5 MiB na KiB:</b> jeden schod dolů: 2,5 · 1 024 = <b>2 560 KiB</b>.</p><p><b>4 096 MiB na GiB:</b> GiB je větší, jeden schod nahoru: 4 096 : 1 024 = <b>4 GiB</b>.</p><p><b>2 MiB na B:</b> dva schody dolů: 2 · 1 024 · 1 024 = <b>2 097 152 B</b>.</p></div><p><b>Zkratka jen pro SI:</b> násobit tisícem je posun desetinné čárky o tři místa doprava (2,5 GB = 2 500 MB). U IEC taková zkratka není, musíš opravdu počítat s 1 024.</p>` },
+    { t: 'worked', h: 'Řešený příklad', q: 'Kolik <b class="mono">KiB</b> je <b class="mono">2,5 MiB</b>?', steps: ['Cíl KiB je menší jednotka → <b>násobím</b>.', 'Jeden schod, řada IEC → 1 024.', '2,5 · 1 024 = <b>2 560 KiB</b>'] },
+    { t: 'fade', h: 'Doplň poslední krok', q: 'Kolik <b class="mono">GiB</b> je <b class="mono">4 096 MiB</b>?', shown: ['Cíl GiB je větší jednotka → <b>dělím</b>.', 'Jeden schod, řada IEC → 1 024.'], blank: '4 096 : 1 024 =', ans: 4, unit: 'GiB' },
+    { t: 'practice', skills: ['zebrik-si', 'zebrik-iec', 'zebrik-si', 'zebrik-iec', 'zebrik-si'] },
+    { t: 'sum', items: ['Menší jednotka, víc kousků: násobím. Větší jednotka, méně kousků: dělím.', 'Počet schodů × velikost schodu (1 000 nebo 1 024).', 'U SI stačí posunout čárku o tři místa na schod, u IEC musíš počítat.'] }
+  ] },
+  { id: 4, title: 'Bity a bajty: rychlost', goal: 'Mbit/s a MB/s a čas přenosu souboru.', skills: ['rychlost', 'cas-prenosu'], screens: [
+    { t: 'tip', q: 'Internet má rychlost <b class="mono">100 Mbit/s</b>. Kolik <b>MB za sekundu</b> to je?', opts: [{ t: '800', why: 'Násobil jsi. Z bitů na bajty se dělí osmi.' }, { t: '100', why: 'Malé b a velké B se liší osmkrát, čísla tedy nejsou stejná.' }, { t: '12,5', ok: true }, { t: '0,1', why: 'Mezi bitem a bajtem je 8, ne 1 000.' }], reveal: 'Poskytovatel píše Mbit/s, prohlížeč ukazuje MB/s. Čísla se liší osmkrát.' },
+    { t: 'txt', h: 'Osmička mezi bity a bajty', html: `<p><b>Rychlost</b> se udává v <b>bitech</b> za sekundu (Mbit/s). <b>Velikost souboru</b> v <b>bajtech</b> (MB). Aby se daly srovnat, převádíš mezi nimi pomocí <b>8</b>:</p><div class="card stack"><p><b class="mono">Mbit/s : 8 = MB/s</b></p><p><b class="mono">MB/s · 8 = Mbit/s</b></p></div><div class="card"><table class="t"><thead><tr><th>Rychlost</th><th class="r">v MB/s</th></tr></thead><tbody><tr><td>8 Mbit/s</td><td class="r m">1</td></tr><tr><td>100 Mbit/s</td><td class="r m">12,5</td></tr><tr><td>1 Gbit/s</td><td class="r m">125</td></tr></tbody></table></div>` },
+    { t: 'txt', h: 'Čas = velikost : rychlost', html: `<p>Obě veličiny musí být ve stejných jednotkách, obě v bajtech.</p><ol class="calc"><li>Převeď rychlost na MB/s (Mbit/s : 8).</li><li>Vyděl velikost souboru touto rychlostí. Vyjde čas v sekundách.</li><li>Sekundy přepočítej na minuty (60 s = 1 min).</li></ol><p class="small muted">Skutečné stahování bývá pomalejší, než vyjde z výpočtu: část rychlosti odnese režie přenosu a Wi‑Fi bývá pomalejší než kabel.</p>` },
+    { t: 'worked', h: 'Řešený příklad', q: 'Film má <b class="mono">4 GB</b>, linka <b class="mono">100 Mbit/s</b>. Jak dlouho se stahuje?', steps: ['Rychlost na bajty: 100 Mbit/s : 8 = <b>12,5 MB/s</b>.', 'Velikost: 4 GB = 4 000 MB.', 'Čas: 4 000 : 12,5 = <b>320 s</b>, tedy 5 min 20 s.'] },
+    { t: 'fade', h: 'Doplň poslední krok', q: 'Soubor <b class="mono">200 MB</b>, linka <b class="mono">80 Mbit/s</b>. Kolik sekund?', shown: ['Rychlost na bajty: 80 Mbit/s : 8 = 10 MB/s.'], blank: '200 : 10 =', ans: 20, unit: 's' },
+    { t: 'practice', skills: ['rychlost', 'cas-prenosu', 'rychlost', 'cas-prenosu'] },
+    { t: 'sum', items: ['Rychlost je v bitech za sekundu, velikost souboru v bajtech.', 'Mbit/s : 8 = MB/s. 100 Mbit/s je 12,5 MB/s.', 'Čas = velikost : rychlost, obojí ve stejných jednotkách.'] }
+  ] },
+  { id: 5, title: 'Mezi řadami a disk', goal: 'Převody SI ↔ IEC přes bajt a záhada „ztraceného“ místa.', skills: ['mezi-radami', 'disk', 'odhad'], screens: [
+    { t: 'tip', q: 'Disk má na krabici <b class="mono">1 TB</b>. Kolik „GB“ ukáže Windows?', opts: [{ t: '1 000', why: 'Kdyby se jednotky shodovaly, ano. Ale výrobce počítá po 1 000, Windows po 1 024.' }, { t: '1 024', why: 'To by znamenalo, že disk je větší, než slíbil výrobce. Ukáže se méně.' }, { t: '931', ok: true }, { t: '976', why: '976 vyjde, když použiješ 1 024 jen jednou. Mezi TB a „GB“ jsou tři schody, ne jeden.' }], reveal: 'Žádné místo nezmizelo. Teď uvidíš, kam se „ztratilo“.' },
+    { t: 'txt', h: 'Společné místo je bajt', html: `<p>Žebříček SI a žebříček IEC se potkávají jen v jednom místě: <b>v bajtu</b>. Proto jdeš přes něj:</p><ol class="calc"><li>Zdroj → bajty (vynásob počtem bajtů v jedné zdrojové jednotce).</li><li>Bajty → cíl (vyděl počtem bajtů v jedné cílové jednotce).</li><li>Zkontroluj odhadem: větší jednotka, menší číslo.</li></ol><div class="card"><p><b>2,5 GiB na MB:</b><br>2,5 · 1 073 741 824 = 2 684 354 560 B<br>2 684 354 560 : 1 000 000 = <b>2 684,35 MB</b><br><span class="small muted">Odhad sedí: GiB je asi o 7 % větší než GB, 2,5 GiB je asi 2,68 GB.</span></p></div>` },
+    { t: 'txt', h: 'Záhada ztraceného místa', html: `${V('disk')}<p>Výrobce počítá desítkově: 1 TB = 10<sup>12</sup> B. Windows dělí dvojkově a výsledek označí „GB“, i když jde o GiB:</p><p class="mono" style="text-align:center">10<sup>12</sup> : 1 073 741 824 ≈ 931,3</p><p><b>Rychlý odhad:</b> kapacitu v GB vynásob 0,93 a máš GiB. U terabajtů je rozdíl větší: 1 TB je asi 0,91 TiB.</p><p class="small muted">Disk tedy není vadný a nic mu nechybí. Změnila se jen jednotka.</p>` },
+    { t: 'worked', h: 'Řešený příklad', q: 'Kolik <b class="mono">MB</b> je <b class="mono">2,5 GiB</b>?', steps: ['Jednotky jsou z různých řad → přes bajty.', '2,5 GiB = 2,5 · 1 073 741 824 B = 2 684 354 560 B.', '2 684 354 560 : 1 000 000 = <b>2 684,35 MB</b>'] },
+    { t: 'fade', h: 'Doplň poslední krok', q: 'Kolik <b class="mono">GiB</b> je <b class="mono">500 GB</b>? (na celé GiB)', shown: ['500 GB = 500 · 10<sup>9</sup> B = 500 000 000 000 B.', '1 GiB = 1 073 741 824 B.'], blank: '500 000 000 000 : 1 073 741 824 ≈', ans: 466, unit: 'GiB', tolAbs: 1 },
+    { t: 'practice', skills: ['mezi-radami', 'disk', 'odhad', 'mezi-radami', 'disk'] },
+    { t: 'sum', items: ['Mezi řadami SI a IEC jdi přes bajt.', 'Disk na krabici (GB) ukáže počítač jako asi 0,93násobek v GiB.', 'Nic nechybí: výrobce a systém počítají jinou řadou.'] }
+  ] },
+  { id: 6, title: 'Najdi chybu', goal: 'Poznej typické chyby v cizím postupu.', skills: ['chyba'], screens: [
+    { t: 'txt', h: 'Chybovat umí každý', html: `<p>Nejlepší způsob, jak si ověřit, že tématu rozumíš, je <b>najít chybu v cizím výpočtu</b>. Většina chyb se opakuje:</p><div class="card"><ol class="calc"><li><b>Zaměněné b a B:</b> bit a bajt se liší osmkrát.</li><li><b>1 000 místo 1 024</b> (nebo naopak): rozhoduje písmeno <b>i</b>.</li><li><b>Násobení místo dělení:</b> je cíl menší, nebo větší jednotka?</li><li><b>Špatný počet schodů:</b> TB → GB je jeden schod, TB → MB dva.</li><li><b>Zapomenutá osmička</b> u rychlosti.</li><li><b>Vzorec času naruby:</b> čas = velikost : rychlost.</li></ol></div><p>Před každou odpovědí si polož čtyři otázky: <b>směr</b>? <b>řada</b>? <b>b nebo B</b>? <b>odhad</b>?</p>` },
+    { t: 'practice', skills: ['chyba', 'chyba', 'chyba', 'chyba', 'chyba'] },
+    { t: 'sum', items: ['Kontroluj: směr (násobit, dělit), řadu (1 000, 1 024), b nebo B, odhad.', 'Co se ti nedaří, se ti ukáže v části Na dnešek a vrátí se po odstupu.'] }
+  ] }
+];
+
+/* ===== hlavní obrazovky ===== */
+const ICONS = {
+  learn: '<svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 19V5.5"/></svg>',
+  today: '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg>',
+  tools: '<svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>'
+};
+function shell(tab, inner) {
+  const due = dueList().length;
+  return `<div class="shell"><div class="top"><a href="../">← Všechny školní aplikace</a></div><div class="brand"><h1>Bity a bajty</h1><small>jednotky dat</small></div><main id="main" tabindex="-1">${inner}</main>
+  <footer class="foot"><p>Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 14. 11. 2026</p><p>Postup se ukládá jen v tomto prohlížeči. Aplikace nic neodesílá.</p></footer></div>
+  <div class="tabbar"><nav aria-label="Hlavní navigace"><a href="#/" class="${tab === 'uc' ? 'on' : ''}" ${tab === 'uc' ? 'aria-current="page"' : ''}>${ICONS.learn}Učit se</a><a href="#/dnes" class="${tab === 'dnes' ? 'on' : ''}" ${tab === 'dnes' ? 'aria-current="page"' : ''}>${ICONS.today}Na dnešek${due ? `<span class="badge" aria-label="k opakování: ${due}">${due}</span>` : ''}</a><a href="#/nastroje" class="${tab === 'nastroje' ? 'on' : ''}" ${tab === 'nastroje' ? 'aria-current="page"' : ''}>${ICONS.tools}Nástroje</a></nav></div>`;
+}
+const APP = () => $('#root');
+function mount(tab, inner, after) {
+  APP().innerHTML = shell(tab, inner);
+  const m = $('#main'); if (after) after(m);
+  m.focus({ preventScroll: true }); window.scrollTo(0, 0);
+}
+
+function pips(st) { return `<div class="pips" aria-label="Dovednosti: ${st.skills.filter(k => pipState(k) === 'k').length} z ${st.skills.length} zvládnuté">${st.skills.map(k => `<span class="pip ${pipState(k)}" title="${SKILLS[k]}"></span>`).join('')}</div>`; }
+function home() {
+  const pl = S.pl;
+  const inner = `<p class="lead">Šest krátkých kroků od bitu po disk, který „nemá, co měl mít“. Každý krok začíná otázkou, pak výklad, příklad a procvičení.</p>
+  ${pl ? '' : `<div class="card"><h3>Kde začít?</h3><p class="muted small">Tři otázky bez známkování. Podle nich ti doporučím první krok.</p><a class="btn block" href="#/test">Udělat krátký test</a></div>`}
+  <ol class="steps">${STEPS.map(st => { const done = S.st[st.id]; const rec = pl && pl.rec === st.id && !done; return `<li><a class="stepcard ${done ? 'done' : ''} ${rec ? 'rec' : ''}" href="#/krok/${st.id}/0"><span class="no">${done ? '✓' : st.id}</span><span><h3>${st.title}${rec ? ' <span class="pill si">doporučeno</span>' : ''}</h3><p>${st.goal}</p>${pips(st)}</span></a></li>`; }).join('')}</ol>`;
+  mount('uc', inner);
+}
+
+function stepView(n, i) {
+  const st = STEPS[n - 1]; if (!st) return home();
+  const sc = st.screens[i]; if (!sc) return home();
+  const total = st.screens.length, gating = ['tip', 'worked', 'fade', 'practice'].includes(sc.t);
+  const last = i === total - 1;
+  const inner = `<div class="prog" aria-hidden="true">${st.screens.map((_, k) => `<i class="${k < i ? 'on' : k === i ? 'cur' : ''}"></i>`).join('')}</div>
+  <p class="eyebrow">Krok ${n} · ${st.title}</p><h2 id="sh" style="margin-bottom:12px">${sc.h || ({ tip: 'Nejdřív tip', practice: 'Procvič si to', sum: 'Shrnutí' }[sc.t])}</h2><div id="body"></div>
+  <div class="nav2"><a class="btn back" ${i > 0 ? `href="#/krok/${n}/${i - 1}"` : 'href="#/"'} aria-label="Zpět">←</a><button class="btn primary" id="nx" ${gating ? 'disabled' : ''}>${last ? 'Hotovo' : 'Pokračovat'}</button></div>`;
+  mount('uc', inner, m => {
+    const body = $('#body', m), nx = $('#nx', m), unlock = () => { nx.disabled = false; };
+    nx.onclick = () => {
+      if (last) { S.st[n] = today(); save(); location.hash = n < STEPS.length ? `#/krok/${n + 1}/0` : '#/'; }
+      else location.hash = `#/krok/${n}/${i + 1}`;
+    };
+    if (S.st[n] && gating) unlock();
+    if (sc.t === 'txt') { body.innerHTML = sc.html; mountVis(body); }
+    else if (sc.t === 'sum') {
+      body.innerHTML = `<div class="card"><ul style="margin:0;padding-left:20px">${sc.items.map(x => `<li style="margin:6px 0">${x}</li>`).join('')}</ul></div>${n < STEPS.length ? `<p class="small muted">Dál: krok ${n + 1}, ${STEPS[n].title}.</p>` : '<p class="small muted">To je poslední krok. Opakování najdeš v části Na dnešek.</p>'}`;
+    } else if (sc.t === 'tip') {
+      body.innerHTML = `<div class="card"><p class="q">${sc.q}</p><p class="small muted" style="margin:6px 0 0">Tip bez hodnocení: zkus odhadnout, ještě to nemusíš umět.</p></div><div class="opts">${sc.opts.map((p, k) => `<button class="opt" data-i="${k}"><span class="k">${LETTER[k]}</span><span class="t">${p.t}</span></button>`).join('')}</div><div id="fb" aria-live="polite"></div>`;
+      body.querySelector('.opts').onclick = e => {
+        const b = e.target.closest('.opt'); if (!b || b.disabled) return;
+        const p = sc.opts[+b.dataset.i];
+        $$('.opt', body).forEach((x, k) => { x.disabled = true; if (sc.opts[k].ok) x.classList.add('ok'); else if (x === b) x.classList.add('bad'); else x.classList.add('dim'); });
+        $('#fb', body).innerHTML = `<div class="fb ${p.ok ? 'ok' : 'info'}"><h3>${p.ok ? 'Přesně tak' : 'Zatím ne, a to je v pořádku'}</h3>${p.ok ? '' : `<p>${p.why}</p>`}<p>${sc.reveal}</p></div>`;
+        unlock();
+      };
+    } else if (sc.t === 'worked') {
+      let shown = 1;
+      const draw = () => {
+        body.innerHTML = `<div class="card"><p class="q" style="margin:0">${sc.q}</p></div><ol class="wk">${sc.steps.slice(0, shown).map((s, k) => `<li class="${k === sc.steps.length - 1 ? 'res' : ''}"><b class="n">${k + 1}</b><span>${s}</span></li>`).join('')}</ol>${shown < sc.steps.length ? '<button class="btn block" id="more">Další krok</button>' : ''}`;
+        if (shown < sc.steps.length) { const mb = $('#more', body); mb.onclick = () => { shown++; draw(); const m2 = $('#more', body); (m2 || nx).focus({ preventScroll: true }); }; } else unlock();
+      };
+      draw();
+    } else if (sc.t === 'fade') {
+      body.innerHTML = `<div class="card"><p class="q" style="margin:0">${sc.q}</p></div><ol class="wk">${sc.shown.map((s, k) => `<li><b class="n">${k + 1}</b><span>${s}</span></li>`).join('')}<li class="blank"><b class="n">${sc.shown.length + 1}</b><span>${sc.blank}</span></li></ol>
+      <div class="numrow"><input class="num" id="ans" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-label="Doplň výsledek" placeholder="?"><span class="unit">${sc.unit}</span></div><button class="btn primary block" id="chk">Zkontrolovat</button><div id="fb" aria-live="polite"></div>`;
+      const inp = $('#ans', body), tolAbs = sc.tolAbs || 0; let tries = 0;
+      const check = () => {
+        const u = parseNum(inp.value); if (!isFinite(u)) { $('#fb', body).innerHTML = '<div class="fb info"><p>Zapiš číslo.</p></div>'; return; }
+        const ok = Math.abs(u - sc.ans) <= Math.max(tolAbs, 1e-9 * Math.abs(sc.ans)); tries++;
+        if (ok) { inp.disabled = true; $('#chk', body).disabled = true; $('#fb', body).innerHTML = `<div class="fb ok"><h3>Správně</h3><p><b class="mono">${sc.blank} ${fmt(sc.ans)} ${sc.unit}</b></p></div>`; unlock(); }
+        else if (tries < 2) { $('#fb', body).innerHTML = '<div class="fb info"><h3>Ještě ne</h3><p>Zkus to znovu. Projdi výše uvedené kroky: násobíš, nebo dělíš?</p></div>'; inp.select(); }
+        else { inp.disabled = true; $('#chk', body).disabled = true; $('#fb', body).innerHTML = `<div class="fb bad"><h3>Správně je ${fmt(sc.ans)} ${sc.unit}</h3><p>Pokračuj, v procvičování si to zopakuješ.</p></div>`; unlock(); }
+      };
+      $('#chk', body).onclick = check; inp.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
+    } else if (sc.t === 'practice') {
+      runTasks(body, sc.skills.map(skill => ({ skill })), { doneTitle: 'Procvičeno', onFinish: unlock });
+    }
+  });
+}
+
+function todayView() {
+  const due = dueList(), known = Object.keys(S.i);
+  const run = (host, specs, title) => runTasks(host, specs, { doneTitle: title, onFinish: () => { host.insertAdjacentHTML('beforeend', '<a class="btn block" href="#/dnes" style="margin-top:12px">Zpět</a>'); const b = $('.badge'); if (b) b.remove(); } });
+  const early = !known.length;
+  const nextDue = known.length ? Math.min(...known.map(k => S.i[k].d)) : null;
+  const inner = `<h2>Na dnešek</h2>${early ? '<p class="lead">Tady se ti budou vracet úlohy, které potřebuješ zopakovat. Začni prvním krokem, po jeho procvičení se tu něco objeví.</p><a class="btn primary block" href="#/krok/1/0">Jít na krok 1</a>' : due.length ? `<p class="lead">K opakování je <b>${due.length}</b> ${due.length === 1 ? 'dovednost' : due.length < 5 ? 'dovednosti' : 'dovedností'}. Úlohy se střídají, ať se nenaučíš jen pořadí.</p><button class="btn primary block" id="go">Začít opakování</button><p class="small muted" style="margin-top:12px">${due.slice(0, 8).map(k => SKILLS[k]).join(' · ')}</p>` : `<div class="card"><h3>Pro dnešek hotovo</h3><p class="muted">Další opakování ${nextDue > today() ? (nextDue - today() === 1 ? 'zítra' : `za ${nextDue - today()} dní (${dateCz(nextDue)})`) : 'brzy'}. Chceš si ale zacvičit navíc?</p></div><button class="btn block" id="extra">Procvičit navíc</button>`}
+  ${S.fl.pwa || early ? '' : `<div class="card" style="margin-top:16px"><h3>Aby se postup neztratil</h3><p class="small muted">Postup se ukládá jen v tomto prohlížeči. Na iPhonu se data neotevřených webů po týdnu mažou. Přidej si aplikaci na plochu (Sdílet → Přidat na plochu, na Androidu menu ⋮ → Přidat na plochu) a zálohu najdeš v Nástroje → Postup.</p><button class="btn quiet sm" id="pwa">Rozumím</button></div>`}`;
+  mount('dnes', inner, m => {
+    const main = $('#main');
+    const go = $('#go', m); if (go) go.onclick = () => { const specs = shuffle(due).slice(0, 8).map(skill => ({ skill })); main.innerHTML = '<div id="run"></div>'; run($('#run', main), specs, 'Opakování hotové'); window.scrollTo(0, 0); };
+    const ex = $('#extra', m); if (ex) ex.onclick = () => { const pool = known.length ? known : Object.keys(SKILLS); const specs = shuffle([...pool, ...pool]).slice(0, 6).map(skill => ({ skill })); main.innerHTML = '<div id="run"></div>'; run($('#run', main), specs, 'Procvičeno navíc'); window.scrollTo(0, 0); };
+    const pb = $('#pwa', m); if (pb) pb.onclick = () => { S.fl.pwa = true; save(); route(); };
+  });
+}
+
+/* ===== vstupní test ===== */
+function placement() {
+  const Q = [
+    { step: 2, q: 'Kolik bajtů má <b class="mono">1 KiB</b>?', opts: [{ t: '1 000', why: 'To by měl 1 kB. KiB (s písmenem i) má 1 024.' }, { t: '1 024', ok: true }, { t: '8', why: '8 je počet bitů v bajtu, ne bajtů v KiB.' }] },
+    { step: 4, q: 'Linka má <b class="mono">100 Mbit/s</b>. Kolik je to <b>MB/s</b>?', opts: [{ t: '800 MB/s', why: 'Z bitů na bajty se dělí osmi.' }, { t: '100 MB/s', why: 'Malé b a velké B se liší osmkrát.' }, { t: '12,5 MB/s', ok: true }] },
+    { step: 5, q: 'Disk <b class="mono">1 TB</b> ukáže Windows jako přibližně…', opts: [{ t: '1 000 GB', why: 'Windows dělí dvojkově, výsledek bude menší.' }, { t: '931 GB', ok: true }, { t: '1 024 GB', why: 'To by byl disk větší než na krabici.' }] }
+  ];
+  const specs = Q.map(x => ({ fixed: mkc({ skill: 'placement', q: x.q, opts: x.opts.map(o => ({ ...o })), steps: null, step: x.step }, true) }));
+  const inner = `<p class="eyebrow">Vstupní test</p><h2>Kde začít?</h2><p class="lead">Tři otázky bez známkování. Slouží jen k tomu, abych ti doporučil krok.</p><div id="run"></div>`;
+  mount('uc', inner, m => {
+    const res = [];
+    // vlastní průchod, aby se nic nezapisovalo do postupu
+    const host = $('#run', m); let k = 0;
+    const ask = () => {
+      const q = specs[k].fixed;
+      host.innerHTML = `<div class="qbox"><span class="eyebrow">Otázka ${k + 1} z 3</span></div><div class="card"><p class="q">${q.q}</p></div><div class="opts">${q.opts.map((p, i) => `<button class="opt" data-i="${i}"><span class="k">${LETTER[i]}</span><span class="t">${p.t}</span></button>`).join('')}</div><div id="fb"></div>`;
+      host.querySelector('.opts').onclick = e => {
+        const b = e.target.closest('.opt'); if (!b || b.disabled) return;
+        const p = q.opts[+b.dataset.i]; res.push(!!p.ok);
+        $$('.opt', host).forEach(x => x.disabled = true); b.classList.add(p.ok ? 'ok' : 'bad');
+        $('#fb', host).innerHTML = `<div class="fb ${p.ok ? 'ok' : 'info'}"><h3>${p.ok ? 'Správně' : 'Zatím ne'}</h3>${p.ok ? '' : `<p>${p.why}</p>`}</div><button class="btn primary block" id="n2" style="margin-top:12px">${k < 2 ? 'Další otázka' : 'Zobrazit doporučení'}</button>`;
+        $('#n2', host).onclick = () => { k++; if (k < 3) ask(); else finish(); window.scrollTo(0, 0); };
+        $('#n2', host).focus({ preventScroll: true });
+      };
+    };
+    const finish = () => {
+      const wrong = specs.map((s, i) => res[i] ? null : s.fixed.step).filter(Boolean);
+      const rec = wrong.length ? Math.min(...wrong) : 6, score = res.filter(Boolean).length;
+      S.pl = { score, rec, d: today() }; save();
+      const st = STEPS[rec - 1];
+      host.innerHTML = `<div class="card"><h2>${score} z 3</h2><p>${wrong.length ? `Doporučuji začít krokem <b>${rec}: ${st.title}</b>. Kroky před ním si můžeš projít rychle.` : 'Základy umíš. Zkus krok <b>6: Najdi chybu</b> a pak část Na dnešek.'}</p></div><a class="btn primary block" href="#/krok/${rec}/0">Jít na krok ${rec}</a><a class="btn quiet block" style="margin-top:10px" href="#/">Zpět na přehled</a>`;
+    };
+    ask();
+  });
+}
+
+/* ===== nástroje ===== */
+const TOOLTABS = [['prevodnik', 'Převodník'], ['tahak', 'Tahák'], ['hra', 'Hra'], ['postup', 'Postup']];
+function tools(tab) {
+  tab = TOOLTABS.some(t => t[0] === tab) ? tab : 'prevodnik';
+  const seg = `<nav class="seg" aria-label="Nástroje">${TOOLTABS.map(([k, n]) => `<a href="#/nastroje/${k}" class="${k === tab ? 'on' : ''}" ${k === tab ? 'aria-current="page"' : ''}>${n}</a>`).join('')}</nav>`;
+  mount('nastroje', seg + '<div id="tool"></div>', m => ({ prevodnik: converter, tahak: cheat, hra: game, postup: progress }[tab])($('#tool', m)));
+}
+const SERIES_OF = u => ['bit', 'kbit', 'Mbit', 'Gbit'].includes(u) ? 'bit' : (u === 'B' ? 'B' : (isIec(u) ? 'iec' : 'si'));
+function convSteps(v, f, t) {
+  const res = conv(v, f, t), sf = SERIES_OF(f), st = SERIES_OF(t);
+  const series = sf === 'B' ? st : sf, same = (sf === st) || sf === 'B' || st === 'B' ? (sf === st || (sf === 'B' && st !== 'bit') || (st === 'B' && sf !== 'bit')) : false;
+  const small = x => BYTES[x] < 1 ? 1 : 0;
+  const lines = [];
+  if (f === t) return { res, lines: ['Obě jednotky jsou stejné, číslo se nemění.'] };
+  if (same && series !== 'bit' && series !== 'B') {
+    const R = series === 'si' ? SI : IEC, base = series === 'si' ? 1000 : 1024, k = Math.abs(R.indexOf(f) - R.indexOf(t)), down = R.indexOf(t) < R.indexOf(f);
+    lines.push(`Cíl <b>${t}</b> je ${down ? 'menší' : 'větší'} jednotka (${down ? 'níž' : 'výš'} na žebříčku) → ${down ? 'násobím' : 'dělím'}.`, `Schodů: ${k}, každý ${fmt(base)} → ${fmt(base ** k)}.`, down ? `${fmt(v)} · ${fmt(base ** k)} = <b>${fmt(res, 10)} ${t}</b>` : `${fmt(v)} : ${fmt(base ** k)} = <b>${fmt(res, 10)} ${t}</b>`);
+  } else if (series === 'bit' && sf === st) {
+    const R = ['bit', 'kbit', 'Mbit', 'Gbit'], k = Math.abs(R.indexOf(f) - R.indexOf(t)), down = R.indexOf(t) < R.indexOf(f);
+    lines.push(`Cíl <b>${t}</b> je ${down ? 'menší' : 'větší'} jednotka → ${down ? 'násobím' : 'dělím'}.`, `Schodů: ${k}, každý 1 000 → ${fmt(1000 ** k)}.`, down ? `${fmt(v)} · ${fmt(1000 ** k)} = <b>${fmt(res, 10)} ${t}</b>` : `${fmt(v)} : ${fmt(1000 ** k)} = <b>${fmt(res, 10)} ${t}</b>`);
+  } else {
+    const b = v * BYTES[f];
+    lines.push(`Přes bajt. 1 ${f} = ${fmt(BYTES[f])} B${BYTES[f] < 1 ? ' (osmina bajtu)' : ''}, tedy ${fmt(v)} ${f} = <b>${fmt(b, 12)} B</b>.`, `1 ${t} = ${fmt(BYTES[t])} B.`, `${fmt(b, 12)} : ${fmt(BYTES[t])} = <b>${fmt(res, 10)} ${t}</b>`);
+  }
+  const bigger = BYTES[t] > BYTES[f];
+  lines.push(`Kontrola odhadem: ${t} je ${bigger ? 'větší' : 'menší'} jednotka než ${f}, číslo má být ${bigger ? 'menší' : 'větší'}. ${(bigger ? res < v : res > v) ? '✓ Sedí.' : '✗ Nesedí, zkontroluj zadání.'}`);
+  return { res, lines };
+}
+function converter(host) {
+  const opts = sel => `<optgroup label="Bajty, řada SI">${['B', 'kB', 'MB', 'GB', 'TB'].map(u => `<option ${u === sel ? 'selected' : ''}>${u}</option>`).join('')}</optgroup><optgroup label="Bajty, řada IEC">${['KiB', 'MiB', 'GiB', 'TiB'].map(u => `<option ${u === sel ? 'selected' : ''}>${u}</option>`).join('')}</optgroup><optgroup label="Bity">${['bit', 'kbit', 'Mbit', 'Gbit'].map(u => `<option ${u === sel ? 'selected' : ''}>${u}</option>`).join('')}</optgroup>`;
+  host.innerHTML = `<div class="card"><div class="field"><label for="cv">Hodnota</label><input class="txt" id="cv" inputmode="decimal" autocomplete="off" value="2,5"></div><div class="field"><label for="cf">Z jednotky</label><select id="cf">${opts('GiB')}</select></div><div class="row split" style="margin:-4px 0 8px"><button class="btn quiet sm" id="sw" aria-label="Prohodit jednotky">⇅ Prohodit</button></div><div class="field"><label for="ct">Na jednotku</label><select id="ct">${opts('MB')}</select></div></div><div id="cr"></div>`;
+  const upd = () => {
+    const v = parseNum($('#cv', host).value), f = $('#cf', host).value, t = $('#ct', host).value, out = $('#cr', host);
+    if (!isFinite(v) || v < 0) { out.innerHTML = '<div class="card"><p class="muted">Zapiš nezáporné číslo, např. 2,5.</p></div>'; return; }
+    const r = convSteps(v, f, t), exact = Math.abs(r.res - parseFloat(r.res.toPrecision(10))) <= 1e-12 * Math.abs(r.res);
+    out.innerHTML = `<div class="card"><p class="small muted" style="margin-bottom:4px">${fmt(v)} ${f} =</p><p class="res">${exact ? '' : '≈ '}${fmt(r.res, 8)} ${t}</p></div><div class="card"><h3>Postup</h3>${calc(r.lines)}</div>`;
+  };
+  $$('input,select', host).forEach(e => e.addEventListener('input', upd));
+  $('#sw', host).onclick = () => { const a = $('#cf', host), b = $('#ct', host), x = a.value; a.value = b.value; b.value = x; upd(); };
+  upd();
+}
+function cheat(host) {
+  const units = [['B', 'bajt'], ['kB', 'kilobajt'], ['MB', 'megabajt'], ['GB', 'gigabajt'], ['TB', 'terabajt']], iec = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
+  host.innerHTML = `<div class="card"><h3>Jednotky a jejich velikost</h3><table class="t"><thead><tr><th>Jednotka</th><th class="r">Bajtů</th></tr></thead><tbody>${[1, 2, 3, 4].map(i => `<tr><td class="m"><b class="si-t">${SI[i]}</b></td><td class="r m">${fmt(BYTES[SI[i]])}</td></tr>`).join('')}${[1, 2, 3, 4].map(i => `<tr><td class="m"><b class="iec-t">${IEC[i]}</b></td><td class="r m">${fmt(BYTES[IEC[i]])}</td></tr>`).join('')}</tbody></table></div>
+  <div class="card"><h3>Pravidla</h3><ol class="calc"><li>1 B = 8 bit. Malé b je bit, velké B je bajt.</li><li>Menší jednotka, víc kousků: násobím. Větší, méně kousků: dělím.</li><li>Bez <b>i</b>: schod 1 000. S <b>i</b>: schod 1 024.</li><li>Mezi řadami a mezi bity a bajty jdi přes bajt.</li><li>Mbit/s : 8 = MB/s. Čas = velikost : rychlost.</li></ol></div>
+  <div class="card"><h3>Rychlé hodnoty</h3><table class="t"><tbody><tr><td>100 Mbit/s</td><td class="r m">12,5 MB/s</td></tr><tr><td>1 Gbit/s</td><td class="r m">125 MB/s</td></tr><tr><td>Disk 500 GB</td><td class="r m">≈ 466 GiB</td></tr><tr><td>Disk 1 TB</td><td class="r m">≈ 931 GiB</td></tr><tr><td>GB → GiB</td><td class="r m">· 0,93</td></tr><tr><td>TB → TiB</td><td class="r m">· 0,91</td></tr></tbody></table></div>
+  <div class="card"><h3>Nejčastější chyby</h3><ol class="calc"><li>Zaměněné b a B.</li><li>1 000 místo 1 024 (nebo naopak).</li><li>Násobení místo dělení.</li><li>Špatný počet schodů.</li><li>Zapomenutá osmička u rychlosti.</li><li>Vzorec času naruby.</li></ol></div><button class="btn block" onclick="window.print()">Vytisknout tahák</button>`;
+}
+
+/* ===== hra: odhad řádu ===== */
+const GITEMS = [['znak textu', 1], ['SMS zpráva', 140], ['normostrana textu', 2e3], ['krátký e-mail', 5e4], ['kniha jako čistý text', 5e5], ['fotka z mobilu', 3e6], ['skladba v MP3', 4e6], ['aplikace do mobilu', 1e8], ['film v HD (2 hodiny)', 4e9], ['instalace Windows', 2.5e10], ['velká počítačová hra', 1e11], ['disk v notebooku', 5.12e11], ['externí disk', 2e12]];
+function sizeLabel(b) { const u = ['B', 'kB', 'MB', 'GB', 'TB']; let i = 0; while (b >= 1000 && i < 4) { b /= 1000; i++; } return fmt(b, 3) + NB + u[i]; }
+function gamePair() {
+  for (let n = 0; n < 500; n++) {
+    const a = pick(GITEMS), b = pick(GITEMS); if (a === b) continue;
+    const big = a[1] > b[1] ? a : b, small = a[1] > b[1] ? b : a, l = Math.log10(big[1] / small[1]), r = Math.round(l);
+    if (r < 1 || r > 5 || Math.abs(l - r) > .3) continue;
+    return { big, small, r };
+  }
+  return { big: GITEMS[5], small: GITEMS[2], r: 3 };
+}
+function game(host) {
+  const N = 8; let k = 0, score = 0;
+  const lbl = r => fmt(10 ** r) + '×';
+  const intro = () => { host.innerHTML = `<div class="card"><h3>Odhad řádu</h3><p class="muted">Osm otázek: kolikrát je jedna věc větší než druhá? Odhadni řád (10×, 100×, 1 000×…). Bez času a bez trestných bodů, velikosti jsou typické a přibližné.</p>${S.g.best ? `<p class="small">Tvůj nejlepší výsledek: <b>${S.g.best} z ${N}</b></p>` : ''}</div><button class="btn primary block" id="st">Začít</button>`; $('#st', host).onclick = () => { k = 0; score = 0; ask(); }; };
+  const ask = () => {
+    const p = gamePair(), set = new Set([p.r]); for (const d of shuffle([-1, 1, 2, -2])) { if (set.size >= 4) break; if (p.r + d >= 1) set.add(p.r + d); }
+    const opts = shuffle([...set].slice(0, 4)).sort((a, b) => a - b);
+    host.innerHTML = `<div class="qbox"><span class="eyebrow">Otázka ${k + 1} z ${N}</span><span class="pill">${score} správně</span></div><div class="card"><p class="q">Kolikrát je <b>${p.big[0]}</b> větší než <b>${p.small[0]}</b>?</p></div><div class="opts">${opts.map((r, i) => `<button class="opt" data-r="${r}"><span class="k">${LETTER[i]}</span><span class="t">asi ${lbl(r)}</span></button>`).join('')}</div><div id="fb" aria-live="polite"></div>`;
+    host.querySelector('.opts').onclick = e => {
+      const b = e.target.closest('.opt'); if (!b || b.disabled) return; const ok = +b.dataset.r === p.r; if (ok) score++;
+      $$('.opt', host).forEach(x => { x.disabled = true; if (+x.dataset.r === p.r) x.classList.add('ok'); else if (x === b) x.classList.add('bad'); else x.classList.add('dim'); });
+      $('#fb', host).innerHTML = `<div class="fb ${ok ? 'ok' : 'bad'}"><h3>${ok ? 'Přesně' : 'Ne tak docela'}</h3><p>${p.big[0]} ≈ ${sizeLabel(p.big[1])}, ${p.small[0]} ≈ ${sizeLabel(p.small[1])}. Poměr je asi ${fmt(10 ** p.r)}×.</p></div><button class="btn primary block" id="nx2" style="margin-top:12px">${k + 1 >= N ? 'Výsledek' : 'Další'}</button>`;
+      $('#nx2', host).onclick = () => { k++; k >= N ? end() : ask(); };
+      $('#nx2', host).focus({ preventScroll: true });
+    };
+  };
+  const end = () => { S.g.n++; S.g.best = Math.max(S.g.best, score); save(); host.innerHTML = `<div class="card"><h2>${score} z ${N}</h2><p class="muted">${score >= 6 ? 'Máš dobrý cit pro velikosti dat.' : 'Řády se časem ustálí. Zkus to znovu a využij tahák.'}</p></div><button class="btn primary block" id="ag">Hrát znovu</button>`; $('#ag', host).onclick = () => { k = 0; score = 0; ask(); }; };
+  intro();
+}
+
+/* ===== postup, záloha, nastavení ===== */
+function encode() {
+  const c = { v: 1, i: {}, st: S.st, g: S.g.best };
+  for (const k in S.i) { const m = S.i[k]; c.i[k] = [m.b, m.d, m.ok, m.bad]; }
+  const j = JSON.stringify(c), b = btoa(unescape(encodeURIComponent(j))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  let h = 0; for (let i = 0; i < b.length; i++) h = (h * 31 + b.charCodeAt(i)) % 65521;
+  return 'BB1.' + b + '.' + h.toString(16);
+}
+function decode(code) {
+  const p = String(code).trim().split('.'); if (p.length !== 3 || p[0] !== 'BB1') throw 0;
+  let h = 0; for (let i = 0; i < p[1].length; i++) h = (h * 31 + p[1].charCodeAt(i)) % 65521;
+  if (h.toString(16) !== p[2]) throw 0;
+  const c = JSON.parse(decodeURIComponent(escape(atob(p[1].replace(/-/g, '+').replace(/_/g, '/')))));
+  if (c.v !== 1 || typeof c.i !== 'object') throw 0; return c;
+}
+function mergeIn(c) {
+  for (const k in c.i) { if (!(k in SKILLS)) continue; const a = c.i[k]; if (!Array.isArray(a) || a.some(x => !Number.isFinite(x))) continue; const m = S.i[k]; if (!m || a[2] + a[3] > m.ok + m.bad) S.i[k] = { b: Math.max(0, Math.min(6, a[0])), d: a[1], ok: a[2], bad: a[3] }; }
+  for (const k in (c.st || {})) if (+k >= 1 && +k <= STEPS.length && Number.isFinite(c.st[k])) S.st[k] = Math.min(S.st[k] || 1e9, c.st[k]);
+  if (Number.isFinite(c.g)) S.g.best = Math.max(S.g.best, c.g);
+  save();
+}
+function applyTheme() { const r = document.documentElement; if (S.th === 'light' || S.th === 'dark') r.dataset.theme = S.th; else delete r.dataset.theme; if (S.rm) r.dataset.rm = '1'; else delete r.dataset.rm; }
+function progress(host) {
+  const labels = { k: 'zvládnuto', w: 'slabé', p: 'učím se', '': 'nezačato' };
+  const code = encode();
+  host.innerHTML = `<div class="card"><h3>Dovednosti</h3><table class="t"><tbody>${Object.keys(SKILLS).map(k => { const s = pipState(k), m = M(k); return `<tr><td>${SKILLS[k]}</td><td class="r"><span class="pill ${s === 'k' ? 'ok' : s === 'w' ? 'warn' : s === 'p' ? 'si' : ''}">${labels[s]}</span>${m ? `<br><span class="tiny">další ${m.d <= today() ? 'dnes' : dateCz(m.d)}</span>` : ''}</td></tr>`; }).join('')}</tbody></table></div>
+  <div class="card"><h3>Záloha postupu</h3><p class="small muted">Postup je jen v tomto prohlížeči. Zkopíruj kód a vlož ho na jiném zařízení.</p><textarea class="copybox" id="code" readonly aria-label="Kód zálohy">${code}</textarea><div class="row" style="margin:8px 0 16px"><button class="btn sm" id="cp">Kopírovat kód</button><span id="cpm" class="small muted" aria-live="polite"></span></div>
+  <div class="field"><label for="imp">Vložit kód z jiného zařízení</label><textarea class="copybox" id="imp" style="min-height:70px" placeholder="BB1.…"></textarea></div><button class="btn sm" id="im">Načíst (sloučí se s tímto postupem)</button><p id="imm" class="small" aria-live="polite" style="margin-top:8px"></p></div>
+  <div class="card"><h3>Přidat na plochu</h3><p class="small"><b>iPhone / iPad (Safari):</b> Sdílet → Přidat na plochu.<br><b>Android (Chrome):</b> menu ⋮ → Přidat na plochu / Instalovat.</p></div>
+  <div class="card"><h3>Vzhled</h3><div class="row" role="group" aria-label="Motiv">${[['auto', 'Podle systému'], ['light', 'Světlý'], ['dark', 'Tmavý']].map(([v, n]) => `<button class="btn sm ${S.th === v ? 'primary' : ''}" data-th="${v}" aria-pressed="${S.th === v}">${n}</button>`).join('')}</div><div class="row" style="margin-top:12px"><button class="btn sm ${S.rm ? 'primary' : ''}" id="rm" aria-pressed="${!!S.rm}">Omezit animace: ${S.rm ? 'zapnuto' : 'vypnuto'}</button></div></div>
+  <div class="card"><h3>Smazat postup</h3><p class="small muted">Vymaže opakování, hotové kroky i rekord ve hře v tomto prohlížeči.</p><button class="btn sm" id="rs">Smazat postup</button></div>`;
+  $('#cp', host).onclick = async () => { const ta = $('#code', host); try { await navigator.clipboard.writeText(ta.value); } catch (e) { ta.select(); document.execCommand('copy'); } $('#cpm', host).textContent = 'Zkopírováno.'; };
+  $('#im', host).onclick = () => { const m = $('#imm', host); try { const c = decode($('#imp', host).value); mergeIn(c); m.textContent = 'Postup načten.'; setTimeout(route, 700); } catch (e) { m.textContent = 'Kód se nepodařilo přečíst. Zkopíruj ho celý, od BB1 po konec.'; } };
+  $$('[data-th]', host).forEach(b => b.onclick = () => { S.th = b.dataset.th; save(); applyTheme(); progress(host); });
+  $('#rm', host).onclick = () => { S.rm = !S.rm; save(); applyTheme(); progress(host); };
+  const rs = $('#rs', host); rs.onclick = () => { if (rs.dataset.c) { S = defState(); save(); applyTheme(); location.hash = '#/'; route(); } else { rs.dataset.c = 1; rs.textContent = 'Opravdu smazat? Klepni znovu'; } };
+}
+
+/* ===== směrování ===== */
+function route() {
+  const p = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+  const r = p[0] || '';
+  try {
+    if (r === 'krok') stepView(+p[1], +p[2] || 0);
+    else if (r === 'dnes') todayView();
+    else if (r === 'nastroje') tools(p[1]);
+    else if (r === 'test') placement();
+    else home();
+  } catch (e) { APP().innerHTML = '<div class="shell"><p>Něco se pokazilo. <a href="#/">Zpět na začátek</a></p></div>'; console.error(e); }
+}
+window.addEventListener('hashchange', route);
+applyTheme();
+route();
+window.__BB = { GEN, SKILLS, taskFor, fmt, parseNum, conv, BYTES, STEPS, encode, decode, dueList, S: () => S };
+</script>
+</body>
+</html>
