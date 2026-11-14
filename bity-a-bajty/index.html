@@ -150,8 +150,9 @@ table.t td.m{font-family:var(--mono);font-size:14.5px}
 .lres{min-height:52px}
 
 /* bity */
-.bits{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
-.bit{appearance:none;font:700 24px var(--mono);height:56px;min-width:40px;border-radius:10px;border:2px solid var(--line2);background:var(--card);color:var(--ink3);cursor:pointer}
+.bits{display:flex;flex-wrap:nowrap;justify-content:center;gap:2px;margin:10px 0}
+.card.bitcard{padding-left:6px;padding-right:6px}
+.bit{appearance:none;font:700 22px var(--mono);height:56px;flex:0 0 calc((100% - 14px) / 8);min-width:0;padding:0;border-radius:10px;border:2px solid var(--line2);background:var(--card);color:var(--ink3);cursor:pointer}
 .bit.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .bitval{text-align:center;font:600 20px var(--mono)}
 .stepper{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0}
@@ -630,7 +631,7 @@ VIS.bits = host => {
   let n = 8; const on = Array(8).fill(false);
   const draw = () => {
     const val = on.slice(0, n).reduce((a, b, i) => a + (b ? 2 ** (n - 1 - i) : 0), 0);
-    host.innerHTML = `<div class="card"><div class="stepper"><button class="btn sq" data-d="-1" aria-label="Méně bitů" ${n <= 1 ? 'disabled' : ''}>−</button><b>${n} ${n === 1 ? 'bit' : n < 5 ? 'bity' : 'bitů'}</b><button class="btn sq" data-d="1" aria-label="Více bitů" ${n >= 8 ? 'disabled' : ''}>+</button></div>
+    host.innerHTML = `<div class="card bitcard"><div class="stepper"><button class="btn sq" data-d="-1" aria-label="Méně bitů" ${n <= 1 ? 'disabled' : ''}>−</button><b>${n} ${n === 1 ? 'bit' : n < 5 ? 'bity' : 'bitů'}</b><button class="btn sq" data-d="1" aria-label="Více bitů" ${n >= 8 ? 'disabled' : ''}>+</button></div>
     <div class="bits" role="group" aria-label="Bity">${on.slice(0, n).map((b, i) => `<button class="bit ${b ? 'on' : ''}" data-i="${i}" aria-pressed="${b}" aria-label="Bit ${i + 1}: ${b ? 1 : 0}">${b ? 1 : 0}</button>`).join('')}</div>
     <p class="bitval">= ${val}</p>
     <p class="small muted" style="text-align:center;margin:6px 0 0">${n} ${n === 1 ? 'bit' : n < 5 ? 'bity' : 'bitů'} → 2<sup>${n}</sup> = <b>${fmt(2 ** n)}</b> hodnot (čísla 0 až ${fmt(2 ** n - 1)})${n === 8 ? '. To je jeden bajt.' : ''}</p></div>`;
