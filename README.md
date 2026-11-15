@@ -18,7 +18,7 @@ portfolio/          studentské práce (jen přes odkaz v patičce, bez indexace
 nastroje/           pomocné skripty (portfolio-index.py)
 caesarova-sifra/    jedna složka = jedna aplikace
   index.html        aplikace
-  nahled.png        náhled 1200 × 630 px pro sdílení odkazu
+  nahled.png        náhled 1200 × 630 px pro sdílení odkazu (do 300 KB, se značkami og: v hlavičce, viz PRAVIDLA.md bod 7)
   qr.png            QR kód na adresu aplikace
   karta.svg         ilustrace na kartě v katalogu
   fonty/            písma aplikace (pokud používá jiná než katalog)

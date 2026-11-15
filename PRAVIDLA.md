@@ -140,7 +140,7 @@ Každá aplikace má vlastní složku `slug/` s těmito soubory:
 |---|---|
 | `index.html` | aplikace v jednom souboru |
 | `karta.svg` | ilustrace na kartu v katalogu, poměr stran 8 : 3 (např. 320 × 120) |
-| `nahled.png` | náhled 1200 × 630 px pro sdílení odkazu |
+| `nahled.png` | náhled 1200 × 630 px pro sdílení odkazu, PNG nejvýše 300 KB (snímek aplikace nebo karta s názvem; obrázek zmenši, např. na 256 barev) |
 | `qr.png` | QR kód na adresu `https://aplikace.gympb.cz/slug/` |
 | `fonty/` | písma aplikace (pokud je používá) |
 
@@ -148,6 +148,22 @@ V aplikaci musí být:
 - nahoře odkaz „← Všechny školní aplikace“ s `href="../"`,
 - dole patička: `Autor: Jméno Příjmení · Licence CC BY 4.0 · Aktualizace: D. M. RRRR`,
 - v hlavičce `<html lang="cs">`, `<meta charset="utf-8">`, `<title>`, `<meta name="description">`, `<meta name="author">`.
+- v hlavičce také značky pro náhled při sdílení odkazu (chat, Classroom, Teams, e-mail). Adresy musí být **úplné** (relativní `og:image` většina služeb ignoruje). Použij tento blok, `slug`, název a popis vezmi z `katalog.json`:
+
+```html
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="gymplikace">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Název aplikace">
+<meta property="og:description" content="Popis aplikace">
+<meta property="og:url" content="https://aplikace.gympb.cz/slug/">
+<meta property="og:image" content="https://aplikace.gympb.cz/slug/nahled.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+```
+
+  Stejné značky má i úvodní stránka katalogu (náhled `assets/obrazky/nahled.png`). U archivovaných aplikací se nepoužívají. Při změně názvu nebo popisu aplikace v `katalog.json` uprav i tyto značky a při změně vzhledu aplikace obnov `nahled.png`.
 
 ### Styl ilustrace karty
 
@@ -202,5 +218,6 @@ portfolio/
 
 1. Složka `slug/` s `index.html`, `karta.svg`, `nahled.png`, `qr.png`.
 2. V aplikaci odkaz zpět, patička s autorem a licencí, žádné cizí zdroje ani počítadla.
+   V hlavičce značky `og:*` s úplnými adresami a `nahled.png` do 300 KB (bod 7).
 3. Záznam v `katalog.json` se všemi povinnými poli, ročníky jen ze seznamu v bodě 4, `zarizeni` podle bodu 6b, `stav: "nasazeno"`, `zverejneno` a `aktualizace` s dnešním datem.
 4. Soubor `katalog.json` je platný JSON a ostatní záznamy zůstaly beze změny.
