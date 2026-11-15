@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dvojková soustava</title>
+<meta name="description" content="Šest krátkých kroků od bitu po sčítání: váhy bitů, převody mezi dvojkovou a desítkovou soustavou, kolik se vejde do n bitů a sčítání s přenosem. Opakování se přizpůsobí tomu, co ti dělá potíže.">
+<meta name="author" content="Ivo Bešťák">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#FBFAF7">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+:root{
+  --bg:#FBFAF7;--card:#FFFFFF;--ink:#1B2230;--ink2:#505A6B;--ink3:#6B7486;--line:#E2DED4;--line2:#CFC9BB;
+  --si:#2457C5;--si-bg:#E6EDFB;--iec:#B93B0A;--iec-bg:#FCEBDD;
+  --ok:#17794A;--ok-bg:#E3F2E9;--bad:#B3261E;--bad-bg:#FBE7E5;--warn:#8A5A00;--warn-bg:#FAF0D8;
+  --on:#FFFFFF;--focus:#1B2230;--shadow:0 1px 2px rgba(27,34,48,.06);
+  --font:'Atkinson Hyperlegible Next',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'Atkinson Hyperlegible Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14181F;--card:#1C222C;--ink:#E9ECF2;--ink2:#B4BCCB;--ink3:#8E98AA;--line:#2C3441;--line2:#3B4556;
+  --si:#8FB0FF;--si-bg:#202C4A;--iec:#FFA574;--iec-bg:#43291B;
+  --ok:#5DD39B;--ok-bg:#16332A;--bad:#FF8D84;--bad-bg:#40201F;--warn:#F0C265;--warn-bg:#3A2F15;
+  --on:#101420;--focus:#E9ECF2;--shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181F;--card:#1C222C;--ink:#E9ECF2;--ink2:#B4BCCB;--ink3:#8E98AA;--line:#2C3441;--line2:#3B4556;
+  --si:#8FB0FF;--si-bg:#202C4A;--iec:#FFA574;--iec-bg:#43291B;
+  --ok:#5DD39B;--ok-bg:#16332A;--bad:#FF8D84;--bad-bg:#40201F;--warn:#F0C265;--warn-bg:#3A2F15;
+  --on:#101420;--focus:#E9ECF2;--shadow:none;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.55 var(--font);min-height:100vh;min-height:100dvh}
+.shell{max-width:560px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom))}
+a{color:var(--si)}
+main:focus{outline:none}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+h1,h2,h3{line-height:1.25;margin:0}
+h1{font-size:28px;font-weight:700;letter-spacing:-.01em}
+h2{font-size:22px;font-weight:700}
+h3{font-size:18px;font-weight:700}
+p{margin:0 0 12px}
+b,strong{font-weight:700}
+.mono,code{font-family:var(--mono);font-size:.94em}
+.nb{white-space:nowrap}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 0 6px;font-size:15px}
+.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink2);text-decoration:none}
+.top a:hover{text-decoration:underline}
+.brand{display:flex;align-items:baseline;gap:8px;margin:2px 0 16px}
+.brand small{color:var(--ink3);font-size:15px}
+.lead{color:var(--ink2);margin:6px 0 18px}
+.muted{color:var(--ink2)}
+.small{font-size:15px}
+.tiny{font-size:13.5px;color:var(--ink3)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 12px;box-shadow:var(--shadow)}
+.card.flat{box-shadow:none;background:transparent}
+.card h3{margin-bottom:6px}
+.stack>*+*{margin-top:12px}
+.btn{appearance:none;font:inherit;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 18px;border-radius:12px;border:2px solid var(--ink);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;text-align:center}
+.btn.primary{background:var(--ink);color:var(--bg)}
+.btn.block{display:flex;width:100%}
+.btn.quiet{border-color:var(--line2);font-weight:400;color:var(--ink2)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.sm{min-height:44px;padding:8px 14px;font-size:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.split{justify-content:space-between}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:13.5px;font-weight:700;background:var(--line);color:var(--ink2)}
+.pill.si{background:var(--si-bg);color:var(--si)}.pill.iec{background:var(--iec-bg);color:var(--iec)}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.si-t{color:var(--si);font-weight:700}.iec-t{color:var(--iec);font-weight:700}
+
+/* přehled kroků */
+.steps{list-style:none;margin:0;padding:0}
+.stepcard{display:flex;gap:14px;align-items:flex-start;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;min-height:76px}
+.stepcard:hover{border-color:var(--line2)}
+.stepcard .no{flex:none;width:36px;height:36px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-weight:700}
+.stepcard.done .no{background:var(--ok);border-color:var(--ok);color:var(--on)}
+.stepcard.rec{border-color:var(--si);box-shadow:0 0 0 1px var(--si)}
+.stepcard h3{margin-bottom:2px}
+.stepcard p{margin:0;color:var(--ink2);font-size:15.5px}
+.pips{display:flex;gap:5px;margin-top:8px}
+.pip{width:18px;height:6px;border-radius:3px;background:var(--line);}
+.pip.k{background:var(--ok)}.pip.w{background:repeating-linear-gradient(45deg,var(--warn) 0 3px,transparent 3px 6px);outline:1.5px solid var(--warn);outline-offset:-1px}.pip.p{background:var(--si)}
+
+/* průběh kroku */
+.prog{display:flex;gap:4px;margin:4px 0 14px}
+.prog i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.prog i.on{background:var(--ink)}
+.prog i.cur{background:var(--si)}
+.eyebrow{font-size:14px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.nav2{display:flex;gap:10px;margin-top:16px}
+.nav2 .btn{flex:1}
+.nav2 .btn.back{flex:none;min-width:56px}
+
+/* odpovědi */
+.opts{display:grid;gap:10px;margin:14px 0}
+.opt{appearance:none;font:inherit;text-align:left;min-height:56px;padding:12px 16px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:12px}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt .k{flex:none;width:28px;height:28px;border-radius:8px;background:var(--line);display:grid;place-items:center;font-weight:700;font-size:14px;color:var(--ink2)}
+.opt .t{flex:1}
+.opt.ok{border-color:var(--ok);background:var(--ok-bg)}
+.opt.ok .k{background:var(--ok);color:var(--on)}
+.opt.bad{border-color:var(--bad);background:var(--bad-bg)}
+.opt.bad .k{background:var(--bad);color:var(--on)}
+.opt.dim{opacity:.55}
+.opt[disabled]{cursor:default}
+.numrow{display:flex;gap:10px;margin:14px 0 8px}
+.num{flex:1;min-width:0;font:600 22px var(--mono);min-height:56px;padding:8px 14px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink)}
+.num:focus{border-color:var(--ink);outline:none}
+.unit{align-self:center;font:600 18px var(--mono);color:var(--ink2);min-width:3ch}
+.fb{border-radius:12px;padding:14px 16px;margin:12px 0;border:2px solid}
+.fb.ok{background:var(--ok-bg);border-color:var(--ok)}
+.fb.bad{background:var(--bad-bg);border-color:var(--bad)}
+.fb.info{background:var(--warn-bg);border-color:var(--warn)}
+.fb h3{font-size:17px;margin-bottom:4px}
+.fb p:last-child{margin-bottom:0}
+.hint{background:var(--si-bg);border-radius:12px;padding:10px 14px;margin:10px 0;font-size:16px}
+details.sol{margin:8px 0 0}
+details.sol summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
+ol.calc{margin:6px 0 0;padding-left:22px}
+ol.calc li{margin:4px 0}
+.q{font-size:19px;font-weight:600;line-height:1.4}
+.q .mono{font-weight:600}
+
+/* pracovní prvky */
+.worked li{margin:0 0 10px}
+.wk{list-style:none;padding:0;margin:0}
+.wk li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 8px;display:flex;gap:10px}
+.wk li b.n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:14px}
+.wk li.res{border-color:var(--ok);background:var(--ok-bg)}
+.wk li.res b.n{background:var(--ok);color:var(--on)}
+.wk li.blank{border-style:dashed}
+table.t{width:100%;border-collapse:collapse;font-size:15.5px}
+table.t th,table.t td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.t th{font-size:13.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+table.t td.r,table.t th.r{text-align:right}
+table.t td.m{font-family:var(--mono);font-size:14.5px}
+.scroll{overflow-x:auto}
+
+/* žebříček */
+.ladder{display:flex;flex-direction:column;align-items:stretch;gap:0;margin:8px 0}
+.rung{appearance:none;font:inherit;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:6px 16px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink);cursor:pointer;text-align:left}
+.rung b{font-family:var(--mono);font-size:18px}
+.rung span{font-size:14px;color:var(--ink3)}
+.ladder.si .rung.sel{border-color:var(--si);background:var(--si-bg)}
+.ladder.iec .rung.sel{border-color:var(--iec);background:var(--iec-bg)}
+.ladder .gap{display:flex;align-items:center;justify-content:center;height:26px;font:600 14px var(--mono);color:var(--ink3)}
+.ladder.si .gap{color:var(--si)}.ladder.iec .gap{color:var(--iec)}
+.lres{min-height:52px}
+
+/* bity */
+.bits{display:flex;flex-wrap:nowrap;justify-content:center;gap:2px;margin:10px 0}
+.card.bitcard{padding-left:6px;padding-right:6px}
+.bit{appearance:none;font:700 22px var(--mono);height:56px;flex:0 0 calc((100% - 14px) / 8);min-width:0;padding:0;border-radius:10px;border:2px solid var(--line2);background:var(--card);color:var(--ink3);cursor:pointer}
+.bit.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.bitval{text-align:center;font:600 20px var(--mono)}
+.stepper{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0}
+.stepper b{font:700 20px var(--mono);min-width:7ch;text-align:center}
+.sq{width:44px;height:44px;padding:0}
+
+/* konvertor */
+.field{display:grid;gap:6px;margin-bottom:12px}
+.field label{font-weight:700;font-size:15px;color:var(--ink2)}
+select,input.txt{font:inherit;font-size:18px;min-height:52px;padding:8px 12px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink);width:100%}
+input.txt{font-family:var(--mono);font-weight:600}
+.res{font:700 26px/1.3 var(--mono);word-break:break-word}
+.seg{display:flex;gap:4px;background:var(--line);padding:4px;border-radius:12px;margin-bottom:14px}
+.seg a{flex:1;text-align:center;text-decoration:none;color:var(--ink2);min-height:44px;display:grid;place-items:center;border-radius:9px;font-weight:700;font-size:15px}
+.seg a.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.swap{align-self:end}
+.bars{display:grid;gap:6px;margin-top:6px}
+.bar{height:14px;border-radius:7px}
+.bar.si{background:var(--si)}.bar.iec{background:var(--iec)}
+.cmp{display:grid;grid-template-columns:70px 1fr;gap:6px 10px;align-items:center;font-size:15px}
+.cmp b{font-family:var(--mono)}
+
+/* spodní lišta */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabbar nav{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+.tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:62px;color:var(--ink3);text-decoration:none;font-size:13.5px;font-weight:700;position:relative}
+.tabbar a svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tabbar a.on{color:var(--ink)}
+.tabbar a.on::before{content:"";position:absolute;top:0;left:30%;right:30%;height:3px;border-radius:0 0 3px 3px;background:var(--ink)}
+.badge{position:absolute;top:6px;left:calc(50% + 8px);min-width:20px;height:20px;border-radius:10px;background:var(--bad);color:var(--on);font-size:12px;display:grid;place-items:center;padding:0 5px}
+footer.foot{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);font-size:14px;color:var(--ink3)}
+footer.foot p{margin:0 0 4px}
+.copybox{font:500 13px/1.4 var(--mono);width:100%;min-height:96px;padding:10px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink);resize:vertical;word-break:break-all}
+.big{font:700 40px/1 var(--mono)}
+.qbox{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){:root:not([data-rm]) .opt,:root:not([data-rm]) .btn,:root:not([data-rm]) .rung{transition:background-color .15s,border-color .15s}}
+@media print{.tabbar,.top,.nav2,.seg{display:none}body{background:#fff;color:#000}.card{break-inside:avoid;box-shadow:none}}
+@media (min-width:700px){body{font-size:18px}.shell{padding-top:8px}}
+
+sup,sub{font-size:max(13px,.75em)}
+details.svp summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700}
+
+.btn.primary[disabled]{background:transparent;color:var(--ink3);border:2px dashed var(--line2);opacity:1}
+.gate{text-align:center;margin:8px 0 0}
+.sernote{margin:10px 0 0;line-height:2}
+.sernote .pill{min-width:56px;text-align:center;margin-right:6px;border:1.5px solid currentColor;line-height:1.4}
+
+/* ilustrace */
+.ill{margin:4px 0 14px;text-align:center}
+.ill svg{width:100%;max-width:340px;height:auto;display:block;margin:0 auto}
+.ill .st{stroke:var(--ink);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.ill .fc{fill:var(--card)}.ill .fi{fill:var(--ink)}
+.ill rect.st:not(.fc):not(.fi){fill:none}
+.ill .cellbox{stroke:var(--ink);stroke-width:1.5}
+.ill .stsi{fill:var(--si-bg);stroke:var(--si);stroke-width:2.5}
+.ill .stiec{fill:var(--iec-bg);stroke:var(--iec);stroke-width:2.5}
+.ill .stsi2{stroke:var(--si);fill:none}.ill .stiec2{stroke:var(--iec);fill:none}
+.ill text{font-family:var(--mono);fill:var(--ink)}
+.ill .num{font-size:26px;font-weight:700}
+.ill .num.s{font-size:16px}
+.ill .cell{font-size:16px;font-weight:700;fill:var(--ink)}.ill .cell.on{fill:var(--card)}
+.ill .un{font-size:17px;font-weight:700}
+.ill .un.si{fill:var(--si)}.ill .un.iec{fill:var(--iec)}
+.ill .cap{font-family:var(--font);font-size:14px;fill:var(--ink2)}
+
+/* dvojková soustava */
+.bitcol{flex:0 0 calc((100% - 14px) / 8);min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bitcol .bit{flex:none;width:100%}
+.wt{font:600 13.5px var(--mono);color:var(--ink3)}
+.bit[disabled]{cursor:default;opacity:1}
+pre.addcol{font:600 17px/1.5 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;overflow-x:auto;white-space:pre}
+</style>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="gymplikace">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Dvojková soustava">
+<meta property="og:description" content="Šest krátkých kroků od bitu po sčítání: váhy bitů, převody mezi dvojkovou a desítkovou soustavou, kolik se vejde do n bitů a sčítání s přenosem. Opakování se přizpůsobí tomu, co ti dělá potíže.">
+<meta property="og:url" content="https://aplikace.gympb.cz/dvojkova-soustava/">
+<meta property="og:image" content="https://aplikace.gympb.cz/dvojkova-soustava/nahled.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div id="root"></div>
+<noscript><p style="padding:16px">Aplikace potřebuje zapnutý JavaScript.</p></noscript>
+<script>
+'use strict';
+/* ===== pomocné funkce ===== */
+const NB = ' ';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const near = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
+const today = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 864e5);
+const dateCz = d => { const x = new Date(d * 864e5); return x.getUTCDate() + '. ' + (x.getUTCMonth() + 1) + '. ' + x.getUTCFullYear(); };
+
+/* číslo v české úpravě: mezera po tisících, desetinná čárka */
+function fmt(n, sig = 10) {
+  if (!isFinite(n)) return '–';
+  if (n === 0) return '0';
+  const neg = n < 0, a = Math.abs(n);
+  let s;
+  if (Number.isInteger(a) && a < 9007199254740992) s = String(a);
+  else {
+    const r = parseFloat(a.toPrecision(sig));
+    s = (r >= 1e21 || r < 1e-9) ? r.toExponential() : r.toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 20 });
+  }
+  let [i, d] = s.split('.');
+  i = i.replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+  return (neg ? '−' : '') + i + (d ? ',' + d : '');
+}
+const pw = (b, e) => `${b}<sup>${e}</sup>`;
+/* vstup od žáka: čárka nebo tečka, mezery se ignorují */
+function parseNum(s) {
+  s = String(s).trim().replace(/[\s  ]/g, '').replace(',', '.').replace('−', '-');
+  if (!/^-?\d+(\.\d+)?$/.test(s)) return NaN;
+  return Number(s);
+}
+
+/* ===== úložiště postupu ===== */
+const KEY = 'dvojkova-soustava:v1';
+const INT = [0, 1, 2, 4, 8, 16, 32];
+let S;
+function defState() { return { i: {}, st: {}, pl: null, g: { best: 0, b2: 0, n: 0 }, th: 'auto', rm: false, fl: {}, cal: [0, 0, 0, 0, 0, 0, 0] }; }
+function load() {
+  try { const o = JSON.parse(localStorage.getItem(KEY)); if (o && typeof o === 'object') { const d = Object.assign(defState(), o); if (!Array.isArray(d.cal) || d.cal.length !== 7 || d.cal.some(x => !Number.isFinite(x))) d.cal = [0, 0, 0, 0, 0, 0, 0]; return d; } } catch (e) {}
+  return defState();
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+S = load();
+const M = k => S.i[k] || null;
+function record(skill, ok, hinted) {
+  const t = today(), m = S.i[skill] || { b: 0, d: t, ok: 0, bad: 0 };
+  if (ok) { m.ok++; if (hinted) { m.d = Math.max(m.d, t + 1); } else { m.b = Math.min(m.b + 1, 6); m.d = t + INT[m.b]; } }
+  else { m.bad++; m.b = 0; m.d = t; }
+  S.i[skill] = m; save();
+}
+const dueList = () => Object.keys(S.i).filter(k => S.i[k].d <= today()).sort((a, b) => (S.i[a].b - S.i[b].b) || (S.i[a].d - S.i[b].d));
+const pipState = k => { const m = M(k); if (!m) return ''; if (m.b >= 2) return 'k'; if (m.b === 0 && m.bad > 0) return 'w'; return 'p'; };
+
+/* ===== dvojková soustava: pomocné funkce ===== */
+const bn = (n, w) => { let s = n.toString(2); if (w) s = s.padStart(w, '0'); return s; };
+const g4 = s => s.length <= 6 ? s : s.replace(/\B(?=(.{4})+$)/g, NB);
+const B2 = v => `<span class="mono nb">${g4(typeof v === 'number' ? bn(v) : v)}<sub>2</sub></span>`;
+const rev = s => s.split('').reverse().join('');
+const pop = s => s.split('').filter(c => c === '1').length;
+const bl = n => n.toString(2).length;
+function parseBin(s) { s = String(s).replace(/[\s  ]/g, ''); if (!/^[01]+$/.test(s) || s.length > 40) return NaN; return parseInt(s, 2); }
+const wts = (v) => { const a = []; for (let p = bl(v) - 1; p >= 0; p--) a.push(2 ** p); return a; };
+const ones = v => wts(v).filter(w => v & w).length;
+const decomp = v => { const a = []; for (let p = 31; p >= 0; p--) if (v >= 2 ** p && (Math.floor(v / 2 ** p) % 2)) a.push(2 ** p); return a.join(' + '); };
+
+/* ===== generování úloh ===== */
+const lab = (v, unit, sig) => fmt(v, sig || 10) + (unit ? NB + unit : '');
+function mk(o) {
+  const sig = o.sig || 10;
+  const opts = [{ v: o.ans, t: lab(o.ans, o.unit, sig), ok: true }];
+  for (const [v, why] of o.wrong) {
+    if (!isFinite(v) || v < 0 || near(v, o.ans) || opts.some(x => near(x.v, v))) continue;
+    opts.push({ v, t: lab(v, o.unit, sig), why });
+    if (opts.length === 4) break;
+  }
+  o.opts = shuffle(opts); o.kind = 'num';
+  return o;
+}
+/* dvojková odpověď: ans = hodnota, volby se zobrazí dvojkově */
+function mkb(o) {
+  const opts = [{ v: o.ans, t: B2(o.ans), ok: true }];
+  for (const [v, why] of o.wrong) {
+    if (!isFinite(v) || v <= 0 || v === o.ans || opts.some(x => x.v === v)) continue;
+    opts.push({ v, t: B2(v), why });
+    if (opts.length === 4) break;
+  }
+  o.opts = shuffle(opts); o.kind = 'bin'; o.ansT = g4(bn(o.ans));
+  return o;
+}
+function mkc(o, keepOrder) { o.opts = keepOrder ? o.opts : shuffle(o.opts); o.kind = 'choice'; return o; }
+const calc = a => `<ol class="calc">${a.map(x => `<li>${x}</li>`).join('')}</ol>`;
+/* postup odečítáním vah */
+function subSteps(v) {
+  const ws = wts(v), out = [`Váhy zleva: ${ws.join(', ')}.`]; let rem = v, bits = '';
+  for (const w of ws) { if (rem >= w) { out.push(`${rem} ≥ ${w} → bit <b>1</b>, zbývá ${rem - w}`); rem -= w; bits += '1'; } else { out.push(`${rem} &lt; ${w} → bit <b>0</b>`); bits += '0'; } }
+  out.push(`Výsledek: <b>${B2(bits)}</b>`);
+  return out;
+}
+
+const GEN = {};
+GEN['hodnota-pozice'] = () => {
+  const r = Math.random();
+  if (r < .5) {
+    const p = ri(1, 7);
+    return mk({ skill: 'hodnota-pozice', q: `Jakou hodnotu (váhu) má bit na pozici <b class="mono">${p}</b>? Pozice se číslují zprava od 0.`, ans: 2 ** p,
+      wrong: [[2 * p, 'To je dvojnásobek čísla pozice. Váhy rostou jako mocniny dvojky: 1, 2, 4, 8…'], [p * p, 'Váha není druhá mocnina pozice. Je to 2 na pozici.'], [2 ** (p + 1), `Počítal jsi pozice od 1. Pozice 0 má váhu 1, pozice ${p} má 2<sup>${p}</sup>.`], [2 ** (p - 1), `Posunul ses o pozici zpět. Pozice ${p} má váhu 2<sup>${p}</sup>.`], [10 ** p, 'Desítky patří do desítkové soustavy. Tady se každá pozice zdvojnásobí.']],
+      steps: ['Pozice 0 (úplně vpravo) má váhu 1.', 'Každá další pozice doleva váhu zdvojnásobí: 1, 2, 4, 8, 16, 32, 64, 128.', `Pozice ${p} má váhu 2<sup>${p}</sup> = <b>${2 ** p}</b>.`],
+      hint: 'Váhy zprava: 1, 2, 4, 8… Která z nich je na zadané pozici? Pozici počítej od nuly.', hint2: `Pozice ${p} má váhu 2 na ${p}.` });
+  }
+  if (r < .8) {
+    const n = pick([4, 5, 6, 8]);
+    return mk({ skill: 'hodnota-pozice', q: `Číslo má <b>${n} bitů</b>. Jakou váhu má nejlevější bit?`, ans: 2 ** (n - 1),
+      wrong: [[2 ** n, `${2 ** n} je počet hodnot, které se do ${n} bitů vejdou. Nejlevější bit je na pozici ${n - 1}, váha je 2<sup>${n - 1}</sup>.`], [n, 'To je počet bitů. Váhy jsou mocniny dvojky.'], [2 ** n - 1, `${2 ** n - 1} je největší zapsatelné číslo (součet všech vah), ne váha jednoho bitu.`], [2 ** (n - 2), 'To je váha druhého bitu zleva.']],
+      steps: [`Bity mají pozice 0 až ${n - 1}, zprava doleva.`, `Nejlevější bit je na pozici ${n - 1}.`, `Váha 2<sup>${n - 1}</sup> = <b>${2 ** (n - 1)}</b>.`],
+      hint: 'Pozice se číslují od nuly. Kolik je pozic a která je nejlevější?', hint2: `Nejlevější je pozice ${n - 1}.` });
+  }
+  const k = ri(1, 6), w = 2 ** k;
+  return mk({ skill: 'hodnota-pozice', q: `Váhy bitů jdou za sebou: <b class="mono">… 4, 8, 16, 32 …</b> Jaká váha následuje po <b class="mono">${w}</b>?`, ans: 2 * w,
+    wrong: [[w + 2, 'Váhy se nepřičítají po dvou. Každá je dvojnásobek předchozí.'], [w + w / 2, 'To je půldruhého násobku. Každá váha je přesně dvojnásobek.'], [w * w, 'Umocnil jsi. Váha se jen zdvojnásobí.'], [10 * w, 'Desetinásobek patří do desítkové soustavy.']],
+    steps: ['Každá váha je dvojnásobek předchozí.', `${w} · 2 = <b>${2 * w}</b>`], hint: 'Jak se liší dvě sousední váhy?', hint2: 'Další váha je dvojnásobek.' });
+};
+GEN['bin-dec'] = () => {
+  const L = pick([4, 4, 5, 6, 7, 8, 8]), v = ri(2 ** (L - 1), 2 ** L - 1), s = bn(v);
+  const sumPos = s.split('').reverse().reduce((a, c, i) => a + (c === '1' ? i + 1 : 0), 0);
+  const parts = wts(v).filter(w => v & w);
+  return mk({ skill: 'bin-dec', q: `Kolik je ${B2(s)} v desítkové soustavě?`, ans: v,
+    wrong: [[parseInt(rev(s), 2), 'Četl jsi bity odzadu. Nejmenší váha (1) patří bitu úplně vpravo.'], [pop(s), 'Spočítal jsi jedničky. Každá jednička ale má váhu podle své pozice.'], [sumPos, 'Použil jsi váhy 1, 2, 3, 4… Váhy jsou mocniny dvojky: 1, 2, 4, 8…'], [s.length <= 6 ? parseInt(s, 10) : NaN, 'Přečetl jsi dvojkový zápis jako desítkové číslo. Hodnotu dávají váhy bitů.'], [v + 1, 'Součet vah vyšel o jedna jinak. Projdi váhy znovu a nezapomeň na váhu 1 úplně vpravo.']],
+    steps: [`Váhy zprava: ${wts(v).reverse().join(', ')}.`, `Jedničky jsou na vahách ${parts.join(', ')}.`, `${parts.join(' + ')} = <b>${v}</b>`],
+    hint: 'Napiš si váhy zprava (1, 2, 4, 8…) pod bity a sečti ty, pod kterými je 1.', hint2: `Sčítáš ${ones(v)} vah: ${parts.join(' + ')}.` });
+};
+GEN['dec-bin'] = () => {
+  const L = pick([4, 5, 6, 7, 8, 8]), v = ri(2 ** (L - 1), 2 ** L - 1), s = bn(v);
+  const flip = (() => { const p = ri(0, L - 2); return v ^ (1 << p); })();
+  return mkb({ skill: 'dec-bin', q: `Zapiš číslo <b class="mono">${v}</b> ve dvojkové soustavě.`, ans: v,
+    wrong: [[parseInt(rev(s), 2), 'Bity jsou zapsané odzadu. Největší váha patří úplně vlevo.'], [v - 1, 'Je o jedničku vedle. Zkontroluj zpětným součtem vah.'], [v + 1, 'Je o jedničku vedle. Zkontroluj zpětným součtem vah.'], [flip, 'Jeden bit je špatně. Sečti váhy zpět a porovnej se zadáním.']],
+    steps: subSteps(v), hint: `Největší váha, která se vejde do ${v}, je ${2 ** (bl(v) - 1)}. Odečti ji a pokračuj dalšími váhami.`, hint2: `Zadané číslo se skládá z vah ${decomp(v).split(' + ').join(', ')}. Tam napiš 1, jinde 0.` });
+};
+GEN['pocet-hodnot'] = () => {
+  const n = ri(3, 12), a = 2 ** n;
+  if (Math.random() < .5) {
+    return mkc({ skill: 'pocet-hodnot', q: `Kolik různých hodnot se vejde do <b class="mono">${n} bitů</b>?`,
+      opts: [{ t: fmt(a), ok: true }, { t: fmt(2 * n), why: 'To je jen dvojnásobek počtu bitů. Každý další bit hodnoty zdvojnásobí: 2<sup>n</sup>.' }, (n * n === a ? { t: fmt(a * 2), why: `To je 2<sup>${n + 1}</sup>, hodnot pro o jeden bit víc.` } : { t: fmt(n * n), why: 'Umocnil jsi počet bitů, ale základ je 2: hodnot je 2<sup>n</sup>.' }), { t: fmt(a - 1), why: `${fmt(a - 1)} je největší zapsatelné číslo. Hodnot je o jednu víc, protože se počítá i nula.` }],
+      steps: ['Každý bit má dvě možnosti: 0 nebo 1.', `Každý další bit počet možností zdvojnásobí: 2<sup>${n}</sup>.`, `2<sup>${n}</sup> = <b>${fmt(a)}</b> hodnot (čísla 0 až ${fmt(a - 1)}).`],
+      hint: 'Jeden bit má 2 hodnoty, dva bity 4, tři bity 8… Co se děje s každým dalším bitem?', hint2: 'Hodnot je 2 na počet bitů.' });
+  }
+  return mkc({ skill: 'pocet-hodnot', q: `Jaké je <b>největší číslo</b>, které se vejde do <b class="mono">${n} bitů</b>?`,
+    opts: [{ t: fmt(a - 1), ok: true }, { t: fmt(a), why: `${fmt(a)} je počet hodnot. Číslování začíná od nuly, takže největší číslo je o jedna menší.` }, { t: fmt(2 ** (n - 1)), why: `To je váha nejlevějšího bitu. Největší číslo má jedničky na všech pozicích, je to součet všech vah.` }, { t: fmt(10 ** n - 1), why: 'Devítky patří do desítkové soustavy. Ve dvojkové soustavě jsou na všech místech jedničky.' }],
+    steps: [`Největší číslo má ve všech ${n} bitech jedničku: ${B2('1'.repeat(n))}.`, `Hodnot je 2<sup>${n}</sup> = ${fmt(a)} a číslují se od 0.`, `Největší číslo je ${fmt(a)} − 1 = <b>${fmt(a - 1)}</b>.`],
+    hint: 'Kolik je různých hodnot? Čísla se číslují od nuly.', hint2: 'Největší číslo je počet hodnot minus jedna.' });
+};
+GEN['kolik-bitu'] = () => {
+  if (Math.random() < .65) {
+    const m = pick([5, 9, 12, 17, 30, 31, 32, 50, 100, 127, 128, 200, 255, 256, 300, 500, 1000, 1023, 1024, 4000]), b = bl(m);
+    return mk({ skill: 'kolik-bitu', q: `Kolik bitů nejméně potřebuješ na zápis čísla <b class="mono">${fmt(m)}</b>?`, ans: b, unit: b === 1 ? 'bit' : b < 5 ? 'bity' : 'bitů',
+      wrong: [[b - 1, `${b - 1} bitů pojme čísla jen do ${fmt(2 ** (b - 1) - 1)}.`], [b + 1, `Stačí méně: ${b} bitů pojme čísla až do ${fmt(2 ** b - 1)}.`], [Math.ceil(m / 8), 'Bajty se počítají jinak. Tady jde o bity: 2<sup>n</sup> musí být větší než číslo.'], [Math.round(m / 2), 'Počet bitů není polovina čísla. Bit hodnoty zdvojnásobí.']],
+      steps: [`n bitů pojme čísla do 2<sup>n</sup> − 1.`, `${b - 1} bitů: do ${fmt(2 ** (b - 1) - 1)} (málo). ${b} bitů: do ${fmt(2 ** b - 1)} (stačí).`, `Nejméně <b>${b}</b>.`],
+      hint: 'Zkoušej mocniny dvojky. Hledáš první, která je větší než číslo.', hint2: `Největší číslo na ${b - 1} bitech je ${fmt(2 ** (b - 1) - 1)}.` });
+  }
+  const c = pick([3, 5, 6, 10, 12, 20, 40, 60, 100]), b = Math.ceil(Math.log2(c));
+  return mk({ skill: 'kolik-bitu', q: `Chceš rozlišit <b class="mono">${c}</b> různých stavů. Kolik bitů nejméně potřebuješ?`, ans: b, unit: b === 1 ? 'bit' : b < 5 ? 'bity' : 'bitů',
+    wrong: [[b - 1, `${b - 1} bitů rozliší jen ${fmt(2 ** (b - 1))} stavů.`], [b + 1, `Stačí méně: ${b} bitů rozliší ${fmt(2 ** b)} stavů.`], [Math.ceil(c / 2), 'Bit hodnoty zdvojnásobí, počet bitů tedy není polovina počtu stavů.'], [c, 'Stav není bit. Z n bitů se dá poskládat 2<sup>n</sup> stavů.']],
+    steps: [`n bitů rozliší 2<sup>n</sup> stavů.`, `${b - 1} bitů: ${fmt(2 ** (b - 1))} stavů (málo). ${b} bitů: ${fmt(2 ** b)} stavů (stačí).`, `Nejméně <b>${b}</b>.`],
+    hint: 'Hledáš nejmenší n, pro které je 2 na n aspoň tolik, kolik chceš stavů.', hint2: `${fmt(2 ** (b - 1))} stavů nestačí.` });
+};
+GEN['scitani-sloupec'] = () => {
+  const a = ri(0, 1), b = ri(0, 1), c = ri(0, 1), s = a + b + c;
+  const txt = (d, p) => `zapíšu ${d}, přenesu ${p}`;
+  const right = txt(s % 2, s >> 1);
+  const all = [[0, 0], [1, 0], [0, 1], [1, 1]];
+  const sumOf = (d, p) => d + 2 * p;
+  return mkc({ skill: 'scitani-sloupec', q: `Jeden sloupec: <b class="mono">${a} + ${b}${c ? ' + 1 (přenos)' : ''}</b>. Co uděláš?`,
+    opts: all.map(([d, p]) => (d === s % 2 && p === s >> 1) ? { t: txt(d, p), ok: true } : { t: txt(d, p), why: `Tak by vyšlo ${sumOf(d, p)}. Tady je součet ${s}, ve dvojkové soustavě ${B2(bn(s))}: ${right}.` }),
+    steps: [`${a} + ${b}${c ? ' + 1' : ''} = ${s} (desítkově).`, `${s} se dvojkově zapíše ${B2(bn(s))}.`, `Poslední číslice se zapíše, předchozí se přenese: <b>${right}</b>.`],
+    hint: 'Sečti jedničky ve sloupci jako obyčejná čísla. Kolik jich je?', hint2: 'Součet 0 a 1 se zapíše přímo. Od dvou výš se zapíše 0 a přenáší se 1, protože 2 je ve dvojkové 10.' }, true);
+};
+GEN['scitani'] = () => {
+  const L = pick([3, 4, 4, 5, 5]), x = ri(2 ** (L - 2), 2 ** L - 1), y = ri(2 ** (L - 2), 2 ** L - 1), z = x + y, W = Math.max(bl(x), bl(y), 1);
+  const sx = bn(x, W), sy = bn(y, W);
+  let carry = 0; const cols = [];
+  for (let i = W - 1; i >= 0; i--) { const t = +sx[i] + +sy[i] + carry; cols.push(`Sloupec ${W - i}: ${sx[i]} + ${sy[i]}${carry ? ' + 1' : ''} = ${bn(t)} → zapíšu ${t % 2}${t > 1 ? ', přenesu 1' : ''}`); carry = t >> 1; }
+  if (carry) cols.push('Nakonec přenos 1 zapíšu jako nový bit vlevo.');
+  const xor = x ^ y, or = x | y, drop = z % 2 ** W;
+  const pre = `   ${sx.split('').join(' ')}\n + ${sy.split('').join(' ')}`;
+  return mkb({ skill: 'scitani', q: `Sečti ve dvojkové soustavě:`, pre, ans: z,
+    wrong: [[xor, 'Sečetl jsi bez přenosů. Když vyjde 1 + 1 = 10, jednička se přenáší do dalšího sloupce.'], [or, 'Nula nebo jednička: to není sčítání. 1 + 1 dá 10, takže se přenáší.'], [z > 2 ** W - 1 ? drop : NaN, 'Zapomněl jsi na poslední přenos. Výsledek má o bit víc než sčítance.'], [z + 1, 'Výsledek je o jedna větší. Zkontroluj přenosy a pak sečti obě čísla desítkově.'], [z - 1, 'Výsledek je o jedna menší. Zkontroluj přenosy a pak sečti obě čísla desítkově.']],
+    steps: [...cols, `Kontrola: ${x} + ${y} = ${z} a ${B2(z)} = ${z}.`], hint: 'Sčítej zprava po sloupcích. Když vyjde 2 (tedy 10), zapiš 0 a přenes 1.', hint2: `Kontrola v desítkové: ${x} + ${y} = ${z}.` });
+};
+GEN['vlastnosti'] = () => {
+  const r = ri(0, 3);
+  if (r === 0) {
+    const L = ri(4, 7), v = ri(2 ** (L - 1), 2 ** L - 1), s = bn(v), even = v % 2 === 0;
+    return mkc({ skill: 'vlastnosti', q: `Je číslo ${B2(s)} sudé, nebo liché?`,
+      opts: [{ t: even ? 'sudé' : 'liché', ok: true }, { t: even ? 'liché' : 'sudé', why: `Rozhoduje poslední bit (váha 1). Tady je ${s[s.length - 1]}, takže číslo je ${even ? 'sudé' : 'liché'}.` }, { t: 'záleží na počtu jedniček', why: 'Počet jedniček nerozhoduje. Všechny váhy kromě poslední jsou sudé, takže záleží jen na posledním bitu.' }, { t: 'nedá se poznat bez převodu', why: 'Dá se. Všechny váhy kromě 1 jsou sudé, takže rozhoduje poslední bit.' }],
+      steps: ['Všechny váhy kromě 1 jsou sudé (2, 4, 8…).', `Poslední bit je ${s[s.length - 1]}.`, `Číslo je <b>${even ? 'sudé' : 'liché'}</b> (${v}).`], hint: 'Jaké váhy mají bity kromě posledního? Jsou sudé, nebo liché?', hint2: 'Rozhoduje váha 1, tedy poslední bit.' });
+  }
+  if (r === 1) {
+    const L = ri(3, 6), v = ri(2 ** (L - 1), 2 ** L - 1);
+    return mkc({ skill: 'vlastnosti', q: `Za dvojkové číslo ${B2(v)} (${v}) připíšeš na konec <b>nulu</b>. Co se stane s hodnotou?`,
+      opts: [{ t: 'zdvojnásobí se', ok: true }, { t: 'zdesetinásobí se', why: 'To platí v desítkové soustavě. Ve dvojkové je základ 2, každý bit se posune o jednu váhu výš, tedy ×2.' }, { t: 'zvětší se o 2', why: 'Zvětší se na dvojnásobek. Každá jednička dostane dvojnásobnou váhu.' }, { t: 'nezmění se', why: 'Změní se. Všechny bity se posunou o jednu pozici doleva, každý má dvojnásobnou váhu.' }],
+      steps: [`${v} = ${B2(v)}, po připsání nuly ${B2(v * 2)} = ${v * 2}.`, 'Každý bit se posunul o jednu pozici doleva a váha se zdvojnásobila.', 'Hodnota se <b>zdvojnásobí</b>.'], hint: 'Zkus si to na malém čísle: 101 je 5, 1010 je…', hint2: 'Každý bit se posune o jednu váhu výš.' });
+  }
+  if (r === 2) {
+    const n = ri(3, 8);
+    return mk({ skill: 'vlastnosti', q: `Kolik je ${B2('1'.repeat(n))} (samé jedničky, ${n}×)?`, ans: 2 ** n - 1,
+      wrong: [[2 ** n, `${fmt(2 ** n)} je o jedna víc. Samé jedničky jsou těsně před ${B2('1' + '0'.repeat(n))}.`], [n, 'To je počet jedniček. Hodnotu dávají váhy.'], [2 ** (n - 1), 'To je jen váha nejlevějšího bitu. Sčítají se všechny váhy.'], [2 ** (n - 1) - 1, 'To je číslo o bit kratší. Samé jedničky mají n bitů.']],
+      steps: [`${n} jedniček = ${wts(2 ** n - 1).join(' + ')}.`, `Zkratka: ${B2('1'.repeat(n))} je o jedna méně než ${B2('1' + '0'.repeat(n))} = 2<sup>${n}</sup>.`, `2<sup>${n}</sup> − 1 = <b>${fmt(2 ** n - 1)}</b>`], hint: 'Kdyby ses k číslu přičetl 1, vznikla by jednička následovaná nulami. Jaké číslo to je?', hint2: `Je to 2 na ${n} minus 1.` });
+  }
+  const L = ri(4, 7), v = ri(2 ** (L - 1), 2 ** L - 1), h = Math.floor(v / 2);
+  return mkc({ skill: 'vlastnosti', q: `Ze dvojkového čísla ${B2(v)} (${v}) odebereš <b>poslední bit</b> (${B2(h)}). Jak se změnila hodnota?`,
+    opts: [{ t: 'vydělila se dvěma (se zaokrouhlením dolů)', ok: true }, { t: 'zmenšila se o 1', why: 'Zmenšila se na polovinu. Všechny zbylé bity mají poloviční váhu.' }, { t: 'vydělila se deseti', why: 'To platí v desítkové soustavě. Tady je základ 2.' }, { t: 'zdvojnásobila se', why: 'Je to naopak. Odebráním bitu vpravo se zbylé bity posunou o váhu níž.' }],
+    steps: [`${v} = ${B2(v)}, po odebrání ${B2(h)} = ${h}.`, 'Každý bit se posunul o jednu pozici doprava a váha se zmenšila na polovinu.', `<b>${v} : 2 = ${h}</b> (zbytek je odebraný bit).`], hint: 'Opak připsání nuly. Co se děje s váhami?', hint2: 'Váhy se zmenší na polovinu.' });
+};
+GEN['chyba'] = () => {
+  const T = [];
+  const v1 = pick([11, 13, 14, 9, 25, 45, 77]), s1 = bn(v1), bits1 = s1.split('');
+  const wrongSum = bits1.reduce((a, c, i) => a + (c === '1' ? 2 ** i : 0), 0);
+  if (wrongSum !== v1) T.push({ q: `Postup: <span class="mono">${s1}<sub>2</sub> = ${bits1.map((c, i) => `${c}·${2 ** i}`).join(' + ')} = ${wrongSum}</span>`, err: 'Váhy jsou přiřazené zleva. Váha 1 patří bitu úplně vpravo.', d: [['Váhy mají být 1, 2, 3, 4…', 'Váhy jsou mocniny dvojky, a ty jsou v postupu použité správně.'], ['Chybí násobení nulou', 'Nuly se násobí také, jen nic nepřidají. To je v pořádku.']] });
+  const a2 = pick([5, 6, 7, 9, 11]), b2 = pick([3, 5, 6, 7]);
+  T.push({ q: `Postup: <span class="mono">${bn(a2)}<sub>2</sub> + ${bn(b2)}<sub>2</sub></span>, v nejnižším sloupci je <span class="mono">1 + 1 = 2</span>, píšu <span class="mono">2</span>.`, err: 'Číslice 2 ve dvojkové soustavě není. 1 + 1 = 10: zapíšu 0 a přenesu 1.', d: [['Sčítá se zleva', 'Sčítá se zprava, od nejnižší váhy. To je správně.'], ['Nejnižší sloupec se přeskakuje', 'Přeskakovat nelze, sčítá se od nejnižšího sloupce. Postup začíná správně.']] });
+  const v3 = pick([13, 11, 19, 22, 37]);
+  let rr = v3, rems = []; while (rr > 0) { rems.push(rr % 2); rr = Math.floor(rr / 2); }
+  const topDown = rems.join('');
+  if (topDown !== bn(v3)) T.push({ q: `Postup: <span class="mono">${v3}</span> dělím dvěma se zbytkem, zbytky vyjdou <span class="mono">${rems.join(', ')}</span>. Zapíšu je v pořadí, jak vznikly: <span class="mono">${topDown}</span>.`, err: `Zbytky se čtou odspodu nahoru (od posledního k prvnímu): ${B2(v3)}.`, d: [['Dělit se má 10', 'Základ dvojkové soustavy je 2, dělí se dvěma. To je správně.'], ['Zbytky mají být vždy 1', 'Zbytek po dělení dvěma je 0 nebo 1. To je správně.']] });
+  const n4 = pick([4, 5, 6, 7, 8]);
+  T.push({ q: `Postup: Do ${n4} bitů se vejde ${fmt(2 ** n4)} hodnot, takže největší číslo je <span class="mono">${fmt(2 ** n4)}</span>.`, err: `Čísla se číslují od nuly, největší je o jedna menší: ${fmt(2 ** n4 - 1)}.`, d: [[`Hodnot je ${fmt(2 ** n4)} je špatně`, `Počet hodnot 2<sup>${n4}</sup> = ${fmt(2 ** n4)} je v postupu správně.`], ['Má se použít 10 na n', 'V dvojkové soustavě se používá 2 na n.']] });
+  const v5 = pick([5, 6, 9, 11, 13]);
+  T.push({ q: `Postup: ${B2(v5)} je ${v5}. Připíšu na konec nulu: ${B2(v5 * 2)}, hodnota se zvětší <b>desetkrát</b>, tedy ${v5 * 10}.`, err: `Ve dvojkové soustavě se hodnota po připsání nuly zdvojnásobí: ${v5 * 2}.`, d: [['Nula se připisuje na začátek', 'Postup ji připisuje na konec, a to je v pořádku.'], [`${B2(v5)} není ${v5}`, `Je: ${decomp(v5)} = ${v5}.`]] });
+  const v6 = pick([300, 270, 400, 512, 1000]);
+  T.push({ q: `Postup: Číslo <span class="mono">${v6}</span> se vejde do jednoho bajtu, protože bajt má osm bitů.`, err: `Bajt pojme čísla 0 až 255. ${v6} je víc, potřebuje ${bl(v6)} bitů.`, d: [['Bajt nemá osm bitů', 'Bajt má osm bitů. To je v postupu v pořádku.'], ['Do bajtu se vejdou jen sudá čísla', 'Vejdou se všechna čísla 0 až 255, sudá i lichá.']] });
+  const a7 = pick([6, 7, 9, 11, 13]), b7 = pick([5, 6, 9, 10]), z7 = a7 + b7;
+  const okPostup = { q: `Postup: ${B2(a7)} + ${B2(b7)} = ${B2(z7)}, kontrola v desítkové soustavě: ${a7} + ${b7} = ${z7}.`, ok: true, d: [['Chybí přenos', 'Součet ve dvojkové soustavě sedí s desítkovým, přenosy tedy proběhly správně.'], ['Výsledek má mít stejně bitů jako sčítance', 'Výsledek může mít o bit víc. Tady vyšel správně.']] };
+  const t = Math.random() < .2 ? okPostup : pick(T);
+  const opts = t.ok ? [{ t: 'Postup je správně', ok: true }, ...t.d.map(([x, w]) => ({ t: x, why: w })), { t: 'Číslice 2 se může používat', why: 'Ve dvojkové soustavě jsou jen číslice 0 a 1.' }]
+    : [{ t: t.err.split('.')[0].replace(/:.*/, ''), ok: true, full: t.err }, ...t.d.map(([x, w]) => ({ t: x, why: w })), { t: 'Postup je správně', why: 'Není. ' + t.err }];
+  if (!t.ok) opts[0].t = t.err.replace(/ \([^)]*\)/, '');
+  return mkc({ skill: 'chyba', q: `${t.q}<br><b>Kde je chyba?</b>`, opts, steps: t.ok ? ['Postup sedí s kontrolou v desítkové soustavě.'] : [t.err], hint: 'Zkus si výsledek ověřit v desítkové soustavě.', hint2: 'Projdi postup po krocích: váhy, přenosy, směr čtení.' });
+};
+
+const SKILLS = {
+  'hodnota-pozice': 'Váha bitu na pozici', 'bin-dec': 'Dvojková → desítková', 'dec-bin': 'Desítková → dvojková', 'pocet-hodnot': 'Počet hodnot a největší číslo',
+  'kolik-bitu': 'Kolik bitů potřebuji', 'scitani-sloupec': 'Sčítání jednoho sloupce', 'scitani': 'Sčítání dvou čísel', 'vlastnosti': 'Zkratky a vzory', 'chyba': 'Hledání chyby'
+};
+const NUMERIC = new Set(['hodnota-pozice', 'bin-dec', 'dec-bin', 'pocet-hodnot', 'kolik-bitu', 'scitani', 'vlastnosti']);
+const modeFor = k => (NUMERIC.has(k) && (M(k) ? M(k).b >= 2 : false)) ? 'num' : 'choice';
+function taskFor(skill, mode) { const t = GEN[skill](); t.mode = mode === 'num' && (t.kind === 'num' || t.kind === 'bin') ? 'num' : 'choice'; return t; }
+/* ===== přehrávání úloh ===== */
+const LETTER = ['A', 'B', 'C', 'D'];
+function runTasks(host, specs, o) {
+  specs = specs.map(s => ({ ...s })); let k = 0; const firstTry = [];
+  const next = () => { if (k >= specs.length) return finish(); show(); };
+  const finish = () => {
+    const ok = firstTry.filter(x => x === true).length, tot = firstTry.filter(x => x !== null).length;
+    const weak = [...new Set(specs.filter((s, i) => firstTry[i] === false).map(s => SKILLS[s.skill] || ''))].filter(Boolean);
+    host.innerHTML = `<div class="card"><h2>${o.doneTitle || 'Hotovo'}</h2><p class="lead" style="margin-bottom:8px">Správně na první pokus: <b>${ok} z ${tot}</b>.</p>${weak.length ? `<p class="small">K opakování: ${weak.join(', ')}. Vrátí se v části <b>Na dnešek</b>.</p>` : '<p class="small">Bez chyby. Dobrá práce.</p>'}</div>`;
+    if (o.onFinish) o.onFinish(ok, tot);
+  };
+  const show = () => {
+    const spec = specs[k], mode = spec.fixed ? 'choice' : (o.forceChoice ? 'choice' : modeFor(spec.skill));
+    const t = spec.fixed || taskFor(spec.skill, mode);
+    const isNum = t.mode === 'num', isBin = t.kind === 'bin';
+    let hints = 0, answered = false, conf = null; const rec = o.record !== false && !spec.fixed;
+    host.innerHTML = `<div class="qbox"><span class="eyebrow">Úloha ${k + 1} z ${specs.length}${spec.retry ? ' · znovu' : ''}</span><span class="pill">${isNum ? (isBin ? 'napiš nuly a jedničky' : 'napiš číslo') : 'vyber odpověď'}</span></div>
+    <div class="card"><p class="q">${t.q}</p>${t.pre ? `<pre class="addcol" aria-label="Sčítání pod sebou">${t.pre}</pre>` : ''}</div>
+    ${rec ? '<div class="conf" role="group" aria-label="Jak jsi si jistý odpovědí?"><p class="small muted" style="margin:0 0 6px">Jak jsi si jistý? (nepovinné)</p><div class="row"><button class="btn sm" data-c="s" aria-pressed="false">Jistě</button><button class="btn sm" data-c="m" aria-pressed="false">Spíš ano</button><button class="btn sm" data-c="g" aria-pressed="false">Hádám</button></div></div>' : ''}
+    ${isNum ? `<div class="numrow"><input class="num" id="ans" inputmode="${isBin ? 'numeric' : 'decimal'}" autocomplete="off" enterkeyhint="done" aria-label="Odpověď" placeholder="${isBin ? '0101' : '?'}"><span class="unit">${isBin ? '<sub>2</sub>' : esc(t.unit || '')}</span></div><button class="btn primary block" id="chk">Zkontrolovat</button><p class="tiny" style="margin:8px 0 0">${isBin ? 'Mezery mezi čtveřicemi nevadí. Úvodní nuly nejsou nutné.' : 'Desetinná čárka i mezery jsou v pořádku.'}</p>`
+      : `<div class="opts">${t.opts.map((p, i) => `<button class="opt" data-i="${i}"><span class="k">${LETTER[i]}</span><span class="t">${p.t}</span></button>`).join('')}</div>`}
+    <div class="row" style="margin-top:6px">${t.hint ? '<button class="btn quiet sm" id="hintb">Nápověda</button>' : ''}${rec ? '<button class="btn quiet sm" id="nv">Nevím</button>' : ''}</div><div id="hints"></div><div id="fb" aria-live="polite"></div>`;
+    const done = (ok, msgBad, nevim) => {
+      if (answered) return; answered = true;
+      if (o.record !== false) {
+        record(spec.skill, ok, hints > 0);
+        if (!spec.fixed) { if (nevim) S.cal[6]++; else if (conf) { const j = { s: 0, m: 2, g: 4 }[conf]; S.cal[j + 1]++; if (ok && hints === 0) S.cal[j]++; } save(); }
+      }
+      $$('.conf .btn', host).forEach(b => b.disabled = true); const nvb = $('#nv', host); if (nvb) nvb.disabled = true;
+      if (!spec.retry) firstTry.push(ok); else firstTry.push(null);
+      if (!ok && !spec.retry && o.retry !== false && !spec.fixed) specs.push({ skill: spec.skill, retry: true });
+      const right = isNum ? (isBin ? `${t.ansT}<sub>2</sub>` : `${fmt(t.ans)} ${t.unit || ''}`.trim()) : t.opts.find(p => p.ok).t;
+      const sol = t.steps ? `<details class="sol" ${ok ? '' : 'open'}><summary>Postup</summary>${calc(t.steps)}</details>` : '';
+      const cal = nevim ? '' : conf === 's' && !ok ? '<p class="small">Byl jsi si jistý, ale odpověď nesedí. To je užitečná informace: příště si ověř váhy, přenos a zkus zpětnou kontrolu.</p>' : conf === 'g' && ok && !hints ? '<p class="small">Hádal jsi a trefil jsi. Zkus si to ještě ověřit postupem.</p>' : '';
+      $('#fb', host).innerHTML = nevim
+        ? `<div class="fb info"><h3>Nevím je v pořádku</h3><p>Správně je <b class="mono">${right}</b>.</p>${sol}</div>`
+        : ok
+        ? `<div class="fb ok"><h3>Správně${hints ? ' (s nápovědou)' : ''}</h3>${cal}${sol}</div>`
+        : `<div class="fb bad"><h3>Ještě ne</h3>${msgBad ? `<p>${msgBad}</p>` : ''}<p>Správně je <b class="mono">${right}</b>.</p>${cal}${sol}</div>`;
+      $('#fb', host).insertAdjacentHTML('beforeend', `<button class="btn primary block" id="nxt" style="margin-top:12px">${k + 1 >= specs.length ? 'Zobrazit výsledek' : 'Další úloha'}</button>`);
+      $('#nxt', host).onclick = () => { k++; next(); window.scrollTo(0, 0); };
+      $('#nxt', host).focus({ preventScroll: true });
+      $('#fb', host).scrollIntoView({ block: 'nearest', behavior: S.rm ? 'auto' : 'smooth' });
+    };
+    if (isNum) {
+      const inp = $('#ans', host), check = () => {
+        if (answered) return;
+        const u = isBin ? parseBin(inp.value) : parseNum(inp.value);
+        if (!isFinite(u)) { $('#fb', host).innerHTML = `<div class="fb info"><p>${isBin ? 'Zapiš jen nuly a jedničky, např. 1011.' : 'Zapiš číslo, např. 75.'}</p></div>`; inp.focus(); return; }
+        const ok = isBin ? u === t.ans : Math.abs(u - t.ans) <= Math.max(t.tolAbs || 0, 1e-9 * Math.abs(t.ans));
+        let why = '';
+        if (!ok) { const w = t.opts.find(p => !p.ok && (isBin ? p.v === u : Math.abs(p.v - u) <= 1e-9 * Math.abs(p.v))); why = w ? w.why : ''; }
+        inp.disabled = true; $('#chk', host).disabled = true; done(ok, why);
+      };
+      $('#chk', host).onclick = check;
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
+      inp.focus({ preventScroll: true });
+    } else {
+      host.querySelector('.opts').onclick = e => {
+        const b = e.target.closest('.opt'); if (!b || answered) return;
+        const p = t.opts[+b.dataset.i];
+        $$('.opt', host).forEach((x, i) => { x.disabled = true; if (t.opts[i].ok) x.classList.add('ok'); else if (x === b) x.classList.add('bad'); else x.classList.add('dim'); });
+        done(!!p.ok, p.ok ? '' : p.why || '');
+      };
+    }
+    $$('.conf .btn', host).forEach(b => b.onclick = () => { if (answered) return; conf = b.dataset.c; $$('.conf .btn', host).forEach(x => { const on = x === b; x.classList.toggle('primary', on); x.setAttribute('aria-pressed', on); }); });
+    const nvb0 = $('#nv', host);
+    if (nvb0) nvb0.onclick = () => {
+      if (answered) return;
+      if (isNum) { const inp = $('#ans', host); inp.disabled = true; $('#chk', host).disabled = true; }
+      else $$('.opt', host).forEach((x, i) => { x.disabled = true; x.classList.add(t.opts[i].ok ? 'ok' : 'dim'); });
+      done(false, '', true);
+    };
+    const hb = $('#hintb', host);
+    if (hb) hb.onclick = () => {
+      if (answered) return; hints++;
+      $('#hints', host).innerHTML = `<div class="hint">${hints === 1 || !t.hint2 ? t.hint : t.hint + '<br><b>Ještě víc:</b> ' + t.hint2}</div>`;
+      if (hints >= 2 || !t.hint2) hb.disabled = true;
+    };
+  };
+  show();
+}
+
+/* ===== vizuální prvky ===== */
+const VIS = {};
+const bitRow = (arr, n, o = {}) => `<div class="bits" role="group" aria-label="Bity">${arr.slice(0, n).map((b, i) => `<div class="bitcol"><span class="wt">${2 ** (n - 1 - i)}</span><button class="bit ${b ? 'on' : ''}" data-i="${i}" aria-pressed="${!!b}" aria-label="Bit s váhou ${2 ** (n - 1 - i)}: ${b ? 1 : 0}" ${o.ro ? 'disabled' : ''}>${b ? 1 : 0}</button></div>`).join('')}</div>`;
+const valOf = (arr, n) => arr.slice(0, n).reduce((a, b, i) => a + (b ? 2 ** (n - 1 - i) : 0), 0);
+const exprOf = (arr, n) => { const p = arr.slice(0, n).map((b, i) => b ? 2 ** (n - 1 - i) : 0).filter(Boolean); return p.length ? `${p.join(' + ')} = ${valOf(arr, n)}` : '0'; };
+function bitsWidget(host, o = {}) {
+  let n = o.n || 8; const on = Array(8).fill(false), target = o.target;
+  const plural = c => `${c} ${c === 1 ? 'bit' : c < 5 ? 'bity' : 'bitů'}`;
+  const draw = () => {
+    const val = valOf(on, n);
+    host.innerHTML = `<div class="card bitcard">${target != null ? `<p class="q" style="text-align:center;margin:0 0 4px">Nastav číslo <b class="mono">${target}</b></p>` : ''}${o.step === false ? '' : `<div class="stepper"><button class="btn sq" data-d="-1" aria-label="Méně bitů" ${n <= 1 ? 'disabled' : ''}>−</button><b>${plural(n)}</b><button class="btn sq" data-d="1" aria-label="Více bitů" ${n >= 8 ? 'disabled' : ''}>+</button></div>`}
+    ${bitRow(on, n, { ro: o.ro })}<p class="bitval" aria-live="polite">${exprOf(on, n)}</p>
+    ${target != null ? (o.quiet ? '' : `<p class="small" style="text-align:center;margin:6px 0 0">${val === target ? `<b>Správně.</b> ${target} = ${decomp(target)}.` : 'Zapínej bity, dokud součet vah nevyjde.'}</p>`) : o.cap === false ? '' : `<p class="small muted" style="text-align:center;margin:6px 0 0">${plural(n)} → 2<sup>${n}</sup> = <b>${fmt(2 ** n)}</b> hodnot (čísla 0 až ${fmt(2 ** n - 1)})${n === 8 ? '. To je jeden bajt.' : ''}</p>`}</div>`;
+    if (o.onChange) o.onChange(val);
+  };
+  host.onclick = e => {
+    const b = e.target.closest('button'); if (!b || b.disabled) return;
+    if (b.dataset.i != null) { on[+b.dataset.i] = !on[+b.dataset.i]; }
+    else if (b.dataset.d) { n = Math.max(1, Math.min(8, n + +b.dataset.d)); }
+    draw(); const nb = b.dataset.i != null ? host.querySelector(`[data-i="${b.dataset.i}"]`) : host.querySelector(`[data-d="${b.dataset.d}"]:not([disabled])`); if (nb) nb.focus();
+  };
+  draw();
+  return { val: () => valOf(on, n), lock: () => { $$('button', host).forEach(x => x.disabled = true); } };
+}
+VIS.bits = h => bitsWidget(h, {});
+VIS['bits-cil'] = h => bitsWidget(h, { target: 37, step: false });
+VIS.pozice = host => {
+  host.innerHTML = `<div class="card"><table class="t"><thead><tr><th>Soustava</th><th class="r">Váhy zprava</th></tr></thead><tbody><tr><td>desítková</td><td class="r m">1 · 10 · 100 · 1 000<br>(×10)</td></tr><tr><td>dvojková</td><td class="r m">1 · 2 · 4 · 8 · 16<br>(×2)</td></tr></tbody></table></div>`;
+};
+VIS.pravidla = host => {
+  host.innerHTML = `<div class="card"><table class="t"><thead><tr><th>Sloupec</th><th class="r">Zapíšu</th><th class="r">Přenesu</th></tr></thead><tbody>${[['0 + 0', 0, 0], ['0 + 1', 1, 0], ['1 + 1', 0, 1], ['1 + 1 + 1', 1, 1]].map(([a, d, p]) => `<tr><td class="m">${a} = ${bn(eval(a))}</td><td class="r m">${d}</td><td class="r m">${p}</td></tr>`).join('')}</tbody></table><p class="small muted" style="margin:10px 0 0">Z 1 + 1 vyjde dvojka. Ve dvojkové soustavě je to ${B2('10')}: jedničku přenesu a nula zůstane.</p></div>`;
+};
+VIS.tabulka = host => {
+  host.innerHTML = `<div class="card"><table class="t"><thead><tr><th>Bitů</th><th class="r">Hodnot</th><th class="r">Největší číslo</th></tr></thead><tbody>${[1, 2, 3, 4, 8, 10, 16].map(n => `<tr><td>${n}</td><td class="r m">${fmt(2 ** n)}</td><td class="r m">${fmt(2 ** n - 1)}</td></tr>`).join('')}</tbody></table></div>`;
+};
+function mountVis(root) { $$('[data-vis]', root).forEach(h => VIS[h.dataset.vis](h)); }
+const V = n => `<div data-vis="${n}"></div>`;
+
+/* ===== ilustrace ===== */
+const ILL = {
+  vahy: ['Osm bitů 01001011 s váhami 128 až 1: jedničky na vahách 64, 8, 2 a 1 dávají 75', `
+    ${[128, 64, 32, 16, 8, 4, 2, 1].map((w, i) => `<text class="cap" x="${29 + 38 * i}" y="18" text-anchor="middle">${w}</text>`).join('')}
+    ${[0, 1, 0, 0, 1, 0, 1, 1].map((d, i) => `<rect class="${d ? 'fi' : 'fc'} cellbox" x="${12 + 38 * i}" y="26" width="34" height="36" rx="6"/><text class="cell ${d ? 'on' : ''}" x="${29 + 38 * i}" y="50" text-anchor="middle">${d}</text>`).join('')}
+    <text class="num s" x="160" y="92" text-anchor="middle">64 + 8 + 2 + 1 = 75</text><text class="cap" x="160" y="112" text-anchor="middle">jedničky sečtou své váhy</text>`],
+  prenos: ['Sčítání jednoho sloupce: 1 + 1 = 10, zapíšu 0 a přenesu 1', `
+    <rect class="st fc" x="34" y="26" width="44" height="44" rx="8"/><text class="num" x="56" y="57" text-anchor="middle">1</text>
+    <text class="num" x="94" y="57" text-anchor="middle">+</text>
+    <rect class="st fc" x="108" y="26" width="44" height="44" rx="8"/><text class="num" x="130" y="57" text-anchor="middle">1</text>
+    <text class="num" x="172" y="57" text-anchor="middle">=</text>
+    <rect class="stsi" x="188" y="26" width="46" height="44" rx="8"/><text class="un si" x="211" y="55" text-anchor="middle">1 0</text>
+    <path class="st" d="M200 76V92M200 92l-5-6M200 92l5-6" style="fill:none"/><path class="st" d="M222 76V92M222 92l-5-6M222 92l5-6" style="fill:none"/>
+    <text class="cap" x="196" y="108" text-anchor="end">přenesu 1</text><text class="cap" x="228" y="108" text-anchor="start">zapíšu 0</text>`]
+};
+const ill = n => `<figure class="ill"><svg viewBox="0,0,320,124" role="img" aria-label="${ILL[n][0]}" xmlns="http://www.w3.org/2000/svg">${ILL[n][1]}</svg></figure>`;
+
+/* ===== obsah kroků ===== */
+const STEPS = [
+  { id: 1, title: 'Bity a váhy', goal: 'Jak se z nul a jedniček stane číslo.', can: ['Říct, jakou váhu má bit na dané pozici (1, 2, 4, 8…).', 'Převést dvojkové číslo do osmi bitů na desítkové sečtením vah.'], skills: ['hodnota-pozice', 'bin-dec'], screens: [
+    { t: 'tip', q: 'Kolik je číslo <b class="mono">101</b>, když je zapsané ve <b>dvojkové</b> soustavě?', opts: [{ t: '5', ok: true }, { t: '101', why: 'To by byla stovka a jedna v desítkové soustavě. Ve dvojkové mají číslice jinou hodnotu.' }, { t: '3', why: 'To je počet číslic nebo součet 1 + 0 + 1 = 2 a ještě o jedna víc. Hodnotu dává pozice, ne jen počet.' }, { t: '7', why: '7 se zapisuje 111. V čísle 101 prostřední bit chybí.' }], reveal: 'Za chvíli uvidíš, že 5 = 4 + 1: pozice mají váhy 4, 2 a 1.' },
+    { t: 'txt', h: 'Pozice mají váhy', html: `<p>Na číslici v čísle 372 se díváš podle místa: trojka znamená <b>300</b>, protože stojí na místě stovek. Každé místo doleva je <b>desetkrát</b> těžší: 1, 10, 100, 1 000.</p>${V('pozice')}<p>Dvojková soustava funguje stejně, jen místa jsou <b>dvakrát</b> těžší a číslice jsou jen dvě: <b>0</b> a <b>1</b>. Jedné číslici se říká <b>bit</b>.</p>` },
+    { t: 'txt', h: 'Váhy jsou mocniny dvojky', html: `${ill('vahy')}<p>Zprava doleva mají bity váhy <b>1, 2, 4, 8, 16, 32, 64, 128</b>. Jednička znamená „tuto váhu započítat“, nula „nezapočítat“. Vyzkoušej to:</p>${V('bits')}<p class="small muted">Klepej na bity a sleduj součet. Tlačítkem − ubereš bity.</p>` },
+    { t: 'txt', h: 'Jak z bitů udělat číslo', html: `<ol class="calc"><li>Pod bity napiš váhy zprava: 1, 2, 4, 8…</li><li>Vyber váhy, pod kterými je <b>1</b>.</li><li>Sečti je.</li></ol><div class="card"><p class="q" style="margin:0">Vpravo je nejmenší váha (1), vlevo největší.</p></div><p class="small muted">Častá chyba je číst váhy odzadu. Nejmenší váha 1 patří bitu úplně vpravo.</p>` },
+    { t: 'worked', h: 'Řešený příklad', q: 'Kolik je <b class="mono">1011<sub>2</sub></b>?', steps: ['Váhy zprava: 1, 2, 4, 8.', 'Jedničky jsou na vahách 8, 2 a 1.', '8 + 2 + 1 = <b>11</b>'] },
+    { t: 'fade', h: 'Doplň poslední krok', q: 'Kolik je <b class="mono">0100 1101<sub>2</sub></b>?', shown: ['Váhy zprava: 1, 2, 4, 8, 16, 32, 64, 128.', 'Jedničky jsou na vahách 64, 8, 4 a 1.'], blank: '64 + 8 + 4 + 1 =', ans: 77, unit: '' },
+    { t: 'practice', skills: ['hodnota-pozice', 'bin-dec', 'bin-dec', 'hodnota-pozice', 'bin-dec'] },
+    { t: 'sum', items: ['Bit je jedna číslice 0 nebo 1. Pozice mají váhy 1, 2, 4, 8…', 'Dvojkové číslo přečteš sečtením vah u jedniček.', 'Nejmenší váha (1) je vpravo, největší vlevo.'] }
+  ] },
+  { id: 2, title: 'Z desítkové do dvojkové', goal: 'Dvě metody a jak si převod ověřit.', can: ['Převést číslo do 255 do dvojkové soustavy odečítáním vah.', 'Převést ho i dělením dvěma se zbytkem.', 'Převod ověřit zpětným součtem vah.'], skills: ['dec-bin'], screens: [
+    { t: 'tip', q: 'Které z čísel je <b class="mono">13</b> zapsané dvojkově?', opts: [{ t: '1101', ok: true }, { t: '1011', why: 'To je 11: 8 + 2 + 1. Pozor na pořadí bitů.' }, { t: '1110', why: 'To je 14: 8 + 4 + 2.' }, { t: '1001', why: 'To je 9: 8 + 1.' }], reveal: 'Teď uvidíš dvě metody, jak se k tomu dobrat bez hádání.' },
+    { t: 'txt', h: 'Metoda 1: odečítání vah', html: `<p>Napiš váhy od největší, která se vejde, a u každé se ptej: <b>vejde se do toho, co zbývá?</b></p><div class="card"><p class="small" style="margin:0 0 6px"><b>75</b></p><table class="t"><tbody>${(() => { let r = 75; return [64, 32, 16, 8, 4, 2, 1].map(w => { const y = r >= w; const row = `<tr><td class="m">váha ${w}</td><td class="m">${r} ${y ? '≥' : '&lt;'} ${w}</td><td class="r m"><b>${y ? 1 : 0}</b></td></tr>`; if (y) r -= w; return row; }).join(''); })()}</tbody></table><p class="small" style="margin:10px 0 0">Výsledek: ${B2('1001011')}</p></div>` },
+    { t: 'txt', h: 'Metoda 2: dělení dvěma', html: `<p>Číslo dělíš dvěma se zbytkem, dokud nevyjde 0. <b>Zbytky čteš odspodu nahoru.</b></p><div class="card"><table class="t"><tbody>${[[13, 6, 1], [6, 3, 0], [3, 1, 1], [1, 0, 1]].map(([a, q, z]) => `<tr><td class="m">${a} : 2 = ${q}</td><td class="r m">zbytek <b>${z}</b></td></tr>`).join('')}</tbody></table><p class="small" style="margin:10px 0 0">Zbytky odspodu: 1, 1, 0, 1 → ${B2('1101')}</p></div><p class="small muted"><b>Pozor:</b> kdo čte zbytky shora, dostane číslo pozpátku (1011 místo 1101).</p>` },
+    { t: 'txt', h: 'Vyzkoušej a zkontroluj', html: `<p>Nastav bity tak, aby součet vah dal zadané číslo. Nejdřív zkus odhadnout, které váhy se do 37 vejdou.</p>${V('bits-cil')}<p><b>Zkouška:</b> převod vždy ověř zpětně. Sečti váhy u jedniček a porovnej s původním číslem.</p>` },
+    { t: 'worked', h: 'Řešený příklad', q: 'Zapiš <b class="mono">75</b> dvojkově.', steps: ['Největší váha, která se vejde, je 64. 75 − 64 = 11 → bit <b>1</b>.', '32 a 16 se do 11 nevejdou → bity <b>0</b>, <b>0</b>. 8 se vejde: 11 − 8 = 3 → <b>1</b>.', '4 se do 3 nevejde → <b>0</b>. 2 se vejde: 3 − 2 = 1 → <b>1</b>. 1 se vejde → <b>1</b>.', 'Bity: <b>1001011</b>. Zkouška: 64 + 8 + 2 + 1 = 75.'] },
+    { t: 'fade', h: 'Doplň poslední krok', q: 'Zapiš <b class="mono">22</b> dvojkově.', shown: ['Váhy: 16, 8, 4, 2, 1.', '22 ≥ 16 → 1, zbývá 6. 6 &lt; 8 → 0.', '6 ≥ 4 → 1, zbývá 2. 2 ≥ 2 → 1, zbývá 0.'], blank: 'Bity pro váhy 16, 8, 4, 2, 1:', ans: 22, bin: true, unit: '' },
+    { t: 'practice', skills: ['dec-bin', 'dec-bin', 'dec-bin', 'dec-bin', 'dec-bin'] },
+    { t: 'sum', items: ['Odečítání vah: od největší váhy, vejde-li se, napiš 1 a odečti, jinak 0.', 'Dělení dvěma: zbytky čti odspodu nahoru.', 'Zkouška: sečti váhy u jedniček a porovnej se zadáním.'] }
+  ] },
+  { id: 3, title: 'Kolik se vejde', goal: 'Kolik hodnot a jak velké číslo se vejde do n bitů.', can: ['Říct, že n bitů má 2<sup>n</sup> hodnot a největší číslo 2<sup>n</sup> − 1.', 'Určit, kolik bitů nejméně potřebuješ na dané číslo.'], skills: ['pocet-hodnot', 'kolik-bitu'], screens: [
+    { t: 'tip', q: 'Jaké je <b>největší číslo</b>, které se vejde do jednoho bajtu (8 bitů)?', opts: [{ t: '255', ok: true }, { t: '256', why: 'Hodnot je 256, ale číslování začíná od nuly. Největší číslo je o jedna menší.' }, { t: '128', why: '128 je váha nejlevějšího bitu. Největší číslo je součet všech vah.' }, { t: '8', why: 'Osm je počet bitů, ne největší číslo.' }], reveal: 'Za chvíli uvidíš proč: osm jedniček dává 255.' },
+    { t: 'txt', h: 'Každý bit zdvojnásobí možnosti', html: `<p>Jeden bit má 2 hodnoty, dva bity 4 (00, 01, 10, 11), tři bity 8. <b>Každý další bit počet hodnot zdvojnásobí.</b></p>${V('tabulka')}<p>Hodnot je 2<sup>n</sup>, ale číslují se od nuly, takže největší číslo je o jedno menší: <b>2<sup>n</sup> − 1</b>.</p>` },
+    { t: 'txt', h: 'Zkus to s bity', html: `${V('bits')}<p class="small muted">Zapni všechny bity: vyjde největší číslo. Je o jedna menší než počet hodnot.</p>` },
+    { t: 'txt', h: 'Kolik bitů potřebuji', html: `<p>Na číslo hledáš nejmenší počet bitů, jehož největší číslo už stačí.</p><div class="card"><p><b>100:</b> 6 bitů pojme do 63 (málo), 7 bitů do 127 (stačí) → <b>7 bitů</b>.</p><p style="margin:0"><b>255:</b> 8 bitů pojme do 255 → <b>8 bitů</b>. <b>256:</b> už <b>9 bitů</b>.</p></div><p class="small muted">Stejně se určuje, kolik bitů potřebuješ na rozlišení určitého počtu stavů, například 100 barev (7 bitů).</p>` },
+    { t: 'worked', h: 'Řešený příklad', q: 'Kolik bitů nejméně potřebuješ na číslo <b class="mono">200</b>?', steps: ['7 bitů pojme čísla do 2<sup>7</sup> − 1 = 127. To je málo.', '8 bitů pojme čísla do 2<sup>8</sup> − 1 = 255. To stačí.', 'Nejméně <b>8 bitů</b>.'] },
+    { t: 'fade', h: 'Doplň poslední krok', q: 'Kolik bitů nejméně potřebuješ na číslo <b class="mono">1 000</b>?', shown: ['2<sup>9</sup> − 1 = 511, to je málo.'], blank: '2<sup>10</sup> − 1 = 1 023, to stačí. Bitů:', ans: 10, unit: 'bitů' },
+    { t: 'practice', skills: ['pocet-hodnot', 'kolik-bitu', 'pocet-hodnot', 'kolik-bitu', 'kolik-bitu'] },
+    { t: 'sum', items: ['n bitů má 2<sup>n</sup> hodnot, největší číslo je 2<sup>n</sup> − 1.', 'Číslo m potřebuje nejméně takové n, že 2<sup>n</sup> − 1 ≥ m.', 'Bajt (8 bitů) pojme čísla 0 až 255.'] }
+  ] },
+  { id: 4, title: 'Sčítání', goal: 'Sčítání pod sebou jako ve škole, jen s přenosem po dvojce.', can: ['Sečíst jeden sloupec včetně přenosu (0 + 0, 0 + 1, 1 + 1, 1 + 1 + 1).', 'Sečíst dvě čísla do pěti bitů pod sebou a zkontrolovat výsledek v desítkové soustavě.'], skills: ['scitani-sloupec', 'scitani'], screens: [
+    { t: 'tip', q: 'Kolik je <b class="mono">1 + 1</b> ve dvojkové soustavě?', opts: [{ t: '10', ok: true }, { t: '2', why: 'Číslice 2 ve dvojkové soustavě není. Dvojka se zapíše jako 10.' }, { t: '11', why: '11 je tři (2 + 1). Součet 1 + 1 je dvě.' }, { t: '0', why: 'Nula vyjde jen jako poslední číslice. Přenos 1 ale nesmíš zahodit: výsledek je 10.' }], reveal: 'Jako v desítkové soustavě 9 + 1 = 10: číslice dojdou a vznikne přenos.' },
+    { t: 'txt', h: 'Čtyři pravidla pro jeden sloupec', html: `${ill('prenos')}${V('pravidla')}<p>Je to jako ve škole: když součet ve sloupci dosáhne základu soustavy, napíšeš nulu a <b>přenos</b> 1 jde do dalšího sloupce vlevo.</p>` },
+    { t: 'txt', h: 'Sčítání pod sebou', html: `<p>Sčítáš zprava po sloupcích a nesmíš zapomenout na přenosy:</p><pre class="addcol">přenos: 1 1 1 1 0
+        0 1 1 0 1    13
+      + 0 1 0 1 1    11
+        ---------
+        1 1 0 0 0    24</pre><p><b>Kontrola:</b> 13 + 11 = 24 a ${B2('11000')} = 16 + 8 = 24. Součet má někdy o bit víc než sčítance (zde přenos z nejlevějšího sloupce).</p><p class="small muted">Kdyby se výsledek nevešel do předem daného počtu bitů (například osmi), říká se tomu přetečení.</p>` },
+    { t: 'worked', h: 'Řešený příklad', q: 'Sečti <b class="mono">0110<sub>2</sub> + 0111<sub>2</sub></b> (6 + 7).', steps: ['Sloupec 1: 0 + 1 = 1 → zapíšu 1.', 'Sloupec 2: 1 + 1 = 10 → zapíšu 0, přenesu 1.', 'Sloupec 3: 1 + 1 + 1 (přenos) = 11 → zapíšu 1, přenesu 1.', 'Sloupec 4: 0 + 0 + 1 (přenos) = 1 → zapíšu 1. Výsledek <b>1101</b> = 13, sedí s 6 + 7.'] },
+    { t: 'fade', h: 'Doplň poslední krok', q: 'Sečti <b class="mono">1011<sub>2</sub> + 0101<sub>2</sub></b> (11 + 5).', shown: ['Sloupec 1: 1 + 1 = 10 → zapíšu 0, přenesu 1.', 'Sloupec 2: 1 + 0 + 1 = 10 → zapíšu 0, přenesu 1.', 'Sloupec 3: 0 + 1 + 1 = 10 → zapíšu 0, přenesu 1.', 'Sloupec 4: 1 + 0 + 1 = 10 → zapíšu 0, přenesu 1.'], blank: 'Poslední přenos je nový bit vlevo. Výsledek:', ans: 16, bin: true, unit: '' },
+    { t: 'practice', skills: ['scitani-sloupec', 'scitani', 'scitani-sloupec', 'scitani', 'scitani'] },
+    { t: 'sum', items: ['1 + 1 = 10: zapíšu 0, přenesu 1. 1 + 1 + 1 = 11: zapíšu 1, přenesu 1.', 'Sčítej zprava po sloupcích a přenosy si piš nad další sloupec.', 'Kontrola: převeď sčítance i výsledek do desítkové soustavy.'] }
+  ] },
+  { id: 5, title: 'Zkratky a vzory', goal: 'Co prozradí poslední bit, připsání nuly a samé jedničky.', can: ['Poznat sudé a liché číslo podle posledního bitu.', 'Využít, že připsání nuly hodnotu zdvojnásobí a odebrání posledního bitu ji vydělí dvěma.', 'Znát, že n jedniček dává 2<sup>n</sup> − 1.'], skills: ['vlastnosti'], screens: [
+    { t: 'tip', q: 'Dvojkové číslo <b class="mono">101<sub>2</sub></b> (5) zapíšeš o nulu delší: <b class="mono">1010<sub>2</sub></b>. Co se stalo s hodnotou?', opts: [{ t: 'zdvojnásobila se (10)', ok: true }, { t: 'zdesetinásobila se (50)', why: 'To platí v desítkové soustavě: 5 → 50. Tady je základ 2.' }, { t: 'nezměnila se', why: 'Změnila: 1010 je 10, ne 5.' }, { t: 'zvětšila se o 2 (7)', why: '7 je 111. Hodnota se zdvojnásobí na 10.' }], reveal: 'Každý bit se posunul o jednu váhu doleva, tedy ×2. Ukážu, co z toho plyne.' },
+    { t: 'txt', h: 'Poslední bit', html: `<p>Všechny váhy kromě poslední jsou sudé (2, 4, 8, 16…). O tom, zda je číslo sudé, tak rozhoduje jen <b>poslední bit</b> (váha 1).</p><div class="card"><p class="m" style="margin:0"><span class="mono">1011<sub>2</sub></span> končí 1 → liché (11)<br><span class="mono">1010<sub>2</sub></span> končí 0 → sudé (10)</p></div>` },
+    { t: 'txt', h: 'Posun doleva a doprava', html: `<p><b>Připíšeš 0 na konec:</b> hodnota se zdvojnásobí. ${B2('101')} (5) → ${B2('1010')} (10).</p><p><b>Odebereš poslední bit:</b> hodnota se vydělí dvěma (se zaokrouhlením dolů). ${B2('1011')} (11) → ${B2('101')} (5).</p><p class="small muted">V desítkové soustavě to samé dělá připsání nuly (×10) a odebrání číslice (:10).</p>` },
+    { t: 'txt', h: 'Samé jedničky', html: `<p>Osm jedniček ${B2('11111111')} je o jedna méně než ${B2('100000000')} = 2<sup>8</sup> = 256, takže <b>255</b>.</p><div class="card"><p class="m" style="margin:0">n jedniček = 2<sup>n</sup> − 1<br>${B2('1111')} = 15, ${B2('1111111')} = 127</p></div>` },
+    { t: 'worked', h: 'Řešený příklad', q: 'Číslo <b class="mono">10110<sub>2</sub></b> je 22. Kolik je <b class="mono">101100<sub>2</sub></b> (připsaná nula)?', steps: ['Připsaná nula posune všechny bity o jednu váhu doleva.', 'Hodnota se zdvojnásobí: 22 · 2 = <b>44</b>.', 'Zkouška: ' + B2('101100') + ' = 32 + 8 + 4 = 44.'] },
+    { t: 'fade', h: 'Doplň poslední krok', q: 'Kolik je <b class="mono">111111<sub>2</sub></b> (šest jedniček)?', shown: ['Šest jedniček je o jedna méně než 1000000₂ = 2<sup>6</sup>.'], blank: '2<sup>6</sup> − 1 =', ans: 63, unit: '' },
+    { t: 'practice', skills: ['vlastnosti', 'vlastnosti', 'vlastnosti', 'vlastnosti', 'vlastnosti'] },
+    { t: 'sum', items: ['Poslední bit: 0 sudé, 1 liché.', 'Připsání nuly ×2, odebrání posledního bitu :2.', 'n jedniček = 2<sup>n</sup> − 1.'] }
+  ] },
+  { id: 6, title: 'Najdi chybu', goal: 'Poznej typické chyby v cizím postupu.', can: ['Najít chybu v cizím postupu (pořadí vah, přenos, čtení zbytků, počet hodnot).', 'Poznat, že je postup správně.'], skills: ['chyba'], screens: [
+    { t: 'txt', h: 'Chybovat umí každý', html: `<p>Nejlepší způsob, jak si ověřit, že tématu rozumíš, je <b>najít chybu v cizím výpočtu</b>. Většina chyb se opakuje:</p><div class="card"><ol class="calc"><li><b>Váhy zleva:</b> váha 1 patří bitu vpravo.</li><li><b>Číslice 2:</b> 1 + 1 = 10, zapíšu 0 a přenesu 1.</li><li><b>Zbytky čtené shora:</b> čti je odspodu nahoru.</li><li><b>Největší číslo = počet hodnot:</b> největší je o jedna menší.</li><li><b>Připsaná nula = ×10:</b> ve dvojkové je to ×2.</li><li><b>Číslo se nevejde</b> do daného počtu bitů.</li></ol></div><p>Před odpovědí si polož tři otázky: <b>váhy</b> na správné straně? <b>přenos</b> započítaný? <b>zkouška</b> v desítkové soustavě?</p>` },
+    { t: 'practice', skills: ['chyba', 'chyba', 'chyba', 'chyba', 'chyba'] },
+    { t: 'sum', items: ['Kontroluj: váhy (1 vpravo), přenosy, směr čtení zbytků a zkoušku v desítkové soustavě.', 'Co se ti nedaří, se ti ukáže v části Na dnešek a vrátí se po odstupu.'] }
+  ] }
+];
+/* ===== hlavní obrazovky ===== */
+const ICONS = {
+  learn: '<svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 19V5.5"/></svg>',
+  today: '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg>',
+  tools: '<svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>'
+};
+function shell(tab, inner) {
+  const due = dueList().length;
+  return `<div class="shell"><div class="top"><a href="../">← Všechny školní aplikace</a></div><div class="brand"><h1>Dvojková soustava</h1><small>rychlé učení</small></div><main id="main" tabindex="-1">${inner}</main>
+  <footer class="foot"><p>Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 15. 11. 2026</p><p>Postup se ukládá jen v tomto prohlížeči. Aplikace nic neodesílá.</p></footer></div>
+  <div class="tabbar"><nav aria-label="Hlavní navigace"><a href="#/" class="${tab === 'uc' ? 'on' : ''}" ${tab === 'uc' ? 'aria-current="page"' : ''}>${ICONS.learn}Učit se</a><a href="#/dnes" class="${tab === 'dnes' ? 'on' : ''}" ${tab === 'dnes' ? 'aria-current="page"' : ''}>${ICONS.today}Na dnešek${due ? `<span class="badge" aria-label="k opakování: ${due}">${due}</span>` : ''}</a><a href="#/nastroje" class="${tab === 'nastroje' ? 'on' : ''}" ${tab === 'nastroje' ? 'aria-current="page"' : ''}>${ICONS.tools}Nástroje</a></nav></div>`;
+}
+const APP = () => $('#root');
+function mount(tab, inner, after) {
+  APP().innerHTML = shell(tab, inner);
+  const m = $('#main'); if (after) after(m);
+  m.focus({ preventScroll: true }); window.scrollTo(0, 0);
+}
+
+function pips(st) { return `<div class="pips" aria-label="Dovednosti: ${st.skills.filter(k => pipState(k) === 'k').length} z ${st.skills.length} zvládnuté">${st.skills.map(k => `<span class="pip ${pipState(k)}" title="${SKILLS[k]}"></span>`).join('')}</div>`; }
+function home() {
+  const pl = S.pl;
+  const inner = `<p class="lead">Šest krátkých kroků od prvního bitu po sčítání ve dvojkové soustavě. Každý krok začíná tipem, pak výklad, příklad a procvičení.</p>
+  ${pl ? '' : `<div class="card"><h3>Kde začít?</h3><p class="muted small">Šest otázek bez známkování. Podle nich ti doporučím první krok.</p><a class="btn block" href="#/test">Udělat krátký test</a></div>`}
+  <ol class="steps">${STEPS.map(st => { const done = S.st[st.id]; const rec = pl && pl.rec === st.id && !done; return `<li><a class="stepcard ${done ? 'done' : ''} ${rec ? 'rec' : ''}" href="#/krok/${st.id}/0"><span class="no">${done ? '✓' : st.id}</span><span><h3>${st.title}${rec ? ' <span class="pill si">doporučeno</span>' : ''}</h3><p>${st.goal}</p>${pips(st)}</span></a></li>`; }).join('')}</ol>
+  <details class="card svp"><summary>Vazba na ŠVP</summary><p class="small" style="margin:8px 0">Informatika, ŠVP Gymnázia Příbram 2026/27, 1. ročník (kvinta), 2.2 Kódování a přenos dat:</p><ul class="small" style="margin:0 0 8px;padding-left:20px"><li style="margin:3px 0">„převede číslo do dvojkové soustavy a naopak“: kroky 1 a 2.</li><li style="margin:3px 0">„sčítá … ve dvojkové soustavě“: krok 4.</li><li style="margin:3px 0">„kódování čísel, vliv množství informace (počtu bitů) na rozsah“: krok 3.</li></ul><p class="tiny" style="margin:0">Násobení ve dvojkové soustavě a souvislost s logickými obvody aplikace neobsahuje. Kroky 5 (zkratky a vzory) a 6 (hledání chyb) jsou v ŠVP výslovně neuvedeny.</p></details>`;
+  mount('uc', inner);
+}
+
+const fshow = sc => sc.bin ? g4(bn(sc.ans)) : fmt(sc.ans);
+const goalCard = (st, after) => `<div class="card goal"><h3>${after ? 'Umíš to teď?' : 'Cíl kroku'}</h3><p class="small muted" style="margin:0 0 4px">${after ? 'Cíl byl: po kroku umíš' : 'Po tomto kroku umíš:'}</p><ul class="small" style="margin:0;padding-left:20px">${st.can.map(x => `<li style="margin:3px 0">${x}</li>`).join('')}</ul><p class="tiny" style="margin:8px 0 0">${after ? 'Ověřil jsi to v procvičení. Co se nepovedlo, vrátí se v části Na dnešek.' : 'Ověříš to v procvičení na konci kroku.'}</p></div>`;
+function stepView(n, i) {
+  const st = STEPS[n - 1]; if (!st) return home();
+  const sc = st.screens[i]; if (!sc) return home();
+  const total = st.screens.length, gating = ['tip', 'worked', 'fade', 'practice'].includes(sc.t);
+  const last = i === total - 1;
+  const inner = `<div class="prog" aria-hidden="true">${st.screens.map((_, k) => `<i class="${k < i ? 'on' : k === i ? 'cur' : ''}"></i>`).join('')}</div>
+  <p class="eyebrow">Krok ${n} · ${st.title}</p>${i === 0 ? goalCard(st) : ''}<h2 id="sh" style="margin-bottom:12px">${sc.h || ({ tip: 'Nejdřív tip', practice: 'Procvič si to', sum: 'Shrnutí' }[sc.t])}</h2><div id="body"></div>${sc.t === 'sum' ? goalCard(st, true) : ''}
+  <div class="nav2"><a class="btn back" ${i > 0 ? `href="#/krok/${n}/${i - 1}"` : 'href="#/"'} aria-label="Zpět">←</a><button class="btn primary" id="nx" ${gating ? 'disabled' : ''}>${last ? 'Hotovo' : 'Pokračovat'}</button></div>${gating ? `<p class="tiny gate" id="gate">${{ tip: 'Vyber odpověď, pak můžeš pokračovat.', worked: 'Projdi všechny kroky příkladu.', fade: 'Doplň poslední krok.', practice: 'Dokonči procvičení.' }[sc.t]}</p>` : ''}`;
+  mount('uc', inner, m => {
+    const body = $('#body', m), nx = $('#nx', m), unlock = () => { nx.disabled = false; const g = $('#gate', m); if (g) g.remove(); };
+    nx.onclick = () => {
+      if (last) { S.st[n] = today(); save(); location.hash = n < STEPS.length ? `#/krok/${n + 1}/0` : '#/'; }
+      else location.hash = `#/krok/${n}/${i + 1}`;
+    };
+    if (S.st[n] && gating) unlock();
+    if (sc.t === 'txt') { body.innerHTML = sc.html; mountVis(body); }
+    else if (sc.t === 'sum') {
+      body.innerHTML = `<div class="card"><ul style="margin:0;padding-left:20px">${sc.items.map(x => `<li style="margin:6px 0">${x}</li>`).join('')}</ul></div>${n < STEPS.length ? `<p class="small muted">Dál: krok ${n + 1}, ${STEPS[n].title}.</p>` : '<p class="small muted">To je poslední krok. Opakování najdeš v části Na dnešek.</p>'}`;
+    } else if (sc.t === 'tip') {
+      body.innerHTML = `<div class="card" data-nocolor><p class="q">${sc.q}</p><p class="small muted" style="margin:6px 0 0">Tip bez hodnocení: zkus odhadnout, ještě to nemusíš umět.</p></div><div class="opts" data-nocolor>${sc.opts.map((p, k) => `<button class="opt" data-i="${k}"><span class="k">${LETTER[k]}</span><span class="t">${p.t}</span></button>`).join('')}</div><div id="fb" aria-live="polite"></div>`;
+      body.querySelector('.opts').onclick = e => {
+        const b = e.target.closest('.opt'); if (!b || b.disabled) return;
+        const p = sc.opts[+b.dataset.i];
+        $$('.opt', body).forEach((x, k) => { x.disabled = true; if (sc.opts[k].ok) x.classList.add('ok'); else if (x === b) x.classList.add('bad'); else x.classList.add('dim'); });
+        $$('[data-nocolor]', body).forEach(e => e.removeAttribute('data-nocolor'));
+        $('#fb', body).innerHTML = `<div class="fb ${p.ok ? 'ok' : 'info'}"><h3>${p.ok ? 'Přesně tak' : 'Zatím ne, a to je v pořádku'}</h3>${p.ok ? '' : `<p>${p.why}</p>`}<p>${sc.reveal}</p></div>`;
+        unlock();
+      };
+    } else if (sc.t === 'worked') {
+      let shown = 1;
+      const draw = () => {
+        body.innerHTML = `<div class="card"><p class="q" style="margin:0">${sc.q}</p></div><ol class="wk">${sc.steps.slice(0, shown).map((s, k) => `<li class="${k === sc.steps.length - 1 ? 'res' : ''}"><b class="n">${k + 1}</b><span>${s}</span></li>`).join('')}</ol>${shown < sc.steps.length ? '<button class="btn block" id="more">Další krok</button>' : ''}`;
+        if (shown < sc.steps.length) { const mb = $('#more', body); mb.onclick = () => { shown++; draw(); const m2 = $('#more', body); (m2 || nx).focus({ preventScroll: true }); }; } else unlock();
+      };
+      draw();
+    } else if (sc.t === 'fade') {
+      body.innerHTML = `<div class="card"><p class="q" style="margin:0">${sc.q}</p></div><ol class="wk">${sc.shown.map((s, k) => `<li><b class="n">${k + 1}</b><span>${s}</span></li>`).join('')}<li class="blank"><b class="n">${sc.shown.length + 1}</b><span>${sc.blank}</span></li></ol>
+      <div class="numrow"><input class="num" id="ans" inputmode="${sc.bin ? 'numeric' : 'decimal'}" autocomplete="off" enterkeyhint="done" aria-label="Doplň výsledek" placeholder="${sc.bin ? '0101' : '?'}"><span class="unit">${sc.bin ? '<sub>2</sub>' : sc.unit}</span></div><button class="btn primary block" id="chk">Zkontrolovat</button><div id="fb" aria-live="polite"></div>`;
+      const inp = $('#ans', body), tolAbs = sc.tolAbs || 0; let tries = 0;
+      const check = () => {
+        const u = sc.bin ? parseBin(inp.value) : parseNum(inp.value); if (!isFinite(u)) { $('#fb', body).innerHTML = `<div class="fb info"><p>${sc.bin ? 'Zapiš jen nuly a jedničky.' : 'Zapiš číslo.'}</p></div>`; return; }
+        const ok = Math.abs(u - sc.ans) <= Math.max(tolAbs, 1e-9 * Math.abs(sc.ans)); tries++;
+        if (ok) { inp.disabled = true; $('#chk', body).disabled = true; $('#fb', body).innerHTML = `<div class="fb ok"><h3>Správně</h3><p><b class="mono">${sc.blank} ${fshow(sc)}${sc.bin ? '<sub>2</sub>' : ' ' + sc.unit}</b></p></div>`; unlock(); }
+        else if (tries < 2) { $('#fb', body).innerHTML = '<div class="fb info"><h3>Ještě ne</h3><p>Zkus to znovu. Projdi výše uvedené kroky a zkontroluj každý bit.</p></div>'; inp.select(); }
+        else { inp.disabled = true; $('#chk', body).disabled = true; $('#fb', body).innerHTML = `<div class="fb bad"><h3>Správně je ${fshow(sc)}${sc.bin ? '<sub>2</sub>' : ' ' + sc.unit}</h3><p>Pokračuj, v procvičování si to zopakuješ.</p></div>`; unlock(); }
+      };
+      $('#chk', body).onclick = check; inp.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
+    } else if (sc.t === 'practice') {
+      runTasks(body, sc.skills.map(skill => ({ skill })), { doneTitle: 'Procvičeno', onFinish: unlock });
+    }
+  });
+}
+
+function todayView() {
+  const due = dueList(), known = Object.keys(S.i);
+  const run = (host, specs, title) => runTasks(host, specs, { doneTitle: title, onFinish: () => { host.insertAdjacentHTML('beforeend', '<a class="btn block" href="#/dnes" style="margin-top:12px">Zpět</a>'); const b = $('.badge'); if (b) b.remove(); } });
+  const early = !known.length;
+  const nextDue = known.length ? Math.min(...known.map(k => S.i[k].d)) : null;
+  const inner = `<h2>Na dnešek</h2>${early ? '<p class="lead">Tady se ti budou vracet úlohy, které potřebuješ zopakovat. Začni prvním krokem, po jeho procvičení se tu něco objeví.</p><a class="btn primary block" href="#/krok/1/0">Jít na krok 1</a>' : due.length ? `<p class="lead">K opakování je <b>${due.length}</b> ${due.length === 1 ? 'dovednost' : due.length < 5 ? 'dovednosti' : 'dovedností'}. Úlohy se střídají, ať se nenaučíš jen pořadí.</p><button class="btn primary block" id="go">Začít opakování</button><p class="small muted" style="margin-top:12px">${due.slice(0, 8).map(k => SKILLS[k]).join(' · ')}</p>` : `<div class="card"><h3>Pro dnešek hotovo</h3><p class="muted">Další opakování ${nextDue > today() ? (nextDue - today() === 1 ? 'zítra' : `za ${nextDue - today()} dní (${dateCz(nextDue)})`) : 'brzy'}. Chceš si ale zacvičit navíc?</p></div><button class="btn block" id="extra">Procvičit navíc</button>`}
+  ${S.fl.pwa || early ? '' : `<div class="card" style="margin-top:16px"><h3>Aby se postup neztratil</h3><p class="small muted">Postup se ukládá jen v tomto prohlížeči. Na iPhonu se data neotevřených webů po týdnu mažou. Přidej si aplikaci na plochu (Sdílet → Přidat na plochu, na Androidu menu ⋮ → Přidat na plochu) a zálohu najdeš v Nástroje → Postup.</p><button class="btn quiet sm" id="pwa">Rozumím</button></div>`}`;
+  mount('dnes', inner, m => {
+    const main = $('#main');
+    const go = $('#go', m); if (go) go.onclick = () => { const specs = shuffle(due).slice(0, 8).map(skill => ({ skill })); main.innerHTML = '<div id="run"></div>'; run($('#run', main), specs, 'Opakování hotové'); window.scrollTo(0, 0); };
+    const ex = $('#extra', m); if (ex) ex.onclick = () => { const pool = known.length ? known : Object.keys(SKILLS); const specs = shuffle([...pool, ...pool]).slice(0, 6).map(skill => ({ skill })); main.innerHTML = '<div id="run"></div>'; run($('#run', main), specs, 'Procvičeno navíc'); window.scrollTo(0, 0); };
+    const pb = $('#pwa', m); if (pb) pb.onclick = () => { S.fl.pwa = true; save(); route(); };
+  });
+}
+
+/* ===== vstupní test ===== */
+function placement() {
+  const Q = [
+    { step: 1, q: 'Kolik je <b class="mono">1010<sub>2</sub></b> v desítkové soustavě?', opts: [{ t: '10', ok: true }, { t: '1 010', why: 'To by bylo tisíc deset. Ve dvojkové soustavě sčítáš váhy: 8 + 2 = 10.' }, { t: '4', why: 'Čtyři je váha, ne výsledek. Jedničky jsou na vahách 8 a 2.' }] },
+    { step: 2, q: 'Jak se zapíše číslo <b class="mono">9</b> dvojkově?', opts: [{ t: '1001', ok: true }, { t: '1010', why: 'To je 10: 8 + 2. Číslo 9 je 8 + 1.' }, { t: '1100', why: 'To je 12: 8 + 4. Číslo 9 je 8 + 1.' }] },
+    { step: 3, q: 'Jaké je největší číslo, které se vejde do <b class="mono">4 bitů</b>?', opts: [{ t: '15', ok: true }, { t: '16', why: 'Hodnot je 16, ale číslování začíná od nuly: největší číslo je 15.' }, { t: '8', why: '8 je váha nejlevějšího bitu. Největší číslo má všechny čtyři bity 1: 8 + 4 + 2 + 1.' }] },
+    { step: 4, q: 'Kolik je <b class="mono">101<sub>2</sub> + 011<sub>2</sub></b>?', opts: [{ t: '1000', ok: true }, { t: '112', why: 'Číslice 2 ve dvojkové soustavě není. 1 + 1 = 10: zapíšu 0 a přenesu 1.' }, { t: '110', why: 'To vyjde bez přenosů. Když 1 + 1 dá 10, jednička se přenáší do dalšího sloupce.' }] },
+    { step: 5, q: 'Připíšeš na konec dvojkového čísla nulu. Hodnota se…', opts: [{ t: 'zdvojnásobí', ok: true }, { t: 'zdesetinásobí', why: 'To platí v desítkové soustavě. Tady je základ 2.' }, { t: 'nezmění', why: 'Změní. Všechny bity se posunou o jednu váhu doleva.' }] },
+    { step: 6, q: 'Postup: <b class="mono">13 : 2 = 6 zb. 1, 6 : 2 = 3 zb. 0, 3 : 2 = 1 zb. 1, 1 : 2 = 0 zb. 1</b>. Zbytky zapíšu shora dolů: <b class="mono">1011</b>. Kde je chyba?', opts: [{ t: 'Zbytky se čtou odspodu nahoru: 1101', ok: true }, { t: 'Dělit se má třemi', why: 'Základ dvojkové soustavy je 2, dělí se dvěma. To je správně.' }, { t: 'Postup je správně', why: 'Není: 1011 je 11, ne 13.' }] }
+  ];
+  const NQ = Q.length;
+  const specs = Q.map(x => ({ fixed: mkc({ skill: 'placement', q: x.q, opts: x.opts.map(o => ({ ...o })), steps: null, step: x.step }, true) }));
+  const inner = `<p class="eyebrow">Vstupní test</p><h2>Kde začít?</h2><p class="lead">Šest otázek bez známkování. Slouží jen k tomu, abych ti doporučil krok. Odpověď „Nevím“ je v pořádku.</p><div id="run"></div>`;
+  mount('uc', inner, m => {
+    const res = [];
+    const host = $('#run', m); let k = 0;
+    const ask = () => {
+      const q = specs[k].fixed;
+      host.innerHTML = `<div class="qbox"><span class="eyebrow">Otázka ${k + 1} z ${NQ}</span></div><div class="card"><p class="q">${q.q}</p></div><div class="opts">${q.opts.map((p, i) => `<button class="opt" data-i="${i}"><span class="k">${LETTER[i]}</span><span class="t">${p.t}</span></button>`).join('')}</div><div class="row" style="margin-top:6px"><button class="btn quiet sm" id="nvp">Nevím</button></div><div id="fb" aria-live="polite"></div>`;
+      const reveal = (ok, why, nev, b) => {
+        res.push(ok);
+        $$('.opt', host).forEach((x, i) => { x.disabled = true; if (nev) x.classList.add(q.opts[i].ok ? 'ok' : 'dim'); else if (x === b) x.classList.add(ok ? 'ok' : 'bad'); });
+        $('#nvp', host).disabled = true;
+        const right = q.opts.find(p => p.ok).t;
+        $('#fb', host).innerHTML = `<div class="fb ${ok ? 'ok' : 'info'}"><h3>${ok ? 'Správně' : nev ? 'Nevím je v pořádku' : 'Zatím ne'}</h3>${ok ? '' : nev ? `<p>Správně je <b class="mono">${right}</b>.</p>` : `<p>${why}</p>`}</div><button class="btn primary block" id="n2" style="margin-top:12px">${k < NQ - 1 ? 'Další otázka' : 'Zobrazit doporučení'}</button>`;
+        $('#n2', host).onclick = () => { k++; if (k < NQ) ask(); else finish(); window.scrollTo(0, 0); };
+        $('#n2', host).focus({ preventScroll: true });
+      };
+      host.querySelector('.opts').onclick = e => {
+        const b = e.target.closest('.opt'); if (!b || b.disabled) return;
+        const p = q.opts[+b.dataset.i]; reveal(!!p.ok, p.why, false, b);
+      };
+      $('#nvp', host).onclick = () => { if (!$('#nvp', host).disabled) reveal(false, '', true); };
+    };
+    const finish = () => {
+      const wrong = specs.map((s, i) => res[i] ? null : s.fixed.step).filter(Boolean);
+      const rec = wrong.length ? Math.min(...wrong) : 6, score = res.filter(Boolean).length;
+      S.pl = { score, rec, d: today() }; save();
+      const st = STEPS[rec - 1];
+      host.innerHTML = `<div class="card"><h2>${score} z ${NQ}</h2><p>${wrong.length ? `Doporučuji začít krokem <b>${rec}: ${st.title}</b>. Kroky před ním si můžeš projít rychle.` : 'Základy umíš. Zkus krok <b>6: Najdi chybu</b> a pak část Na dnešek.'}</p></div><a class="btn primary block" href="#/krok/${rec}/0">Jít na krok ${rec}</a><a class="btn quiet block" style="margin-top:10px" href="#/">Zpět na přehled</a>`;
+    };
+    ask();
+  });
+}
+
+/* ===== nástroje ===== */
+const TOOLTABS = [['prevodnik', 'Převodník'], ['tahak', 'Tahák'], ['hra', 'Hry'], ['postup', 'Postup']];
+function tools(tab) {
+  tab = TOOLTABS.some(t => t[0] === tab) ? tab : 'prevodnik';
+  const seg = `<nav class="seg" aria-label="Nástroje">${TOOLTABS.map(([k, n]) => `<a href="#/nastroje/${k}" class="${k === tab ? 'on' : ''}" ${k === tab ? 'aria-current="page"' : ''}>${n}</a>`).join('')}</nav>`;
+  mount('nastroje', seg + '<div id="tool"></div>', m => ({ prevodnik: converter, tahak: cheat, hra: games, postup: progress }[tab])($('#tool', m)));
+}
+function converter(host) {
+  host.innerHTML = `<div class="card"><div class="field"><label for="cm">Směr převodu</label><select id="cm"><option value="d">Desítková → dvojková</option><option value="b">Dvojková → desítková</option></select></div><div class="field"><label for="cv">Číslo</label><input class="txt" id="cv" inputmode="numeric" autocomplete="off" value="75"></div></div><div id="cr"></div>`;
+  const upd = () => {
+    const mode = $('#cm', host).value, raw = $('#cv', host).value, out = $('#cr', host);
+    if (mode === 'd') {
+      const v = parseNum(raw);
+      if (!Number.isInteger(v) || v < 0 || v > 4294967295) { out.innerHTML = '<div class="card"><p class="muted">Zapiš celé číslo od 0 do 4 294 967 295.</p></div>'; return; }
+      if (v === 0) { out.innerHTML = '<div class="card"><p class="res">0<sub>2</sub></p></div>'; return; }
+      const dv = []; let r = v; while (r > 0) { dv.push(`${r} : 2 = ${Math.floor(r / 2)}, zbytek <b>${r % 2}</b>`); r = Math.floor(r / 2); }
+      out.innerHTML = `<div class="card"><p class="small muted" style="margin-bottom:4px">${fmt(v)} =</p><p class="res">${g4(bn(v))}<sub>2</sub></p></div><div class="card"><h3>Postup: odečítání vah</h3>${calc(subSteps(v).slice(0, -1))}</div><div class="card"><h3>Postup: dělení dvěma</h3>${calc(dv)}<p class="small muted" style="margin:8px 0 0">Zbytky čti odspodu nahoru.</p></div>`;
+    } else {
+      const v = parseBin(raw);
+      if (!isFinite(v)) { out.innerHTML = '<div class="card"><p class="muted">Zapiš jen nuly a jedničky (nejvýš 32 bitů).</p></div>'; return; }
+      const s = bn(v), parts = wts(v).filter(w => v & w);
+      out.innerHTML = `<div class="card"><p class="small muted" style="margin-bottom:4px">${g4(String(raw).replace(/[\s  ]/g, ''))}<sub>2</sub> =</p><p class="res">${fmt(v)}</p></div><div class="card"><h3>Postup</h3>${calc([`Váhy zprava: ${wts(v).reverse().join(', ')}.`, `Jedničky jsou na vahách ${parts.join(', ') || '(žádné)'}.`, `${parts.join(' + ') || '0'} = <b>${fmt(v)}</b>`])}</div>`;
+    }
+  };
+  $$('input,select', host).forEach(e => e.addEventListener('input', upd));
+  upd();
+}
+function cheat(host) {
+  const rowsP = Array.from({ length: 17 }, (_, i) => i);
+  host.innerHTML = `<div class="card"><h3>Váhy bitů</h3><div class="scroll"><table class="t"><thead><tr><th>Pozice</th>${[7, 6, 5, 4, 3, 2, 1, 0].map(p => `<th class="r">${p}</th>`).join('')}</tr></thead><tbody><tr><td>Váha</td>${[7, 6, 5, 4, 3, 2, 1, 0].map(p => `<td class="r m">${2 ** p}</td>`).join('')}</tr></tbody></table></div></div>
+  <div class="card"><h3>Čísla 0 až 16</h3><table class="t"><tbody>${rowsP.map(i => `<tr><td class="m">${i}</td><td class="r m">${g4(bn(i))}</td></tr>`).join('')}</tbody></table></div>
+  <div class="card"><h3>Mocniny dvojky</h3><table class="t"><thead><tr><th>n</th><th class="r">2<sup>n</sup></th></tr></thead><tbody>${[8, 9, 10, 11, 12, 16, 20, 24, 32].map(n => `<tr><td>${n}</td><td class="r m">${fmt(2 ** n)}</td></tr>`).join('')}</tbody></table></div>
+  <div class="card"><h3>Sčítání v jednom sloupci</h3><p class="mono small" style="margin:0">0 + 0 = 0<br>0 + 1 = 1<br>1 + 1 = 10 (zapíšu 0, přenesu 1)<br>1 + 1 + 1 = 11 (zapíšu 1, přenesu 1)</p></div>
+  <div class="card"><h3>Zkratky</h3><ul class="small" style="margin:0;padding-left:20px"><li>Poslední bit: 0 sudé, 1 liché.</li><li>Připsaná nula ×2, odebraný bit :2.</li><li>n jedniček = 2<sup>n</sup> − 1.</li><li>n bitů má 2<sup>n</sup> hodnot.</li></ul></div>`;
+}
+
+/* ===== hry ===== */
+function games(host) {
+  host.innerHTML = `<div class="card"><h3>Bitové přepínače</h3><p class="muted small">Šest kol: čísla nastavuješ bity a čteš. Bez času a bez trestných bodů.${S.g.best ? ` Nejlepší výsledek: <b>${S.g.best} ze 6</b>.` : ''}</p><button class="btn primary block" id="g1">Hrát</button></div><div class="card"><h3>Odhad řádu</h3><p class="muted small">Šest otázek: kolik číslic má počet hodnot, které se vejdou do n bitů? Bez času.${S.g.b2 ? ` Nejlepší výsledek: <b>${S.g.b2} ze 6</b>.` : ''}</p><button class="btn primary block" id="g2">Hrát</button></div>`;
+  $('#g1', host).onclick = () => gameSwitch(host);
+  $('#g2', host).onclick = () => gameOrder(host);
+}
+function gameEnd(host, key, score, N, msg) {
+  S.g.n++; S.g[key] = Math.max(S.g[key] || 0, score); save();
+  host.innerHTML = `<div class="card"><h2>${score} z ${N}</h2><p class="muted">${msg}</p></div><button class="btn primary block" id="ag">Znovu</button><button class="btn quiet block" id="bk" style="margin-top:10px">Zpět na hry</button>`;
+  $('#bk', host).onclick = () => games(host);
+  return $('#ag', host);
+}
+function gameSwitch(host) {
+  const N = 6; let k = 0, score = 0;
+  const targetFor = () => k < 2 ? ri(3, 15) : k < 4 ? ri(16, 63) : ri(64, 255);
+  const head = () => `<div class="qbox"><span class="eyebrow">Kolo ${k + 1} z ${N}</span><span class="pill">${score} správně</span></div>`;
+  const after = (ok, html) => { $('#fb', host).innerHTML = `<div class="fb ${ok ? 'ok' : 'bad'}"><h3>${ok ? 'Správně' : 'Ne tak docela'}</h3>${html}</div><button class="btn primary block" id="nx2" style="margin-top:12px">${k + 1 >= N ? 'Výsledek' : 'Další'}</button>`; $('#nx2', host).onclick = () => { k++; k >= N ? end() : round(); window.scrollTo(0, 0); }; $('#nx2', host).focus({ preventScroll: true }); };
+  const round = () => {
+    const T = targetFor();
+    if (k % 2 === 0) {
+      host.innerHTML = `${head()}<div id="w"></div><button class="btn primary block" id="ck" style="margin-top:6px">Zkontrolovat</button><div id="fb" aria-live="polite"></div>`;
+      const w = bitsWidget($('#w', host), { n: 8, target: T, step: false, quiet: true });
+      $('#ck', host).onclick = () => { if ($('#ck', host).disabled) return; $('#ck', host).disabled = true; w.lock(); const v = w.val(), ok = v === T; if (ok) score++; after(ok, ok ? `<p>${T} = ${decomp(T)}.</p>` : `<p>Nastavil jsi ${v}. Pro ${T} jsou potřeba váhy ${decomp(T).replace(/ \+ /g, ', ')} (${decomp(T)} = ${T}).</p>`); };
+    } else {
+      const s = bn(T, 8), arr = s.split('').map(c => c === '1');
+      const cand = [parseInt(rev(s), 2), T + 1, T - 1, T ^ (1 << ri(0, 7)), T + 2].filter(x => x > 0 && x < 256 && x !== T);
+      const vals = [T]; for (const c of shuffle(cand)) { if (vals.length < 4 && !vals.includes(c)) vals.push(c); }
+      const opts = shuffle(vals);
+      host.innerHTML = `${head()}<div class="card bitcard"><p class="q" style="text-align:center;margin:0 0 4px">Jaké číslo je nastavené?</p>${bitRow(arr, 8, { ro: true })}</div><div class="opts">${opts.map((v, i) => `<button class="opt" data-v="${v}"><span class="k">${LETTER[i]}</span><span class="t">${v}</span></button>`).join('')}</div><div id="fb" aria-live="polite"></div>`;
+      host.querySelector('.opts').onclick = e => { const b = e.target.closest('.opt'); if (!b || b.disabled) return; const ok = +b.dataset.v === T; if (ok) score++; $$('.opt', host).forEach(x => { x.disabled = true; if (+x.dataset.v === T) x.classList.add('ok'); else if (x === b) x.classList.add('bad'); else x.classList.add('dim'); }); after(ok, `<p>${decomp(T)} = ${T}.</p>`); };
+    }
+  };
+  const end = () => { gameEnd(host, 'best', score, N, score >= 5 ? 'Bity už ti jdou.' : 'Zkus to znovu a podívej se do taháku na váhy.').onclick = () => { k = 0; score = 0; round(); }; };
+  round();
+}
+const bigFmt = s => s.replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+function gameOrder(host) {
+  const N = 6; let k = 0, score = 0;
+  const pool = shuffle([[8, 'jeden bajt'], [10, ''], [16, 'dvoubajtové číslo'], [20, ''], [24, 'barva v RGB (po 8 bitech na složku)'], [32, 'čtyřbajtové číslo'], [40, ''], [64, '64bitové číslo']]).slice(0, N);
+  const ask = () => {
+    const [n, ctx] = pool[k], exact = (2n ** BigInt(n)).toString(), dg = exact.length;
+    const set = new Set([dg]); for (const d of shuffle([-1, 1, 2, -2, 3])) { if (set.size >= 4) break; if (dg + d >= 1) set.add(dg + d); }
+    const opts = [...set].sort((a, b) => a - b);
+    host.innerHTML = `<div class="qbox"><span class="eyebrow">Otázka ${k + 1} z ${N}</span><span class="pill">${score} správně</span></div><div class="card"><p class="q">Kolik <b>číslic</b> má v desítkové soustavě počet hodnot, které se vejdou do <b class="mono">${n} bitů</b>${ctx ? ` (${ctx})` : ''}?</p></div><div class="opts">${opts.map((d, i) => `<button class="opt" data-d="${d}"><span class="k">${LETTER[i]}</span><span class="t">${d} číslic</span></button>`).join('')}</div><div id="fb" aria-live="polite"></div>`;
+    host.querySelector('.opts').onclick = e => {
+      const b = e.target.closest('.opt'); if (!b || b.disabled) return; const ok = +b.dataset.d === dg; if (ok) score++;
+      $$('.opt', host).forEach(x => { x.disabled = true; if (+x.dataset.d === dg) x.classList.add('ok'); else if (x === b) x.classList.add('bad'); else x.classList.add('dim'); });
+      $('#fb', host).innerHTML = `<div class="fb ${ok ? 'ok' : 'bad'}"><h3>${ok ? 'Správně' : 'Ne tak docela'}</h3><p>2<sup>${n}</sup> = ${bigFmt(exact)}, tedy ${dg} číslic.</p><p class="small">Pravidlo: 2<sup>10</sup> = 1 024 je zhruba tisíc, takže každých 10 bitů přidá asi tři číslice.</p></div><button class="btn primary block" id="nx2" style="margin-top:12px">${k + 1 >= N ? 'Výsledek' : 'Další'}</button>`;
+      $('#nx2', host).onclick = () => { k++; k >= N ? end() : ask(); window.scrollTo(0, 0); }; $('#nx2', host).focus({ preventScroll: true });
+    };
+  };
+  const end = () => { gameEnd(host, 'b2', score, N, score >= 5 ? 'Máš dobrý cit pro velikost mocnin dvojky.' : 'Řády se časem ustálí. Pomůže pravidlo 10 bitů ≈ 3 číslice.').onclick = () => gameOrder(host); };
+  ask();
+}
+/* ===== postup, záloha, nastavení ===== */
+function encode() {
+  const c = { v: 1, i: {}, st: S.st, g: S.g.best, g2: S.g.b2 || 0, cal: S.cal };
+  for (const k in S.i) { const m = S.i[k]; c.i[k] = [m.b, m.d, m.ok, m.bad]; }
+  const j = JSON.stringify(c), b = btoa(unescape(encodeURIComponent(j))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  let h = 0; for (let i = 0; i < b.length; i++) h = (h * 31 + b.charCodeAt(i)) % 65521;
+  return 'DS1.' + b + '.' + h.toString(16);
+}
+function decode(code) {
+  const p = String(code).trim().split('.'); if (p.length !== 3 || p[0] !== 'DS1') throw 0;
+  let h = 0; for (let i = 0; i < p[1].length; i++) h = (h * 31 + p[1].charCodeAt(i)) % 65521;
+  if (h.toString(16) !== p[2]) throw 0;
+  const c = JSON.parse(decodeURIComponent(escape(atob(p[1].replace(/-/g, '+').replace(/_/g, '/')))));
+  if (c.v !== 1 || typeof c.i !== 'object') throw 0; return c;
+}
+function mergeIn(c) {
+  for (const k in c.i) { if (!(k in SKILLS)) continue; const a = c.i[k]; if (!Array.isArray(a) || a.some(x => !Number.isFinite(x))) continue; const m = S.i[k]; if (!m || a[2] + a[3] > m.ok + m.bad) S.i[k] = { b: Math.max(0, Math.min(6, a[0])), d: a[1], ok: a[2], bad: a[3] }; }
+  for (const k in (c.st || {})) if (+k >= 1 && +k <= STEPS.length && Number.isFinite(c.st[k])) S.st[k] = Math.min(S.st[k] || 1e9, c.st[k]);
+  if (Number.isFinite(c.g)) S.g.best = Math.max(S.g.best, c.g);
+  if (Number.isFinite(c.g2)) S.g.b2 = Math.max(S.g.b2 || 0, c.g2);
+  if (Array.isArray(c.cal) && c.cal.length === 7 && c.cal.every(x => Number.isFinite(x) && x >= 0) && c.cal.reduce((a, b) => a + b, 0) > S.cal.reduce((a, b) => a + b, 0)) S.cal = c.cal.slice();
+  save();
+}
+function applyTheme() { const r = document.documentElement; if (S.th === 'light' || S.th === 'dark') r.dataset.theme = S.th; else delete r.dataset.theme; if (S.rm) r.dataset.rm = '1'; else delete r.dataset.rm; }
+function calCard() {
+  const c = S.cal, tot = c[1] + c[3] + c[5], nv = c[6];
+  if (tot + nv === 0) return '<div class="card"><h3>Odhad jistoty</h3><p class="small muted">Při procvičování můžeš před odpovědí označit, jak jsi si jistý. Tady pak uvidíš, jestli tvoje jistota odpovídá výsledkům.</p></div>';
+  const rows = [['Jistě', 0], ['Spíš ano', 2], ['Hádám', 4]].map(([n, j]) => `<tr><td>${n}</td><td class="r">${c[j + 1] ? `${c[j]} z ${c[j + 1]}` : '–'}</td><td class="r">${c[j + 1] ? Math.round(100 * c[j] / c[j + 1]) + ' %' : ''}</td></tr>`).join('');
+  const pc = j => c[j + 1] ? c[j] / c[j + 1] : null;
+  let msg = 'Zatím je málo odpovědí na závěr. Pokračuj a přehled se zpřesní.';
+  if (c[1] >= 5 && pc(0) < .8) msg = 'Když si jsi jistý, mýlíš se častěji, než čekáš. Před odpovědí si ověř váhy, přenos a zpětnou kontrolu.';
+  else if (c[5] >= 5 && pc(4) >= .7) msg = 'Když hádáš, trefuješ se často. Umíš víc, než si myslíš.';
+  else if (c[1] >= 5 && pc(0) >= .8) msg = 'Tvoje jistota odpovídá výsledkům.';
+  return `<div class="card"><h3>Odhad jistoty</h3><table class="t"><thead><tr><th>Řekl jsi</th><th class="r">Správně</th><th class="r">Podíl</th></tr></thead><tbody>${rows}</tbody></table><p class="small" style="margin:10px 0 0">Odpovědí „Nevím“: <b>${nv}</b>. ${msg}</p><p class="tiny" style="margin:6px 0 0">Počítá se správně na první pokus, bez nápovědy.</p></div>`;
+}
+function progress(host) {
+  const labels = { k: 'zvládnuto', w: 'slabé', p: 'učím se', '': 'nezačato' };
+  const code = encode();
+  host.innerHTML = `<div class="card"><h3>Dovednosti</h3><table class="t"><tbody>${Object.keys(SKILLS).map(k => { const s = pipState(k), m = M(k); return `<tr><td>${SKILLS[k]}</td><td class="r"><span class="pill ${s === 'k' ? 'ok' : s === 'w' ? 'warn' : s === 'p' ? 'si' : ''}">${labels[s]}</span>${m ? `<br><span class="tiny">další ${m.d <= today() ? 'dnes' : dateCz(m.d)}</span>` : ''}</td></tr>`; }).join('')}</tbody></table></div>
+  ${calCard()}
+  <div class="card"><h3>Záloha postupu</h3><p class="small muted">Postup je jen v tomto prohlížeči. Zkopíruj kód a vlož ho na jiném zařízení.</p><textarea class="copybox" id="code" readonly aria-label="Kód zálohy">${code}</textarea><div class="row" style="margin:8px 0 16px"><button class="btn sm" id="cp">Kopírovat kód</button><span id="cpm" class="small muted" aria-live="polite"></span></div>
+  <div class="field"><label for="imp">Vložit kód z jiného zařízení</label><textarea class="copybox" id="imp" style="min-height:70px" placeholder="DS1.…"></textarea></div><button class="btn sm" id="im">Načíst (sloučí se s tímto postupem)</button><p id="imm" class="small" aria-live="polite" style="margin-top:8px"></p></div>
+  <div class="card"><h3>Přidat na plochu</h3><p class="small"><b>iPhone / iPad (Safari):</b> Sdílet → Přidat na plochu.<br><b>Android (Chrome):</b> menu ⋮ → Přidat na plochu / Instalovat.</p></div>
+  <div class="card"><h3>Vzhled</h3><div class="row" role="group" aria-label="Motiv">${[['auto', 'Podle systému'], ['light', 'Světlý'], ['dark', 'Tmavý']].map(([v, n]) => `<button class="btn sm ${S.th === v ? 'primary' : ''}" data-th="${v}" aria-pressed="${S.th === v}">${n}</button>`).join('')}</div><div class="row" style="margin-top:12px"><button class="btn sm ${S.rm ? 'primary' : ''}" id="rm" aria-pressed="${!!S.rm}">Omezit animace: ${S.rm ? 'zapnuto' : 'vypnuto'}</button></div></div>
+  <div class="card"><h3>Smazat postup</h3><p class="small muted">Vymaže opakování, hotové kroky i rekord ve hře v tomto prohlížeči.</p><button class="btn sm" id="rs">Smazat postup</button></div>`;
+  $('#cp', host).onclick = async () => { const ta = $('#code', host); try { await navigator.clipboard.writeText(ta.value); } catch (e) { ta.select(); document.execCommand('copy'); } $('#cpm', host).textContent = 'Zkopírováno.'; };
+  $('#im', host).onclick = () => { const m = $('#imm', host); try { const c = decode($('#imp', host).value); mergeIn(c); m.textContent = 'Postup načten.'; setTimeout(route, 700); } catch (e) { m.textContent = 'Kód se nepodařilo přečíst. Zkopíruj ho celý, od DS1 po konec.'; } };
+  $$('[data-th]', host).forEach(b => b.onclick = () => { S.th = b.dataset.th; save(); applyTheme(); progress(host); });
+  $('#rm', host).onclick = () => { S.rm = !S.rm; save(); applyTheme(); progress(host); };
+  const rs = $('#rs', host); rs.onclick = () => { if (rs.dataset.c) { S = defState(); save(); applyTheme(); location.hash = '#/'; route(); } else { rs.dataset.c = 1; rs.textContent = 'Opravdu smazat? Klepni znovu'; } };
+}
+
+/* ===== směrování ===== */
+function route() {
+  const p = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+  const r = p[0] || '';
+  try {
+    if (r === 'krok') stepView(+p[1], +p[2] || 0);
+    else if (r === 'dnes') todayView();
+    else if (r === 'nastroje') tools(p[1]);
+    else if (r === 'test') placement();
+    else home();
+  } catch (e) { APP().innerHTML = '<div class="shell"><p>Něco se pokazilo. <a href="#/">Zpět na začátek</a></p></div>'; console.error(e); }
+}
+window.addEventListener('hashchange', route);
+applyTheme();
+route();
+window.__DS = { GEN, SKILLS, taskFor, STEPS, encode, decode, dueList, bn, g4, S: () => S };
+</script>
+</body>
+</html>
