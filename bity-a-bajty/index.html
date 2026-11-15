@@ -199,6 +199,24 @@ details.svp summary{min-height:44px;display:flex;align-items:center;cursor:point
 .gate{text-align:center;margin:8px 0 0}
 .sernote{margin:10px 0 0;line-height:2}
 .sernote .pill{min-width:56px;text-align:center;margin-right:6px;border:1.5px solid currentColor;line-height:1.4}
+
+/* ilustrace */
+.ill{margin:4px 0 14px;text-align:center}
+.ill svg{width:100%;max-width:340px;height:auto;display:block;margin:0 auto}
+.ill .st{stroke:var(--ink);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.ill .fc{fill:var(--card)}.ill .fi{fill:var(--ink)}
+.ill rect.st:not(.fc):not(.fi){fill:none}
+.ill .cellbox{stroke:var(--ink);stroke-width:1.5}
+.ill .stsi{fill:var(--si-bg);stroke:var(--si);stroke-width:2.5}
+.ill .stiec{fill:var(--iec-bg);stroke:var(--iec);stroke-width:2.5}
+.ill .stsi2{stroke:var(--si);fill:none}.ill .stiec2{stroke:var(--iec);fill:none}
+.ill text{font-family:var(--mono);fill:var(--ink)}
+.ill .num{font-size:26px;font-weight:700}
+.ill .num.s{font-size:16px}
+.ill .cell{font-size:16px;font-weight:700;fill:var(--ink)}.ill .cell.on{fill:var(--card)}
+.ill .un{font-size:17px;font-weight:700}
+.ill .un.si{fill:var(--si)}.ill .un.iec{fill:var(--iec)}
+.ill .cap{font-family:var(--font);font-size:14px;fill:var(--ink2)}
 </style>
 </head>
 <body>
@@ -634,7 +652,7 @@ for (const sk of Object.keys(ADD)) {
    Barva se doplňuje při zobrazení. V zadání a možnostech se nepoužije tam, kde by prozradila odpověď
    (rozpoznání řady), a u zvládnutých dovedností zmizí (nápověda se ztrácí s mistrovstvím). */
 const UNIT_SRC = '(?<![\\w\\/-])(kB|MB|GB|TB|KiB|MiB|GiB|TiB|SI|IEC)(?![\\w])';
-const NOCOLOR_SEL = 'textarea,input,select,option,script,style,.btn,.bit,.tabbar,.seg,.pill,.si-t,.iec-t,.rung,[data-nocolor]';
+const NOCOLOR_SEL = 'svg,textarea,input,select,option,script,style,.btn,.bit,.tabbar,.seg,.pill,.si-t,.iec-t,.rung,[data-nocolor]';
 function colorize(root) {
   if (!root) return;
   const re = new RegExp(UNIT_SRC, 'g');
@@ -829,12 +847,38 @@ function runTasks(host, specs, o) {
 }
 
 /* ===== obsah kroků ===== */
+/* ===== ilustrace (vložené SVG, barvy z proměnných, světlý i tmavý režim) ===== */
+const ILL = {
+  bit: ['Bit je jako vypínač: vypnuto je 0, zapnuto je 1', `
+    <rect class="st fc" x="40" y="22" width="84" height="44" rx="22"/><circle class="fi" cx="62" cy="44" r="15"/>
+    <text class="num" x="82" y="100" text-anchor="middle">0</text><text class="cap" x="82" y="118" text-anchor="middle">vypnuto</text>
+    <rect class="st fi" x="196" y="22" width="84" height="44" rx="22"/><circle class="fc" cx="258" cy="44" r="15"/>
+    <text class="num" x="238" y="100" text-anchor="middle">1</text><text class="cap" x="238" y="118" text-anchor="middle">zapnuto</text>`],
+  bajt: ['Malé b je jeden bit, velké B je bajt, tedy osm bitů', `
+    <rect class="st fc" x="14" y="22" width="36" height="36" rx="6"/><text class="cell" x="32" y="46" text-anchor="middle">1</text>
+    <text class="num" x="32" y="96" text-anchor="middle">b</text><text class="cap" x="32" y="116" text-anchor="middle">bit</text>
+    <rect class="st" x="94" y="16" width="216" height="48" rx="10"/>
+    ${[0,1,0,0,1,0,1,1].map((d, i) => `<rect class="${d ? 'fi' : 'fc'} cellbox" x="${100 + i * 26}" y="22" width="24" height="36" rx="4"/><text class="cell ${d ? 'on' : ''}" x="${112 + i * 26}" y="46" text-anchor="middle">${d}</text>`).join('')}
+    <text class="num" x="202" y="96" text-anchor="middle">B</text><text class="cap" x="202" y="116" text-anchor="middle">bajt = 8 bitů</text>`],
+  schody: ['Žebříček jednotek jako schody: dolů k menší jednotce se násobí tisícem, nahoru k větší se dělí tisícem', `
+    <rect class="stsi" x="12" y="82" width="62" height="34" rx="4"/><rect class="stsi" x="74" y="54" width="62" height="62" rx="4"/><rect class="stsi" x="136" y="26" width="62" height="90" rx="4"/>
+    <text class="un si" x="43" y="104" text-anchor="middle">kB</text><text class="un si" x="105" y="104" text-anchor="middle">MB</text><text class="un si" x="167" y="104" text-anchor="middle">GB</text>
+    <text class="num s" x="210" y="44">↑ ÷ 1 000</text><text class="cap" x="210" y="62">větší jednotka</text>
+    <text class="num s" x="210" y="92">↓ × 1 000</text><text class="cap" x="210" y="110">menší jednotka</text>`],
+  disk: ['Stejný disk má na krabici 1 TB a v počítači 931 GiB', `
+    <rect class="stsi" x="22" y="26" width="84" height="56" rx="6"/><path class="st stsi2" d="M22 42H106"/>
+    <text class="un si" x="64" y="68" text-anchor="middle">1 TB</text><text class="cap" x="64" y="106" text-anchor="middle">krabice</text>
+    <text class="num" x="160" y="60" text-anchor="middle">=</text><text class="cap" x="160" y="82" text-anchor="middle">stejný</text><text class="cap" x="160" y="98" text-anchor="middle">disk</text>
+    <rect class="stiec" x="212" y="18" width="88" height="54" rx="6"/><path class="st stiec2" d="M256 72V84M236 86H276"/>
+    <text class="un iec" x="256" y="50" text-anchor="middle">931 GiB</text><text class="cap" x="256" y="106" text-anchor="middle">počítač</text>`]
+};
+const ill = n => `<figure class="ill"><svg viewBox="0,0,320,124" role="img" aria-label="${ILL[n][0]}" xmlns="http://www.w3.org/2000/svg">${ILL[n][1]}</svg></figure>`;
 const STEPS = [
   { id: 1, title: 'Bit a bajt', goal: 'Co je bit, co je bajt a kolik hodnot se vejde do bitů.', can: ['Převést bity na bajty a naopak (1 B = 8 bit).', 'Spočítat, kolik hodnot se vejde do n bitů (2<sup>n</sup>).'], skills: ['bit-bajt', 'hodnoty'], screens: [
     { t: 'tip', q: 'Kolik <b>různých hodnot</b> (čísel) se vejde do jednoho bajtu?', opts: [{ t: '8', why: 'Osm je počet bitů v bajtu, ne počet hodnot.' }, { t: '64', why: '8 · 8 = 64 by byl jiný výpočet. Hodnot je víc.' }, { t: '256', ok: true }, { t: '1 024', why: '1 024 = 2<sup>10</sup>, tedy deset bitů. Bajt má bitů osm.' }], reveal: 'Za chvíli uvidíš proč: bajt má osm bitů a každý bit hodnoty zdvojnásobí.' },
-    { t: 'txt', h: 'Bit je jedna ano/ne odpověď', html: `<p>Počítač zná jen dva stavy, třeba proud a bez proudu. Jedna taková číslice, <b>0</b> nebo <b>1</b>, se jmenuje <b>bit</b> (z <i>binary digit</i>).</p><p>Osm bitů pohromadě je jeden <b>bajt</b>. Přepínej bity a sleduj hodnotu:</p>${V('bits')}<p class="small muted">Odeber bity tlačítkem − a uvidíš, jak klesá počet hodnot.</p>` },
+    { t: 'txt', h: 'Bit je jedna ano/ne odpověď', html: `${ill('bit')}<p>Počítač zná jen dva stavy, třeba proud a bez proudu. Jedna taková číslice, <b>0</b> nebo <b>1</b>, se jmenuje <b>bit</b> (z <i>binary digit</i>).</p><p>Osm bitů pohromadě je jeden <b>bajt</b>. Přepínej bity a sleduj hodnotu:</p>${V('bits')}<p class="small muted">Odeber bity tlačítkem − a uvidíš, jak klesá počet hodnot.</p>` },
     { t: 'txt', h: 'Každý bit zdvojnásobí možnosti', html: `<p>Jeden bit má 2 hodnoty, dva bity 4 (00, 01, 10, 11), tři bity 8. <b>Každý další bit počet hodnot zdvojnásobí.</b></p><p>Pro <i>n</i> bitů je hodnot <b>2<sup>n</sup></b>. Jeden bajt má tedy 2<sup>8</sup> = <b>256</b> hodnot, čísla 0 až 255.</p><div class="card"><table class="t"><thead><tr><th>Bitů</th><th class="r">Hodnot</th></tr></thead><tbody>${[1, 2, 3, 4, 8, 10].map(n => `<tr><td>${n}</td><td class="r m">${fmt(2 ** n)}</td></tr>`).join('')}</tbody></table></div>` },
-    { t: 'txt', h: 'Pozor na b a B', html: `<p>Malé <b class="mono">b</b> (nebo <b class="mono">bit</b>) je <b>bit</b>. Velké <b class="mono">B</b> je <b>bajt</b>.</p><div class="card"><p class="q" style="margin:0"><span class="mono">1 B = 8 bit</span></p></div><p>Z toho plyne pravidlo: <b>větší jednotka, méně kousků.</b> Bajt je větší než bit, takže bajtů je vždy osmkrát míň než bitů.</p>` },
+    { t: 'txt', h: 'Pozor na b a B', html: `${ill('bajt')}<p>Malé <b class="mono">b</b> (nebo <b class="mono">bit</b>) je <b>bit</b>. Velké <b class="mono">B</b> je <b>bajt</b>.</p><div class="card"><p class="q" style="margin:0"><span class="mono">1 B = 8 bit</span></p></div><p>Z toho plyne pravidlo: <b>větší jednotka, méně kousků.</b> Bajt je větší než bit, takže bajtů je vždy osmkrát míň než bitů.</p>` },
     { t: 'worked', h: 'Řešený příklad', q: 'Kolik bitů je <b class="mono">5 B</b>?', steps: ['Bajt je větší než bit, bitů bude víc → <b>násobím</b>.', '1 B = 8 bit.', '5 · 8 = <b>40 bit</b>'] },
     { t: 'fade', h: 'Doplň poslední krok', q: 'Kolik bajtů je <b class="mono">64 bit</b>?', shown: ['Bit je menší než bajt, bajtů bude míň → <b>dělím</b>.', '1 B = 8 bit.'], blank: '64 : 8 =', ans: 8, unit: 'B' },
     { t: 'practice', skills: ['bit-bajt', 'hodnoty', 'bit-bajt', 'hodnoty'] },
@@ -852,7 +896,7 @@ const STEPS = [
   ] },
   { id: 3, title: 'Převody po žebříčku', goal: 'Kdy násobit, kdy dělit a kolik schodů.', can: ['Rozhodnout, jestli při převodu násobit, nebo dělit.', 'Určit počet schodů mezi jednotkami a převést v řadě SI i IEC.'], skills: ['zebrik-si', 'zebrik-iec'], screens: [
     { t: 'tip', q: 'Kolik <b class="mono">MB</b> je <b class="mono">3 GB</b>?', opts: [{ t: '3', why: 'MB je menší jednotka, takže jich musí být víc než tři.' }, { t: '3 000', ok: true }, { t: '0,003', why: 'Dělil jsi. MB je ale menší jednotka, tedy kousků je víc.' }, { t: '3 072', why: '3 072 = 3 · 1 024 by platilo pro GiB → MiB. GB a MB jsou řada SI: schod 1 000.' }], reveal: 'Nezapomeň na jedinou větu: menší jednotka, víc kousků.' },
-    { t: 'txt', h: 'Jedno pravidlo', html: `<p><b>Menší jednotka, víc kousků.</b></p><ol class="calc"><li>Je cíl <b>menší</b> jednotka (níž na žebříčku)? Násobíš.</li><li>Je cíl <b>větší</b> jednotka (výš)? Dělíš.</li><li>Jeden schod je 1 000 (řada SI) nebo 1 024 (řada IEC). Za každý schod násobíš nebo dělíš jednou.</li></ol><p>Vyzkoušej si to na žebříčku:</p>${V('ladder-si')}` },
+    { t: 'txt', h: 'Jedno pravidlo', html: `${ill('schody')}<p><b>Menší jednotka, víc kousků.</b></p><ol class="calc"><li>Je cíl <b>menší</b> jednotka (níž na žebříčku)? Násobíš.</li><li>Je cíl <b>větší</b> jednotka (výš)? Dělíš.</li><li>Jeden schod je 1 000 (řada SI) nebo 1 024 (řada IEC). Za každý schod násobíš nebo dělíš jednou.</li></ol><p>Vyzkoušej si to na žebříčku:</p>${V('ladder-si')}` },
     { t: 'txt', h: 'Příklady a zkratka', html: `<div class="card stack"><p><b>3 GB na MB:</b> MB je menší, jeden schod dolů: 3 · 1 000 = <b>3 000 MB</b>.</p><p><b>2,5 MiB na KiB:</b> jeden schod dolů: 2,5 · 1 024 = <b>2 560 KiB</b>.</p><p><b>4 096 MiB na GiB:</b> GiB je větší, jeden schod nahoru: 4 096 : 1 024 = <b>4 GiB</b>.</p><p><b>2 MiB na B:</b> dva schody dolů: 2 · 1 024 · 1 024 = <b>2 097 152 B</b>.</p></div><p><b>Zkratka jen pro SI:</b> násobit tisícem je posun desetinné čárky o tři místa doprava (2,5 GB = 2 500 MB). U IEC taková zkratka není, musíš opravdu počítat s 1 024.</p>` },
     { t: 'worked', h: 'Řešený příklad', q: 'Kolik <b class="mono">KiB</b> je <b class="mono">2,5 MiB</b>?', steps: ['Cíl KiB je menší jednotka → <b>násobím</b>.', 'Jeden schod, řada IEC → 1 024.', '2,5 · 1 024 = <b>2 560 KiB</b>'] },
     { t: 'fade', h: 'Doplň poslední krok', q: 'Kolik <b class="mono">GiB</b> je <b class="mono">4 096 MiB</b>?', shown: ['Cíl GiB je větší jednotka → <b>dělím</b>.', 'Jeden schod, řada IEC → 1 024.'], blank: '4 096 : 1 024 =', ans: 4, unit: 'GiB' },
@@ -871,7 +915,7 @@ const STEPS = [
   { id: 5, title: 'Mezi řadami a disk', goal: 'Převody SI ↔ IEC přes bajt a záhada „ztraceného“ místa.', can: ['Převést mezi řadami SI a IEC přes bajty.', 'Spočítat, kolik GiB ukáže počítač u disku s údajem v GB.', 'Odhadnout, kolik souborů se na médium vejde.'], skills: ['mezi-radami', 'disk', 'odhad'], screens: [
     { t: 'tip', q: 'Disk má na krabici <b class="mono">1 TB</b>. Kolik „GB“ ukáže Windows?', opts: [{ t: '1 000', why: 'Kdyby se jednotky shodovaly, ano. Ale výrobce počítá po 1 000, Windows po 1 024.' }, { t: '1 024', why: 'To by znamenalo, že disk je větší, než slíbil výrobce. Ukáže se méně.' }, { t: '931', ok: true }, { t: '976', why: '976 vyjde, když použiješ 1 024 jen jednou. Mezi TB a „GB“ jsou tři schody, ne jeden.' }], reveal: 'Žádné místo nezmizelo. Teď uvidíš, kam se „ztratilo“.' },
     { t: 'txt', h: 'Společné místo je bajt', html: `<p>Žebříček SI a žebříček IEC se potkávají jen v jednom místě: <b>v bajtu</b>. Proto jdeš přes něj:</p><ol class="calc"><li>Zdroj → bajty (vynásob počtem bajtů v jedné zdrojové jednotce).</li><li>Bajty → cíl (vyděl počtem bajtů v jedné cílové jednotce).</li><li>Zkontroluj odhadem: větší jednotka, menší číslo.</li></ol><div class="card"><p><b>2,5 GiB na MB:</b><br>2,5 · 1 073 741 824 = 2 684 354 560 B<br>2 684 354 560 : 1 000 000 = <b>2 684,35 MB</b><br><span class="small muted">Odhad sedí: GiB je asi o 7 % větší než GB, 2,5 GiB je asi 2,68 GB.</span></p></div>` },
-    { t: 'txt', h: 'Záhada ztraceného místa', html: `${V('disk')}<p>Výrobce počítá desítkově: 1 TB = 10<sup>12</sup> B. Windows dělí dvojkově a výsledek označí „GB“, i když jde o GiB:</p><p class="mono" style="text-align:center">10<sup>12</sup> : 1 073 741 824 ≈ 931,3</p><p><b>Rychlý odhad:</b> kapacitu v GB vynásob 0,93 a máš GiB. U terabajtů je rozdíl větší: 1 TB je asi 0,91 TiB.</p><p class="small muted">Disk tedy není vadný a nic mu nechybí. Změnila se jen jednotka.</p>` },
+    { t: 'txt', h: 'Záhada ztraceného místa', html: `${ill('disk')}${V('disk')}<p>Výrobce počítá desítkově: 1 TB = 10<sup>12</sup> B. Windows dělí dvojkově a výsledek označí „GB“, i když jde o GiB:</p><p class="mono" style="text-align:center">10<sup>12</sup> : 1 073 741 824 ≈ 931,3</p><p><b>Rychlý odhad:</b> kapacitu v GB vynásob 0,93 a máš GiB. U terabajtů je rozdíl větší: 1 TB je asi 0,91 TiB.</p><p class="small muted">Disk tedy není vadný a nic mu nechybí. Změnila se jen jednotka.</p>` },
     { t: 'worked', h: 'Řešený příklad', q: 'Kolik <b class="mono">MB</b> je <b class="mono">2,5 GiB</b>?', steps: ['Jednotky jsou z různých řad → přes bajty.', '2,5 GiB = 2,5 · 1 073 741 824 B = 2 684 354 560 B.', '2 684 354 560 : 1 000 000 = <b>2 684,35 MB</b>'] },
     { t: 'fade', h: 'Doplň poslední krok', q: 'Kolik <b class="mono">GiB</b> je <b class="mono">500 GB</b>? (na celé GiB)', shown: ['500 GB = 500 · 10<sup>9</sup> B = 500 000 000 000 B.', '1 GiB = 1 073 741 824 B.'], blank: '500 000 000 000 : 1 073 741 824 ≈', ans: 466, unit: 'GiB', tolAbs: 1 },
     { t: 'practice', skills: ['mezi-radami', 'disk', 'odhad', 'mezi-radami', 'disk'] },
