@@ -36,6 +36,7 @@ Platí pro každého, kdo do repozitáře `gympb/aplikace` (web https://aplikace
 | `odkaz` | ne | adresa aplikace, pokud není v tomto repozitáři |
 | `pripnuto` | ne | datum připnutí na začátek výpisu `RRRR-MM-DD`, viz bod 6a |
 | `plus` | ne | `true`, pokud je aplikace (nebo její podstatná část) nad rámec učiva přiřazených ročníků. Na kartě se ukáže tmavě modrý štítek PLUS. Označí se i příslušná část uvnitř aplikace a vysvětlí se, co PLUS znamená |
+| `rada` | ne | Identifikátor řady, do které aplikace patří (například `pod-lupou`). Řady se definují v `katalog.json` v poli `rady` (název, popis) a v administraci Macaly. Jedna aplikace patří nejvýše do jedné řady. Na kartě je řádek „Řada: …“ pod názvem, u aplikací bez řady se nezobrazí |
 
 Ukázka:
 
