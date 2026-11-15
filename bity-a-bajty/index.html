@@ -1122,21 +1122,23 @@ function cheat(host) {
 }
 
 /* ===== hra: odhad řádu ===== */
-const GITEMS = [['znak textu', 1], ['SMS zpráva', 140], ['normostrana textu', 2e3], ['krátký e-mail', 5e4], ['kniha jako čistý text', 5e5], ['fotka z mobilu', 3e6], ['skladba v MP3', 4e6], ['aplikace do mobilu', 1e8], ['film v HD (2 hodiny)', 4e9], ['instalace Windows', 2.5e10], ['velká počítačová hra', 1e11], ['disk v notebooku', 5.12e11], ['externí disk', 2e12]];
+const GITEMS = [['jeden znak textu', 1], ['SMS zpráva', 140], ['stránka textu', 2e3], ['fotka z mobilu', 3e6], ['skladba v MP3', 4e6], ['minuta videa z mobilu', 1e8], ['film v HD (2 hodiny)', 4e9], ['flash disk 32 GB', 3.2e10], ['paměť v mobilu 128 GB', 1.28e11], ['disk v notebooku 512 GB', 5.12e11], ['externí disk 2 TB', 2e12]];
 function sizeLabel(b) { const u = ['B', 'kB', 'MB', 'GB', 'TB']; let i = 0; while (b >= 1000 && i < 4) { b /= 1000; i++; } return fmt(b, 3) + NB + u[i]; }
+const SEEN = new Set();
 function gamePair() {
   for (let n = 0; n < 500; n++) {
     const a = pick(GITEMS), b = pick(GITEMS); if (a === b) continue;
     const big = a[1] > b[1] ? a : b, small = a[1] > b[1] ? b : a, l = Math.log10(big[1] / small[1]), r = Math.round(l);
     if (r < 1 || r > 5 || Math.abs(l - r) > .3) continue;
+    const key = big[0] + '|' + small[0]; if (SEEN.has(key) && n < 400) continue; SEEN.add(key);
     return { big, small, r };
   }
-  return { big: GITEMS[5], small: GITEMS[2], r: 3 };
+  return { big: GITEMS[3], small: GITEMS[2], r: 3 };
 }
 function game(host) {
   const N = 8; let k = 0, score = 0;
   const lbl = r => fmt(10 ** r) + '×';
-  const intro = () => { host.innerHTML = `<div class="card"><h3>Odhad řádu</h3><p class="muted">Osm otázek: kolikrát je jedna věc větší než druhá? Odhadni řád (10×, 100×, 1 000×…). Bez času a bez trestných bodů, velikosti jsou typické a přibližné.</p>${S.g.best ? `<p class="small">Tvůj nejlepší výsledek: <b>${S.g.best} z ${N}</b></p>` : ''}</div><button class="btn primary block" id="st">Začít</button>`; $('#st', host).onclick = () => { k = 0; score = 0; ask(); }; };
+  const intro = () => { SEEN.clear(); host.innerHTML = `<div class="card"><h3>Odhad řádu</h3><p class="muted">Osm otázek: kolikrát je jedna věc větší než druhá? Odhadni řád (10×, 100×, 1 000×…). Bez času a bez trestných bodů, velikosti jsou typické a přibližné.</p>${S.g.best ? `<p class="small">Tvůj nejlepší výsledek: <b>${S.g.best} z ${N}</b></p>` : ''}</div><button class="btn primary block" id="st">Začít</button>`; $('#st', host).onclick = () => { k = 0; score = 0; SEEN.clear(); ask(); }; };
   const ask = () => {
     const p = gamePair(), set = new Set([p.r]); for (const d of shuffle([-1, 1, 2, -2])) { if (set.size >= 4) break; if (p.r + d >= 1) set.add(p.r + d); }
     const opts = shuffle([...set].slice(0, 4)).sort((a, b) => a - b);
@@ -1149,7 +1151,7 @@ function game(host) {
       $('#nx2', host).focus({ preventScroll: true });
     };
   };
-  const end = () => { S.g.n++; S.g.best = Math.max(S.g.best, score); save(); host.innerHTML = `<div class="card"><h2>${score} z ${N}</h2><p class="muted">${score >= 6 ? 'Máš dobrý cit pro velikosti dat.' : 'Řády se časem ustálí. Zkus to znovu a využij tahák.'}</p></div><button class="btn primary block" id="ag">Hrát znovu</button>`; $('#ag', host).onclick = () => { k = 0; score = 0; ask(); }; };
+  const end = () => { S.g.n++; S.g.best = Math.max(S.g.best, score); save(); host.innerHTML = `<div class="card"><h2>${score} z ${N}</h2><p class="muted">${score >= 6 ? 'Máš dobrý cit pro velikosti dat.' : 'Řády se časem ustálí. Zkus to znovu a využij tahák.'}</p></div><button class="btn primary block" id="ag">Hrát znovu</button>`; $('#ag', host).onclick = () => { k = 0; score = 0; SEEN.clear(); ask(); }; };
   intro();
 }
 
