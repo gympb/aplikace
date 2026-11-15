@@ -128,6 +128,23 @@ a{color:inherit}
 .card h3{font-size:21px;line-height:1.2;letter-spacing:-.015em}
 /* celá karta je odkaz: odkaz v nadpisu se průhlednou vrstvou roztáhne přes kartu; štítky, bomba a QR leží nad ní */
 .card .rada{margin:-4px 0 0;font:700 11px/1.3 var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--accent-text)}
+.rada-btn{all:unset;box-sizing:border-box;position:relative;z-index:2;cursor:pointer;display:inline-flex;align-items:center;gap:7px;min-height:24px}
+.rada-btn:hover{text-decoration:underline}
+.rada-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.rada-btn i{font:700 10px/1 var(--f-display);width:15px;height:15px;border:1.5px solid currentColor;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;text-transform:none;letter-spacing:0}
+.rdlg{border:2px solid var(--ink);background:var(--bg);color:var(--ink);padding:0;width:min(640px,calc(100vw - 32px));max-height:min(85vh,720px);overflow:auto;box-shadow:0 20px 60px rgba(17,17,17,.3)}
+.rdlg::backdrop{background:rgba(17,17,17,.5)}
+.rdlg .rd-in{padding:26px 28px 28px}
+.rdlg .rd-kick{font:600 12px var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--accent-text);margin:0 0 6px}
+.rdlg h2{font-size:26px;line-height:1.15;letter-spacing:-.02em;margin:0 0 10px}
+.rdlg .rd-lead{font-weight:600;margin:0 0 14px}
+.rdlg p{margin:0 0 12px;font-size:16px}
+.rdlg h3{font-size:14px;letter-spacing:.1em;text-transform:uppercase;margin:20px 0 8px;border-top:1px solid var(--card-line);padding-top:16px}
+.rdlg ul{margin:0;padding:0;list-style:none;display:grid;gap:2px}
+.rdlg li a{display:block;padding:9px 0;font:600 16px var(--f-display);color:var(--ink);text-decoration:none;border-bottom:1px solid var(--card-line);min-height:44px;box-sizing:border-box}
+.rdlg li a:hover{color:var(--accent-text)}
+.rd-x{position:absolute;right:10px;top:10px;font:700 24px/1 var(--f-display);background:var(--bg);border:2px solid var(--ink);width:44px;height:44px;cursor:pointer;color:var(--ink)}
+@media (max-width:640px){.rdlg{margin:auto auto 0;width:100vw;max-width:100vw;max-height:88vh;border-width:2px 0 0}.rdlg .rd-in{padding:22px 18px 24px}}
 .card h3 a{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
 .card h3 a::after{content:"";position:absolute;inset:0;z-index:1}
 .card h3 a:focus{outline:none}
@@ -319,6 +336,7 @@ footer .in>div{display:flex;justify-content:space-between;gap:16px 40px;flex-wra
     </div>
     <span class="count" id="count"></span></div>
   <div class="grid" id="grid"></div>
+  <dialog class="rdlg" id="rdlg" aria-labelledby="rd-h"><button type="button" class="rd-x" id="rd-x" aria-label="Zavřít">×</button><div class="rd-in" id="rd-in"></div></dialog>
 </div></main>
 
 <section class="steps-sec"><div class="in">
@@ -478,7 +496,7 @@ function render(){
       <div class="card-art${a.obrazek ? ' has-img' : ''}" aria-hidden="true">${a.obrazek ? `<img src="${esc(a.slug)}/${esc(a.obrazek)}" alt="" loading="lazy">` : esc(a.motiv||a.nazev)}<small>${esc(a.predmet.join(' · '))}</small></div>
       <div class="card-body">
         <h3><a href="${esc(url)}">${esc(a.nazev)}</a></h3>
-        ${RADY[a.rada]?`<p class="rada" title="${esc(RADY[a.rada].popis||'')}">Řada: ${esc(RADY[a.rada].nazev)}</p>`:''}
+        ${RADY[a.rada]?`<p class="rada"><button type="button" class="rada-btn" data-rada="${esc(a.rada)}" aria-haspopup="dialog">Řada: ${esc(RADY[a.rada].nazev)} <i aria-hidden="true">i</i></button></p>`:''}
         <p>${esc(a.popis)}</p>
         <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag g" title="Ročník">${esc(t)}</span>`).join('')}${a.plus?'<span class="tag plus" title="Aplikace nebo její část může obsahovat učivo nad rámec přiřazených ročníků">PLUS</span>':''}${a.autor?`<span class="tag a" title="Autor">${esc(a.autor)}</span>`:''}${(a.zverejneno||a.aktualizace)?`<span class="tag d" title="Zveřejněno">${datum(a.zverejneno||a.aktualizace)}</span>`:''}${ZAR[a.zarizeni]||''}${PINNED.has(a.slug)?BOMBA:''}</div>
       </div>
@@ -607,6 +625,27 @@ $('f-mob').onclick=()=>setMob(!f.m);
 document.addEventListener('click',e=>{const b=e.target.closest('.bomba');
   document.querySelectorAll('.bomba.open').forEach(x=>{if(x!==b)x.classList.remove('open');});
   if(b)b.classList.toggle('open');});
+
+// okno s popisem řady (pole „rady“ v katalogu): krátký popis, delší text po odstavcích a seznam aplikací řady
+(function(){
+  const dlg=document.getElementById('rdlg'); if(!dlg||!dlg.showModal) return;
+  let opener=null;
+  function open(id,btn){
+    const r=RADY[id]; if(!r) return;
+    const apps=APPS.filter(a=>a.rada===id);
+    const paras=String(r.text||'').split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
+    document.getElementById('rd-in').innerHTML=`<p class="rd-kick">Řada aplikací</p><h2 id="rd-h">${esc(r.nazev)}</h2>`
+      +(r.popis?`<p class="rd-lead">${esc(r.popis)}</p>`:'')
+      +paras.map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('')
+      +(apps.length?`<h3>Aplikace v řadě (${apps.length})</h3><ul>${apps.map(a=>`<li><a href="${esc(a.odkaz||a.slug+'/')}">${esc(a.nazev)}</a></li>`).join('')}</ul>`:'');
+    opener=btn; dlg.showModal(); dlg.scrollTop=0;
+  }
+  document.addEventListener('click',e=>{
+    const b=e.target.closest&&e.target.closest('.rada-btn'); if(b){e.preventDefault();open(b.dataset.rada,b);return;}
+    if(e.target===dlg||e.target.id==='rd-x') dlg.close();
+  });
+  dlg.addEventListener('close',()=>{if(opener&&document.contains(opener))opener.focus();opener=null;});
+})();
 </script>
 <script>
 /* instalace jako aplikace (PWA): service worker zpřístupní katalog i bez sítě */
