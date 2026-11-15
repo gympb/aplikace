@@ -6,7 +6,6 @@
 <title>Dvojková soustava</title>
 <meta name="description" content="Šest krátkých kroků od bitu po sčítání: váhy bitů, převody mezi dvojkovou a desítkovou soustavou, kolik se vejde do n bitů a sčítání s přenosem. Opakování se přizpůsobí tomu, co ti dělá potíže.">
 <meta name="author" content="Ivo Bešťák">
-<meta name="robots" content="noindex">
 <meta name="theme-color" content="#FBFAF7">
 <link rel="stylesheet" href="fonty/fonty.css">
 <style>
@@ -224,6 +223,9 @@ details.svp summary{min-height:44px;display:flex;align-items:center;cursor:point
 .bitcol .bit{flex:none;width:100%}
 .wt{font:600 13.5px var(--mono);color:var(--ink3)}
 .bit[disabled]{cursor:default;opacity:1}
+.plus{display:inline-block;vertical-align:middle;margin-left:.4em;padding:.1em .5em;border-radius:4px;background:#1b2a4a;color:#fff;font:700 12px/1.4 var(--font);letter-spacing:.08em;white-space:nowrap}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .plus{background:#9db0d8;color:#0f161b}}
+:root[data-theme="dark"] .plus{background:#9db0d8;color:#0f161b}
 pre.addcol{font:600 17px/1.5 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;overflow-x:auto;white-space:pre}
 </style>
 <meta property="og:type" content="website">
@@ -331,6 +333,7 @@ function mkb(o) {
     opts.push({ v, t: B2(v), why });
     if (opts.length === 4) break;
   }
+  for (const v of [o.ans + 2, o.ans - 2, o.ans * 2, o.ans >> 1, o.ans + 3]) { if (opts.length >= 4) break; if (v > 0 && v < 1024 && !opts.some(x => x.v === v)) opts.push({ v, t: B2(v), why: 'Tahle hodnota to není. Zkus výsledek ověřit zpětným součtem vah.' }); }
   o.opts = shuffle(opts); o.kind = 'bin'; o.ansT = g4(bn(o.ans));
   return o;
 }
@@ -344,70 +347,74 @@ function subSteps(v) {
   return out;
 }
 
+/* úroveň náročnosti podle zvládnutí dovednosti: 0 začínám, 1 umím, 2 zvládnuto */
+const lvl = k => { const m = M(k), b = m ? m.b : 0; return b >= 4 ? 2 : b >= 2 ? 1 : 0; };
+const LV = (k, a) => a[lvl(k)];
+
 const GEN = {};
 GEN['hodnota-pozice'] = () => {
   const r = Math.random();
   if (r < .5) {
-    const p = ri(1, 7);
+    const p = ri(...LV('hodnota-pozice', [[1, 4], [2, 7], [4, 7]]));
     return mk({ skill: 'hodnota-pozice', q: `Jakou hodnotu (váhu) má bit na pozici <b class="mono">${p}</b>? Pozice se číslují zprava od 0.`, ans: 2 ** p,
       wrong: [[2 * p, 'To je dvojnásobek čísla pozice. Váhy rostou jako mocniny dvojky: 1, 2, 4, 8…'], [p * p, 'Váha není druhá mocnina pozice. Je to 2 na pozici.'], [2 ** (p + 1), `Počítal jsi pozice od 1. Pozice 0 má váhu 1, pozice ${p} má 2<sup>${p}</sup>.`], [2 ** (p - 1), `Posunul ses o pozici zpět. Pozice ${p} má váhu 2<sup>${p}</sup>.`], [10 ** p, 'Desítky patří do desítkové soustavy. Tady se každá pozice zdvojnásobí.']],
       steps: ['Pozice 0 (úplně vpravo) má váhu 1.', 'Každá další pozice doleva váhu zdvojnásobí: 1, 2, 4, 8, 16, 32, 64, 128.', `Pozice ${p} má váhu 2<sup>${p}</sup> = <b>${2 ** p}</b>.`],
-      hint: 'Váhy zprava: 1, 2, 4, 8… Která z nich je na zadané pozici? Pozici počítej od nuly.', hint2: `Pozice ${p} má váhu 2 na ${p}.` });
+      hint: 'Váhy zprava: 1, 2, 4, 8… Která z nich je na zadané pozici? Pozici počítej od nuly.', hint2: `Pozice ${p} má váhu 2 na ${p}.`, hint3: `Váhy zprava: 1, 2, 4, 8, 16, 32, 64, 128. Pozice 0 má váhu 1, pozice 1 váhu 2… Kolikátá váha to je pro pozici ${p}?` });
   }
   if (r < .8) {
-    const n = pick([4, 5, 6, 8]);
+    const n = pick(LV('hodnota-pozice', [[3, 4, 5], [4, 5, 6, 8], [6, 8, 8]]));
     return mk({ skill: 'hodnota-pozice', q: `Číslo má <b>${n} bitů</b>. Jakou váhu má nejlevější bit?`, ans: 2 ** (n - 1),
       wrong: [[2 ** n, `${2 ** n} je počet hodnot, které se do ${n} bitů vejdou. Nejlevější bit je na pozici ${n - 1}, váha je 2<sup>${n - 1}</sup>.`], [n, 'To je počet bitů. Váhy jsou mocniny dvojky.'], [2 ** n - 1, `${2 ** n - 1} je největší zapsatelné číslo (součet všech vah), ne váha jednoho bitu.`], [2 ** (n - 2), 'To je váha druhého bitu zleva.']],
       steps: [`Bity mají pozice 0 až ${n - 1}, zprava doleva.`, `Nejlevější bit je na pozici ${n - 1}.`, `Váha 2<sup>${n - 1}</sup> = <b>${2 ** (n - 1)}</b>.`],
       hint: 'Pozice se číslují od nuly. Kolik je pozic a která je nejlevější?', hint2: `Nejlevější je pozice ${n - 1}.` });
   }
-  const k = ri(1, 6), w = 2 ** k;
+  const k = ri(...LV('hodnota-pozice', [[1, 4], [1, 6], [3, 7]])), w = 2 ** k;
   return mk({ skill: 'hodnota-pozice', q: `Váhy bitů jdou za sebou: <b class="mono">… 4, 8, 16, 32 …</b> Jaká váha následuje po <b class="mono">${w}</b>?`, ans: 2 * w,
     wrong: [[w + 2, 'Váhy se nepřičítají po dvou. Každá je dvojnásobek předchozí.'], [w + w / 2, 'To je půldruhého násobku. Každá váha je přesně dvojnásobek.'], [w * w, 'Umocnil jsi. Váha se jen zdvojnásobí.'], [10 * w, 'Desetinásobek patří do desítkové soustavy.']],
     steps: ['Každá váha je dvojnásobek předchozí.', `${w} · 2 = <b>${2 * w}</b>`], hint: 'Jak se liší dvě sousední váhy?', hint2: 'Další váha je dvojnásobek.' });
 };
 GEN['bin-dec'] = () => {
-  const L = pick([4, 4, 5, 6, 7, 8, 8]), v = ri(2 ** (L - 1), 2 ** L - 1), s = bn(v);
+  const L = pick(LV('bin-dec', [[3, 4, 4, 5], [4, 5, 6, 7], [6, 7, 8, 8]])), v = ri(2 ** (L - 1), 2 ** L - 1), s = bn(v);
   const sumPos = s.split('').reverse().reduce((a, c, i) => a + (c === '1' ? i + 1 : 0), 0);
   const parts = wts(v).filter(w => v & w);
   return mk({ skill: 'bin-dec', q: `Kolik je ${B2(s)} v desítkové soustavě?`, ans: v,
     wrong: [[parseInt(rev(s), 2), 'Četl jsi bity odzadu. Nejmenší váha (1) patří bitu úplně vpravo.'], [pop(s), 'Spočítal jsi jedničky. Každá jednička ale má váhu podle své pozice.'], [sumPos, 'Použil jsi váhy 1, 2, 3, 4… Váhy jsou mocniny dvojky: 1, 2, 4, 8…'], [s.length <= 6 ? parseInt(s, 10) : NaN, 'Přečetl jsi dvojkový zápis jako desítkové číslo. Hodnotu dávají váhy bitů.'], [v + 1, 'Součet vah vyšel o jedna jinak. Projdi váhy znovu a nezapomeň na váhu 1 úplně vpravo.']],
     steps: [`Váhy zprava: ${wts(v).reverse().join(', ')}.`, `Jedničky jsou na vahách ${parts.join(', ')}.`, `${parts.join(' + ')} = <b>${v}</b>`],
-    hint: 'Napiš si váhy zprava (1, 2, 4, 8…) pod bity a sečti ty, pod kterými je 1.', hint2: `Sčítáš ${ones(v)} vah: ${parts.join(' + ')}.` });
+    hint: 'Napiš si váhy zprava (1, 2, 4, 8…) pod bity a sečti ty, pod kterými je 1.', hint2: `Sčítáš ${ones(v)} vah: ${parts.join(' + ')}.`, hint3: `Váhy zprava: ${wts(v).reverse().join(', ')}. Jedničky jsou na ${ones(v)} z nich.` });
 };
 GEN['dec-bin'] = () => {
-  const L = pick([4, 5, 6, 7, 8, 8]), v = ri(2 ** (L - 1), 2 ** L - 1), s = bn(v);
-  const flip = (() => { const p = ri(0, L - 2); return v ^ (1 << p); })();
+  const L = pick(LV('dec-bin', [[3, 4, 4, 5], [4, 5, 6, 7], [6, 7, 8, 8]])), v = ri(2 ** (L - 1), 2 ** L - 1), s = bn(v);
+  const flip = (() => { const p = ri(0, Math.max(0, L - 2)); return v ^ (1 << p); })();
   return mkb({ skill: 'dec-bin', q: `Zapiš číslo <b class="mono">${v}</b> ve dvojkové soustavě.`, ans: v,
     wrong: [[parseInt(rev(s), 2), 'Bity jsou zapsané odzadu. Největší váha patří úplně vlevo.'], [v - 1, 'Je o jedničku vedle. Zkontroluj zpětným součtem vah.'], [v + 1, 'Je o jedničku vedle. Zkontroluj zpětným součtem vah.'], [flip, 'Jeden bit je špatně. Sečti váhy zpět a porovnej se zadáním.']],
     steps: subSteps(v), hint: `Největší váha, která se vejde do ${v}, je ${2 ** (bl(v) - 1)}. Odečti ji a pokračuj dalšími váhami.`, hint2: `Zadané číslo se skládá z vah ${decomp(v).split(' + ').join(', ')}. Tam napiš 1, jinde 0.` });
 };
 GEN['pocet-hodnot'] = () => {
-  const n = ri(3, 12), a = 2 ** n;
+  const n = ri(...LV('pocet-hodnot', [[3, 6], [4, 10], [6, 16]])), a = 2 ** n;
   if (Math.random() < .5) {
     return mkc({ skill: 'pocet-hodnot', q: `Kolik různých hodnot se vejde do <b class="mono">${n} bitů</b>?`,
       opts: [{ t: fmt(a), ok: true }, { t: fmt(2 * n), why: 'To je jen dvojnásobek počtu bitů. Každý další bit hodnoty zdvojnásobí: 2<sup>n</sup>.' }, (n * n === a ? { t: fmt(a * 2), why: `To je 2<sup>${n + 1}</sup>, hodnot pro o jeden bit víc.` } : { t: fmt(n * n), why: 'Umocnil jsi počet bitů, ale základ je 2: hodnot je 2<sup>n</sup>.' }), { t: fmt(a - 1), why: `${fmt(a - 1)} je největší zapsatelné číslo. Hodnot je o jednu víc, protože se počítá i nula.` }],
       steps: ['Každý bit má dvě možnosti: 0 nebo 1.', `Každý další bit počet možností zdvojnásobí: 2<sup>${n}</sup>.`, `2<sup>${n}</sup> = <b>${fmt(a)}</b> hodnot (čísla 0 až ${fmt(a - 1)}).`],
-      hint: 'Jeden bit má 2 hodnoty, dva bity 4, tři bity 8… Co se děje s každým dalším bitem?', hint2: 'Hodnot je 2 na počet bitů.' });
+      hint: 'Jeden bit má 2 hodnoty, dva bity 4, tři bity 8… Co se děje s každým dalším bitem?', hint2: 'Hodnot je 2 na počet bitů.', hint3: `Začni od malých čísel: 1 bit = 2, 2 bity = 4, 3 bity = 8. ${n} bitů znamená ${n}× zdvojnásobit.` });
   }
   return mkc({ skill: 'pocet-hodnot', q: `Jaké je <b>největší číslo</b>, které se vejde do <b class="mono">${n} bitů</b>?`,
     opts: [{ t: fmt(a - 1), ok: true }, { t: fmt(a), why: `${fmt(a)} je počet hodnot. Číslování začíná od nuly, takže největší číslo je o jedna menší.` }, { t: fmt(2 ** (n - 1)), why: `To je váha nejlevějšího bitu. Největší číslo má jedničky na všech pozicích, je to součet všech vah.` }, { t: fmt(10 ** n - 1), why: 'Devítky patří do desítkové soustavy. Ve dvojkové soustavě jsou na všech místech jedničky.' }],
     steps: [`Největší číslo má ve všech ${n} bitech jedničku: ${B2('1'.repeat(n))}.`, `Hodnot je 2<sup>${n}</sup> = ${fmt(a)} a číslují se od 0.`, `Největší číslo je ${fmt(a)} − 1 = <b>${fmt(a - 1)}</b>.`],
-    hint: 'Kolik je různých hodnot? Čísla se číslují od nuly.', hint2: 'Největší číslo je počet hodnot minus jedna.' });
+    hint: 'Kolik je různých hodnot? Čísla se číslují od nuly.', hint2: 'Největší číslo je počet hodnot minus jedna.', hint3: `Počet hodnot je 2<sup>${n}</sup> = ${fmt(a)}. Čísla začínají nulou, poslední z nich je největší.` });
 };
 GEN['kolik-bitu'] = () => {
   if (Math.random() < .65) {
-    const m = pick([5, 9, 12, 17, 30, 31, 32, 50, 100, 127, 128, 200, 255, 256, 300, 500, 1000, 1023, 1024, 4000]), b = bl(m);
+    const m = pick(LV('kolik-bitu', [[5, 9, 12, 17, 30, 31, 32], [31, 32, 50, 100, 127, 128, 200, 255, 256], [256, 300, 500, 1000, 1023, 1024, 4000, 65535, 65536]])), b = bl(m);
     return mk({ skill: 'kolik-bitu', q: `Kolik bitů nejméně potřebuješ na zápis čísla <b class="mono">${fmt(m)}</b>?`, ans: b, unit: b === 1 ? 'bit' : b < 5 ? 'bity' : 'bitů',
       wrong: [[b - 1, `${b - 1} bitů pojme čísla jen do ${fmt(2 ** (b - 1) - 1)}.`], [b + 1, `Stačí méně: ${b} bitů pojme čísla až do ${fmt(2 ** b - 1)}.`], [Math.ceil(m / 8), 'Bajty se počítají jinak. Tady jde o bity: 2<sup>n</sup> musí být větší než číslo.'], [Math.round(m / 2), 'Počet bitů není polovina čísla. Bit hodnoty zdvojnásobí.']],
       steps: [`n bitů pojme čísla do 2<sup>n</sup> − 1.`, `${b - 1} bitů: do ${fmt(2 ** (b - 1) - 1)} (málo). ${b} bitů: do ${fmt(2 ** b - 1)} (stačí).`, `Nejméně <b>${b}</b>.`],
-      hint: 'Zkoušej mocniny dvojky. Hledáš první, která je větší než číslo.', hint2: `Největší číslo na ${b - 1} bitech je ${fmt(2 ** (b - 1) - 1)}.` });
+      hint: 'Zkoušej mocniny dvojky. Hledáš první, která je větší než číslo.', hint2: `Největší číslo na ${b - 1} bitech je ${fmt(2 ** (b - 1) - 1)}.`, hint3: `Zkus ${b - 1} bitů: největší číslo je ${fmt(2 ** (b - 1) - 1)}. Stačí to na ${fmt(m)}?` });
   }
-  const c = pick([3, 5, 6, 10, 12, 20, 40, 60, 100]), b = Math.ceil(Math.log2(c));
+  const c = pick(LV('kolik-bitu', [[3, 5, 6, 10, 12], [10, 12, 20, 40, 60, 100], [100, 200, 300, 1000, 5000]])), b = Math.ceil(Math.log2(c));
   return mk({ skill: 'kolik-bitu', q: `Chceš rozlišit <b class="mono">${c}</b> různých stavů. Kolik bitů nejméně potřebuješ?`, ans: b, unit: b === 1 ? 'bit' : b < 5 ? 'bity' : 'bitů',
     wrong: [[b - 1, `${b - 1} bitů rozliší jen ${fmt(2 ** (b - 1))} stavů.`], [b + 1, `Stačí méně: ${b} bitů rozliší ${fmt(2 ** b)} stavů.`], [Math.ceil(c / 2), 'Bit hodnoty zdvojnásobí, počet bitů tedy není polovina počtu stavů.'], [c, 'Stav není bit. Z n bitů se dá poskládat 2<sup>n</sup> stavů.']],
     steps: [`n bitů rozliší 2<sup>n</sup> stavů.`, `${b - 1} bitů: ${fmt(2 ** (b - 1))} stavů (málo). ${b} bitů: ${fmt(2 ** b)} stavů (stačí).`, `Nejméně <b>${b}</b>.`],
-    hint: 'Hledáš nejmenší n, pro které je 2 na n aspoň tolik, kolik chceš stavů.', hint2: `${fmt(2 ** (b - 1))} stavů nestačí.` });
+    hint: 'Hledáš nejmenší n, pro které je 2 na n aspoň tolik, kolik chceš stavů.', hint2: `${fmt(2 ** (b - 1))} stavů nestačí.`, hint3: `Zkus ${b - 1} bitů: rozliší ${fmt(2 ** (b - 1))} stavů. Stačí to na ${c}?` });
 };
 GEN['scitani-sloupec'] = () => {
   const a = ri(0, 1), b = ri(0, 1), c = ri(0, 1), s = a + b + c;
@@ -418,10 +425,10 @@ GEN['scitani-sloupec'] = () => {
   return mkc({ skill: 'scitani-sloupec', q: `Jeden sloupec: <b class="mono">${a} + ${b}${c ? ' + 1 (přenos)' : ''}</b>. Co uděláš?`,
     opts: all.map(([d, p]) => (d === s % 2 && p === s >> 1) ? { t: txt(d, p), ok: true } : { t: txt(d, p), why: `Tak by vyšlo ${sumOf(d, p)}. Tady je součet ${s}, ve dvojkové soustavě ${B2(bn(s))}: ${right}.` }),
     steps: [`${a} + ${b}${c ? ' + 1' : ''} = ${s} (desítkově).`, `${s} se dvojkově zapíše ${B2(bn(s))}.`, `Poslední číslice se zapíše, předchozí se přenese: <b>${right}</b>.`],
-    hint: 'Sečti jedničky ve sloupci jako obyčejná čísla. Kolik jich je?', hint2: 'Součet 0 a 1 se zapíše přímo. Od dvou výš se zapíše 0 a přenáší se 1, protože 2 je ve dvojkové 10.' }, true);
+    hint: 'Sečti jedničky ve sloupci jako obyčejná čísla. Kolik jich je?', hint2: 'Součet 0 a 1 se zapíše přímo. Od dvou výš se zapíše 0 a přenáší se 1, protože 2 je ve dvojkové 10.', hint3: `Součet ve sloupci je ${s}. Přenos vznikne, když je součet aspoň 2.` }, true);
 };
 GEN['scitani'] = () => {
-  const L = pick([3, 4, 4, 5, 5]), x = ri(2 ** (L - 2), 2 ** L - 1), y = ri(2 ** (L - 2), 2 ** L - 1), z = x + y, W = Math.max(bl(x), bl(y), 1);
+  const L = pick(LV('scitani', [[3, 3, 4], [4, 4, 5], [5, 6, 7]])), x = ri(2 ** (L - 2), 2 ** L - 1), y = ri(2 ** (L - 2), 2 ** L - 1), z = x + y, W = Math.max(bl(x), bl(y), 1);
   const sx = bn(x, W), sy = bn(y, W);
   let carry = 0; const cols = [];
   for (let i = W - 1; i >= 0; i--) { const t = +sx[i] + +sy[i] + carry; cols.push(`Sloupec ${W - i}: ${sx[i]} + ${sy[i]}${carry ? ' + 1' : ''} = ${bn(t)} → zapíšu ${t % 2}${t > 1 ? ', přenesu 1' : ''}`); carry = t >> 1; }
@@ -435,52 +442,77 @@ GEN['scitani'] = () => {
 GEN['vlastnosti'] = () => {
   const r = ri(0, 3);
   if (r === 0) {
-    const L = ri(4, 7), v = ri(2 ** (L - 1), 2 ** L - 1), s = bn(v), even = v % 2 === 0;
+    const L = ri(...LV('vlastnosti', [[3, 5], [4, 7], [6, 8]])), v = ri(2 ** (L - 1), 2 ** L - 1), s = bn(v), even = v % 2 === 0;
     return mkc({ skill: 'vlastnosti', q: `Je číslo ${B2(s)} sudé, nebo liché?`,
       opts: [{ t: even ? 'sudé' : 'liché', ok: true }, { t: even ? 'liché' : 'sudé', why: `Rozhoduje poslední bit (váha 1). Tady je ${s[s.length - 1]}, takže číslo je ${even ? 'sudé' : 'liché'}.` }, { t: 'záleží na počtu jedniček', why: 'Počet jedniček nerozhoduje. Všechny váhy kromě poslední jsou sudé, takže záleží jen na posledním bitu.' }, { t: 'nedá se poznat bez převodu', why: 'Dá se. Všechny váhy kromě 1 jsou sudé, takže rozhoduje poslední bit.' }],
       steps: ['Všechny váhy kromě 1 jsou sudé (2, 4, 8…).', `Poslední bit je ${s[s.length - 1]}.`, `Číslo je <b>${even ? 'sudé' : 'liché'}</b> (${v}).`], hint: 'Jaké váhy mají bity kromě posledního? Jsou sudé, nebo liché?', hint2: 'Rozhoduje váha 1, tedy poslední bit.' });
   }
   if (r === 1) {
-    const L = ri(3, 6), v = ri(2 ** (L - 1), 2 ** L - 1);
+    const L = ri(...LV('vlastnosti', [[3, 4], [3, 6], [5, 8]])), v = ri(2 ** (L - 1), 2 ** L - 1);
     return mkc({ skill: 'vlastnosti', q: `Za dvojkové číslo ${B2(v)} (${v}) připíšeš na konec <b>nulu</b>. Co se stane s hodnotou?`,
       opts: [{ t: 'zdvojnásobí se', ok: true }, { t: 'zdesetinásobí se', why: 'To platí v desítkové soustavě. Ve dvojkové je základ 2, každý bit se posune o jednu váhu výš, tedy ×2.' }, { t: 'zvětší se o 2', why: 'Zvětší se na dvojnásobek. Každá jednička dostane dvojnásobnou váhu.' }, { t: 'nezmění se', why: 'Změní se. Všechny bity se posunou o jednu pozici doleva, každý má dvojnásobnou váhu.' }],
       steps: [`${v} = ${B2(v)}, po připsání nuly ${B2(v * 2)} = ${v * 2}.`, 'Každý bit se posunul o jednu pozici doleva a váha se zdvojnásobila.', 'Hodnota se <b>zdvojnásobí</b>.'], hint: 'Zkus si to na malém čísle: 101 je 5, 1010 je…', hint2: 'Každý bit se posune o jednu váhu výš.' });
   }
   if (r === 2) {
-    const n = ri(3, 8);
+    const n = ri(...LV('vlastnosti', [[3, 5], [3, 8], [5, 10]]));
     return mk({ skill: 'vlastnosti', q: `Kolik je ${B2('1'.repeat(n))} (samé jedničky, ${n}×)?`, ans: 2 ** n - 1,
       wrong: [[2 ** n, `${fmt(2 ** n)} je o jedna víc. Samé jedničky jsou těsně před ${B2('1' + '0'.repeat(n))}.`], [n, 'To je počet jedniček. Hodnotu dávají váhy.'], [2 ** (n - 1), 'To je jen váha nejlevějšího bitu. Sčítají se všechny váhy.'], [2 ** (n - 1) - 1, 'To je číslo o bit kratší. Samé jedničky mají n bitů.']],
       steps: [`${n} jedniček = ${wts(2 ** n - 1).join(' + ')}.`, `Zkratka: ${B2('1'.repeat(n))} je o jedna méně než ${B2('1' + '0'.repeat(n))} = 2<sup>${n}</sup>.`, `2<sup>${n}</sup> − 1 = <b>${fmt(2 ** n - 1)}</b>`], hint: 'Kdyby ses k číslu přičetl 1, vznikla by jednička následovaná nulami. Jaké číslo to je?', hint2: `Je to 2 na ${n} minus 1.` });
   }
-  const L = ri(4, 7), v = ri(2 ** (L - 1), 2 ** L - 1), h = Math.floor(v / 2);
+  const L = ri(...LV('vlastnosti', [[3, 5], [4, 7], [6, 8]])), v = ri(2 ** (L - 1), 2 ** L - 1), h = Math.floor(v / 2);
   return mkc({ skill: 'vlastnosti', q: `Ze dvojkového čísla ${B2(v)} (${v}) odebereš <b>poslední bit</b> (${B2(h)}). Jak se změnila hodnota?`,
     opts: [{ t: 'vydělila se dvěma (se zaokrouhlením dolů)', ok: true }, { t: 'zmenšila se o 1', why: 'Zmenšila se na polovinu. Všechny zbylé bity mají poloviční váhu.' }, { t: 'vydělila se deseti', why: 'To platí v desítkové soustavě. Tady je základ 2.' }, { t: 'zdvojnásobila se', why: 'Je to naopak. Odebráním bitu vpravo se zbylé bity posunou o váhu níž.' }],
     steps: [`${v} = ${B2(v)}, po odebrání ${B2(h)} = ${h}.`, 'Každý bit se posunul o jednu pozici doprava a váha se zmenšila na polovinu.', `<b>${v} : 2 = ${h}</b> (zbytek je odebraný bit).`], hint: 'Opak připsání nuly. Co se děje s váhami?', hint2: 'Váhy se zmenší na polovinu.' });
 };
+let lastChyba = -1;
+const CH_ERR = [
+  () => { const v = pick([11, 13, 14, 9, 25, 45, 77, 19, 22]), s = bn(v), b = s.split(''), w = b.reduce((a, c, i) => a + (c === '1' ? 2 ** i : 0), 0); if (w === v) return null;
+    return { q: `Postup: <span class="mono">${s}<sub>2</sub> = ${b.map((c, i) => `${c}·${2 ** i}`).join(' + ')} = ${w}</span>`, err: 'Váhy jsou přiřazené zleva. Váha 1 patří bitu úplně vpravo.', d: [['Váhy mají být 1, 2, 3, 4…', 'Váhy jsou mocniny dvojky, a ty jsou v postupu použité správně.'], ['Chybí násobení nulou', 'Nuly se násobí také, jen nic nepřidají. To je v pořádku.']] }; },
+  () => { const a = pick([5, 6, 7, 9, 11]), b = pick([3, 5, 6, 7]);
+    return { q: `Postup: <span class="mono">${bn(a)}<sub>2</sub> + ${bn(b)}<sub>2</sub></span>, v nejnižším sloupci je <span class="mono">1 + 1 = 2</span>, píšu <span class="mono">2</span>.`, err: 'Číslice 2 ve dvojkové soustavě není. 1 + 1 = 10: zapíšu 0 a přenesu 1.', d: [['Sčítá se zleva', 'Sčítá se zprava, od nejnižší váhy. To je správně.'], ['Nejnižší sloupec se přeskakuje', 'Přeskakovat nelze, sčítá se od nejnižšího sloupce. Postup začíná správně.']] }; },
+  () => { const v = pick([13, 11, 19, 22, 37, 29, 41]); let r = v; const rems = []; while (r > 0) { rems.push(r % 2); r = Math.floor(r / 2); }
+    return { q: `Postup: <span class="mono">${v}</span> dělím dvěma se zbytkem, zbytky vyjdou <span class="mono">${rems.join(', ')}</span>. Zapíšu je v pořádí, jak vznikly: <span class="mono">${rems.join('')}</span>.`, err: `Zbytky se čtou odspodu nahoru (od posledního k prvnímu): ${B2(v)}.`, d: [['Dělit se má 10', 'Základ dvojkové soustavy je 2, dělí se dvěma. To je správně.'], ['Zbytky mají být vždy 1', 'Zbytek po dělení dvěma je 0 nebo 1. To je správně.']] }; },
+  () => { const n = pick([4, 5, 6, 7, 8, 10]);
+    return { q: `Postup: Do ${n} bitů se vejde ${fmt(2 ** n)} hodnot, takže největší číslo je <span class="mono">${fmt(2 ** n)}</span>.`, err: `Čísla se číslují od nuly, největší je o jedna menší: ${fmt(2 ** n - 1)}.`, d: [[`Hodnot je ${fmt(2 ** n)} je špatně`, `Počet hodnot 2<sup>${n}</sup> = ${fmt(2 ** n)} je v postupu správně.`], ['Má se použít 10 na n', 'V dvojkové soustavě se používá 2 na n.']] }; },
+  () => { const v = pick([5, 6, 9, 11, 13, 7]);
+    return { q: `Postup: ${B2(v)} je ${v}. Připíšu na konec nulu: ${B2(v * 2)}, hodnota se zvětší <b>desetkrát</b>, tedy ${v * 10}.`, err: `Ve dvojkové soustavě se hodnota po připsání nuly zdvojnásobí: ${v * 2}.`, d: [['Nula se připisuje na začátek', 'Postup ji připisuje na konec, a to je v pořádku.'], [`${B2(v)} není ${v}`, `Je: ${decomp(v)} = ${v}.`]] }; },
+  () => { const v = pick([300, 270, 400, 512, 1000, 999]);
+    return { q: `Postup: Číslo <span class="mono">${v}</span> se vejde do jednoho bajtu, protože bajt má osm bitů.`, err: `Bajt pojme čísla 0 až 255. ${v} je víc, potřebuje ${bl(v)} bitů.`, d: [['Bajt nemá osm bitů', 'Bajt má osm bitů. To je v postupu v pořádku.'], ['Do bajtu se vejdou jen sudá čísla', 'Vejdou se všechna čísla 0 až 255, sudá i lichá.']] }; },
+  () => { const a = pick([5, 6, 7, 9, 11, 13]), b = pick([3, 5, 6, 7, 9]), x = a ^ b; if (!(a & b)) return null;
+    return { q: `Postup: ${B2(a)} + ${B2(b)} = ${B2(x)}. Každý sloupec jsem sečetl zvlášť a výsledek zapsal, přenosy nepotřebuji.`, err: `Přenos se nesmí zahodit: 1 + 1 = 10, jednička jde do dalšího sloupce. Správně ${B2(a + b)}.`, d: [['Sčítá se zleva', 'Sčítá se zprava, od nejnižší váhy.'], ['Výsledek má mít stejně bitů jako sčítance', 'Výsledek může mít o bit víc. To není chyba postupu.']] }; },
+  () => { const p = ri(3, 6);
+    return { q: `Postup: Bit na pozici <span class="mono">${p}</span> má váhu <span class="mono">2 · ${p} = ${2 * p}</span>.`, err: `Váhy jsou mocniny dvojky: pozice ${p} má váhu 2<sup>${p}</sup> = ${2 ** p}, ne 2 · ${p}.`, d: [['Pozice se mají číslovat od jedné', 'Číslování od nuly je správně: pozice 0 má váhu 1.'], ['Váha se nemá počítat vůbec', 'Váha je základ převodu: bez ní se hodnota bitu nedá určit.']] }; },
+  () => { const m = pick([100, 200, 50, 300, 1000, 500]), k = bl(m) - 1;
+    return { q: `Postup: 2<sup>${k}</sup> = ${fmt(2 ** k)} je méně než ${fmt(m)}, takže číslo ${fmt(m)} se vejde do ${k} bitů.`, err: `${k} bitů pojme čísla jen do ${fmt(2 ** k - 1)}. Číslo ${fmt(m)} potřebuje ${k + 1} bitů.`, d: [[`2<sup>${k}</sup> není ${fmt(2 ** k)}`, `2<sup>${k}</sup> = ${fmt(2 ** k)} je spočítáno správně.`], ['Bitů musí být aspoň osm', 'Počet bitů je libovolný, osm je jen jeden bajt.']] }; },
+  () => { const v = pick([73, 74, 77, 82, 137, 69, 133]); const on = wts(v).filter(w => v & w);
+    return { q: `Postup: ${v} = ${on.join(' + ')}, takže ${v} je <span class="mono">${'1'.repeat(on.length)}<sub>2</sub></span> (jedničky na vahách ${on.join(', ')}).`, err: `Nuly na ostatních vahách se musí zapsat: ${B2(v)}.`, d: [['Váhy se nesmějí sčítat', 'Sčítání vah je správný způsob, jak se číslo rozloží.'], ['Jedniček má být vždy osm', 'Počet jedniček je různý, záleží na čísle.']] }; },
+  () => { const L = ri(5, 6), v = ri(2 ** (L - 1) + 1, 2 ** L - 1) | 1, s = bn(v);
+    return { q: `Postup: ${B2(s)} začíná jedničkou, takže je to číslo <b>sudé</b>.`, err: `O sudosti rozhoduje poslední bit (váha 1), ne první. Tady je poslední bit 1, takže číslo ${v} je liché.`, d: [['Jednička na začátku je zakázaná', 'První bit bývá 1, protože úvodní nuly se nepíšou.'], ['Sudost se pozná podle počtu bitů', 'Počet bitů o sudosti nerozhoduje.']] }; },
+  () => { const a = pick([3, 5, 6, 7, 9, 11]), b = pick([5, 6, 7, 9, 10, 13]), z = a + b, bad = z + pick([-2, -1, 1, 2]);
+    return { q: `Postup: ${B2(a)} + ${B2(b)} = ${B2(bad)}. Kontrola v desítkové soustavě: ${a} + ${b} = ${bad}.`, err: `Kontrola nesedí: ${a} + ${b} = ${z}, ne ${bad}. Správně ${B2(z)}.`, d: [['Kontrola se dělá v dvojkové soustavě', 'Kontrola v desítkové je právě to nejjednodušší, co jde udělat.'], ['Sčítance se mají prohodit', 'Pořadí sčítanců výsledek nemění.']] }; }
+];
+const CH_OK = [
+  () => { const a = pick([6, 7, 9, 11, 13]), b = pick([5, 6, 9, 10]);
+    return { q: `Postup: ${B2(a)} + ${B2(b)} = ${B2(a + b)}, kontrola v desítkové soustavě: ${a} + ${b} = ${a + b}.`, d: [['Chybí přenos', 'Součet ve dvojkové soustavě sedí s desítkovým, přenosy tedy proběhly správně.'], ['Výsledek má mít stejně bitů jako sčítance', 'Výsledek může mít o bit víc. Tady vyšel správně.']] }; },
+  () => { const v = pick([13, 11, 19, 22, 37, 29, 41]); let r = v; const rems = []; while (r > 0) { rems.push(r % 2); r = Math.floor(r / 2); }
+    return { q: `Postup: <span class="mono">${v}</span> dělím dvěma se zbytkem, zbytky vyjdou <span class="mono">${rems.join(', ')}</span>. Čtu je odspodu nahoru: <span class="mono">${rems.slice().reverse().join('')}</span>.`, d: [['Zbytky se mají číst shora', 'Správně se čtou odspodu nahoru, tak to postup dělá.'], ['Dělit se má 10', 'Základ dvojkové soustavy je 2, dělí se dvěma.']] }; },
+  () => { const n = pick([4, 5, 6, 7, 8, 10]);
+    return { q: `Postup: Do ${n} bitů se vejde ${fmt(2 ** n)} hodnot, největší číslo je ${fmt(2 ** n)} − 1 = <span class="mono">${fmt(2 ** n - 1)}</span>.`, d: [['Největší číslo má být rovné počtu hodnot', 'Čísla se číslují od nuly, největší je o jedna menší. Postup to dělá správně.'], ['Hodnot má být 10 na n', 'V dvojkové soustavě je to 2 na n.']] }; },
+  () => { const p = ri(3, 7);
+    return { q: `Postup: Bit na pozici <span class="mono">${p}</span> má váhu 2<sup>${p}</sup> = <span class="mono">${2 ** p}</span>.`, d: [['Váhu má počítat 2 · pozice', 'Váhy jsou mocniny dvojky, ne násobky pozice. Postup je správný.'], ['Pozice se číslují od jedné', 'Od nuly: pozice 0 má váhu 1.']] }; }
+];
 GEN['chyba'] = () => {
-  const T = [];
-  const v1 = pick([11, 13, 14, 9, 25, 45, 77]), s1 = bn(v1), bits1 = s1.split('');
-  const wrongSum = bits1.reduce((a, c, i) => a + (c === '1' ? 2 ** i : 0), 0);
-  if (wrongSum !== v1) T.push({ q: `Postup: <span class="mono">${s1}<sub>2</sub> = ${bits1.map((c, i) => `${c}·${2 ** i}`).join(' + ')} = ${wrongSum}</span>`, err: 'Váhy jsou přiřazené zleva. Váha 1 patří bitu úplně vpravo.', d: [['Váhy mají být 1, 2, 3, 4…', 'Váhy jsou mocniny dvojky, a ty jsou v postupu použité správně.'], ['Chybí násobení nulou', 'Nuly se násobí také, jen nic nepřidají. To je v pořádku.']] });
-  const a2 = pick([5, 6, 7, 9, 11]), b2 = pick([3, 5, 6, 7]);
-  T.push({ q: `Postup: <span class="mono">${bn(a2)}<sub>2</sub> + ${bn(b2)}<sub>2</sub></span>, v nejnižším sloupci je <span class="mono">1 + 1 = 2</span>, píšu <span class="mono">2</span>.`, err: 'Číslice 2 ve dvojkové soustavě není. 1 + 1 = 10: zapíšu 0 a přenesu 1.', d: [['Sčítá se zleva', 'Sčítá se zprava, od nejnižší váhy. To je správně.'], ['Nejnižší sloupec se přeskakuje', 'Přeskakovat nelze, sčítá se od nejnižšího sloupce. Postup začíná správně.']] });
-  const v3 = pick([13, 11, 19, 22, 37]);
-  let rr = v3, rems = []; while (rr > 0) { rems.push(rr % 2); rr = Math.floor(rr / 2); }
-  const topDown = rems.join('');
-  if (topDown !== bn(v3)) T.push({ q: `Postup: <span class="mono">${v3}</span> dělím dvěma se zbytkem, zbytky vyjdou <span class="mono">${rems.join(', ')}</span>. Zapíšu je v pořadí, jak vznikly: <span class="mono">${topDown}</span>.`, err: `Zbytky se čtou odspodu nahoru (od posledního k prvnímu): ${B2(v3)}.`, d: [['Dělit se má 10', 'Základ dvojkové soustavy je 2, dělí se dvěma. To je správně.'], ['Zbytky mají být vždy 1', 'Zbytek po dělení dvěma je 0 nebo 1. To je správně.']] });
-  const n4 = pick([4, 5, 6, 7, 8]);
-  T.push({ q: `Postup: Do ${n4} bitů se vejde ${fmt(2 ** n4)} hodnot, takže největší číslo je <span class="mono">${fmt(2 ** n4)}</span>.`, err: `Čísla se číslují od nuly, největší je o jedna menší: ${fmt(2 ** n4 - 1)}.`, d: [[`Hodnot je ${fmt(2 ** n4)} je špatně`, `Počet hodnot 2<sup>${n4}</sup> = ${fmt(2 ** n4)} je v postupu správně.`], ['Má se použít 10 na n', 'V dvojkové soustavě se používá 2 na n.']] });
-  const v5 = pick([5, 6, 9, 11, 13]);
-  T.push({ q: `Postup: ${B2(v5)} je ${v5}. Připíšu na konec nulu: ${B2(v5 * 2)}, hodnota se zvětší <b>desetkrát</b>, tedy ${v5 * 10}.`, err: `Ve dvojkové soustavě se hodnota po připsání nuly zdvojnásobí: ${v5 * 2}.`, d: [['Nula se připisuje na začátek', 'Postup ji připisuje na konec, a to je v pořádku.'], [`${B2(v5)} není ${v5}`, `Je: ${decomp(v5)} = ${v5}.`]] });
-  const v6 = pick([300, 270, 400, 512, 1000]);
-  T.push({ q: `Postup: Číslo <span class="mono">${v6}</span> se vejde do jednoho bajtu, protože bajt má osm bitů.`, err: `Bajt pojme čísla 0 až 255. ${v6} je víc, potřebuje ${bl(v6)} bitů.`, d: [['Bajt nemá osm bitů', 'Bajt má osm bitů. To je v postupu v pořádku.'], ['Do bajtu se vejdou jen sudá čísla', 'Vejdou se všechna čísla 0 až 255, sudá i lichá.']] });
-  const a7 = pick([6, 7, 9, 11, 13]), b7 = pick([5, 6, 9, 10]), z7 = a7 + b7;
-  const okPostup = { q: `Postup: ${B2(a7)} + ${B2(b7)} = ${B2(z7)}, kontrola v desítkové soustavě: ${a7} + ${b7} = ${z7}.`, ok: true, d: [['Chybí přenos', 'Součet ve dvojkové soustavě sedí s desítkovým, přenosy tedy proběhly správně.'], ['Výsledek má mít stejně bitů jako sčítance', 'Výsledek může mít o bit víc. Tady vyšel správně.']] };
-  const t = Math.random() < .2 ? okPostup : pick(T);
-  const opts = t.ok ? [{ t: 'Postup je správně', ok: true }, ...t.d.map(([x, w]) => ({ t: x, why: w })), { t: 'Číslice 2 se může používat', why: 'Ve dvojkové soustavě jsou jen číslice 0 a 1.' }]
-    : [{ t: t.err.split('.')[0].replace(/:.*/, ''), ok: true, full: t.err }, ...t.d.map(([x, w]) => ({ t: x, why: w })), { t: 'Postup je správně', why: 'Není. ' + t.err }];
-  if (!t.ok) opts[0].t = t.err.replace(/ \([^)]*\)/, '');
-  return mkc({ skill: 'chyba', q: `${t.q}<br><b>Kde je chyba?</b>`, opts, steps: t.ok ? ['Postup sedí s kontrolou v desítkové soustavě.'] : [t.err], hint: 'Zkus si výsledek ověřit v desítkové soustavě.', hint2: 'Projdi postup po krocích: váhy, přenosy, směr čtení.' });
+  let t, id;
+  for (let g = 0; g < 30; g++) {
+    if (Math.random() < .22) { id = 100 + ri(0, CH_OK.length - 1); t = CH_OK[id - 100](); if (t) t.ok = true; }
+    else { id = ri(0, CH_ERR.length - 1); t = CH_ERR[id](); }
+    if (t && id !== lastChyba) break; t = null;
+  }
+  if (!t) { id = 0; t = CH_OK[0](); t.ok = true; }
+  lastChyba = id;
+  const opts = t.ok ? [{ t: 'Postup je správně', ok: true }, ...t.d.map(([x, w]) => ({ t: x, why: w })), { t: 'Číslice 2 se může použít', why: 'Ve dvojkové soustavě jsou jen číslice 0 a 1.' }]
+    : [{ t: t.err.replace(/ \([^)]*\)/, ''), ok: true }, ...t.d.map(([x, w]) => ({ t: x, why: w })), { t: 'Postup je správně', why: 'Není. ' + t.err }];
+  return mkc({ skill: 'chyba', q: `${t.q}<br><b>Kde je chyba?</b>`, opts, steps: t.ok ? ['Postup sedí s kontrolou v desítkové soustavě.', 'Chyba tu tedy není.'] : [t.err, 'Zkouška v desítkové soustavě chybu potvrdí.'], hint: 'Zkus si výsledek ověřit v desítkové soustavě.', hint2: 'Projdi postup po krocích: váhy, přenosy, směr čtení.', hint3: 'Spočítej si správný výsledek vlastním postupem a porovnej ho s tím, co je v zadání napsáno. Chyba je tam, kde se rozcházíte.' });
 };
 
 const SKILLS = {
@@ -564,10 +596,12 @@ function runTasks(host, specs, o) {
       done(false, '', true);
     };
     const hb = $('#hintb', host);
+    const levels = [t.hint, t.hint2, t.hint3 || (t.steps && t.steps.length >= 3 ? 'Začátek postupu:' + calc(t.steps.slice(0, Math.floor(t.steps.length / 2))) : null)].filter(Boolean);
     if (hb) hb.onclick = () => {
       if (answered) return; hints++;
-      $('#hints', host).innerHTML = `<div class="hint">${hints === 1 || !t.hint2 ? t.hint : t.hint + '<br><b>Ještě víc:</b> ' + t.hint2}</div>`;
-      if (hints >= 2 || !t.hint2) hb.disabled = true;
+      $('#hints', host).innerHTML = `<div class="hint">${levels.slice(0, hints).map((h, i) => `<div style="margin-top:${i ? 8 : 0}px"><b>${i + 1}/${levels.length}</b> ${h}</div>`).join('')}</div>`;
+      hb.textContent = hints >= levels.length ? 'Nápověda 3/3' : `Další nápověda (${hints + 1}/${levels.length})`;
+      if (hints >= levels.length) hb.disabled = true;
     };
   };
   show();
@@ -673,7 +707,7 @@ const STEPS = [
     { t: 'practice', skills: ['scitani-sloupec', 'scitani', 'scitani-sloupec', 'scitani', 'scitani'] },
     { t: 'sum', items: ['1 + 1 = 10: zapíšu 0, přenesu 1. 1 + 1 + 1 = 11: zapíšu 1, přenesu 1.', 'Sčítej zprava po sloupcích a přenosy si piš nad další sloupec.', 'Kontrola: převeď sčítance i výsledek do desítkové soustavy.'] }
   ] },
-  { id: 5, title: 'Zkratky a vzory', goal: 'Co prozradí poslední bit, připsání nuly a samé jedničky.', can: ['Poznat sudé a liché číslo podle posledního bitu.', 'Využít, že připsání nuly hodnotu zdvojnásobí a odebrání posledního bitu ji vydělí dvěma.', 'Znát, že n jedniček dává 2<sup>n</sup> − 1.'], skills: ['vlastnosti'], screens: [
+  { id: 5, plus: true, title: 'Zkratky a vzory', goal: 'Co prozradí poslední bit, připsání nuly a samé jedničky.', can: ['Poznat sudé a liché číslo podle posledního bitu.', 'Využít, že připsání nuly hodnotu zdvojnásobí a odebrání posledního bitu ji vydělí dvěma.', 'Znát, že n jedniček dává 2<sup>n</sup> − 1.'], skills: ['vlastnosti'], screens: [
     { t: 'tip', q: 'Dvojkové číslo <b class="mono">101<sub>2</sub></b> (5) zapíšeš o nulu delší: <b class="mono">1010<sub>2</sub></b>. Co se stalo s hodnotou?', opts: [{ t: 'zdvojnásobila se (10)', ok: true }, { t: 'zdesetinásobila se (50)', why: 'To platí v desítkové soustavě: 5 → 50. Tady je základ 2.' }, { t: 'nezměnila se', why: 'Změnila: 1010 je 10, ne 5.' }, { t: 'zvětšila se o 2 (7)', why: '7 je 111. Hodnota se zdvojnásobí na 10.' }], reveal: 'Každý bit se posunul o jednu váhu doleva, tedy ×2. Ukážu, co z toho plyne.' },
     { t: 'txt', h: 'Poslední bit', html: `<p>Všechny váhy kromě poslední jsou sudé (2, 4, 8, 16…). O tom, zda je číslo sudé, tak rozhoduje jen <b>poslední bit</b> (váha 1).</p><div class="card"><p class="m" style="margin:0"><span class="mono">1011<sub>2</sub></span> končí 1 → liché (11)<br><span class="mono">1010<sub>2</sub></span> končí 0 → sudé (10)</p></div>` },
     { t: 'txt', h: 'Posun doleva a doprava', html: `<p><b>Připíšeš 0 na konec:</b> hodnota se zdvojnásobí. ${B2('101')} (5) → ${B2('1010')} (10).</p><p><b>Odebereš poslední bit:</b> hodnota se vydělí dvěma (se zaokrouhlením dolů). ${B2('1011')} (11) → ${B2('101')} (5).</p><p class="small muted">V desítkové soustavě to samé dělá připsání nuly (×10) a odebrání číslice (:10).</p>` },
@@ -683,8 +717,8 @@ const STEPS = [
     { t: 'practice', skills: ['vlastnosti', 'vlastnosti', 'vlastnosti', 'vlastnosti', 'vlastnosti'] },
     { t: 'sum', items: ['Poslední bit: 0 sudé, 1 liché.', 'Připsání nuly ×2, odebrání posledního bitu :2.', 'n jedniček = 2<sup>n</sup> − 1.'] }
   ] },
-  { id: 6, title: 'Najdi chybu', goal: 'Poznej typické chyby v cizím postupu.', can: ['Najít chybu v cizím postupu (pořadí vah, přenos, čtení zbytků, počet hodnot).', 'Poznat, že je postup správně.'], skills: ['chyba'], screens: [
-    { t: 'txt', h: 'Chybovat umí každý', html: `<p>Nejlepší způsob, jak si ověřit, že tématu rozumíš, je <b>najít chybu v cizím výpočtu</b>. Většina chyb se opakuje:</p><div class="card"><ol class="calc"><li><b>Váhy zleva:</b> váha 1 patří bitu vpravo.</li><li><b>Číslice 2:</b> 1 + 1 = 10, zapíšu 0 a přenesu 1.</li><li><b>Zbytky čtené shora:</b> čti je odspodu nahoru.</li><li><b>Největší číslo = počet hodnot:</b> největší je o jedna menší.</li><li><b>Připsaná nula = ×10:</b> ve dvojkové je to ×2.</li><li><b>Číslo se nevejde</b> do daného počtu bitů.</li></ol></div><p>Před odpovědí si polož tři otázky: <b>váhy</b> na správné straně? <b>přenos</b> započítaný? <b>zkouška</b> v desítkové soustavě?</p>` },
+  { id: 6, plus: true, title: 'Najdi chybu', goal: 'Poznej typické chyby v cizím postupu.', can: ['Najít chybu v cizím postupu (pořadí vah, přenos, čtení zbytků, počet hodnot, vynechané nuly).', 'Poznat, že je postup správně.'], skills: ['chyba'], screens: [
+    { t: 'txt', h: 'Chybovat umí každý', html: `<p>Nejlepší způsob, jak si ověřit, že tématu rozumíš, je <b>najít chybu v cizím výpočtu</b>. Většina chyb se opakuje:</p><div class="card"><ol class="calc"><li><b>Váhy zleva:</b> váha 1 patří bitu vpravo.</li><li><b>Číslice 2:</b> 1 + 1 = 10, zapíšu 0 a přenesu 1.</li><li><b>Zbytky čtené shora:</b> čti je odspodu nahoru.</li><li><b>Největší číslo = počet hodnot:</b> největší je o jedna menší.</li><li><b>Připsaná nula = ×10:</b> ve dvojkové je to ×2.</li><li><b>Číslo se nevejde</b> do daného počtu bitů.</li><li><b>Zahozený přenos:</b> 1 + 1 = 10, jednička se přenáší.</li><li><b>Vynechané nuly:</b> nuly se zapisují také.</li></ol></div><p>Před odpovědí si polož tři otázky: <b>váhy</b> na správné straně? <b>přenos</b> započítaný? <b>zkouška</b> v desítkové soustavě?</p>` },
     { t: 'practice', skills: ['chyba', 'chyba', 'chyba', 'chyba', 'chyba'] },
     { t: 'sum', items: ['Kontroluj: váhy (1 vpravo), přenosy, směr čtení zbytků a zkoušku v desítkové soustavě.', 'Co se ti nedaří, se ti ukáže v části Na dnešek a vrátí se po odstupu.'] }
   ] }
@@ -713,11 +747,12 @@ function home() {
   const pl = S.pl;
   const inner = `<p class="lead">Šest krátkých kroků od prvního bitu po sčítání ve dvojkové soustavě. Každý krok začíná tipem, pak výklad, příklad a procvičení.</p>
   ${pl ? '' : `<div class="card"><h3>Kde začít?</h3><p class="muted small">Šest otázek bez známkování. Podle nich ti doporučím první krok.</p><a class="btn block" href="#/test">Udělat krátký test</a></div>`}
-  <ol class="steps">${STEPS.map(st => { const done = S.st[st.id]; const rec = pl && pl.rec === st.id && !done; return `<li><a class="stepcard ${done ? 'done' : ''} ${rec ? 'rec' : ''}" href="#/krok/${st.id}/0"><span class="no">${done ? '✓' : st.id}</span><span><h3>${st.title}${rec ? ' <span class="pill si">doporučeno</span>' : ''}</h3><p>${st.goal}</p>${pips(st)}</span></a></li>`; }).join('')}</ol>
-  <details class="card svp"><summary>Vazba na ŠVP</summary><p class="small" style="margin:8px 0">Informatika, ŠVP Gymnázia Příbram 2026/27, 1. ročník (kvinta), 2.2 Kódování a přenos dat:</p><ul class="small" style="margin:0 0 8px;padding-left:20px"><li style="margin:3px 0">„převede číslo do dvojkové soustavy a naopak“: kroky 1 a 2.</li><li style="margin:3px 0">„sčítá … ve dvojkové soustavě“: krok 4.</li><li style="margin:3px 0">„kódování čísel, vliv množství informace (počtu bitů) na rozsah“: krok 3.</li></ul><p class="tiny" style="margin:0">Násobení ve dvojkové soustavě a souvislost s logickými obvody aplikace neobsahuje. Kroky 5 (zkratky a vzory) a 6 (hledání chyb) jsou v ŠVP výslovně neuvedeny.</p></details>`;
+  <ol class="steps">${STEPS.map(st => { const done = S.st[st.id]; const rec = pl && pl.rec === st.id && !done; return `<li><a class="stepcard ${done ? 'done' : ''} ${rec ? 'rec' : ''}" href="#/krok/${st.id}/0"><span class="no">${done ? '✓' : st.id}</span><span><h3>${st.title}${st.plus ? ' <span class="plus">PLUS</span>' : ''}${rec ? ' <span class="pill si">doporučeno</span>' : ''}</h3><p>${st.goal}</p>${pips(st)}</span></a></li>`; }).join('')}</ol>
+  <details class="card svp"><summary>Vazba na ŠVP</summary><p class="small" style="margin:8px 0">Informatika, ŠVP Gymnázia Příbram 2026/27, 1. ročník (kvinta), 2.2 Kódování a přenos dat:</p><ul class="small" style="margin:0 0 8px;padding-left:20px"><li style="margin:3px 0">„převede číslo do dvojkové soustavy a naopak“: kroky 1 a 2.</li><li style="margin:3px 0">„sčítá … ve dvojkové soustavě“: krok 4.</li><li style="margin:3px 0">„kódování čísel, vliv množství informace (počtu bitů) na rozsah“: krok 3.</li></ul><p class="tiny" style="margin:0">Násobení ve dvojkové soustavě a souvislost s logickými obvody aplikace neobsahuje. Kroky 5 (zkratky a vzory) a 6 (hledání chyb) jsou v ŠVP výslovně neuvedeny, proto jsou označené <span class="plus">PLUS</span>. PLUS znamená, že obsah jde nad rámec učiva přiřazených ročníků.</p></details>`;
   mount('uc', inner);
 }
 
+const plusNote = `<div class="card"><p class="small" style="margin:0"><span class="plus" style="margin:0">PLUS</span> Tento krok jde nad rámec učiva přiřazených ročníků. Je dobrovolný a pomáhá počítat rychleji a bezpečněji.</p></div>`;
 const fshow = sc => sc.bin ? g4(bn(sc.ans)) : fmt(sc.ans);
 const goalCard = (st, after) => `<div class="card goal"><h3>${after ? 'Umíš to teď?' : 'Cíl kroku'}</h3><p class="small muted" style="margin:0 0 4px">${after ? 'Cíl byl: po kroku umíš' : 'Po tomto kroku umíš:'}</p><ul class="small" style="margin:0;padding-left:20px">${st.can.map(x => `<li style="margin:3px 0">${x}</li>`).join('')}</ul><p class="tiny" style="margin:8px 0 0">${after ? 'Ověřil jsi to v procvičení. Co se nepovedlo, vrátí se v části Na dnešek.' : 'Ověříš to v procvičení na konci kroku.'}</p></div>`;
 function stepView(n, i) {
@@ -726,7 +761,7 @@ function stepView(n, i) {
   const total = st.screens.length, gating = ['tip', 'worked', 'fade', 'practice'].includes(sc.t);
   const last = i === total - 1;
   const inner = `<div class="prog" aria-hidden="true">${st.screens.map((_, k) => `<i class="${k < i ? 'on' : k === i ? 'cur' : ''}"></i>`).join('')}</div>
-  <p class="eyebrow">Krok ${n} · ${st.title}</p>${i === 0 ? goalCard(st) : ''}<h2 id="sh" style="margin-bottom:12px">${sc.h || ({ tip: 'Nejdřív tip', practice: 'Procvič si to', sum: 'Shrnutí' }[sc.t])}</h2><div id="body"></div>${sc.t === 'sum' ? goalCard(st, true) : ''}
+  <p class="eyebrow">Krok ${n} · ${st.title}${st.plus ? ' <span class="plus">PLUS</span>' : ''}</p>${i === 0 ? goalCard(st) + (st.plus ? plusNote : '') : ''}<h2 id="sh" style="margin-bottom:12px">${sc.h || ({ tip: 'Nejdřív tip', practice: 'Procvič si to', sum: 'Shrnutí' }[sc.t])}</h2><div id="body"></div>${sc.t === 'sum' ? goalCard(st, true) : ''}
   <div class="nav2"><a class="btn back" ${i > 0 ? `href="#/krok/${n}/${i - 1}"` : 'href="#/"'} aria-label="Zpět">←</a><button class="btn primary" id="nx" ${gating ? 'disabled' : ''}>${last ? 'Hotovo' : 'Pokračovat'}</button></div>${gating ? `<p class="tiny gate" id="gate">${{ tip: 'Vyber odpověď, pak můžeš pokračovat.', worked: 'Projdi všechny kroky příkladu.', fade: 'Doplň poslední krok.', practice: 'Dokonči procvičení.' }[sc.t]}</p>` : ''}`;
   mount('uc', inner, m => {
     const body = $('#body', m), nx = $('#nx', m), unlock = () => { nx.disabled = false; const g = $('#gate', m); if (g) g.remove(); };
