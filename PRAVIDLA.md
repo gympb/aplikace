@@ -81,6 +81,7 @@ Používej **jen** tyto štítky. Nové nevytvářej.
 - Nový předmět lze založit, když je potřeba:
   - celým českým názvem s velkým počátečním písmenem (`"Dějepis"`, ne `"dějepis"` ani `"D"`),
   - jen pokud už neexistuje v jiném zápisu.
+- **Agenda předmětů.** V `katalog.json` je pole `predmety`: seznam `{"nazev": "Fyzika", "zobrazit": true}`. Řídí, zda se předmět ukáže na úvodní stránce. Předmět s `zobrazit: false` nemá složku ani tlačítko filtru a aplikace, které mají jen vypnuté předměty, se v katalogu neukážou (fungují dál na své adrese). Aplikace s dalším zapnutým předmětem zůstane, jen bez štítku vypnutého předmětu. Předmět, který v seznamu chybí, se zobrazuje. Seznam se spravuje v administraci Macaly (sekce Předměty): zapnout a vypnout, přidat, přejmenovat (změní se i u všech aplikací) a smazat nepoužitý předmět.
 - Pro zkušební aplikace je povolený předmět `Test` (zapisuje se takto, ne `TEST`).
 - **Složky na úvodní stránce.** Katalog má přepínač Podle předmětů (výchozí) / Hromada. Složky se tvoří za běhu z štítků `predmet`, nic se pro ně nezakládá. Aplikace se dvěma předměty je ve dvou složkách. Na dlaždici je název předmětu, počet aplikací a datum zveřejnění poslední z nich. Pozor na přesný zápis: „Fyzika“ a „fyzika“ by byly dvě různé složky.
 - **Ilustrace předmětu** je `assets/obrazky/predmety/<slug>.svg` (slug je název malými písmeny bez diakritiky, např. `dejepis.svg`, poměr stran 360 × 310, jednoduchá ručně kreslená ilustrace v barvách školy bez cizích postav a značek). Předmět bez vlastní ilustrace dostane záložní `zaloha.svg`.

@@ -402,7 +402,7 @@ const ZAR={
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const datum=d=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');return m?`${+m[3]}. ${+m[2]}. ${m[1]}`:'';};
-let APPS=[], SUBJ=[], GRADES=[], RADY={};
+let APPS=[], SUBJ=[], GRADES=[], RADY={}, SKRYTE=new Set();
 // ročníky: pevné štítky PRI SEK TER KVA (nižší gymnázium), 1R–4R (vyšší gymnázium) a skupiny NG, VG, All
 const ROCNIKY=['PRI','SEK','TER','KVA','1R','2R','3R','4R'];
 const SKUPINY={NG:['PRI','SEK','TER','KVA'],VG:['1R','2R','3R','4R'],All:ROCNIKY};
@@ -493,7 +493,7 @@ function render(){
   $('grid').innerHTML=list.length?list.map(a=>{
     const url=a.odkaz||`${a.slug}/`, local=!a.odkaz, prep=a.stav==='priprava';
     return `<article class="card ${prep?'':'ready'}">
-      <div class="card-art${a.obrazek ? ' has-img' : ''}" aria-hidden="true">${a.obrazek ? `<img src="${esc(a.slug)}/${esc(a.obrazek)}" alt="" loading="lazy">` : esc(a.motiv||a.nazev)}<small>${esc(a.predmet.join(' · '))}</small></div>
+      <div class="card-art${a.obrazek ? ' has-img' : ''}" aria-hidden="true">${a.obrazek ? `<img src="${esc(a.slug)}/${esc(a.obrazek)}" alt="" loading="lazy">` : esc(a.motiv||a.nazev)}<small>${esc(a.predmet.filter(s=>!SKRYTE.has(s)).join(' · '))}</small></div>
       <div class="card-body">
         ${RADY[a.rada]?`<p class="rada"><button type="button" class="rada-btn" data-rada="${esc(a.rada)}" aria-haspopup="dialog" aria-label="Řada ${esc(RADY[a.rada].nazev)}: zobrazit popis">${esc(RADY[a.rada].nazev)} <i aria-hidden="true">i</i></button></p>`:''}
         <h3><a href="${esc(url)}">${esc(a.nazev)}</a></h3>
@@ -512,8 +512,10 @@ function render(){
 fetch('katalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(d=>{
   // archivované a skryté aplikace se v katalogu nezobrazují (skrytá funguje jen na své adrese)
   RADY=d.rady||{};
-  APPS=seradit((d.aplikace||[]).filter(a=>a.stav!=='archiv'&&a.stav!=='skryta'));
-  SUBJ=['Vše',...[...new Set(APPS.flatMap(a=>a.predmet))].sort((a,b)=>a.localeCompare(b,'cs'))];
+  // předměty vypnuté v agendě předmětů (pole „predmety“): složka ani filtr se nezobrazí, aplikace jen s vypnutými předměty také ne
+  SKRYTE=new Set((d.predmety||[]).filter(p=>p&&p.zobrazit===false).map(p=>p.nazev));
+  APPS=seradit((d.aplikace||[]).filter(a=>a.stav!=='archiv'&&a.stav!=='skryta'&&a.predmet.some(s=>!SKRYTE.has(s))));
+  SUBJ=['Vše',...[...new Set(APPS.flatMap(a=>a.predmet).filter(s=>!SKRYTE.has(s)))].sort((a,b)=>a.localeCompare(b,'cs'))];
   GRADES=[...ROCNIKY];
   const pl=(n,a,b,c)=>n===1?a:(n>=2&&n<=4?b:c);
   const nA=APPS.length, nS=SUBJ.length-1;
