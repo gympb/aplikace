@@ -46,6 +46,16 @@ b,strong{font-weight:700}
 .top{display:flex;align-items:center;justify-content:space-between;padding:14px 0 6px;font-size:15px}
 .top a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink2);text-decoration:none}
 .top a:hover{text-decoration:underline}
+.cr-btn{font:inherit;font-size:14px;color:var(--ink3);background:none;border:0;min-height:44px;padding:0 4px;cursor:pointer;text-decoration:underline}
+.cr-btn:hover{color:var(--ink)}
+dialog.cr{max-width:min(30rem,calc(100vw - 32px));width:100%;border:1px solid var(--line2);border-radius:14px;padding:20px 22px;background:var(--card);color:var(--ink);box-shadow:0 12px 40px rgba(0,0,0,.25)}
+dialog.cr::backdrop{background:rgba(10,14,22,.55)}
+dialog.cr h2{margin:0 0 12px;font-size:20px}
+dialog.cr dl{margin:0 0 14px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:16px}
+dialog.cr dt{color:var(--ink3)}
+dialog.cr dd{margin:0}
+dialog.cr p{margin:0 0 14px;font-size:15px;color:var(--ink2)}
+dialog.cr button.cr-x{font:inherit;font-weight:700;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid var(--line2);background:var(--card);color:var(--ink);cursor:pointer}
 .brand{display:flex;align-items:baseline;gap:8px;margin:2px 0 16px}
 .brand small{color:var(--ink3);font-size:15px}
 .lead{color:var(--ink2);margin:6px 0 18px}
@@ -256,6 +266,28 @@ pre.addcol{font:600 17px/1.5 var(--mono);background:var(--bg);border:1px solid v
 </head>
 <body>
 <div id="root"></div>
+<dialog class="cr" id="credits" aria-labelledby="cr-h">
+  <h2 id="cr-h">Credits</h2>
+  <dl>
+    <dt>Aplikace</dt><dd>Dvojková soustava</dd>
+    <dt>Autor</dt><dd>Ivo Bešťák, Gymnázium Příbram</dd>
+    <dt>Licence</dt><dd><a href="https://creativecommons.org/licenses/by/4.0/deed.cs" target="_blank" rel="noopener">CC BY 4.0</a></dd>
+    <dt>Aktualizace</dt><dd>15. 11. 2026</dd>
+  </dl>
+  <p>Postup se ukládá jen v tomto prohlížeči. Aplikace nic neodesílá.</p>
+  <button type="button" class="cr-x" id="cr-x">Zavřít</button>
+</dialog>
+<script>
+(() => {
+  const dlg = document.getElementById('credits'); let opener = null;
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-credits]');
+    if (b) { opener = b; if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); return; }
+    if (e.target === dlg || e.target.id === 'cr-x') dlg.close();
+  });
+  dlg.addEventListener('close', () => { if (opener && document.contains(opener)) opener.focus(); });
+})();
+</script>
 <noscript><p style="padding:16px">Aplikace potřebuje zapnutý JavaScript.</p></noscript>
 <script>
 'use strict';
@@ -890,8 +922,7 @@ const ICONS = {
 };
 function shell(tab, inner) {
   const due = dueList().length;
-  return `<div class="shell"><div class="top"><a href="../">← Všechny školní aplikace</a></div><div class="brand"><h1>Dvojková soustava</h1><small>rychlé učení</small></div><main id="main" tabindex="-1">${inner}</main>
-  <footer class="foot"><p>Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 15. 11. 2026</p><p>Postup se ukládá jen v tomto prohlížeči. Aplikace nic neodesílá.</p></footer></div>
+  return `<div class="shell"><div class="top"><a href="../">← Všechny školní aplikace</a><button type="button" class="cr-btn" data-credits aria-haspopup="dialog">Credits</button></div><div class="brand"><h1>Dvojková soustava</h1><small>rychlé učení</small></div><main id="main" tabindex="-1">${inner}</main></div>
   <div class="tabbar"><nav aria-label="Hlavní navigace"><a href="#/" class="${tab === 'uc' ? 'on' : ''}" ${tab === 'uc' ? 'aria-current="page"' : ''}>${ICONS.learn}Učit se</a><a href="#/dnes" class="${tab === 'dnes' ? 'on' : ''}" ${tab === 'dnes' ? 'aria-current="page"' : ''}>${ICONS.today}Na dnešek${due ? `<span class="badge" aria-label="k opakování: ${due}">${due}</span>` : ''}</a><a href="#/nastroje" class="${tab === 'nastroje' ? 'on' : ''}" ${tab === 'nastroje' ? 'aria-current="page"' : ''}>${ICONS.tools}Nástroje</a></nav></div>`;
 }
 const APP = () => $('#root');
