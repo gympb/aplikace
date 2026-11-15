@@ -127,7 +127,7 @@ a{color:inherit}
 .card-body{display:grid;gap:10px;padding:18px 18px 20px;flex:1;align-content:start}
 .card h3{font-size:21px;line-height:1.2;letter-spacing:-.015em}
 /* celá karta je odkaz: odkaz v nadpisu se průhlednou vrstvou roztáhne přes kartu; štítky, bomba a QR leží nad ní */
-.card .rada{margin:-4px 0 0;font:700 11px/1.3 var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--accent-text)}
+.card .rada{margin:0 0 -4px;font:700 11px/1.3 var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--accent-text)}
 .rada-btn{all:unset;box-sizing:border-box;position:relative;z-index:2;cursor:pointer;display:inline-flex;align-items:center;gap:7px;min-height:24px}
 .rada-btn:hover{text-decoration:underline}
 .rada-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
@@ -495,8 +495,8 @@ function render(){
     return `<article class="card ${prep?'':'ready'}">
       <div class="card-art${a.obrazek ? ' has-img' : ''}" aria-hidden="true">${a.obrazek ? `<img src="${esc(a.slug)}/${esc(a.obrazek)}" alt="" loading="lazy">` : esc(a.motiv||a.nazev)}<small>${esc(a.predmet.join(' · '))}</small></div>
       <div class="card-body">
+        ${RADY[a.rada]?`<p class="rada"><button type="button" class="rada-btn" data-rada="${esc(a.rada)}" aria-haspopup="dialog" aria-label="Řada ${esc(RADY[a.rada].nazev)}: zobrazit popis">${esc(RADY[a.rada].nazev)} <i aria-hidden="true">i</i></button></p>`:''}
         <h3><a href="${esc(url)}">${esc(a.nazev)}</a></h3>
-        ${RADY[a.rada]?`<p class="rada"><button type="button" class="rada-btn" data-rada="${esc(a.rada)}" aria-haspopup="dialog">Řada: ${esc(RADY[a.rada].nazev)} <i aria-hidden="true">i</i></button></p>`:''}
         <p>${esc(a.popis)}</p>
         <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag g" title="Ročník">${esc(t)}</span>`).join('')}${a.plus?'<span class="tag plus" title="Aplikace nebo její část může obsahovat učivo nad rámec přiřazených ročníků">PLUS</span>':''}${a.autor?`<span class="tag a" title="Autor">${esc(a.autor)}</span>`:''}${(a.zverejneno||a.aktualizace)?`<span class="tag d" title="Zveřejněno">${datum(a.zverejneno||a.aktualizace)}</span>`:''}${ZAR[a.zarizeni]||''}${PINNED.has(a.slug)?BOMBA:''}</div>
       </div>
