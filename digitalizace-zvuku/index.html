@@ -145,10 +145,10 @@ input[type=range]::-moz-range-thumb{width:1.7rem;height:1.7rem;border-radius:50%
 .run .wire:nth-of-type(2) u{animation-delay:.2s}.run .wire:nth-of-type(3) u{animation-delay:.4s}.run .wire:nth-of-type(4) u{animation-delay:.6s}.run .wire:nth-of-type(5) u{animation-delay:.8s}
 #codes{position:absolute;inset:0;padding:4.6rem 1.2rem 1rem;overflow:hidden;display:flex;flex-direction:column;gap:.9rem;color:var(--cream)}
 .cg{display:grid;grid-template-columns:repeat(var(--n,8),1fr);gap:.5rem}
-.cg>div{background:rgba(244,241,234,.07);border-radius:.7rem;padding:.5rem .4rem;text-align:center;font:500 calc(.85rem*var(--z))/1.2 var(--f-mono);min-width:0;overflow:hidden}
+.cg>div{background:rgba(244,241,234,.07);border-radius:.7rem;padding:.5rem .4rem;text-align:center;font:500 calc(.85rem*var(--z))/1.2 var(--f-mono);min-width:0;overflow:hidden;container-type:inline-size}
 .cg>div i{display:block;font:700 calc(.6rem*var(--z)) var(--f-head);letter-spacing:.16em;color:var(--orange);font-style:normal;margin-bottom:.2rem}
 .cg>div em{display:block;font:500 1.35rem var(--f-head);font-style:normal;margin-bottom:.1rem}
-.cg>div s{display:block;text-decoration:none;color:#fff;word-break:break-all;line-height:1.1}
+.cg>div s{display:block;text-decoration:none;color:#fff;white-space:nowrap;line-height:1.1;font-size:min(.95rem,calc((100cqw - .8rem)/(var(--b,16)*.62)))}
 .bits{font:500 1.4rem/1.45 var(--f-mono);letter-spacing:.12em;word-break:break-all;color:var(--orange);opacity:.95;max-height:9rem;overflow:hidden}
 .bits span{color:var(--cream);opacity:.5}
 .scrub{display:grid;grid-template-columns:1fr 1fr;gap:1.6rem;padding:.6rem 1.2rem}
@@ -631,15 +631,15 @@ function renderCodes(){
  const per=nl===2?8:16;const n=8;
  let h='';
  for(let c=0;c<nl;c++){
-  h+=`<div class="cg" style="--n:${n}">`;
+  h+=`<div class="cg" style="--n:${n};--b:${b}">`;
   for(let j=0;j<(nl===2?8:16);j++){
    const k=k0+j,v=sample(S.src,k/fs,c)*S.amp,i=qIdx(v,b);
    h+=`<div><i>${nl===2?(c?tx('P','R'):'L')+' · ':''}${tx('VZOREK','SAMPLE')} ${k}</i><em>${nf(i)}</em><s>${bin(i,b)}</s></div>`;
-   if(nl===1&&j===7)h+=`</div><div class="cg" style="--n:${n}">`;
+   if(nl===1&&j===7)h+=`</div><div class="cg" style="--n:${n};--b:${b}">`;
   }
   h+='</div>';
  }
- const parts=[];let len=0;for(let j=0;j<60&&len<420;j++){const k=k0+j;for(let c=0;c<nl;c++){parts.push(bin(qIdx(sample(S.src,k/fs,c)*S.amp,b),b));len+=b}}
+ const parts=[];let len=0;for(let j=0;j<60&&len<300;j++){const k=k0+j;for(let c=0;c<nl;c++){parts.push(bin(qIdx(sample(S.src,k/fs,c)*S.amp,b),b));len+=b}}
  el.innerHTML=h+`<div class="lbl">${tx('Tak vypadá začátek souboru','This is how the start of the file looks')}</div><div class="bits">${parts.join('<span>·</span>')}</div>`;
 }
 let geo=null;
