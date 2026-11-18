@@ -989,11 +989,12 @@ function drawAD(){
   const {x,w,h,c}=g, pad=22, N=2**AD.bits;
   const X=t=>pad+t/WIN*(w-2*pad), Y=v=>h/2-v*(h/2-pad)/1.1;
   axes(g,pad,[[1,'+1'],[-1,'−1']]);
-  if(N<=32){x.strokeStyle=c.muted;x.globalAlpha=.55;x.lineWidth=1;x.setLineDash([2,4]);for(let L=0;L<N;L++){const y=Y(qval(L,AD.bits));x.beginPath();x.moveTo(pad,y);x.lineTo(w-pad/2,y);x.stroke();}x.setLineDash([]);x.globalAlpha=1;}
+  const stp=(h/2-pad)/1.1*2/(N-1);if(stp>=2){x.strokeStyle=c.muted;x.globalAlpha=.55;x.lineWidth=1;x.setLineDash([2,4]);for(let L=0;L<N;L++){const y=Y(qval(L,AD.bits));x.beginPath();x.moveTo(pad,y);x.lineTo(w-pad/2,y);x.stroke();}x.setLineDash([]);x.globalAlpha=1;}
   line(g,t=>[X(t),Y(SIG(t))],0,WIN,c.k2,2,[],300);
   const S=adSamples();
   x.strokeStyle=c.k1;x.fillStyle=c.k1;x.lineWidth=1.5;
   S.forEach(s=>{x.beginPath();x.moveTo(X(s.t),h/2);x.lineTo(X(s.t),Y(s.q));x.stroke();x.beginPath();x.arc(X(s.t),Y(s.q),S.length>40?2.4:4,0,7);x.fill();});
+  if(stp<2){x.fillStyle=c.muted;x.textAlign='right';x.textBaseline='alphabetic';x.fillText(nf(N,0)+' úrovní: příliš husté na vykreslení',w-pad/2,pad-6);x.textAlign='left';}
   x.fillStyle=c.muted;x.textBaseline='alphabetic';x.fillText('0 ms',pad,h-5);x.textAlign='right';x.fillText(WIN+' ms',w-pad/2,h-5);x.textAlign='left';
 }
 function adUpdate(){
@@ -1033,6 +1034,7 @@ function drawDA(){
     }
   }
   x.stroke();
+  if(stp<2){x.fillStyle=c.muted;x.textAlign='right';x.textBaseline='alphabetic';x.fillText(nf(N,0)+' úrovní: příliš husté na vykreslení',w-pad/2,pad-6);x.textAlign='left';}
   x.fillStyle=c.muted;x.textBaseline='alphabetic';x.fillText('0 ms',pad,h-5);x.textAlign='right';x.fillText(WIN+' ms',w-pad/2,h-5);x.textAlign='left';
 }
 $('#daMode').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;daMode=b.dataset.m;$('#daMode').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));drawDA();});
@@ -1110,7 +1112,8 @@ function playBuf(fn,secs){
     if(f>=fN) line(g,t=>[X(t),Y(Math.sin(2*Math.PI*faT*t))],0,W,c.k1,2.4,[],700);
     const fk=fs/1000,cnt=Math.floor(W*fk); x.fillStyle=c.ink;
     for(let k=0;k<=cnt;k++){const t=k/fk;x.beginPath();x.arc(X(t),Y(Math.sin(2*Math.PI*fT*t)),3.2,0,7);x.fill();}
-    x.fillStyle=c.muted;x.textBaseline='alphabetic';x.fillText('0 ms',pad,h-5);x.textAlign='right';x.fillText(W+' ms',w-pad/2,h-5);x.textAlign='left';
+    if(stp<2){x.fillStyle=c.muted;x.textAlign='right';x.textBaseline='alphabetic';x.fillText(nf(N,0)+' úrovní: příliš husté na vykreslení',w-pad/2,pad-6);x.textAlign='left';}
+  x.fillStyle=c.muted;x.textBaseline='alphabetic';x.fillText('0 ms',pad,h-5);x.textAlign='right';x.fillText(W+' ms',w-pad/2,h-5);x.textAlign='left';
   }
   $('#nyF').addEventListener('input',draw);$('#nyS').addEventListener('input',draw);
   $('#nyPlay').onclick=()=>{const f=+$('#nyF').value,fs=+$('#nyS').value,fo=Math.abs(alias(f,fs));playBuf(t=>Math.sin(2*Math.PI*fo*t),1);toast(`Přehrává se tón ${nf(fo,0)} Hz`);};
@@ -1126,7 +1129,7 @@ function playBuf(fn,secs){
     $('#qnStat').innerHTML=`<div><b>${nf(N,0)}</b><span>úrovní (2<sup>${n}</sup>)</span></div><div><b>${nf(snr(n),1)} dB</b><span>změřený odstup signálu od šumu (SNR)</span></div><div><b>${nf(6.02*n+1.76,1)} dB</b><span>vzorec 6,02 · n + 1,76</span></div>`;
     const g=fit(cv); if(!g) return; const {x,w,h,c}=g,pad=20,X=t=>pad+t*(w-2*pad),Y=v=>h/2-v*(h/2-pad)/1.1;
     axes(g,pad,[[1,'+1'],[-1,'−1']]);
-    if(N<=32){x.strokeStyle=c.muted;x.globalAlpha=.5;x.setLineDash([2,4]);x.lineWidth=1;for(let L=0;L<N;L++){const y=Y(qval(L,n));x.beginPath();x.moveTo(pad,y);x.lineTo(w-pad/2,y);x.stroke();}x.setLineDash([]);x.globalAlpha=1;}
+    const stp=(h/2-pad)/1.1*2/(N-1);if(stp>=2){x.strokeStyle=c.muted;x.globalAlpha=.5;x.setLineDash([2,4]);x.lineWidth=1;for(let L=0;L<N;L++){const y=Y(qval(L,n));x.beginPath();x.moveTo(pad,y);x.lineTo(w-pad/2,y);x.stroke();}x.setLineDash([]);x.globalAlpha=1;}
     const sg=t=>Math.sin(4*Math.PI*t),lsb=2/(N-1);
     line(g,t=>[X(t),Y(sg(t))],0,1,c.k2,1.6,[5,4],500);
     line(g,t=>[X(t),Y(qval(qlev(sg(t),n),n))],0,1,c.k1,2.2,[],500);
