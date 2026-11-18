@@ -558,66 +558,12 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
 <div class="xnote"><span class="plus">PLUS</span><p><b>Extra</b> je nepovinná část. Nemusíš ji projít a nic se tu nevyžaduje. Čti, zkoušej nástroje a vybírej si, co tě zajímá. Postup se tady nepočítá do přehledu zvládnutí.</p></div>
 <div class="course" data-course="x">
   <div class="course-head">
-    <ul class="findlist"><li><b>Digitalizace a komprese do hloubky:</b> A přesný postup komprese MP3 krok za krokem, B kvantizační šum a bitová hloubka (s poslechem),</li><li><b>Komprese a lidský sluch:</b> C frekvenční a časové maskování (s poslechem), D MP3 v kostce,</li><li><b>Formáty a kvalita zvuku:</b> E srovnání formátů, F Hi-Fi a Hi-Res (historická norma DIN 45500, kde koupit), G SACD a DSD, H prostorový zvuk pro doma (5.1, DTS, Atmos, Sony 360, Apple) a pro kino.</li></ul>
+    <ul class="findlist"><li><b>Digitalizace do hloubky:</b> A kvantizační šum a bitová hloubka (s poslechem),</li><li><b>Komprese a lidský sluch:</b> B frekvenční a časové maskování (s poslechem), C MP3 v kostce,</li><li><b>Formáty a kvalita zvuku:</b> D srovnání formátů, E Hi-Fi a Hi-Res (historická norma DIN 45500, kde koupit), F SACD a DSD, G prostorový zvuk pro doma (5.1, DTS, Atmos, Sony 360, Apple) a pro kino,</li><li><b>Nejtěžší část:</b> H přesný postup komprese MP3 krok za krokem (jen pro představu, bez nároku na pochopení detailů).</li></ul>
     <ol class="prog" aria-label="Části Extra"></ol>
   </div>
 
-  <article class="ch" data-group="Digitalizace a komprese do hloubky" data-title="A · Přesný postup komprese MP3">
-    <div><span class="eyebrow">Extra A</span><h2>Přesný postup komprese MP3</h2></div>
-    <p>Formát MP3 je přesněji <b>MPEG-1 Audio Layer III</b> (norma ISO/IEC 11172-3). Norma přesně určuje, jak vypadá výsledný soubor a jak ho dekodér přehraje. Kodér má při tvorbě volnost, například jak rozdělí bity mezi pásma. Tady je postup, jak pracuje běžný kodér. Čísla platí pro vzorkovací frekvenci 44,1 kHz.</p>
-    <div class="note"><b>Nejtěžší část textu.</b> Tahle kapitola je záměrně náročná. Podrobnému pochopení by běžný středoškolák potřeboval vysokoškolskou matematiku (např. Fourierovu a kosinovou transformaci), proto se jí nesnaž rozumět do detailu, je problém ji pochopit i jen velmi přibližně. Je tu jen pro vytvoření představy, že celý algoritmus ztrátové komprese je daleko složitější, než se může zdát z předchozího textu. Stačí zachytit hlavní kroky a jejich pořadí.</div>
-    <div class="tblw"><table class="t">
-      <thead><tr><th>Veličina</th><th>Hodnota při 44,1 kHz</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">Rámec</th><td>1 152 vzorků na kanál, tedy asi 26,12 ms</td></tr>
-        <tr><th scope="row">Granule</th><td>576 vzorků (půl rámce), asi 13,06 ms; rámec má 2 granule</td></tr>
-        <tr><th scope="row">Pásma banky filtrů</th><td>32 stejně širokých, každé asi 689 Hz</td></tr>
-        <tr><th scope="row">Frekvenční čáry (MDCT)</th><td>32 · 18 = 576 na granuli, rozestup asi 38 Hz</td></tr>
-        <tr><th scope="row">Scalefactor pásma</th><td>21 u dlouhých bloků, 12 u krátkých</td></tr>
-      </tbody>
-    </table></div>
-    <h3>1. Rozdělení na rámce</h3>
-    <p>Vstupní zvuk (PCM) se rozdělí na rámce po 1 152 vzorcích a každý rámec na dvě granule po 576. Stereo se zpracovává po kanálech. Granule je základní jednotka, pro kterou se v dalších krocích dělají všechna rozhodnutí.</p>
-    <h3>2. Dvě větve najednou</h3>
-    <p>Stejné vzorky vstupují do <b>banky filtrů</b> (kroky 3 a 4), která zvuk skutečně kóduje, a zároveň do <b>psychoakustického modelu</b> (krok 5), který jen počítá, co smí kodér zahodit. Model používá vlastní rychlou Fourierovu transformaci (FFT), ne bankou filtrů.</p>
-    <h3>3. Polyfázová banka filtrů</h3>
-    <p>Signál se rozloží na <b>32 stejně širokých pásem</b>. Banka je „kriticky vzorkovaná“: z 32 nových vstupních vzorků vznikne 32 výstupních, takže se počet dat nezvětší. Za jednu granuli dostane každé pásmo 18 vzorků.</p>
-    <h3>4. Transformace MDCT</h3>
-    <p>V každém pásmu se 18 vzorků převede <b>modifikovanou diskrétní kosinovou transformací (MDCT)</b> na 18 koeficientů. Okna se překrývají o polovinu (36 vzorků), aby na hranicích bloků nevznikaly slyšitelné skoky. Dohromady je to 32 · 18 = <b>576 frekvenčních čar</b>. Mezi sousedními pásmy se ještě potlačí aliasing, který zbyl z banky filtrů. Dohromady se banka filtrů a MDCT nazývá <b>hybridní banka filtrů</b>.</p>
-    <p><b>Přepínání oken.</b> Pro většinu zvuku se používají <b>dlouhé bloky</b> s 576 čarami (dobré rozlišení frekvence). Při náhlém úderu se přepne na <b>krátké bloky</b>: tři okna po 192 čarách (dobré rozlišení času). Tím se šum z kvantování nerozlije dlouho před úder (takzvané <i>předozvěny</i>, pre-echo). Mezi dlouhými a krátkými okny jsou přechodová okna start a stop.</p>
-    <h3>5. Psychoakustický model</h3>
-    <p>Model spočítá energii signálu v jednotlivých <b>scalefactor pásmech</b>, které se přibližně shodují s kritickými pásmy sluchu. Z ní odvodí <b>práh maskování</b> (frekvenční i časové) a <b>odstup signálu od masky</b> (SMR). Pak z něj kodér určí <b>povolené zkreslení</b> v každém pásmu: šum pod tímto prahem je neslyšitelný. Model také rozhoduje o přepnutí na krátká okna. Je to jediná část kodéru, kterou norma nepředepisuje, proto se kodéry (například LAME) kvalitou liší.</p>
-    <h3>6. Stereo kódování</h3>
-    <p>U stereo zvuku může kodér pro každý rámec zvolit <b>joint stereo</b>. Při režimu <b>M/S</b> se místo levého a pravého kanálu kóduje součet (mid) a rozdíl (side). Protože jsou oba kanály často podobné, rozdíl je malý a stačí na něj málo bitů. Existuje i <b>intenzitní stereo</b>, které u vysokých frekvencí zachová jen celkovou hlasitost a prostorovou polohu, v kvalitním kódování se ale používá málo.</p>
-    <h3>7. Kvantování (tady vzniká ztráta)</h3>
-    <p>Čáry se v každém scalefactor pásmu <b>zaokrouhlí na celá čísla</b>. Kvantování je <b>nerovnoměrné</b>: nejdřív se hodnota umocní na 3/4, takže velké hodnoty se zaokrouhlují hruběji než malé (ucho je u hlasitých složek méně citlivé na absolutní chybu). Velikost kroku řídí <b>globální zisk</b> (global gain), jeho jeden stupeň odpovídá změně o asi 1,5 dB. Každé pásmo má ještě vlastní <b>scalefactor</b>: zesílí hodnoty v pásmu před kvantováním, tím se jeho krok zmenší a zkreslení klesne. Dekodér pak hodnotu umocní zpět na 4/3 a vynásobí krokem.</p>
-    <h3>8. Dvě vnořené smyčky</h3>
-    <p>Kodér potřebuje jedno nastavení, které vyhoví dvěma požadavkům najednou: data se musí <b>vejít do rozpočtu bitů</b> a šum musí zůstat <b>pod prahem maskování</b>. Hledá ho dvěma smyčkami:</p>
-    <ul>
-      <li><b>Vnitřní smyčka (bitový rozpočet):</b> zvětšuje krok kvantování (globální zisk), dokud se Huffmanův zápis (krok 9) nevejde do povoleného počtu bitů.</li>
-      <li><b>Vnější smyčka (zkreslení):</b> pro každé pásmo spočítá, jaké zkreslení po kvantování vzniklo. Pásma, kde překračuje povolený práh, zesílí scalefactorem (jemnější krok) a vrátí se do vnitřní smyčky.</li>
-    </ul>
-    <p>Smyčky skončí, když žádné pásmo nepřekročí povolené zkreslení, nebo když už nejde žádné pásmo dál zesílit, nebo by se muselo zesílit všechna pásma. Při malém datovém toku to často nedopadne ideálně a zbytkový šum je pak slyšet. Proto 128 kbit/s zní hůř než 320 kbit/s.</p>
-    <h3>9. Huffmanovo kódování (bezeztrátové)</h3>
-    <p>Celá čísla se zapíšou od nízkých frekvencí k vysokým. Spektrum se rozdělí na tři oblasti:</p>
-    <ul>
-      <li><b>big values:</b> páry hodnot s velkou amplitudou; tato oblast se ještě dělí na tři regiony a každý má vlastní Huffmanovu tabulku, kterou kodér vybere podle hodnot,</li>
-      <li><b>count1:</b> čtveřice hodnot, které jsou jen −1, 0 nebo +1,</li>
-      <li><b>rzero:</b> souvislý konec samých nul, který se nezapisuje vůbec; stačí uložit, kde začíná.</li>
-    </ul>
-    <p>Častější hodnoty dostanou kratší kódy. Scalefactory se zapisují zvlášť v postranní informaci.</p>
-    <h3>10. Zásobník bitů (bit reservoir)</h3>
-    <p>Rámec, kterému se podařilo ušetřit bity, je nechá v zásobníku. Náročnější rámec je může využít. Stačí k tomu v postranní informaci uložit ukazatel (<i>main_data_begin</i>), který ukazuje až 511 bajtů zpět do předchozích rámců. Datový tok je tak v průměru stálý, ale okamžitě se mění podle potřeby.</p>
-    <h3>11. Sestavení rámce</h3>
-    <p>Rámec obsahuje: <b>hlavičku</b> (4 bajty se synchronizačním slovem z jedniček, verzí, datovým tokem, vzorkovací frekvencí a režimem kanálů), volitelný kontrolní součet CRC (2 bajty), <b>postranní informaci</b> (17 bajtů u mono, 32 u stereo) a <b>hlavní data</b> (scalefactory a Huffmanovy kódy). Délka rámce vychází z datového toku:</p>
-    <div class="box tip"><span class="lbl">Spočítej si: velikost rámce při 128 kbit/s</span><p>Délka rámce = 144 · datový tok / vzorkovací frekvence = 144 · 128 000 / 44 100 ≈ 417,96 bajtu. Rámce mají 417 nebo 418 bajtů (přidává se vyrovnávací bajt). Nekomprimovaný rámec má 1 152 · 2 · 2 = 4 608 bajtů, takže komprese je asi 11:1. Za sekundu je asi 38,3 rámce (44 100 / 1 152).</p></div>
-    <h3>A jak se MP3 přehrává</h3>
-    <p>Dekodér provede kroky v opačném pořadí: najde synchronizační slovo, přečte postranní informaci, rozkóduje Huffmanovy kódy, hodnoty umocní na 4/3 a vynásobí krokem, vrátí stereo z M/S na L/R, provede inverzní MDCT s překrytím a nakonec polyfázová syntéza složí 32 pásem zpět do vzorků PCM. Psychoakustický model dekodér nepotřebuje, protože všechna rozhodnutí jsou v souboru. Proto je dekodér rychlý a jednoduchý.</p>
-    <div class="note">Všechny kroky v této kapitole pocházejí z normy MPEG-1 Audio a z popisu běžného kodéru. Konkrétní kodéry (LAME, Fraunhofer a další) se liší hlavně psychoakustickým modelem a tím, jak hledají nastavení ve smyčkách.</div>
-  </article>
-
-  <article class="ch" data-group="Digitalizace a komprese do hloubky" data-title="B · Kvantizační šum">
-    <div><span class="eyebrow">Extra B</span><h2>Kvantování a kvantizační šum</h2></div>
+  <article class="ch" data-group="Digitalizace do hloubky" data-title="A · Kvantizační šum">
+    <div><span class="eyebrow">Extra A</span><h2>Kvantování a kvantizační šum</h2></div>
     <p>Rozdíl mezi skutečnou a zaokrouhlenou hodnotou se ve zvuku projeví jako šum, <b>kvantizační šum</b>. Každý další bit zdvojnásobí počet úrovní a sníží šum zhruba o 6 dB. Pro ideální sinusový signál s plnou amplitudou platí přibližně <b>SNR ≈ 6,02 · n + 1,76 dB</b>. U 16 bitů je to asi 98 dB, u 24 bitů asi 146 dB.</p>
     <div class="box try"><span class="lbl">Vyzkoušej: kolik bitů stačí</span>
       <canvas class="cv" id="qnCv" width="680" height="340" role="img" aria-label="Graf kvantování a chyby"></canvas>
@@ -628,8 +574,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     </div>
   </article>
 
-  <article class="ch" data-group="Komprese a lidský sluch" data-title="C · Maskování">
-    <div><span class="eyebrow">Extra C</span><h2>Psychoakustické maskování</h2></div>
+  <article class="ch" data-group="Komprese a lidský sluch" data-title="B · Maskování">
+    <div><span class="eyebrow">Extra B</span><h2>Psychoakustické maskování</h2></div>
     <p>Ucho neslyší všechno stejně. Za ticha slyšíme nejlépe kolem 3 kHz, u hlubokých a velmi vysokých tónů potřebujeme víc hlasitosti. A hlasitý zvuk <b>zakryje</b> slabší zvuky ve svém okolí: říká se tomu <b>maskování</b>. Okolí se přitom může hledat dvěma způsoby: na ose <b>frekvence</b>, nebo na ose <b>času</b>.</p>
     <h3>Frekvenční (simultánní) maskování</h3>
     <p>Zvuky znějí <b>současně</b>. Hlasitý tón (masker) zvedne práh slyšitelnosti v okolí své frekvence a slabší tón, který by o samotě byl slyšet, pod tímto prahem zanikne.</p>
@@ -687,8 +633,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="note"><b>V kompresi (MP3, AAC):</b> kodek rozdělí zvuk na krátké úseky a pásma a v každém odhadne, kde práh vlivem maskování stoupl. Složky pod prahem uloží hrubě nebo vůbec a ušetřené bity použije tam, kde by chyba byla slyšet. Frekvenční maskování se využívá neustále, časové je důležité u úderů, kde hrozí tzv. předozvěna (pre-echo): šum z kvantování se rozlije před úder, kde ho zpětné maskování většinou nepokryje.</div>
   </article>
 
-  <article class="ch" data-group="Komprese a lidský sluch" data-title="D · MP3 v kostce">
-    <div><span class="eyebrow">Extra D</span><h2>Jak vzniká MP3: přehled</h2></div>
+  <article class="ch" data-group="Komprese a lidský sluch" data-title="C · MP3 v kostce">
+    <div><span class="eyebrow">Extra C</span><h2>Jak vzniká MP3: přehled</h2></div>
     <p>MP3 (přesněji MPEG-1 Audio Layer III) je ztrátový formát, který zmenší zvuk z CD zhruba desetkrát a dá se při tom stále dobře poslouchat. Kodér zvuk zpracuje postupně v těchto krocích. Klepni na krok a přečti si, co se v něm děje. Označení říká, jestli je krok ztrátový, nebo bezeztrátový.</p>
     <div class="path mp3" id="mpStrip" role="group" aria-label="Kroky kódování MP3"></div>
     <div class="pathinfo" id="mpInfo" aria-live="polite"></div>
@@ -700,8 +646,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
       <p>Licence byla jedním z důvodů, proč vznikaly konkurenční formáty. <b>Microsoft</b> nabídl vlastní WMA, který ovládala jediná firma a licence na něj byla levnější. <b>Apple</b> pro obchod iTunes zvolil AAC, což je standard, na jehož vývoji se podílel i Fraunhofer. AAC ale také vyžadoval licenci, a to dokonce dražší, takže poplatky nebyly jediným důvodem. Hrála roli i kvalita při nižším datovém toku a ochrana proti kopírování (DRM).</p></div>
   </article>
 
-  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="E · Srovnání formátů">
-    <div><span class="eyebrow">Extra E</span><h2>Velké srovnání zvukových formátů</h2></div>
+  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="D · Srovnání formátů">
+    <div><span class="eyebrow">Extra D</span><h2>Velké srovnání zvukových formátů</h2></div>
     <p>Formáty se liší tím, <b>jak</b> zvuk uchovávají (nekomprimovaně, bezeztrátově, ztrátově) a <b>kdo</b> je smí používat (otevřené, nebo vázané na firmu). Datové toky u ztrátových formátů jsou typické orientační hodnoty, u konkrétního souboru se mohou lišit.</p>
     <div class="seg fmtf" id="fmF" role="group" aria-label="Filtr formátů"><button type="button" data-f="all" aria-pressed="true">Všechny</button><button type="button" data-f="none" aria-pressed="false">Bez komprese</button><button type="button" data-f="lossless" aria-pressed="false">Bezeztrátové</button><button type="button" data-f="lossy" aria-pressed="false">Ztrátové</button></div>
     <div class="tblw"><table class="t" id="fmT">
@@ -721,8 +667,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="box tip"><span class="lbl">Jak si vybrat</span><ul><li>Úpravy a archiv: <b>bez komprese nebo bezeztrátově</b>, ať se nic neztratí.</li><li>Poslech v telefonu a streamování: <b>ztrátově</b> s dostatečným datovým tokem.</li><li>Opakované úpravy ztrátových souborů kvalitu zhoršují, proto se kóduje až naposled.</li></ul></div>
   </article>
 
-  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="F · Hi-Fi a Hi-Res">
-    <div><span class="eyebrow">Extra F</span><h2>Hi-Fi, Hi-Res a kde ho koupit</h2></div>
+  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="E · Hi-Fi a Hi-Res">
+    <div><span class="eyebrow">Extra E</span><h2>Hi-Fi, Hi-Res a kde ho koupit</h2></div>
     <h3>Historická norma DIN 45500</h3>
     <p><b>Hi-Fi</b> (<i>high fidelity</i>, věrná reprodukce) bylo dlouho jen reklamní označení. Německá norma <b>DIN 45500</b> z 60. a 70. let proto stanovila minimální technické požadavky (například na kmitočtovou charakteristiku a zkreslení), které musel přístroj splnit, aby se smělo označit jako Hi-Fi. Dnes je stažená a navazují na ni mezinárodní normy (například IEC 60581). Podle dnešních měřítek byly její požadavky skromné a moderní zařízení je splní s rezervou.</p>
     <div class="box tip"><span class="lbl">Zajímavost: Hi-Fi klub Svazarmu</span>
@@ -758,8 +704,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="links2"><button type="button" class="lnk" data-go="v">Spočítej si to v sekci Výpočty →</button></div>
   </article>
 
-  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="G · SACD a DSD">
-    <div><span class="eyebrow">Extra G</span><h2>SACD a DSD: jeden bit místo šestnácti</h2></div>
+  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="F · SACD a DSD">
+    <div><span class="eyebrow">Extra F</span><h2>SACD a DSD: jeden bit místo šestnácti</h2></div>
     <p><b>Super Audio CD (SACD)</b> je optický disk, který v roce 1999 uvedly firmy Sony a Philips jako nástupce CD. Jeho technické podmínky popisuje standard <b>Scarlet Book</b>, podobně jako Red Book u CD. <b>DSD</b> (Direct Stream Digital) je způsob, jakým je na SACD zapsaný zvuk. Disk je tedy nosič a DSD je kódování, které na něm běží. Totéž kódování se používá i v souborech (přípony .dsf a .dff).</p>
     <h3>PCM a DSD vedle sebe</h3>
     <div class="tblw"><table class="t">
@@ -784,8 +730,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="links2"><button type="button" class="lnk" data-go="v">Spočítej si to v sekci Výpočty →</button></div>
   </article>
 
-  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="H · Prostorový zvuk">
-    <div><span class="eyebrow">Extra H</span><h2>Prostorový zvuk: pro doma a pro kino</h2></div>
+  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="G · Prostorový zvuk">
+    <div><span class="eyebrow">Extra G</span><h2>Prostorový zvuk: pro doma a pro kino</h2></div>
     <p>Stereo má dva kanály, levý a pravý. Prostorový zvuk přidává reproduktory kolem posluchače, případně i nad ním. Existují dva přístupy. Formáty se dělí podle toho, kde se přehrávají: doma (disky, televize, streamování, sluchátka) a v kině (velký sál s mnoha diváky).</p>
     <ul>
       <li><b>Kanálový:</b> každý kanál patří jednomu reproduktoru. Značení <b>5.1</b> znamená pět plnohodnotných kanálů (vpředu vlevo, uprostřed, vpravo, vzadu vlevo a vpravo) a jeden kanál <b>.1</b> pro hluboké basy (LFE), který má jen asi desetinu šířky pásma.</li>
@@ -847,6 +793,61 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="note">Přesné datum a seznam prvních filmů se u různých autorů mírně liší, někde se uvádí i předcházející zkušební projekce. V tabulce jsou roky, které se objevují ve většině zdrojů.</div>
     <div class="links2"><button type="button" class="lnk" data-go="v">Spočítej si to v sekci Výpočty →</button></div>
   </article>
+
+  <article class="ch" data-group="Nejtěžší část: algoritmus MP3" data-title="H · Přesný postup komprese MP3">
+    <div><span class="eyebrow">Extra H</span><h2>Přesný postup komprese MP3</h2></div>
+    <p>Formát MP3 je přesněji <b>MPEG-1 Audio Layer III</b> (norma ISO/IEC 11172-3). Norma přesně určuje, jak vypadá výsledný soubor a jak ho dekodér přehraje. Kodér má při tvorbě volnost, například jak rozdělí bity mezi pásma. Tady je postup, jak pracuje běžný kodér. Čísla platí pro vzorkovací frekvenci 44,1 kHz.</p>
+    <div class="note"><b>Nejtěžší část textu.</b> Tahle kapitola je záměrně náročná. Podrobnému pochopení by běžný středoškolák potřeboval vysokoškolskou matematiku (např. Fourierovu a kosinovou transformaci), proto se jí nesnaž rozumět do detailu, je problém ji pochopit i jen velmi přibližně. Je tu jen pro vytvoření představy, že celý algoritmus ztrátové komprese je daleko složitější, než se může zdát z předchozího textu. Stačí zachytit hlavní kroky a jejich pořadí.</div>
+    <div class="tblw"><table class="t">
+      <thead><tr><th>Veličina</th><th>Hodnota při 44,1 kHz</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Rámec</th><td>1 152 vzorků na kanál, tedy asi 26,12 ms</td></tr>
+        <tr><th scope="row">Granule</th><td>576 vzorků (půl rámce), asi 13,06 ms; rámec má 2 granule</td></tr>
+        <tr><th scope="row">Pásma banky filtrů</th><td>32 stejně širokých, každé asi 689 Hz</td></tr>
+        <tr><th scope="row">Frekvenční čáry (MDCT)</th><td>32 · 18 = 576 na granuli, rozestup asi 38 Hz</td></tr>
+        <tr><th scope="row">Scalefactor pásma</th><td>21 u dlouhých bloků, 12 u krátkých</td></tr>
+      </tbody>
+    </table></div>
+    <h3>1. Rozdělení na rámce</h3>
+    <p>Vstupní zvuk (PCM) se rozdělí na rámce po 1 152 vzorcích a každý rámec na dvě granule po 576. Stereo se zpracovává po kanálech. Granule je základní jednotka, pro kterou se v dalších krocích dělají všechna rozhodnutí.</p>
+    <h3>2. Dvě větve najednou</h3>
+    <p>Stejné vzorky vstupují do <b>banky filtrů</b> (kroky 3 a 4), která zvuk skutečně kóduje, a zároveň do <b>psychoakustického modelu</b> (krok 5), který jen počítá, co smí kodér zahodit. Model používá vlastní rychlou Fourierovu transformaci (FFT), ne bankou filtrů.</p>
+    <h3>3. Polyfázová banka filtrů</h3>
+    <p>Signál se rozloží na <b>32 stejně širokých pásem</b>. Banka je „kriticky vzorkovaná“: z 32 nových vstupních vzorků vznikne 32 výstupních, takže se počet dat nezvětší. Za jednu granuli dostane každé pásmo 18 vzorků.</p>
+    <h3>4. Transformace MDCT</h3>
+    <p>V každém pásmu se 18 vzorků převede <b>modifikovanou diskrétní kosinovou transformací (MDCT)</b> na 18 koeficientů. Okna se překrývají o polovinu (36 vzorků), aby na hranicích bloků nevznikaly slyšitelné skoky. Dohromady je to 32 · 18 = <b>576 frekvenčních čar</b>. Mezi sousedními pásmy se ještě potlačí aliasing, který zbyl z banky filtrů. Dohromady se banka filtrů a MDCT nazývá <b>hybridní banka filtrů</b>.</p>
+    <p><b>Přepínání oken.</b> Pro většinu zvuku se používají <b>dlouhé bloky</b> s 576 čarami (dobré rozlišení frekvence). Při náhlém úderu se přepne na <b>krátké bloky</b>: tři okna po 192 čarách (dobré rozlišení času). Tím se šum z kvantování nerozlije dlouho před úder (takzvané <i>předozvěny</i>, pre-echo). Mezi dlouhými a krátkými okny jsou přechodová okna start a stop.</p>
+    <h3>5. Psychoakustický model</h3>
+    <p>Model spočítá energii signálu v jednotlivých <b>scalefactor pásmech</b>, které se přibližně shodují s kritickými pásmy sluchu. Z ní odvodí <b>práh maskování</b> (frekvenční i časové) a <b>odstup signálu od masky</b> (SMR). Pak z něj kodér určí <b>povolené zkreslení</b> v každém pásmu: šum pod tímto prahem je neslyšitelný. Model také rozhoduje o přepnutí na krátká okna. Je to jediná část kodéru, kterou norma nepředepisuje, proto se kodéry (například LAME) kvalitou liší.</p>
+    <h3>6. Stereo kódování</h3>
+    <p>U stereo zvuku může kodér pro každý rámec zvolit <b>joint stereo</b>. Při režimu <b>M/S</b> se místo levého a pravého kanálu kóduje součet (mid) a rozdíl (side). Protože jsou oba kanály často podobné, rozdíl je malý a stačí na něj málo bitů. Existuje i <b>intenzitní stereo</b>, které u vysokých frekvencí zachová jen celkovou hlasitost a prostorovou polohu, v kvalitním kódování se ale používá málo.</p>
+    <h3>7. Kvantování (tady vzniká ztráta)</h3>
+    <p>Čáry se v každém scalefactor pásmu <b>zaokrouhlí na celá čísla</b>. Kvantování je <b>nerovnoměrné</b>: nejdřív se hodnota umocní na 3/4, takže velké hodnoty se zaokrouhlují hruběji než malé (ucho je u hlasitých složek méně citlivé na absolutní chybu). Velikost kroku řídí <b>globální zisk</b> (global gain), jeho jeden stupeň odpovídá změně o asi 1,5 dB. Každé pásmo má ještě vlastní <b>scalefactor</b>: zesílí hodnoty v pásmu před kvantováním, tím se jeho krok zmenší a zkreslení klesne. Dekodér pak hodnotu umocní zpět na 4/3 a vynásobí krokem.</p>
+    <h3>8. Dvě vnořené smyčky</h3>
+    <p>Kodér potřebuje jedno nastavení, které vyhoví dvěma požadavkům najednou: data se musí <b>vejít do rozpočtu bitů</b> a šum musí zůstat <b>pod prahem maskování</b>. Hledá ho dvěma smyčkami:</p>
+    <ul>
+      <li><b>Vnitřní smyčka (bitový rozpočet):</b> zvětšuje krok kvantování (globální zisk), dokud se Huffmanův zápis (krok 9) nevejde do povoleného počtu bitů.</li>
+      <li><b>Vnější smyčka (zkreslení):</b> pro každé pásmo spočítá, jaké zkreslení po kvantování vzniklo. Pásma, kde překračuje povolený práh, zesílí scalefactorem (jemnější krok) a vrátí se do vnitřní smyčky.</li>
+    </ul>
+    <p>Smyčky skončí, když žádné pásmo nepřekročí povolené zkreslení, nebo když už nejde žádné pásmo dál zesílit, nebo by se muselo zesílit všechna pásma. Při malém datovém toku to často nedopadne ideálně a zbytkový šum je pak slyšet. Proto 128 kbit/s zní hůř než 320 kbit/s.</p>
+    <h3>9. Huffmanovo kódování (bezeztrátové)</h3>
+    <p>Celá čísla se zapíšou od nízkých frekvencí k vysokým. Spektrum se rozdělí na tři oblasti:</p>
+    <ul>
+      <li><b>big values:</b> páry hodnot s velkou amplitudou; tato oblast se ještě dělí na tři regiony a každý má vlastní Huffmanovu tabulku, kterou kodér vybere podle hodnot,</li>
+      <li><b>count1:</b> čtveřice hodnot, které jsou jen −1, 0 nebo +1,</li>
+      <li><b>rzero:</b> souvislý konec samých nul, který se nezapisuje vůbec; stačí uložit, kde začíná.</li>
+    </ul>
+    <p>Častější hodnoty dostanou kratší kódy. Scalefactory se zapisují zvlášť v postranní informaci.</p>
+    <h3>10. Zásobník bitů (bit reservoir)</h3>
+    <p>Rámec, kterému se podařilo ušetřit bity, je nechá v zásobníku. Náročnější rámec je může využít. Stačí k tomu v postranní informaci uložit ukazatel (<i>main_data_begin</i>), který ukazuje až 511 bajtů zpět do předchozích rámců. Datový tok je tak v průměru stálý, ale okamžitě se mění podle potřeby.</p>
+    <h3>11. Sestavení rámce</h3>
+    <p>Rámec obsahuje: <b>hlavičku</b> (4 bajty se synchronizačním slovem z jedniček, verzí, datovým tokem, vzorkovací frekvencí a režimem kanálů), volitelný kontrolní součet CRC (2 bajty), <b>postranní informaci</b> (17 bajtů u mono, 32 u stereo) a <b>hlavní data</b> (scalefactory a Huffmanovy kódy). Délka rámce vychází z datového toku:</p>
+    <div class="box tip"><span class="lbl">Spočítej si: velikost rámce při 128 kbit/s</span><p>Délka rámce = 144 · datový tok / vzorkovací frekvence = 144 · 128 000 / 44 100 ≈ 417,96 bajtu. Rámce mají 417 nebo 418 bajtů (přidává se vyrovnávací bajt). Nekomprimovaný rámec má 1 152 · 2 · 2 = 4 608 bajtů, takže komprese je asi 11:1. Za sekundu je asi 38,3 rámce (44 100 / 1 152).</p></div>
+    <h3>A jak se MP3 přehrává</h3>
+    <p>Dekodér provede kroky v opačném pořadí: najde synchronizační slovo, přečte postranní informaci, rozkóduje Huffmanovy kódy, hodnoty umocní na 4/3 a vynásobí krokem, vrátí stereo z M/S na L/R, provede inverzní MDCT s překrytím a nakonec polyfázová syntéza složí 32 pásem zpět do vzorků PCM. Psychoakustický model dekodér nepotřebuje, protože všechna rozhodnutí jsou v souboru. Proto je dekodér rychlý a jednoduchý.</p>
+    <div class="note">Všechny kroky v této kapitole pocházejí z normy MPEG-1 Audio a z popisu běžného kodéru. Konkrétní kodéry (LAME, Fraunhofer a další) se liší hlavně psychoakustickým modelem a tím, jak hledají nastavení ve smyčkách.</div>
+  </article>
+
 
   <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
 </div>
