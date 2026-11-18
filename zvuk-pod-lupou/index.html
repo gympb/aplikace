@@ -562,21 +562,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     </div>
   </article>
 
-  <article class="ch" data-group="Komprese a lidský sluch" data-title="B · Velikost skladby">
-    <div><span class="eyebrow">Extra B</span><h2>Velikost skladby v různých formátech</h2></div>
-    <p>Rozdíl mezi bezeztrátovou a ztrátovou kompresí je vysvětlen ve Standardních znalostech. Tady si spočítáš, kolik místa zabere skladba v různých formátech. U ztrátových formátů zadáváš datový tok, u FLAC se velikost liší podle hudby.</p>
-    <div class="box try"><span class="lbl">Vyzkoušej: velikost skladby</span>
-      <div class="ctl">
-        <div class="field"><label for="cmR">Formát</label><select id="cmR"><option value="1411.2">CD / WAV (nekomprimovaný)</option><option value="FLAC">FLAC (bezeztrátově)</option><option value="320">MP3 320 kbit/s</option><option value="192">MP3 192 kbit/s</option><option value="128" selected>MP3 128 kbit/s</option><option value="64">Telefonní kvalita 64 kbit/s</option></select></div>
-        <div class="field"><label for="cmT">Délka skladby (min)</label><input type="number" id="cmT" min="1" max="600" step="1" value="4" inputmode="numeric"></div>
-      </div>
-      <div class="sms" id="cmOut"></div>
-      <p class="muted" style="font-size:.9rem">U FLAC je uveden rozsah, protože záleží na hudbě. U ostatních se velikost počítá z datového toku. Porovnání je vůči nekomprimovanému CD (1 411,2 kbit/s).</p>
-    </div>
-  </article>
-
-  <article class="ch" data-group="Komprese a lidský sluch" data-title="C · Maskování">
-    <div><span class="eyebrow">Extra C</span><h2>Psychoakustické maskování</h2></div>
+  <article class="ch" data-group="Komprese a lidský sluch" data-title="B · Maskování">
+    <div><span class="eyebrow">Extra B</span><h2>Psychoakustické maskování</h2></div>
     <p>Ucho neslyší všechno stejně. Za ticha slyšíme nejlépe kolem 3 kHz, u hlubokých a velmi vysokých tónů potřebujeme víc hlasitosti. A hlasitý zvuk <b>zakryje</b> slabší zvuky ve svém okolí: říká se tomu <b>maskování</b>. Okolí se přitom může hledat dvěma způsoby: na ose <b>frekvence</b>, nebo na ose <b>času</b>.</p>
     <h3>Frekvenční (simultánní) maskování</h3>
     <p>Zvuky znějí <b>současně</b>. Hlasitý tón (masker) zvedne práh slyšitelnosti v okolí své frekvence a slabší tón, který by o samotě byl slyšet, pod tímto prahem zanikne.</p>
@@ -594,6 +581,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
         <div class="field"><label for="mkP">Hlasitost druhého tónu: <span class="vl" id="mkPV"></span></label><input type="range" id="mkP" min="0" max="80" step="1" value="35"></div>
       </div>
       <div class="legend" aria-hidden="true"><span style="--c:var(--muted)"><i class="d"></i>práh slyšitelnosti za ticha</span><span style="--c:var(--k2)"><i></i>práh s maskováním</span></div>
+      <div class="lrow"><button type="button" class="btn pri" id="mkPlay">Přehrát oba zvuky</button><button type="button" class="btn" id="mkPlay2">Jen druhý (slabý) zvuk</button><span class="muted" style="font-size:.9rem">Hlasitost nech nízkou. Zvuk se spustí jen po klepnutí. Poměr hlasitostí odpovídá posuvníkům, skutečnou hlasitost určuje tvůj přehrávač.</span></div>
       <div class="out" id="mkOut"></div>
       <p class="muted" style="font-size:.9rem"><b>Zjednodušený model.</b> Práh za ticha podle běžně užívané aproximace, maskování schematicky. Ukazuje princip, ne naměřené hodnoty.</p>
     </div>
@@ -614,6 +602,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
         <div class="field"><label for="tmP">Hlasitost slabého zvuku: <span class="vl" id="tmPV"></span></label><input type="range" id="tmP" min="0" max="80" step="1" value="30"></div>
       </div>
       <div class="legend" aria-hidden="true"><span style="--c:var(--muted)"><i class="d"></i>práh slyšitelnosti za ticha</span><span style="--c:var(--k2)"><i></i>práh s maskováním</span></div>
+      <div class="lrow"><button type="button" class="btn pri" id="tmPlay">Přehrát oba zvuky</button><button type="button" class="btn" id="tmPlay2">Jen druhý (slabý) zvuk</button><span class="muted" style="font-size:.9rem">Hlasitý zvuk je tón 1 000 Hz, slabý 1 200 Hz. Přehraje se půl sekundy záznamu. Poměr hlasitostí odpovídá posuvníkům.</span></div>
       <div class="out" id="tmOut"></div>
       <p class="muted" style="font-size:.9rem"><b>Zjednodušený model.</b> Průběh prahu je schematický (zpětné maskování řádově desítky ms, dopředné řádově stovky ms). Skutečné hodnoty závisejí na hlasitosti, délce zvuků i na posluchači.</p>
     </div>
@@ -632,8 +621,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="note"><b>V kompresi (MP3, AAC):</b> kodek rozdělí zvuk na krátké úseky a pásma a v každém odhadne, kde práh vlivem maskování stoupl. Složky pod prahem uloží hrubě nebo vůbec a ušetřené bity použije tam, kde by chyba byla slyšet. Frekvenční maskování se využívá neustále, časové je důležité u úderů, kde hrozí tzv. předozvěna (pre-echo): šum z kvantování se rozlije před úder, kde ho zpětné maskování většinou nepokryje.</div>
   </article>
 
-  <article class="ch" data-group="Komprese a lidský sluch" data-title="D · Jak vzniká MP3">
-    <div><span class="eyebrow">Extra D</span><h2>Jak vzniká MP3</h2></div>
+  <article class="ch" data-group="Komprese a lidský sluch" data-title="C · Jak vzniká MP3">
+    <div><span class="eyebrow">Extra C</span><h2>Jak vzniká MP3</h2></div>
     <p>MP3 (přesněji MPEG-1 Audio Layer III) je ztrátový formát, který zmenší zvuk z CD zhruba desetkrát a dá se při tom stále dobře poslouchat. Kodér zvuk zpracuje postupně v těchto krocích. Klepni na krok a přečti si, co se v něm děje. Označení říká, jestli je krok ztrátový, nebo bezeztrátový.</p>
     <div class="path mp3" id="mpStrip" role="group" aria-label="Kroky kódování MP3"></div>
     <div class="pathinfo" id="mpInfo" aria-live="polite"></div>
@@ -641,8 +630,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="box tip"><span class="lbl">Kde tu je maskování</span><p>Psychoakustický model hledá <b>frekvenční maskování</b>: pro každé pásmo odhadne práh, pod kterým šum zanikne. Časové maskování využívá jen okrajově. Důležitější je, že u úderu (náhlý hlasitý zvuk) kodér přepne na kratší okna, aby se kvantizační šum nerozlil před úder, kde by ho zpětné maskování nepokrylo. Obě maskování najdeš v části D.</p></div>
   </article>
 
-  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="E · Srovnání formátů">
-    <div><span class="eyebrow">Extra E</span><h2>Velké srovnání zvukových formátů</h2></div>
+  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="D · Srovnání formátů">
+    <div><span class="eyebrow">Extra D</span><h2>Velké srovnání zvukových formátů</h2></div>
     <p>Formáty se liší tím, <b>jak</b> zvuk uchovávají (nekomprimovaně, bezeztrátově, ztrátově) a <b>kdo</b> je smí používat (otevřené, nebo vázané na firmu). Datové toky u ztrátových formátů jsou typické orientační hodnoty, u konkrétního souboru se mohou lišit.</p>
     <div class="seg fmtf" id="fmF" role="group" aria-label="Filtr formátů"><button type="button" data-f="all" aria-pressed="true">Všechny</button><button type="button" data-f="none" aria-pressed="false">Bez komprese</button><button type="button" data-f="lossless" aria-pressed="false">Bezeztrátové</button><button type="button" data-f="lossy" aria-pressed="false">Ztrátové</button></div>
     <div class="tblw"><table class="t" id="fmT">
@@ -662,8 +651,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="box tip"><span class="lbl">Jak si vybrat</span><ul><li>Úpravy a archiv: <b>bez komprese nebo bezeztrátově</b>, ať se nic neztratí.</li><li>Poslech v telefonu a streamování: <b>ztrátově</b> s dostatečným datovým tokem.</li><li>Opakované úpravy ztrátových souborů kvalitu zhoršují, proto se kóduje až naposled.</li></ul></div>
   </article>
 
-  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="F · Hi-Fi a Hi-Res">
-    <div><span class="eyebrow">Extra F</span><h2>Hi-Fi, Hi-Res a kde ho koupit</h2></div>
+  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="E · Hi-Fi a Hi-Res">
+    <div><span class="eyebrow">Extra E</span><h2>Hi-Fi, Hi-Res a kde ho koupit</h2></div>
     <h3>Historická norma DIN 45500</h3>
     <p><b>Hi-Fi</b> (<i>high fidelity</i>, věrná reprodukce) bylo dlouho jen reklamní označení. Německá norma <b>DIN 45500</b> z 60. a 70. let proto stanovila minimální technické požadavky (například na kmitočtovou charakteristiku a zkreslení), které musel přístroj splnit, aby se smělo označit jako Hi-Fi. Dnes je stažená a navazují na ni mezinárodní normy (například IEC 60581). Podle dnešních měřítek byly její požadavky skromné a moderní zařízení je splní s rezervou.</p>
     <h3>Co je Hi-Res</h3>
@@ -694,8 +683,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <p class="muted" style="font-size:.92rem">Odkazy vedou na cizí stránky a nejsou doporučením k nákupu. Hi-res kvalitu lze také <b>streamovat</b> za předplatné (například Qobuz, Tidal, Amazon Music, Apple Music), ale tím si soubory nekoupíš.</p>
   </article>
 
-  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="G · SACD a DSD">
-    <div><span class="eyebrow">Extra G</span><h2>SACD a DSD: jeden bit místo šestnácti</h2></div>
+  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="F · SACD a DSD">
+    <div><span class="eyebrow">Extra F</span><h2>SACD a DSD: jeden bit místo šestnácti</h2></div>
     <p><b>Super Audio CD (SACD)</b> je optický disk, který v roce 1999 uvedly firmy Sony a Philips jako nástupce CD. Jeho technické podmínky popisuje standard <b>Scarlet Book</b>, podobně jako Red Book u CD. <b>DSD</b> (Direct Stream Digital) je způsob, jakým je na SACD zapsaný zvuk. Disk je tedy nosič a DSD je kódování, které na něm běží. Totéž kódování se používá i v souborech (přípony .dsf a .dff).</p>
     <h3>PCM a DSD vedle sebe</h3>
     <div class="tblw"><table class="t">
@@ -719,8 +708,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="note">Rozdíl ve zvuku je předmětem sporů. Kritici, například J. Vanderkooy a S. Lipshitz, upozorňovali, že jednobitový záznam se špatně upravuje a že šum nad 20 kHz může zatěžovat zesilovač. Studia proto s DSD často pracují jako s koncovým formátem a pro střih používají PCM, například DXD (24 bitů, 352,8 kHz). Čísla výrobců je proto lepší brát jako popis technologie, ne jako důkaz lepšího zvuku.</div>
   </article>
 
-  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="H · Prostorový zvuk">
-    <div><span class="eyebrow">Extra H</span><h2>Prostorový zvuk: pro doma a pro kino</h2></div>
+  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="G · Prostorový zvuk">
+    <div><span class="eyebrow">Extra G</span><h2>Prostorový zvuk: pro doma a pro kino</h2></div>
     <p>Stereo má dva kanály, levý a pravý. Prostorový zvuk přidává reproduktory kolem posluchače, případně i nad ním. Existují dva přístupy. Formáty se dělí podle toho, kde se přehrávají: doma (disky, televize, streamování, sluchátka) a v kině (velký sál s mnoha diváky).</p>
     <ul>
       <li><b>Kanálový:</b> každý kanál patří jednomu reproduktoru. Značení <b>5.1</b> znamená pět plnohodnotných kanálů (vpředu vlevo, uprostřed, vpravo, vzadu vlevo a vpravo) a jeden kanál <b>.1</b> pro hluboké basy (LFE), který má jen asi desetinu šířky pásma.</li>
@@ -729,7 +718,6 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <h3 class="xsub">Formáty pro doma</h3>
     <h4>Dolby Digital 5.1 a DTS</h4>
     <p><b>Dolby Digital</b> (AC-3) uvedla firma Dolby v roce 1992 nejdřív pro kina (viz níže) a pak se rozšířila do domácností. Je to <b>ztrátový</b> formát: pět kanálů plus basový se zkomprimuje. Na DVD se používá datový tok 384 nebo 448 kbit/s, norma připouští až 640 kbit/s. Hraje také v digitálním televizním vysílání. <b>DTS</b> je konkurenční ztrátový formát, na DVD s typickým tokem zhruba 768 nebo 1 509 kbit/s, tedy s menším zmenšením dat než Dolby Digital. Pro Blu-ray existují i <b>bezeztrátové</b> varianty, Dolby TrueHD a DTS-HD Master Audio.</p>
-    <div class="box tip"><span class="lbl">Spočítej si: proč se 5.1 komprimuje</span><p>Nekomprimované 5.1 (6 kanálů, 48 kHz, 24 bitů) má 48 000 · 24 · 6 = 6 912 000 bit/s, tedy 6 912 kbit/s. Dolby Digital s 448 kbit/s je asi 15× menší.</p></div>
     <h4>Dolby Atmos</h4>
     <p><b>Dolby Atmos</b> vznikl pro kina (2012) a do domácího kina přišel o pár let později. Je to objektový formát, který přidává i <b>výšku</b> (reproduktory nad posluchačem). Mix se skládá z <b>bedu</b>, kanálového základu až do 7.1.2 (10 kanálů), a až z 118 <b>objektů</b>, dohromady nejvýš 128 stop. Každý objekt má metadata s polohou ve třech rozměrech. <b>Renderer</b> v přehrávači objekty rozmístí podle toho, kolik reproduktorů je k dispozici, nebo je pro sluchátka přepočítá.</p>
     <h4>Sony 360 Reality Audio</h4>
@@ -767,7 +755,6 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     </ul>
     <h4>Jak zvuk doputuje do kina</h4>
     <p>Dnešní kina hrají z digitálního balíčku <b>DCP</b> (Digital Cinema Package). Obraz je v něm komprimovaný, ale zvuk <b>vůbec ne</b>: je to nekomprimovaný <b>24bitový PCM</b> s frekvencí 48 nebo 96 kHz a až s 16 kanály v jednom souboru WAV. Dekodér tedy není potřeba, jen se kanály převedou na analogový signál pro zesilovače. U domácího 5.1 se komprimuje, protože datový tok je omezený. V kině je přenos i úložiště levné, takže se šetřit nemusí. Atmos a Auro-3D k tomu přidávají vlastní data navíc, která se v kině zpracují zvláštním procesorem.</p>
-    <div class="box tip"><span class="lbl">Spočítej si: kolik zvuku má kino</span><p>Zvuk 7.1 (8 kanálů, 48 kHz, 24 bitů) má 48 000 · 24 · 8 = 9 216 000 bit/s, tedy 9 216 kbit/s. Plných 16 kanálů dává 18 432 kbit/s, asi 18,4 Mbit/s. Dolby Digital pro DVD má nejvýš 640 kbit/s.</p></div>
     <div class="tblw"><table class="t">
       <thead><tr><th>Formát pro kino</th><th>Rok</th><th>Princip</th><th>Výška</th></tr></thead>
       <tbody>
@@ -782,6 +769,41 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
       </tbody>
     </table></div>
     <div class="note">Přesné datum a seznam prvních filmů se u různých autorů mírně liší, někde se uvádí i předcházející zkušební projekce. V tabulce jsou roky, které se objevují ve většině zdrojů.</div>
+  </article>
+
+  <article class="ch" data-group="Výpočty" data-title="H · Velikost skladby">
+    <div><span class="eyebrow">Extra H</span><h2>Velikost skladby v různých formátech</h2></div>
+    <p>Rozdíl mezi bezeztrátovou a ztrátovou kompresí je vysvětlen ve Standardních znalostech. Tady si spočítáš, kolik místa zabere skladba v různých formátech. U ztrátových formátů zadáváš datový tok, u FLAC se velikost liší podle hudby.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: velikost skladby</span>
+      <div class="ctl">
+        <div class="field"><label for="cmR">Formát</label><select id="cmR"><option value="1411.2">CD / WAV (nekomprimovaný)</option><option value="FLAC">FLAC (bezeztrátově)</option><option value="320">MP3 320 kbit/s</option><option value="192">MP3 192 kbit/s</option><option value="128" selected>MP3 128 kbit/s</option><option value="64">Telefonní kvalita 64 kbit/s</option></select></div>
+        <div class="field"><label for="cmT">Délka skladby (min)</label><input type="number" id="cmT" min="1" max="600" step="1" value="4" inputmode="numeric"></div>
+      </div>
+      <div class="sms" id="cmOut"></div>
+      <p class="muted" style="font-size:.9rem">U FLAC je uveden rozsah, protože záleží na hudbě. U ostatních se velikost počítá z datového toku. Porovnání je vůči nekomprimovanému CD (1 411,2 kbit/s).</p>
+    </div>
+  </article>
+
+  <article class="ch" data-group="Výpočty" data-title="I · Datové toky formátů">
+    <div><span class="eyebrow">Extra I</span><h2>Datové toky zvukových formátů</h2></div>
+    <p>Datový tok nekomprimovaného zvuku spočítáš jako <b>f · n · k</b> (vzorkovací frekvence · bitová hloubka · počet kanálů). Tabulka porovnává formáty z celého Extra. Poměr je vždy vůči CD (1 411,2 kbit/s).</p>
+    <div class="tblw"><table class="t">
+      <thead><tr><th>Formát</th><th>Výpočet</th><th>Datový tok</th><th>Oproti CD</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">CD (44,1 kHz, 16 b, stereo)</th><td>44 100 · 16 · 2</td><td>1 411,2 kbit/s</td><td>1×</td></tr>
+        <tr><th scope="row">Hi-Res 96 kHz, 24 b, stereo</th><td>96 000 · 24 · 2</td><td>4 608 kbit/s</td><td>asi 3,3×</td></tr>
+        <tr><th scope="row">Hi-Res 192 kHz, 24 b, stereo</th><td>192 000 · 24 · 2</td><td>9 216 kbit/s</td><td>asi 6,5×</td></tr>
+        <tr><th scope="row">SACD, DSD64, stereo</th><td>2 822 400 · 1 · 2</td><td>5 644,8 kbit/s</td><td>4×</td></tr>
+        <tr><th scope="row">5.1 (48 kHz, 24 b, 6 kanálů)</th><td>48 000 · 24 · 6</td><td>6 912 kbit/s</td><td>asi 4,9×</td></tr>
+        <tr><th scope="row">Kino 7.1 (48 kHz, 24 b, 8 kanálů)</th><td>48 000 · 24 · 8</td><td>9 216 kbit/s</td><td>asi 6,5×</td></tr>
+        <tr><th scope="row">Kino, 16 kanálů</th><td>48 000 · 24 · 16</td><td>18 432 kbit/s</td><td>asi 13×</td></tr>
+        <tr><th scope="row">Dolby Digital 5.1 (DVD)</th><td>zadaný tok</td><td>448 kbit/s</td><td>asi 3× menší</td></tr>
+        <tr><th scope="row">MP3 128 kbit/s</th><td>zadaný tok</td><td>128 kbit/s</td><td>asi 11× menší</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box tip"><span class="lbl">Spočítej si: proč se 5.1 komprimuje</span><p>Nekomprimované 5.1 (6 kanálů, 48 kHz, 24 bitů) má 48 000 · 24 · 6 = 6 912 000 bit/s, tedy 6 912 kbit/s. Dolby Digital s 448 kbit/s je asi 15× menší.</p></div>
+    <div class="box tip"><span class="lbl">Spočítej si: kolik zvuku má kino</span><p>Zvuk 7.1 (8 kanálů, 48 kHz, 24 bitů) má 48 000 · 24 · 8 = 9 216 000 bit/s, tedy 9 216 kbit/s. Plných 16 kanálů dává 18 432 kbit/s, asi 18,4 Mbit/s. Dolby Digital pro DVD má nejvýš 640 kbit/s.</p></div>
+    <p class="muted" style="font-size:.92rem">Velikost souboru z datového toku spočítáš jako tok · čas / 8. Vyzkoušej si to v části Velikost skladby.</p>
   </article>
 
 
@@ -1654,6 +1676,9 @@ CHK.x5={q:'Proč může být slabý zvuk těsně po silném úderu neslyšiteln�
     x.fillStyle=aud?c.k4:c.k1;x.beginPath();x.arc(X(fp),Y(Lp),7,0,7);x.fill();x.strokeStyle=c.paper;x.lineWidth=2;x.stroke();
   }
   ['mkL','mkF','mkP'].forEach(i=>$('#'+i).addEventListener('input',draw));
+  const mkSnd=only=>{const L=+$('#mkL').value,fp=+$('#mkF').value,Lp=+$('#mkP').value,r=Math.pow(10,(Lp-L)/20),w=2*Math.PI;
+    playBuf(t=>(only?0:Math.sin(w*FM*t))+r*Math.sin(w*fp*t),1.6);};
+  $('#mkPlay').onclick=()=>mkSnd(false);$('#mkPlay2').onclick=()=>mkSnd(true);
   REDRAW.push(draw);
 })();
 
@@ -1687,6 +1712,10 @@ CHK.x5={q:'Proč může být slabý zvuk těsně po silném úderu neslyšiteln�
     x.fillStyle=aud?c.k4:c.k1;x.beginPath();x.arc(X(tp),Y(Lp),7,0,7);x.fill();x.strokeStyle=c.paper;x.lineWidth=2;x.stroke();
   }
   ['tmL','tmT','tmP'].forEach(i=>$('#'+i).addEventListener('input',draw));
+  const tmSnd=only=>{const L=+$('#tmL').value,tp=+$('#tmT').value/1000,Lp=+$('#tmP').value,r=Math.pow(10,(Lp-L)/20),w=2*Math.PI,t0=0.1,D=0.03;
+    const env=(t,a,b,f)=>{if(t<a||t>b)return 0;const e=Math.min(t-a,b-t,f);return e<f?e/f:1;};
+    playBuf(t=>{const s=t-t0;return (only?0:env(s,0,0.1,0.005)*Math.sin(w*1000*s))+r*env(s,tp-D/2,tp+D/2,0.003)*Math.sin(w*1200*s);},0.5);};
+  $('#tmPlay').onclick=()=>tmSnd(false);$('#tmPlay2').onclick=()=>tmSnd(true);
   REDRAW.push(draw);
 })();
 
