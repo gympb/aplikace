@@ -1361,14 +1361,14 @@ SK['s-vzorky']={lv:'zs',title:'Počet vzorků',gen(){const f=pick(FSL),t=pick([2
     wrong:raw=>normNum(raw)===f?'To je počet vzorků za jednu sekundu. Ptáme se na delší dobu, vynásob ji.':null};}};
 
 SK['s-tok']={lv:'zs',title:'Datový tok',gen(){const f=pick([8000,16000,44100,48000]),n=pick([8,16,24]),k=pick([1,2]),ans=f*n*k/1000;
-  return {kind:'text',q:`Zvuk má <b>${nf(f,0)} Hz</b>, <b>${n} bitů</b> a <b>${k} ${cz(k,'kanál','kanály','kanálů')}</b>. Jaký je datový tok v <b>kbit/s</b>?`,ph:'např. 128 nebo 705,6',
+  return {kind:'text',q:`Vzorkovací frekvence je <b>${nf(f,0)} Hz</b>, bitová hloubka <b>${n} bitů</b> a počet kanálů <b>${k}</b>. Jaký je datový tok v <b>kbit/s</b>?`,ph:'např. 128 nebo 705,6',
     check:s=>Math.abs(normDec(s)-ans)<0.05,rightText:`<b>${nf(ans,1)} kbit/s</b>`,
     hints:['Datový tok = vzorkovací frekvence · bitová hloubka · počet kanálů. Vyjde v bit/s.',`${nf(f,0)} · ${n} · ${k} = ${nf(f*n*k,0)} bit/s.`,`Na kbit/s převeď dělením tisícem. Správně je ${nf(ans,1)} kbit/s.`],
     why:`${nf(f,0)} · ${n} · ${k} = ${nf(f*n*k,0)} bit/s = ${nf(ans,1)} kbit/s.`,
     wrong:raw=>{const v=normDec(raw);if(Math.abs(v-f*n*k)<1)return 'To je datový tok v bit/s. Zadání chce kbit/s, tedy dělit tisícem.';if(Math.abs(v-f*n/1000)<0.05&&k>1)return 'Zapomněl jsi na počet kanálů. Stereo má dvakrát víc dat než mono.';if(Math.abs(v-f*n*k/8000)<0.05)return 'To je v kB/s. Ptáme se na kbit/s, osmkrát větší číslo.';return null;}};}};
 
 SK['s-velikost']={lv:'zs',title:'Velikost záznamu',gen(){const f=pick([8000,16000,44100,48000]),n=pick([8,16]),k=pick([1,2]),t=pick([10,30,60]),B=f*n*k*t/8,ans=B/1000;
-  return {kind:'text',q:`Zvuk má <b>${nf(f,0)} Hz</b>, <b>${n} bitů</b>, <b>${k} ${cz(k,'kanál','kanály','kanálů')}</b> a trvá <b>${t} s</b>. Kolik kB (1 kB = 1 000 B) zabere bez komprese?`,ph:'číslo v kB',
+  return {kind:'text',q:`Vzorkovací frekvence je <b>${nf(f,0)} Hz</b>, bitová hloubka <b>${n} bitů</b>, počet kanálů <b>${k}</b> a záznam trvá <b>${t} s</b>. Kolik kB (1 kB = 1 000 B) zabere bez komprese?`,ph:'číslo v kB',
     check:s=>Math.abs(normDec(s)-ans)<0.5,rightText:`<b>${nf(ans,0)} kB</b>`,
     hints:[`Nejdřív datový tok v bit/s: ${nf(f,0)} · ${n} · ${k} = ${nf(f*n*k,0)}.`,`Vynásob délkou ${t} s a vyděl osmi (bity → bajty): ${nf(f*n*k*t,0)} ÷ 8 = ${nf(B,0)} B.`,`Na kB vyděl tisícem. Správně je ${nf(ans,0)} kB.`],
     why:`${nf(f,0)} · ${n} · ${k} · ${t} ÷ 8 = ${nf(B,0)} B = ${nf(ans,0)} kB.`,
