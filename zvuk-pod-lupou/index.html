@@ -66,8 +66,9 @@ textarea{font-family:var(--mono);font-size:.85rem;min-height:0}
 
 section,.view{scroll-margin-top:12px}
 .view{display:none}
-:root[data-tab="s"] .v-s,:root[data-tab="x"] .v-x{display:block}
-.levels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:6px}
+:root[data-tab="z"] .v-s,:root[data-tab="s"] .v-s,:root[data-tab="x"] .v-x,:root[data-tab="t"] .v-t{display:block}
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:6px}
+@media (max-width:860px){.levels{grid-template-columns:1fr;gap:8px}.levels .lv{min-height:0;padding-block:10px}.lv>span{display:none}}
 @media (max-width:640px){.levels{grid-template-columns:1fr;gap:8px}.levels .lv{min-height:0;padding-block:10px}.lv>span{display:none}}
 .lv{position:relative;text-align:left;border:1px solid var(--line);border-left:5px solid var(--lc);border-radius:12px;background:var(--paper);padding:14px 16px 14px 18px;cursor:pointer;display:grid;gap:4px;align-content:start;min-height:110px}
 .lv b{font:800 1.35rem/1.15 var(--display)}
@@ -76,7 +77,7 @@ section,.view{scroll-margin-top:12px}
 .lv small{font:600 .8125rem/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--lc);margin-top:auto}
 .lv:hover{border-color:var(--lc)}
 .lv[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--lc);border-color:var(--lc)}
-.lv.l4{--lc:var(--k2)}.lv.lp{--lc:var(--k3)}
+.lv.l1{--lc:var(--k1)}.lv.l4{--lc:var(--k2)}.lv.lp{--lc:var(--k3)}.lv.tool{--lc:var(--muted)}
 details.svp{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--paper);font-size:.94rem}
 details.svp summary,details.teacher summary{cursor:pointer;font-weight:600;min-height:40px;display:flex;align-items:center}
 details.svp ul{margin:8px 0;padding-left:1.2em;display:grid;gap:4px}
@@ -205,6 +206,29 @@ details.teacher ol{margin:8px 0 6px;padding-left:1.3em;display:grid;gap:4px}
   .back{display:inline-block;padding:10px 0;min-height:40px}
   summary{min-height:40px}
 }
+
+/* tři stupně, skupiny v Extra, Tahák */
+[hidden]{display:none!important}
+.levels.tools{grid-template-columns:1fr;margin-top:10px}
+.lnk{background:none;border:0;padding:10px 2px;margin:-10px 0;font:inherit;color:var(--accent);text-decoration:underline;cursor:pointer}
+.xsub{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:.88rem;background:var(--accent-soft)}
+.tg{display:inline-block;font:700 .8125rem/1 var(--mono);padding:3px 6px;border-radius:4px;background:var(--line);color:var(--ink);margin-left:4px;vertical-align:middle;white-space:nowrap}
+.prog li.grp{flex-basis:100%;font:700 .8125rem/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.prog li.grp:first-child{margin-top:0}
+.shops{display:grid;gap:8px;padding-left:1.2em}
+.shops{list-style:none;padding-left:0}.shops a{font-weight:600;display:inline-flex;align-items:center;min-height:40px}
+.fmtf{margin:8px 0}
+.path.mp3{grid-template-columns:repeat(4,minmax(0,1fr))}
+.path.mp3 button{min-height:64px;align-content:center}
+@media (max-width:640px){.path.mp3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.gl{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr);gap:4px 18px;margin:0}
+.gl dt{font-weight:700}
+.gl dd{margin:0 0 10px}
+@media (max-width:640px){.gl{grid-template-columns:1fr}.gl dd{margin-bottom:12px}}
+.tk{margin-top:22px}
+.tk h3{margin-bottom:8px}
+.pathline{font-size:1.05rem}
+.course[data-course="s"] .goals[hidden]{display:none}
 </style>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="gymplikace">
@@ -245,20 +269,13 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
   <span class="cr-row"><a class="back" href="../">← Všechny školní aplikace</a><button type="button" class="cr-btn" data-credits aria-haspopup="dialog">Autor a licence</button></span>
   <span class="eyebrow">Samostudijní průvodce · digitalizace zvuku</span>
   <h1>Zvuk pod lupou</h1>
-  <p>Jak se zvuk z mikrofonu změní na čísla, jak se uloží do souboru a jak se z čísel stane zase zvuk. Vyber si stupeň. Každý má cíle, úlohy s nápovědami, opakování a test; Extra je nepovinné čtení s nástroji:</p>
+  <p>Jak se zvuk z mikrofonu změní na čísla, jak se uloží do souboru a jak se z čísel stane zase zvuk. Vyber si stupeň. Základy a Standardní znalosti mají cíle, úlohy s nápovědami, opakování a test. Extra je nepovinné čtení s nástroji, rozdělené do tří skupin:</p>
   <div class="levels">
-    <button class="lv l4" data-go="s"><small>2–3 vyučovací hodiny</small><b>Standardní znalosti</b><span>Cesta zvuku od mikrofonu k reproduktoru, A/D převodník, vzorkování a kvantování, soubor jako řada čísel, velikost a datový tok.</span></button>
-    <button class="lv lp" data-go="x"><small>nepovinné</small><b>Extra<span class="plus" title="Obsah nad rámec úrovně Standardní znalosti">PLUS</span></b><span>Kopie bez ztráty, Nyquistova podmínka a aliasing, kvantizační šum, komprese, psychoakustické maskování. Nástroje k vyzkoušení, bez povinných úloh.</span></button>
+    <button class="lv l1" data-go="z"><small>1–2 vyučovací hodiny</small><b>Základy</b><span>Jak se zvuk zapíše pomocí PCM, jak spočítat velikost takto zapsaných dat a datový tok.</span></button>
+    <button class="lv l4" data-go="s"><small>3–4 vyučovací hodiny</small><b>Standardní znalosti</b><span>Základy a k nim zvuk jako vlnění (frekvence), vzorkování a Nyquistův–Shannonův teorém, D/A převodník, bezeztrátová a ztrátová komprese.</span></button>
+    <button class="lv lp" data-go="x"><small>nepovinné</small><b>Extra<span class="plus" title="Obsah nad rámec úrovně Standardní znalosti">PLUS</span></b><span>Kopie bez ztráty, kvantizační šum, maskování, vznik MP3, srovnání formátů, Hi-Fi a Hi-Res, prostorový zvuk. Bez povinných úloh.</span></button>
   </div>
-  <details class="svp"><summary>Vazba na ŠVP</summary>
-    <p>Školní vzdělávací program Gymnázia Příbram, Informatika, ŠVP 2026/27, <b>4. ročník (oktáva), 1.2 Kódování a přenos dat</b>:</p>
-    <ul>
-      <li>výstup „vysvětlí kódování zvuku pomocí PCM, vypočítá velikost takto kódovaných dat a datový tok“;</li>
-      <li>učivo „digitalizace spojitého signálu, vzorkování (Nyquistův–Shannonův teorém), kvantování“, mezipředmětově Fyzika (vlnění, frekvence);</li>
-      <li>výstup „porovná principy bezeztrátové a ztrátové komprese dat“.</li>
-    </ul>
-    <p>Standardní znalosti pokrývají PCM, vzorkování, kvantování, velikost a datový tok. Nyquistův–Shannonův teorém a komprese jsou podle rozhodnutí autora v části Extra (PLUS), proto Extra obsahuje i témata, která ŠVP uvádí. Aplikace je určená pro oktávu.</p>
-  </details>
+  <div class="levels tools"><button class="lv tool" data-go="t"><small>nástroj pro všechny stupně</small><b>Tahák</b><span>Vzorce, tabulky a pojmy na jednom místě.</span></button></div>
 </header>
 
 <div id="obsah" style="scroll-margin-top:12px"></div>
@@ -267,17 +284,18 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
 <div class="view v-s">
 <div class="course" data-course="s">
   <div class="course-head">
-    <ul class="goals"><li>popsat cestu zvuku od mikrofonu k reproduktoru a u každého kroku říct, jestli je signál analogový, nebo digitální,</li><li>vysvětlit, co dělá A/D převodník: vzorkování, kvantování a zápis čísla,</li><li>určit počet úrovní z bitové hloubky, zaokrouhlit hodnotu na úroveň a zapsat ji dvojkově,</li><li>spočítat datový tok a velikost nekomprimovaného zvuku,</li><li>vysvětlit, co dělá D/A převodník a proč se výstup vyhlazuje.</li></ul>
+    <ul class="goals" data-lv="z"><li>říct u každého kroku cesty zvuku, jestli je signál analogový, nebo digitální,</li><li>vysvětlit kódování zvuku pomocí PCM: vzorkování, kvantování a zápis čísla dvojkově,</li><li>určit počet úrovní z bitové hloubky, zaokrouhlit hodnotu na úroveň a zapsat ji dvojkově,</li><li>spočítat datový tok a velikost takto kódovaných (nekomprimovaných) dat.</li></ul>
+    <ul class="goals" data-lv="s"><li>popsat cestu zvuku od mikrofonu k reproduktoru a u každého kroku říct, jestli je signál analogový, nebo digitální,</li><li>určit frekvenci a periodu tónu a vysvětlit, co určuje výšku a hlasitost,</li><li>vysvětlit digitalizaci spojitého signálu: vzorkování (Nyquistův–Shannonův teorém), kvantování a zápis čísla,</li><li>spočítat datový tok a velikost nekomprimovaného zvuku (PCM),</li><li>vysvětlit, co dělá D/A převodník a proč se výstup vyhlazuje,</li><li>porovnat principy bezeztrátové a ztrátové komprese zvuku.</li></ul>
     <ol class="prog" aria-label="Kapitoly"></ol>
   </div>
 
-  <article class="ch" data-title="Záhada z mikrofonu">
-    <div><span class="eyebrow">Kapitola 1</span><h2>Záhada ze záznamníku</h2></div>
+  <article class="ch" data-lv="z s" data-title="Záhada z mikrofonu">
+    <div><span class="eyebrow" data-ey></span><h2>Záhada ze záznamníku</h2></div>
     <p>Na telefonu nahraješ minutu hlasu. Soubor má několik set kilobajtů. Počítač umí uložit jen čísla, nuly a jedničky. Zvuk je přitom něco, co se chvěje ve vzduchu. Jak se do souboru vejde?</p>
     <div class="kq poll" data-ok="*">
       <p class="q">Co myslíš, že je v souboru s nahrávkou uloženo?</p>
       <div class="opts"><button data-v="a">Zvlněná čára, přesně tak, jak vypadá zvuk.</button><button data-v="b">Velmi dlouhá řada čísel.</button><button data-v="c">Maličký mikrofon, který se při přehrávání znovu rozezní.</button></div>
-      <div class="why">Tvůj tip si zapamatuj. V souboru je <b>řada čísel</b>. V kapitolách 3 a 4 uvidíš, jak vznikají a jak vypadají.</div>
+      <div class="why">Tvůj tip si zapamatuj. V souboru je <b>řada čísel</b>. V kapitolách <button type="button" class="lnk" data-go-ch="A/D převodník">A/D převodník</button> a <button type="button" class="lnk" data-go-ch="Soubor">Soubor</button> uvidíš, jak vznikají a jak vypadají.</div>
     </div>
     <div class="box ask"><span class="lbl">Co už víš? Předtest, nehodnotí se</span>
       <p>Čtyři krátké otázky. Odpověď „Nevím“ je v pořádku. Podle výsledku ti doporučím, kterou kapitolu si projít pozorněji.</p>
@@ -285,8 +303,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     </div>
   </article>
 
-  <article class="ch" data-title="Cesta zvuku">
-    <div><span class="eyebrow">Kapitola 2</span><h2>Cesta zvuku: analog a digitál</h2></div>
+  <article class="ch" data-lv="z s" data-title="Cesta zvuku">
+    <div><span class="eyebrow" data-ey></span><h2>Cesta zvuku: analog a digitál</h2></div>
     <p>Zvuk vzniká jako <b>změna tlaku vzduchu</b>: zhuštění a zředění se střídají. Mikrofon tuto změnu převede na <b>elektrický signál</b>, nejčastěji na <b>elektrické napětí</b> (podle typu mikrofonu to může být i proud). Signál se v čase plynule mění a v každém okamžiku má nějakou hodnotu. Takovému signálu se říká <b>analogový</b>. <b>Digitální</b> signál je naopak řada čísel.</p>
     <p>Mezi analogovým a digitálním světem stojí <b>převodníky</b>. A/D převodník dělá z napětí čísla, D/A převodník z čísel zase napětí. Klepni na kterýkoli krok cesty:</p>
     <div class="box try"><span class="lbl">Vyzkoušej: cesta zvuku</span>
@@ -298,8 +316,35 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div data-chk="s2b"></div>
   </article>
 
-  <article class="ch" data-title="A/D převodník">
-    <div><span class="eyebrow">Kapitola 3</span><h2>A/D převodník: vzorkování a kvantování</h2></div>
+  <article class="ch" data-lv="s" data-title="Zvuk jako vlnění">
+    <div><span class="eyebrow" data-ey></span><h2>Zvuk jako vlnění: frekvence a perioda</h2></div>
+    <p><span class="xsub">Mezipředmětově: Fyzika (vlnění, frekvence)</span></p>
+    <p>Zvuk je mechanické vlnění: částice vzduchu kmitají sem a tam a tlak se střídavě zvyšuje a snižuje. Jednoduchý tón odpovídá <b>sinusovce</b>. Dvě veličiny stačí k tomu, abys ji popsal:</p>
+    <ul>
+      <li><b>Frekvence</b> <i>f</i> je počet kmitů za sekundu, v hertzích (Hz). Určuje <b>výšku</b> tónu. Člověk slyší zhruba od 20 Hz do 20 kHz.</li>
+      <li><b>Perioda</b> <i>T</i> je doba jednoho kmitu: <b>T = 1 / f</b>. Tón 1 000 Hz má periodu 1 ms.</li>
+      <li><b>Amplituda</b> je největší výchylka. Určuje <b>hlasitost</b>, výšku tónu nemění.</li>
+      <li><b>Vlnová délka</b> <i>λ</i> je vzdálenost, kterou vlna urazí za jednu periodu: <b>λ = c / f</b>. Rychlost zvuku ve vzduchu je přibližně <i>c</i> = 343 m/s (při 20 °C).</li>
+    </ul>
+    <div class="box try"><span class="lbl">Vyzkoušej: frekvence, perioda a amplituda</span>
+      <p>Okno trvá 10 ms. Zkus nejdřív odhadnout, kolik kmitů se do něj vejde při 500 Hz, a pak to ověř.</p>
+      <canvas class="cv" id="wvCv" width="680" height="340" role="img" aria-label="Graf sinusového tónu"></canvas>
+      <div class="ctl">
+        <div class="field"><label for="wvF">Frekvence: <span class="vl" id="wvFV"></span></label><input type="range" id="wvF" min="100" max="2000" step="50" value="500"></div>
+        <div class="field"><label for="wvA">Amplituda: <span class="vl" id="wvAV"></span></label><input type="range" id="wvA" min="20" max="100" step="5" value="70"></div>
+      </div>
+      <div class="sms" id="wvOut"></div>
+      <div class="lrow"><button type="button" class="btn" id="wvPlay">Přehrát tón</button><span class="muted" style="font-size:.9rem">Hlasitost nech nízkou. Zvuk se spustí jen po klepnutí.</span></div>
+    </div>
+    <div data-chk="sw1"></div>
+    <div class="box ask"><span class="lbl">Procvič si</span>
+      <div data-drill="s-frekvence" data-n="3"></div>
+    </div>
+  </article>
+
+
+  <article class="ch" data-lv="z s" data-title="A/D převodník">
+    <div><span class="eyebrow" data-ey></span><h2>A/D převodník: vzorkování a kvantování</h2></div>
     <div class="kq poll" data-ok="*">
       <p class="q">Převodník měří napětí jen v pravidelných okamžicích a mezi nimi nic neví. Co se stane, když bude měřit málo často?</p>
       <div class="opts"><button data-v="a">Nic, křivku z pár bodů poznáme vždycky.</button><button data-v="b">Zmizí rychlé změny, zvuk se zkreslí a ztratí vysoké tóny.</button><button data-v="c">Zvuk bude jen hlasitější.</button></div>
@@ -321,7 +366,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
       <div class="legend" aria-hidden="true"><span style="--c:var(--k2)"><i></i>původní signál</span><span style="--c:var(--k1)"><i></i>vzorky po zaokrouhlení</span><span style="--c:var(--muted)"><i class="d"></i>úrovně</span></div>
       <div class="sms" id="adStat"></div>
     </div>
-    <div class="box tip"><span class="lbl">Co z toho plyne</span><p>Vyšší vzorkovací frekvence zachytí rychlejší změny, vyšší bitová hloubka dá jemnější úrovně. Obojí ale zvětšuje soubor, jak spočítáš v kapitole 5. Při 16 bitech (jako na CD) je 65 536 úrovní, schody na obrazovce už nerozlišíš.</p></div>
+    <div class="box tip"><span class="lbl">Co z toho plyne</span><p>Vyšší vzorkovací frekvence zachytí rychlejší změny, vyšší bitová hloubka dá jemnější úrovně. Obojí ale zvětšuje soubor, jak spočítáš v kapitole <button type="button" class="lnk" data-go-ch="Velikost a datový tok">Velikost a datový tok</button>. Při 16 bitech (jako na CD) je 65 536 úrovní, schody na obrazovce už nerozlišíš.</p></div>
     <div data-chk="s3"></div>
     <div class="box fun"><span class="lbl">Počítej: zaokrouhli na úroveň</span>
       <p>Jedna úroveň odpovídá jednomu celému číslu. Převodník vždy vybere nejbližší.</p>
@@ -330,12 +375,34 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div data-chk="s3b"></div>
   </article>
 
-  <article class="ch" data-title="Soubor">
-    <div><span class="eyebrow">Kapitola 4</span><h2>Soubor: čísla zapsaná jako 0 a 1</h2></div>
+<article class="ch" data-lv="s" data-title="Vzorkování a Nyquist">
+    <div><span class="eyebrow" data-ey></span><h2>Vzorkování: Nyquistův–Shannonův teorém</h2></div>
+    <p>Aby šlo z vzorků zvuk věrně obnovit, musí se měřit dost často. <b>Nyquistův–Shannonův teorém</b> říká: vzorkovací frekvence musí být <b>víc než dvojnásobná</b> než nejvyšší frekvence v signálu. Polovině vzorkovací frekvence se říká <b>Nyquistova frekvence</b>. Při 44 100 Hz je to 22 050 Hz, a proto CD zvládne celé slyšitelné pásmo (člověk slyší zhruba do 20 kHz).</p>
+    <p>Když je frekvence tónu větší než Nyquistova, vzorky vypadají, jako by patřily <b>pomalejšímu tónu</b>. Tomu se říká <b>aliasing</b>. Nová, falešná frekvence je vzdálenost tónu od nejbližšího násobku vzorkovací frekvence. Stejně vypadá kolo vozu ve filmu, které se zdánlivě točí pozpátku.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: kdy vzorkování oklame</span>
+      <p>Okno trvá 5 ms. Zkus nejdřív tón 1 000 Hz při 8 000 Hz, pak zvyš tón nad 4 000 Hz.</p>
+      <canvas class="cv" id="nyCv" width="680" height="340" role="img" aria-label="Graf aliasingu"></canvas>
+      <div class="ctl">
+        <div class="field"><label for="nyF">Frekvence tónu: <span class="vl" id="nyFV"></span></label><input type="range" id="nyF" min="200" max="7000" step="50" value="1000"></div>
+        <div class="field"><label for="nyS">Vzorkovací frekvence: <span class="vl" id="nySV"></span></label><input type="range" id="nyS" min="2000" max="16000" step="500" value="8000"></div>
+      </div>
+      <div class="legend" aria-hidden="true"><span style="--c:var(--k2)"><i class="d"></i>skutečný tón</span><span style="--c:var(--k1)"><i></i>co z vzorků vznikne</span></div>
+      <div class="out" id="nyOut"></div>
+      <div class="lrow"><button type="button" class="btn" id="nyPlay">Přehrát, co z toho vznikne</button><span class="muted" style="font-size:.9rem">Hlasitost nech nízkou. Zvuk se spustí jen po klepnutí.</span></div>
+    </div>
+    <div data-chk="sn1"></div>
+    <div class="box ask"><span class="lbl">Procvič si</span>
+      <div data-drill="s-nyquist" data-n="3"></div>
+    </div>
+    <div class="note">Proti aliasingu stojí před A/D převodníkem <b>antialiasingový filtr</b>, který vysoké frekvence odřízne dřív, než se začne vzorkovat.</div>
+  </article>
+
+  <article class="ch" data-lv="z s" data-title="Soubor">
+    <div><span class="eyebrow" data-ey></span><h2>Soubor: čísla zapsaná jako 0 a 1</h2></div>
     <p>Každý vzorek je po kvantování jedno celé číslo, číslo úrovně. V počítači se zapíše <b>dvojkově</b>, přesně na tolik bitů, kolik je bitová hloubka. Zvukový soubor je pak jen dlouhá řada takových čísel a před ní krátká hlavička s údaji, třeba se vzorkovací frekvencí.</p>
     <p>Dvojkový zápis už znáš: každý bit má váhu o polovinu menší než ten před ním. Například na čtyři bity jsou váhy 8, 4, 2, 1 a číslo 11 = 8 + 2 + 1 se zapíše <b class="mono">1011</b>.</p>
     <div class="box try"><span class="lbl">Vyzkoušej: začátek souboru</span>
-      <p>Takhle vypadá začátek souboru pro nastavení z laboratoře v kapitole 3. Číslo vzorku, číslo úrovně a její dvojkový zápis:</p>
+      <p>Takhle vypadá začátek souboru pro nastavení z laboratoře v kapitole <button type="button" class="lnk" data-go-ch="A/D převodník">A/D převodník</button>. Číslo vzorku, číslo úrovně a její dvojkový zápis:</p>
       <div class="lrow"><span class="muted" id="fileSet"></span><button type="button" class="btn sm" data-go-ch="2">Změnit nastavení</button></div>
       <div class="tblw"><table class="t" id="fileTbl"></table></div>
       <p class="muted" style="font-size:.92rem">V souboru jsou ta čísla zapsaná za sebou bez mezer a oddělovačů. Kam končí jeden vzorek, se pozná jen podle bitové hloubky, a proto je uvedená v hlavičce:</p>
@@ -350,8 +417,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div data-chk="s4"></div>
   </article>
 
-  <article class="ch" data-title="Velikost a datový tok">
-    <div><span class="eyebrow">Kapitola 5</span><h2>Velikost a datový tok</h2></div>
+  <article class="ch" data-lv="z s" data-title="Velikost a datový tok">
+    <div><span class="eyebrow" data-ey></span><h2>Velikost a datový tok</h2></div>
     <p>Kolik bitů vznikne za jednu sekundu? Za sekundu je <b>f</b> vzorků (f je vzorkovací frekvence), každý má <b>n</b> bitů a u stereo je kanálů <b>k</b> (mono 1, stereo 2). Tomu se říká <b>datový tok</b>:</p>
     <div class="formula">datový tok = f · n · k   [bit/s]<br>velikost = datový tok · t ÷ 8   [bajtů]</div>
     <p>Dělení osmi převádí bity na bajty. Pro kilobity a kilobajty se dělí tisícem. U zvuku se v praxi používá <b>kbit/s</b> a velikost se píše v kB nebo MB (v této aplikaci 1 kB = 1 000 B).</p>
@@ -374,8 +441,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div data-chk="s5"></div>
   </article>
 
-  <article class="ch" data-title="D/A převodník a reproduktor">
-    <div><span class="eyebrow">Kapitola 6</span><h2>Zpátky: D/A převodník a reproduktor</h2></div>
+  <article class="ch" data-lv="s" data-title="D/A převodník a reproduktor">
+    <div><span class="eyebrow" data-ey></span><h2>Zpátky: D/A převodník a reproduktor</h2></div>
     <p>Při přehrávání jde cesta opačným směrem. <b>D/A převodník</b> čte čísla ze souboru a pro každé nastaví na výstupu odpovídající napětí. Drží ho až do dalšího vzorku, proto vzniká „schodovitý“ průběh. <b>Rekonstrukční filtr</b> schody vyhladí a vznikne plynulá křivka, která se původnímu signálu podobá. Zesilovač napětí zesílí a <b>reproduktor</b> podle něj chvěje membránou: z napětí je zase změna tlaku vzduchu.</p>
     <div class="box try"><span class="lbl">Vyzkoušej: schody a vyhlazení</span>
       <p>Graf používá nastavení z kapitoly 3. Přepni zobrazení a porovnej s původním signálem.</p>
@@ -388,17 +455,44 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="links2"><a href="../digitalizace-zvuku/">Sound Lab Pro: celá laboratoř digitalizace hudby →</a></div>
   </article>
 
-  <article class="ch" data-title="Procvičování">
-    <div><span class="eyebrow">Kapitola 7</span><h2>Procvičování</h2></div>
+  <article class="ch" data-lv="s" data-title="Komprese">
+    <div><span class="eyebrow" data-ey></span><h2>Komprese: bezeztrátová a ztrátová</h2></div>
+    <p>Nekomprimovaná čtyřminutová skladba z CD (1 411,2 kbit/s) zabere asi 42 MB. Komprese velikost zmenšuje. Podle toho, jestli se z výsledku dá získat přesně původní zvuk, rozlišujeme dva druhy.</p>
+    <div class="tblw"><table class="t">
+      <thead><tr><th></th><th>Bezeztrátová</th><th>Ztrátová</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Princip</th><td>odstraní <b>nadbytečnost</b>: opakování a předvídatelnost v datech</td><td>trvale <b>zahodí</b> to, čeho si ucho nejméně všimne, zbytek zapíše hruběji</td></tr>
+        <tr><th scope="row">Po rozbalení</th><td>přesně původní data, bit po bitu</td><td>jen zvuk, který se původnímu blíží; původní už nezískáš</td></tr>
+        <tr><th scope="row">Zmenšení</th><td>zhruba na polovinu až dvě třetiny, podle hudby</td><td>mnohonásobné, třeba MP3 128 kbit/s je asi 11× menší než CD</td></tr>
+        <tr><th scope="row">Příklady</th><td>FLAC, ALAC</td><td>MP3, AAC, Ogg Vorbis, Opus</td></tr>
+      </tbody>
+    </table></div>
+    <p><b>Jak bezeztrátová komprese pracuje.</b> Zvuk se dá často dobře odhadnout z předchozích vzorků a uložit se pak stačí malá odchylka od odhadu. Časté hodnoty dostanou kratší kódy, vzácné delší. Nic se nezahodí, takže rozbalení vrátí původní data.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: nejjednodušší bezeztrátová komprese</span>
+      <p>Opakované znaky se zapíšou jako dvojice „počet × znak“. Napiš vlastní text a sleduj, kdy se zápis zkrátí a kdy ne. Zvuk se takhle přímo nekóduje, je to jen ilustrace principu.</p>
+      <div class="field"><label for="rlIn">Text (nejvýše 40 znaků)</label><input type="text" id="rlIn" maxlength="40" value="AAAAABBBCCCCCCCCDAA" autocomplete="off" spellcheck="false"></div>
+      <div class="sms" id="rlOut"></div>
+    </div>
+    <p><b>Jak pracuje ztrátová komprese.</b> Kodek zvuk rozloží na frekvenční pásma a spočítá, které složky ucho kvůli <b>maskování</b> (silný zvuk zakryje slabší) neslyší. Ty zapíše hrubě nebo vůbec. Čím nižší datový tok, tím víc se zahodí a tím dřív je to slyšet. Opakované ztrátové kódování kvalitu dál zhoršuje.</p>
+    <div data-chk="sk1"></div>
+    <div class="box ask"><span class="lbl">Procvič si</span>
+      <div data-drill="s-komprese" data-n="3"></div>
+    </div>
+    <div class="note">Podrobnější popis, jak vzniká MP3, i srovnání formátů najdeš v části Extra.</div>
+  </article>
+
+
+  <article class="ch" data-lv="z s" data-title="Procvičování">
+    <div><span class="eyebrow" data-ey></span><h2>Procvičování</h2></div>
     <p>Úlohy se generují náhodně a můžeš si před kontrolou označit, jak jsi si jistý. Úloha, která se nepovede, se vrátí v části <b>Na dnešek</b>, povedená později a později. Čas ani body se tady nepočítají.</p>
     <div id="pracS"></div>
   </article>
 
-  <article class="ch" data-title="Test a přehled">
-    <div><span class="eyebrow">Kapitola 8</span><h2>Test a přehled</h2></div>
-    <p>Osm otázek bez nápověd. Test neznámkujeme, ukáže ti jen, co zopakovat.</p>
+  <article class="ch" data-lv="z s" data-title="Test a přehled">
+    <div><span class="eyebrow" data-ey></span><h2>Test a přehled</h2></div>
+    <p><span id="testN"></span> otázek bez nápověd. Test neznámkujeme, ukáže ti jen, co zopakovat.</p>
     <div id="testS"></div>
-    <div class="box tip"><span class="lbl">Co si odnášíš</span><ul class="check"><li>Zvuk je změna tlaku, mikrofon ji převede na elektrický signál, typicky napětí. Analogový signál je plynulý, digitální je řada čísel.</li><li>A/D převodník vzorkuje (měří v pravidelných okamžicích), kvantuje (zaokrouhluje na 2<sup>n</sup> úrovní) a zapíše číslo dvojkově.</li><li>Datový tok = f · n · k, velikost = datový tok · t ÷ 8.</li><li>D/A převodník z čísel vyrobí napětí, filtr ho vyhladí, reproduktor z napětí vyrobí zvuk.</li></ul></div>
+    <div class="box tip"><span class="lbl">Co si odnášíš</span><ul class="check"><li>Zvuk je změna tlaku, mikrofon ji převede na elektrický signál, typicky napětí. Analogový signál je plynulý, digitální je řada čísel.</li><li>A/D převodník vzorkuje (měří v pravidelných okamžicích), kvantuje (zaokrouhluje na 2<sup>n</sup> úrovní) a zapíše číslo dvojkově.</li><li>Datový tok = f · n · k, velikost = datový tok · t ÷ 8.</li><li data-lv="s">Frekvence f = 1 / T. Vzorkovací frekvence musí být větší než dvojnásobek nejvyšší frekvence v signálu, jinak vznikne aliasing.</li><li data-lv="s">D/A převodník z čísel vyrobí napětí, filtr ho vyhladí, reproduktor z napětí vyrobí zvuk.</li><li data-lv="s">Bezeztrátová komprese data zmenší a dá se vrátit přesně, ztrátová trvale zahodí to, co ucho neslyší.</li></ul></div>
     <div id="ovS"></div>
   </article>
 
@@ -411,11 +505,11 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
 <div class="xnote"><span class="plus">PLUS</span><p><b>Extra</b> je nepovinná část. Nemusíš ji projít a nic se tu nevyžaduje. Čti, zkoušej nástroje a vybírej si, co tě zajímá. Postup se tady nepočítá do přehledu zvládnutí.</p></div>
 <div class="course" data-course="x">
   <div class="course-head">
-    <ul class="findlist"><li>A: proč se čísla kopírují beze ztráty a analogový signál ne,</li><li>B: Nyquistova podmínka a aliasing, kdy vzorkování zkreslí tón,</li><li>C: kvantizační šum a bitová hloubka, s poslechem,</li><li>D: bezeztrátová a ztrátová komprese a velikost souboru,</li><li>E: frekvenční a časové maskování, na kterém stojí MP3.</li></ul>
+    <ul class="findlist"><li><b>Digitalizace do hloubky:</b> A kopie bez ztráty, B kvantizační šum a bitová hloubka (s poslechem),</li><li><b>Komprese a lidský sluch:</b> C velikost skladby, D frekvenční a časové maskování, E jak vzniká MP3,</li><li><b>Formáty a kvalita zvuku:</b> F srovnání formátů, G Hi-Fi a Hi-Res (historická norma DIN 45500, kde koupit), H prostorový zvuk (5.1, DTS, Atmos, Sony 360, Apple).</li></ul>
     <ol class="prog" aria-label="Části Extra"></ol>
   </div>
 
-  <article class="ch" data-title="A · Kopie bez ztráty">
+  <article class="ch" data-group="Digitalizace do hloubky" data-title="A · Kopie bez ztráty">
     <div><span class="eyebrow">Extra A</span><h2>Analog × digitál: kopie bez ztráty</h2></div>
     <p>U analogového záznamu (magnetofonová páska, gramofonová deska) se při přepisování k signálu přidává šum a každá další kopie je o kousek horší. Šum se s původním signálem smísil, takže už ho nelze oddělit. Digitální kopie je kopie čísel. Dokud se čísla neporuší, je kopie přesně stejná a po sté i po tisící.</p>
     <div class="box try"><span class="lbl">Vyzkoušej: kolikátá kopie</span>
@@ -428,26 +522,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="note">Digitální signál má i své slabiny: poškozený soubor nebo ztrátová komprese kvalitu snížit mohou. Ale prosté kopírování ne.</div>
   </article>
 
-  <article class="ch" data-title="B · Nyquist a aliasing">
-    <div><span class="eyebrow">Extra B</span><h2>Vzorkování a Nyquistova podmínka</h2></div>
-    <p>Aby šlo z vzorků zvuk věrně obnovit, musí se měřit dost často. <b>Nyquistův–Shannonův teorém</b> říká: vzorkovací frekvence musí být <b>víc než dvojnásobná</b> než nejvyšší frekvence v signálu. Polovině vzorkovací frekvence se říká <b>Nyquistova frekvence</b>. Při 44 100 Hz je to 22 050 Hz, a proto CD zvládne celé slyšitelné pásmo (člověk slyší zhruba do 20 kHz).</p>
-    <p>Když je frekvence tónu větší než Nyquistova, vzorky vypadají, jako by patřily <b>pomalejšímu tónu</b>. Tomu se říká <b>aliasing</b>. Nová, falešná frekvence je vzdálenost tónu od nejbližšího násobku vzorkovací frekvence. Stejně vypadá kolo vozu ve filmu, které se zdánlivě točí pozpátku.</p>
-    <div class="box try"><span class="lbl">Vyzkoušej: kdy vzorkování oklame</span>
-      <p>Okno trvá 5 ms. Zkus nejdřív tón 1 000 Hz při 8 000 Hz, pak zvyš tón nad 4 000 Hz.</p>
-      <canvas class="cv" id="nyCv" width="680" height="340" role="img" aria-label="Graf aliasingu"></canvas>
-      <div class="ctl">
-        <div class="field"><label for="nyF">Frekvence tónu: <span class="vl" id="nyFV"></span></label><input type="range" id="nyF" min="200" max="7000" step="50" value="1000"></div>
-        <div class="field"><label for="nyS">Vzorkovací frekvence: <span class="vl" id="nySV"></span></label><input type="range" id="nyS" min="2000" max="16000" step="500" value="8000"></div>
-      </div>
-      <div class="legend" aria-hidden="true"><span style="--c:var(--k2)"><i class="d"></i>skutečný tón</span><span style="--c:var(--k1)"><i></i>co z vzorků vznikne</span></div>
-      <div class="out" id="nyOut"></div>
-      <div class="lrow"><button type="button" class="btn" id="nyPlay">Přehrát, co z toho vznikne</button><span class="muted" style="font-size:.9rem">Hlasitost nech nízkou. Zvuk se spustí jen po klepnutí.</span></div>
-    </div>
-    <div class="note">Proti aliasingu stojí před A/D převodníkem <b>antialiasingový filtr</b>, který vysoké frekvence odřízne dřív, než se začne vzorkovat.</div>
-  </article>
-
-  <article class="ch" data-title="C · Kvantizační šum">
-    <div><span class="eyebrow">Extra C</span><h2>Kvantování a kvantizační šum</h2></div>
+  <article class="ch" data-group="Digitalizace do hloubky" data-title="B · Kvantizační šum">
+    <div><span class="eyebrow">Extra B</span><h2>Kvantování a kvantizační šum</h2></div>
     <p>Rozdíl mezi skutečnou a zaokrouhlenou hodnotou se ve zvuku projeví jako šum, <b>kvantizační šum</b>. Každý další bit zdvojnásobí počet úrovní a sníží šum zhruba o 6 dB. Pro ideální sinusový signál s plnou amplitudou platí přibližně <b>SNR ≈ 6,02 · n + 1,76 dB</b>. U 16 bitů je to asi 98 dB, u 24 bitů asi 146 dB.</p>
     <div class="box try"><span class="lbl">Vyzkoušej: kolik bitů stačí</span>
       <canvas class="cv" id="qnCv" width="680" height="340" role="img" aria-label="Graf kvantování a chyby"></canvas>
@@ -458,9 +534,9 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     </div>
   </article>
 
-  <article class="ch" data-title="D · Komprese">
-    <div><span class="eyebrow">Extra D</span><h2>Komprese zvuku</h2></div>
-    <p><b>Bezeztrátová komprese</b> (třeba FLAC) soubor zmenší tak, že se z něj dá získat přesně původní. Hledá v datech opakování a předvídatelnost. Úspora je zhruba na polovinu až dvě třetiny původní velikosti, podle hudby. <b>Ztrátová komprese</b> (třeba MP3, AAC, Ogg Vorbis) část informace trvale zahodí, a to takovou, které si ucho nejméně všimne. Soubor je mnohem menší, ale původní se už získat nedá.</p>
+  <article class="ch" data-group="Komprese a lidský sluch" data-title="C · Velikost skladby">
+    <div><span class="eyebrow">Extra C</span><h2>Velikost skladby v různých formátech</h2></div>
+    <p>Rozdíl mezi bezeztrátovou a ztrátovou kompresí je vysvětlen ve Standardních znalostech. Tady si spočítáš, kolik místa zabere skladba v různých formátech. U ztrátových formátů zadáváš datový tok, u FLAC se velikost liší podle hudby.</p>
     <div class="box try"><span class="lbl">Vyzkoušej: velikost skladby</span>
       <div class="ctl">
         <div class="field"><label for="cmR">Formát</label><select id="cmR"><option value="1411.2">CD / WAV (nekomprimovaný)</option><option value="FLAC">FLAC (bezeztrátově)</option><option value="320">MP3 320 kbit/s</option><option value="192">MP3 192 kbit/s</option><option value="128" selected>MP3 128 kbit/s</option><option value="64">Telefonní kvalita 64 kbit/s</option></select></div>
@@ -471,8 +547,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     </div>
   </article>
 
-  <article class="ch" data-title="E · Maskování">
-    <div><span class="eyebrow">Extra E</span><h2>Psychoakustické maskování</h2></div>
+  <article class="ch" data-group="Komprese a lidský sluch" data-title="D · Maskování">
+    <div><span class="eyebrow">Extra D</span><h2>Psychoakustické maskování</h2></div>
     <p>Ucho neslyší všechno stejně. Za ticha slyšíme nejlépe kolem 3 kHz, u hlubokých a velmi vysokých tónů potřebujeme víc hlasitosti. A hlasitý zvuk <b>zakryje</b> slabší zvuky ve svém okolí: říká se tomu <b>maskování</b>. Okolí se přitom může hledat dvěma způsoby: na ose <b>frekvence</b>, nebo na ose <b>času</b>.</p>
     <h3>Frekvenční (simultánní) maskování</h3>
     <p>Zvuky znějí <b>současně</b>. Hlasitý tón (masker) zvedne práh slyšitelnosti v okolí své frekvence a slabší tón, který by o samotě byl slyšet, pod tímto prahem zanikne.</p>
@@ -528,8 +604,176 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="note"><b>V kompresi (MP3, AAC):</b> kodek rozdělí zvuk na krátké úseky a pásma a v každém odhadne, kde práh vlivem maskování stoupl. Složky pod prahem uloží hrubě nebo vůbec a ušetřené bity použije tam, kde by chyba byla slyšet. Frekvenční maskování se využívá neustále, časové je důležité u úderů, kde hrozí tzv. předozvěna (pre-echo): šum z kvantování se rozlije před úder, kde ho zpětné maskování většinou nepokryje.</div>
   </article>
 
+  <article class="ch" data-group="Komprese a lidský sluch" data-title="E · Jak vzniká MP3">
+    <div><span class="eyebrow">Extra E</span><h2>Jak vzniká MP3</h2></div>
+    <p>MP3 (přesněji MPEG-1 Audio Layer III) je ztrátový formát, který zmenší zvuk z CD zhruba desetkrát a dá se při tom stále dobře poslouchat. Kodér zvuk zpracuje postupně v těchto krocích. Klepni na krok a přečti si, co se v něm děje. Označení říká, jestli je krok ztrátový, nebo bezeztrátový.</p>
+    <div class="path mp3" id="mpStrip" role="group" aria-label="Kroky kódování MP3"></div>
+    <div class="pathinfo" id="mpInfo" aria-live="polite"></div>
+    <div class="note"><b>Dekodér je jednodušší než kodér.</b> Při přehrávání se kroky provedou opačně a psychoakustický model už není potřeba, protože všechna rozhodnutí jsou uložená v souboru.</div>
+    <div class="box tip"><span class="lbl">Kde tu je maskování</span><p>Psychoakustický model hledá <b>frekvenční maskování</b>: pro každé pásmo odhadne práh, pod kterým šum zanikne. Časové maskování využívá jen okrajově. Důležitější je, že u úderu (náhlý hlasitý zvuk) kodér přepne na kratší okna, aby se kvantizační šum nerozlil před úder, kde by ho zpětné maskování nepokrylo. Obě maskování najdeš v části D.</p></div>
+  </article>
+
+  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="F · Srovnání formátů">
+    <div><span class="eyebrow">Extra F</span><h2>Velké srovnání zvukových formátů</h2></div>
+    <p>Formáty se liší tím, <b>jak</b> zvuk uchovávají (nekomprimovaně, bezeztrátově, ztrátově) a <b>kdo</b> je smí používat (otevřené, nebo vázané na firmu). Datové toky u ztrátových formátů jsou typické orientační hodnoty, u konkrétního souboru se mohou lišit.</p>
+    <div class="seg fmtf" id="fmF" role="group" aria-label="Filtr formátů"><button type="button" data-f="all" aria-pressed="true">Všechny</button><button type="button" data-f="none" aria-pressed="false">Bez komprese</button><button type="button" data-f="lossless" aria-pressed="false">Bezeztrátové</button><button type="button" data-f="lossy" aria-pressed="false">Ztrátové</button></div>
+    <div class="tblw"><table class="t" id="fmT">
+      <thead><tr><th>Formát</th><th>Typ</th><th>Datový tok</th><th>K čemu a poznámka</th></tr></thead>
+      <tbody>
+        <tr data-k="none"><th scope="row">WAV (PCM)</th><td>bez komprese</td><td>CD: 1 411,2 kbit/s</td><td>Studio, střih, výchozí podoba zvuku z A/D převodníku.</td></tr>
+        <tr data-k="none"><th scope="row">AIFF</th><td>bez komprese</td><td>stejný jako WAV</td><td>Také PCM, tradičně z prostředí Apple.</td></tr>
+        <tr data-k="lossless"><th scope="row">FLAC</th><td>bezeztrátová</td><td>zhruba 50–70 % PCM</td><td>Otevřený formát, hojně na archivaci a v hi-res. Podle hudby se velikost liší.</td></tr>
+        <tr data-k="lossless"><th scope="row">ALAC</th><td>bezeztrátová</td><td>podobně jako FLAC</td><td>Apple Lossless, tradičně pro zařízení a služby Apple.</td></tr>
+        <tr data-k="lossy"><th scope="row">MP3</th><td>ztrátová</td><td>128–320 kbit/s</td><td>Nejrozšířenější ztrátový formát, hraje skoro všude.</td></tr>
+        <tr data-k="lossy"><th scope="row">AAC</th><td>ztrátová</td><td>96–256 kbit/s</td><td>Nástupce MP3 ze standardů MPEG. Při stejném datovém toku bývá kvalita obvykle lepší.</td></tr>
+        <tr data-k="lossy"><th scope="row">Ogg Vorbis</th><td>ztrátová</td><td>96–256 kbit/s</td><td>Otevřený formát bez licenčních poplatků.</td></tr>
+        <tr data-k="lossy"><th scope="row">Opus</th><td>ztrátová</td><td>asi 32–128 kbit/s</td><td>Otevřený formát pro hlas i hudbu s malým zpožděním, používá se třeba při hovorech.</td></tr>
+        <tr data-k="none"><th scope="row">DSD</th><td>1 bit, bez klasického PCM</td><td>2,8224 Mbit/s na kanál (DSD64)</td><td>Zvuk na SACD: jednobitový záznam s vzorkováním 64 × 44,1 kHz.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="box tip"><span class="lbl">Jak si vybrat</span><ul><li>Úpravy a archiv: <b>bez komprese nebo bezeztrátově</b>, ať se nic neztratí.</li><li>Poslech v telefonu a streamování: <b>ztrátově</b> s dostatečným datovým tokem.</li><li>Opakované úpravy ztrátových souborů kvalitu zhoršují, proto se kóduje až naposled.</li></ul></div>
+  </article>
+
+  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="G · Hi-Fi a Hi-Res">
+    <div><span class="eyebrow">Extra G</span><h2>Hi-Fi, Hi-Res a kde ho koupit</h2></div>
+    <h3>Historická norma DIN 45500</h3>
+    <p><b>Hi-Fi</b> (<i>high fidelity</i>, věrná reprodukce) bylo dlouho jen reklamní označení. Německá norma <b>DIN 45500</b> z 60. a 70. let proto stanovila minimální technické požadavky (například na kmitočtovou charakteristiku a zkreslení), které musel přístroj splnit, aby se smělo označit jako Hi-Fi. Dnes je stažená a navazují na ni mezinárodní normy (například IEC 60581). Podle dnešních měřítek byly její požadavky skromné a moderní zařízení je splní s rezervou.</p>
+    <h3>Co je Hi-Res</h3>
+    <p><b>Hi-Res Audio</b> (zvuk s vysokým rozlišením) označuje digitální zvuk <b>lepší než CD</b>, tedy s vzorkovací frekvencí vyšší než 44,1 kHz nebo bitovou hloubkou větší než 16 bitů. Obvykle jde o 96 kHz / 24 bitů nebo 192 kHz / 24 bitů. Společná definice organizací DEG a CTA (původně CEA) s Recording Academy z roku 2014 mluví o bezeztrátovém zvuku z mastrů kvalitnějších než CD. Japonská společnost JAS uděluje zařízením logo „Hi-Res Audio“, pokud zvládnou zpracování a D/A převod aspoň 96 kHz / 24 bitů.</p>
+    <div class="tblw"><table class="t">
+      <thead><tr><th>Nastavení</th><th class="r">Datový tok bez komprese (stereo)</th></tr></thead>
+      <tbody>
+        <tr><td>CD: 44,1 kHz, 16 bitů</td><td class="r mono">1 411,2 kbit/s</td></tr>
+        <tr><td>Hi-Res: 96 kHz, 24 bitů</td><td class="r mono">4 608 kbit/s</td></tr>
+        <tr><td>Hi-Res: 192 kHz, 24 bitů</td><td class="r mono">9 216 kbit/s</td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted" style="font-size:.92rem">Spočítej si to podle vzorce f · n · k. Hi-Res soubor je tedy 3,3× až 6,5× větší než CD.</p>
+    <div class="box tip"><span class="lbl">Slyšíš ten rozdíl?</span><p>O tom se vedou spory. Slepé testy, například studie Meyera a Morana z roku 2007, běžným posluchačům rozdíl proti CD většinou neprokázaly. Vyšší parametry mají jasný smysl hlavně ve studiu, kde dávají rezervu při úpravách. Při poslechu záleží i na nahrávce, mastrování a reprodukční soustavě.</p></div>
+    <h3>Kde se hi-res hudba prodává</h3>
+    <p>Hi-res soubory (nejčastěji FLAC, ALAC, WAV, AIFF, u některých obchodů i DSD) se prodávají jako <b>stažení bez DRM</b>: zaplatíš a soubor máš. Seznam není seřazen podle velikosti obchodů. Dostupnost, ceny a katalog se podle země liší a některé obchody prodej do části zemí omezují, proto si před nákupem ověř, že prodávají do Česka.</p>
+    <ul class="shops">
+      <li><a href="https://www.qobuz.com/" target="_blank" rel="noopener noreferrer">Qobuz</a> – streamovací služba s odděleným obchodem pro stahování, FLAC, WAV, AIFF a ALAC až do 24 bitů / 192 kHz, také DSD a DXD.</li>
+      <li><a href="https://www.hdtracks.com/" target="_blank" rel="noopener noreferrer">HDtracks</a> – jeden z nejstarších obchodů s hi-res stažením (od roku 2008), 24 bitů při 44,1 až 192 kHz.</li>
+      <li><a href="https://bandcamp.com/" target="_blank" rel="noopener noreferrer">Bandcamp</a> – nezávislí umělci, FLAC a další bezeztrátové formáty, část nahrávek v 24 bitech.</li>
+      <li><a href="https://www.7digital.com/" target="_blank" rel="noopener noreferrer">7digital</a> – velký všeobecný katalog, část nabídky v bezeztrátové kvalitě.</li>
+      <li><a href="https://www.prostudiomasters.com/" target="_blank" rel="noopener noreferrer">ProStudioMasters</a> – obchod zaměřený na hi-res FLAC se zřetelně uvedeným rozlišením.</li>
+      <li><a href="https://www.highresaudio.com/" target="_blank" rel="noopener noreferrer">HIGHRESAUDIO</a> – obchod specializovaný na hi-res stahování.</li>
+      <li><a href="https://www.nativedsd.com/" target="_blank" rel="noopener noreferrer">NativeDSD</a> – DSD, DXD a vícekanálové nahrávky.</li>
+      <li><a href="https://www.prestomusic.com/" target="_blank" rel="noopener noreferrer">Presto Music</a> – klasická hudba a opera, k nahrávkám často i brožury.</li>
+      <li><a href="https://www.nugs.net/" target="_blank" rel="noopener noreferrer">nugs.net</a> – oficiální záznamy živých koncertů.</li>
+    </ul>
+    <p class="muted" style="font-size:.92rem">Odkazy vedou na cizí stránky a nejsou doporučením k nákupu. Hi-res kvalitu lze také <b>streamovat</b> za předplatné (například Qobuz, Tidal, Amazon Music, Apple Music), ale tím si soubory nekoupíš.</p>
+  </article>
+
+  <article class="ch" data-group="Formáty a kvalita zvuku" data-title="H · Prostorový zvuk">
+    <div><span class="eyebrow">Extra H</span><h2>Prostorový zvuk: 5.1, DTS, Atmos a další</h2></div>
+    <p>Stereo má dva kanály, levý a pravý. Prostorový zvuk přidává reproduktory kolem posluchače, případně i nad ním. Existují dva přístupy.</p>
+    <ul>
+      <li><b>Kanálový:</b> každý kanál patří jednomu reproduktoru. Značení <b>5.1</b> znamená pět plnohodnotných kanálů (vpředu vlevo, uprostřed, vpravo, vzadu vlevo a vpravo) a jeden kanál <b>.1</b> pro hluboké basy (LFE), který má jen asi desetinu šířky pásma.</li>
+      <li><b>Objektový:</b> zvuk se uloží jako <b>objekty</b> s popisem polohy v prostoru a přehrávač je podle skutečných reproduktorů (nebo sluchátek) rozmístí. Jeden záznam se tak přizpůsobí různým soustavám.</li>
+    </ul>
+    <h3>Dolby Digital 5.1 a DTS</h3>
+    <p><b>Dolby Digital</b> (AC-3) uvedla firma Dolby v roce 1992. Je to <b>ztrátový</b> formát: pět kanálů plus basový se zkomprimuje. Na DVD se používá datový tok 384 nebo 448 kbit/s, norma připouští až 640 kbit/s. Hraje také v digitálním televizním vysílání. <b>DTS</b> je konkurenční ztrátový formát, na DVD s typickým tokem zhruba 768 nebo 1 509 kbit/s, tedy s menším zmenšením dat než Dolby Digital. Pro Blu-ray existují i <b>bezeztrátové</b> varianty, Dolby TrueHD a DTS-HD Master Audio.</p>
+    <div class="box tip"><span class="lbl">Spočítej si: proč se 5.1 komprimuje</span><p>Nekomprimované 5.1 (6 kanálů, 48 kHz, 24 bitů) má 48 000 · 24 · 6 = 6 912 000 bit/s, tedy 6 912 kbit/s. Dolby Digital s 448 kbit/s je asi 15× menší.</p></div>
+    <h3>Dolby Atmos</h3>
+    <p><b>Dolby Atmos</b> je objektový formát, který přidává i <b>výšku</b> (reproduktory nad posluchačem). Mix se skládá z <b>bedu</b>, kanálového základu až do 7.1.2 (10 kanálů), a až z 118 <b>objektů</b>, dohromady nejvýš 128 stop. Každý objekt má metadata s polohou ve třech rozměrech. <b>Renderer</b> v přehrávači objekty rozmístí podle toho, kolik reproduktorů je k dispozici, nebo je pro sluchátka přepočítá.</p>
+    <h3>Sony 360 Reality Audio</h3>
+    <p><b>360 Reality Audio</b> představila firma Sony v roce 2019 jako objektový formát určený jen pro <b>hudbu</b> a její streamování, hlavně ke sluchátkům. Staví na otevřeném standardu <b>MPEG-H 3D Audio</b>, na jehož vývoji se podílel Fraunhoferův ústav. Jednotlivé nástroje a hlasy se v mixu umísťují do koule kolem posluchače. Podpora ve streamovacích službách se v čase mění, proto si ji u konkrétní služby ověř.</p>
+    <h3>Apple Spatial Audio</h3>
+    <p>Apple Spatial Audio není samostatný hudební formát. Vychází z <b>Dolby Atmos</b> (a umí i 5.1 a 7.1) a přidává <b>sledování pohybu hlavy</b>: sluchátka AirPods a některá Beats mají snímače pohybu, takže zvuk zůstává „na místě“, i když otočíš hlavu. V Apple Music funguje od 7. června 2021. Atmos mixy lze přehrávat i na jiných sluchátkách, jen bez sledování hlavy.</p>
+    <div class="tblw"><table class="t">
+      <thead><tr><th>Formát</th><th>Princip</th><th>Komprese</th><th>Výška</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Dolby Digital 5.1</th><td>kanálový</td><td>ztrátová (AC-3)</td><td>ne</td></tr>
+        <tr><th scope="row">DTS</th><td>kanálový</td><td>ztrátová, bezeztrátová varianta DTS-HD MA</td><td>ne</td></tr>
+        <tr><th scope="row">Dolby Atmos</th><td>bed + objekty</td><td>ztrátová nebo bezeztrátová (podle nosiče a služby)</td><td>ano</td></tr>
+        <tr><th scope="row">Sony 360 Reality Audio</th><td>objektový (MPEG-H 3D Audio)</td><td>ztrátová</td><td>ano (celá koule)</td></tr>
+        <tr><th scope="row">Apple Spatial Audio</th><td>Dolby Atmos + sledování hlavy</td><td>podle zdroje</td><td>ano</td></tr>
+      </tbody>
+    </table></div>
+  </article>
+
+
   <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
 </div>
+</div>
+
+<!-- ================= TAHÁK ================= -->
+<div class="view v-t">
+<div class="course-head" style="margin-top:24px"><div><span class="eyebrow">Nástroj pro všechny stupně</span><h2 style="margin:4px 0 6px">Tahák</h2></div>
+  <p class="muted">Vzorce, tabulky a pojmy z celé aplikace. Štítek říká, kde se látka učí: <span class="tg">Základy</span> <span class="tg">Standard</span> <span class="tg">Extra</span>.</p></div>
+
+<section class="tk" aria-labelledby="tkV"><h3 id="tkV">Vzorce</h3>
+<div class="tblw"><table class="t">
+  <thead><tr><th>Co</th><th>Vzorec</th><th>Poznámka</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Počet úrovní <span class="tg">Základy</span></th><td class="mono">N = 2<sup>n</sup></td><td>n je bitová hloubka. Úrovně se číslují od 0 do N − 1.</td></tr>
+    <tr><th scope="row">Datový tok <span class="tg">Základy</span></th><td class="mono">D = f · n · k</td><td>f vzorkovací frekvence (Hz), n bitová hloubka, k počet kanálů. Výsledek v bit/s.</td></tr>
+    <tr><th scope="row">Velikost záznamu <span class="tg">Základy</span></th><td class="mono">B = f · n · k · t / 8</td><td>t v sekundách, výsledek v bajtech. V této aplikaci 1 kB = 1 000 B.</td></tr>
+    <tr><th scope="row">Převod jednotek <span class="tg">Základy</span></th><td class="mono">1 kbit/s = 1 000 bit/s<br>1 B = 8 bitů</td><td>Bity se na bajty převádějí dělením osmi.</td></tr>
+    <tr><th scope="row">Perioda a frekvence <span class="tg">Standard</span></th><td class="mono">T = 1 / f</td><td>T v sekundách, f v hertzích. 1 000 Hz odpovídá 1 ms.</td></tr>
+    <tr><th scope="row">Vlnová délka <span class="tg">Standard</span></th><td class="mono">λ = c / f</td><td>Rychlost zvuku ve vzduchu c ≈ 343 m/s (při 20 °C).</td></tr>
+    <tr><th scope="row">Nyquistova podmínka <span class="tg">Standard</span></th><td class="mono">f<sub>s</sub> &gt; 2 · f<sub>max</sub></td><td>Nyquistova frekvence je f<sub>s</sub> / 2. Nad ní vzniká aliasing.</td></tr>
+    <tr><th scope="row">Falešná frekvence (alias) <span class="tg">Standard</span></th><td class="mono">f<sub>a</sub> = |f − m · f<sub>s</sub>|</td><td>m je celé číslo, při kterém je výsledek nejmenší (nejbližší násobek f<sub>s</sub>).</td></tr>
+    <tr><th scope="row">Kvantizační šum <span class="tg">Extra</span></th><td class="mono">SNR ≈ 6,02 · n + 1,76 dB</td><td>Platí přibližně pro sinusový signál s plnou amplitudou. Každý bit navíc je asi o 6 dB lepší.</td></tr>
+  </tbody>
+</table></div></section>
+
+<section class="tk" aria-labelledby="tkT"><h3 id="tkT">Bitová hloubka a počet úrovní</h3>
+<div class="tblw"><table class="t">
+  <thead><tr><th class="r">Bitů</th><th class="r">Úrovní</th><th>Kde se používá</th></tr></thead>
+  <tbody>
+    <tr><td class="r mono">1</td><td class="r mono">2</td><td>nejhrubší možné kvantování</td></tr>
+    <tr><td class="r mono">4</td><td class="r mono">16</td><td>ukázky v aplikaci</td></tr>
+    <tr><td class="r mono">8</td><td class="r mono">256</td><td>telefon, starší zvukové karty, hry</td></tr>
+    <tr><td class="r mono">12</td><td class="r mono">4 096</td><td></td></tr>
+    <tr><td class="r mono">16</td><td class="r mono">65 536</td><td>CD</td></tr>
+    <tr><td class="r mono">24</td><td class="r mono">16 777 216</td><td>studio, hi-res</td></tr>
+  </tbody>
+</table></div></section>
+
+<section class="tk" aria-labelledby="tkF"><h3 id="tkF">Typické hodnoty</h3>
+<div class="tblw"><table class="t">
+  <thead><tr><th>Použití</th><th class="r">f</th><th class="r">n</th><th class="r">k</th><th class="r">Datový tok</th></tr></thead>
+  <tbody>
+    <tr><td>Telefon (úzké pásmo)</td><td class="r mono">8 kHz</td><td class="r mono">8</td><td class="r mono">1</td><td class="r mono">64 kbit/s</td></tr>
+    <tr><td>CD</td><td class="r mono">44,1 kHz</td><td class="r mono">16</td><td class="r mono">2</td><td class="r mono">1 411,2 kbit/s</td></tr>
+    <tr><td>Video, DVD</td><td class="r mono">48 kHz</td><td class="r mono">16–24</td><td class="r mono">2</td><td class="r mono">1 536–2 304 kbit/s</td></tr>
+    <tr><td>Hi-Res</td><td class="r mono">96 kHz</td><td class="r mono">24</td><td class="r mono">2</td><td class="r mono">4 608 kbit/s</td></tr>
+    <tr><td>Hi-Res</td><td class="r mono">192 kHz</td><td class="r mono">24</td><td class="r mono">2</td><td class="r mono">9 216 kbit/s</td></tr>
+    <tr><td>5.1 bez komprese</td><td class="r mono">48 kHz</td><td class="r mono">24</td><td class="r mono">6</td><td class="r mono">6 912 kbit/s</td></tr>
+  </tbody>
+</table></div></section>
+
+<section class="tk" aria-labelledby="tkB"><h3 id="tkB">Dvojkové váhy</h3>
+<div class="tblw"><table class="t">
+  <thead><tr><th>Bit</th><th class="r">8.</th><th class="r">7.</th><th class="r">6.</th><th class="r">5.</th><th class="r">4.</th><th class="r">3.</th><th class="r">2.</th><th class="r">1.</th></tr></thead>
+  <tbody><tr><th scope="row">Váha</th><td class="r mono">128</td><td class="r mono">64</td><td class="r mono">32</td><td class="r mono">16</td><td class="r mono">8</td><td class="r mono">4</td><td class="r mono">2</td><td class="r mono">1</td></tr></tbody>
+</table></div>
+<p class="muted" style="font-size:.92rem">Číslo se zapíše tak, že se sečtou váhy bitů s jedničkou. Například 11 = 8 + 2 + 1 = 1011.</p></section>
+
+<section class="tk" aria-labelledby="tkP"><h3 id="tkP">Pojmy</h3>
+<dl class="gl">
+  <dt>Analogový signál <span class="tg">Základy</span></dt><dd>Plynulý, v každém okamžiku má nějakou hodnotu. Zvuk ve vzduchu a elektrický signál z mikrofonu (typicky napětí).</dd>
+  <dt>Digitální signál <span class="tg">Základy</span></dt><dd>Řada čísel. V počítači se zapisují dvojkově.</dd>
+  <dt>Vzorkování <span class="tg">Základy</span></dt><dd>Měření signálu v pravidelných okamžicích. Počet měření za sekundu je vzorkovací frekvence.</dd>
+  <dt>Kvantování <span class="tg">Základy</span></dt><dd>Zaokrouhlení naměřené hodnoty na jednu z 2<sup>n</sup> úrovní.</dd>
+  <dt>PCM <span class="tg">Základy</span></dt><dd>Pulzně kódová modulace: vzorkování, kvantování a zápis čísla. Základní nekomprimovaný zápis zvuku.</dd>
+  <dt>Kanál <span class="tg">Základy</span></dt><dd>Samostatná stopa zvuku. Mono má jeden, stereo dva.</dd>
+  <dt>Frekvence, perioda, amplituda <span class="tg">Standard</span></dt><dd>Frekvence určuje výšku tónu, amplituda hlasitost, perioda je doba jednoho kmitu.</dd>
+  <dt>Aliasing <span class="tg">Standard</span></dt><dd>Zkreslení, kdy vzorky tónu nad Nyquistovou frekvencí vypadají jako pomalejší tón.</dd>
+  <dt>D/A převodník, rekonstrukční filtr <span class="tg">Standard</span></dt><dd>Z čísel vyrobí schodovité napětí, filtr ho vyhladí.</dd>
+  <dt>Bezeztrátová komprese <span class="tg">Standard</span></dt><dd>Odstraní nadbytečnost, z výsledku se dá získat přesně původní zvuk (FLAC, ALAC).</dd>
+  <dt>Ztrátová komprese <span class="tg">Standard</span></dt><dd>Trvale zahodí to, čeho si ucho nejméně všimne (MP3, AAC, Ogg Vorbis, Opus).</dd>
+  <dt>Maskování <span class="tg">Extra</span></dt><dd>Silný zvuk zakryje slabší. Frekvenční: zvuky současně a blízko ve frekvenci. Časové: těsně před a hlavně po silném zvuku.</dd>
+  <dt>Hi-Res <span class="tg">Extra</span></dt><dd>Digitální zvuk lepší než CD: vyšší vzorkovací frekvence než 44,1 kHz nebo víc než 16 bitů.</dd>
+  <dt>Kanálový a objektový zvuk <span class="tg">Extra</span></dt><dd>Kanálový: každý kanál patří jednomu reproduktoru (5.1). Objektový: zvuk má polohu v prostoru a přehrávač ho rozmístí (Dolby Atmos, 360 Reality Audio).</dd>
+</dl></section>
+
+<section class="tk" aria-labelledby="tkC"><h3 id="tkC">Cesta zvuku</h3>
+<p class="pathline"><b>zvuk</b> (tlak vzduchu) → mikrofon → <b>elektrický signál</b> → A/D převodník → <b>čísla</b> (soubor) → D/A převodník → <b>elektrický signál</b> → reproduktor → <b>zvuk</b></p>
+<p class="muted" style="font-size:.92rem">Digitální je jen prostřední část, od A/D po D/A převodník.</p></section>
 </div>
 
 <footer>
@@ -537,13 +781,13 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
   <p>Zvuk pod lupou · výukový materiál. Vzorec SNR a práh slyšitelnosti za ticha jsou standardní aproximace, simulace jsou ilustrativní.</p>
   <p>Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 18. 11. 2026</p>
   <details class="teacher"><summary>Pro učitele</summary>
-    <p><b>Standardní znalosti, plán 2–3 vyučovacích hodin.</b></p>
+    <p><b>Základy, plán 1–2 vyučovacích hodin.</b> Kapitoly Záhada, Cesta zvuku, A/D převodník, Soubor, Velikost a datový tok, Procvičování, Test. Výstup: vysvětlí kódování zvuku pomocí PCM, vypočítá velikost takto kódovaných dat a datový tok.</p>
     <ol>
-      <li><b>1. hodina</b> · Kapitola 1: promítněte hlasování (co je v souboru), krátký předtest. Kapitola 2: cesta zvuku, žáci u každého kroku říkají, jaký je signál.</li>
-      <li><b>2. hodina</b> · Kapitoly 3–4: laboratoř A/D převodníku na projekci, žáci předpovídají, co se stane po snížení vzorkovací frekvence, pak zaokrouhlování na úrovně a dvojkový zápis ve dvojicích.</li>
-      <li><b>3. hodina</b> · Kapitoly 5–6: datový tok a velikost (řešený příklad CD, pak samostatně), D/A převodník a vyhlazení, test. Procvičování doma, žák má v přehledu kód zálohy pro přenos mezi zařízeními.</li>
+      <li><b>1. hodina</b> · hlasování (co je v souboru), krátký předtest, cesta zvuku (u každého kroku žáci říkají, jaký je signál), laboratoř A/D převodníku na projekci: žáci předpovídají, co se stane po snížení vzorkovací frekvence.</li>
+      <li><b>2. hodina</b> · zaokrouhlování na úrovně a dvojkový zápis ve dvojicích, datový tok a velikost (řešený příklad CD, pak samostatně), test. Procvičování doma, žák má v přehledu kód zálohy pro přenos mezi zařízeními.</li>
     </ol>
-    <p><b>Extra</b> je nepovinná část pro zájemce, referát nebo projekt. Plnou laboratoř pro velké dotykové panely najdete v aplikaci Sound Lab Pro.</p></details>
+    <p><b>Standardní znalosti, plán 3–4 vyučovacích hodin.</b> K Základům přibývá Zvuk jako vlnění (mezipředmětově Fyzika), Vzorkování a Nyquistův–Shannonův teorém, D/A převodník a Komprese. Doporučené pořadí: Základy v 1.–2. hodině, ve 3. hodině vlnění a Nyquist (žáci předpovídají aliasing a ověřují simulací), ve 4. hodině D/A převodník, komprese a test.</p>
+    <p><b>Extra</b> je nepovinná část pro zájemce, referát nebo projekt, rozdělená do tří skupin. Plnou laboratoř pro velké dotykové panely najdete v aplikaci Sound Lab Pro.</p></details>
 </footer>
 <div id="toast" role="status" aria-live="polite"></div>
 </div>
@@ -612,7 +856,7 @@ function record(skill,ok,conf,nev,hints){
   else if(conf){const k=ST.conf[conf]||(ST.conf[conf]=[0,0]); k[1]++; if(ok) k[0]++;}
   stSave();
 }
-const dueSkills=lv=>Object.keys(SK).filter(id=>SK[id].lv===lv&&ST.cards[id]&&ST.cards[id].d<=todayN());
+const dueSkills=lv=>Object.keys(SK).filter(id=>SK[id].lv.includes(lv)&&ST.cards[id]&&ST.cards[id].d<=todayN());
 const skillState=id=>{const c=ST.cards[id];if(!c)return ['none','zatím nezkoušeno'];
   if(c.d<=todayN())return ['due','opakovat dnes'];
   if(c.b>=3)return ['ok','zvládáš'];return ['grow','upevňuješ'];};
@@ -717,7 +961,7 @@ function pretest(host,qs,lv,course){
   const show=()=>{
     if(i>=qs.length){
       host.innerHTML=`<div class="kq loop done"><p class="q" data-lbl="Předtest hotov">${qs.length-wrong.length} z ${qs.length} v pořádku. Nic se nehodnotí, jen ti poradím, kam se podívat.</p>
-      ${wrong.length?`<p>Doporučuju projít: ${[...new Set(wrong.map(q=>q.ch))].map(k=>`<button type="button" class="chip" data-go-ch="${k}">${esc(q_titles(course)[k]||('Kapitola '+(k+1)))}</button>`).join(' ')}</p>`:'<p>Všechno sedí. Můžeš rovnou na procvičování, nebo si projít kapitoly pro jistotu.</p>'}</div>`;
+      ${wrong.length?`<p>Doporučuju projít: ${[...new Set(wrong.map(q=>q.ch))].map(k=>`<button type="button" class="chip" data-go-ch="${esc(k)}">${esc(k)}</button>`).join(' ')}</p>`:'<p>Všechno sedí. Můžeš rovnou na procvičování, nebo si projít kapitoly pro jistotu.</p>'}</div>`;
       ST.test['pre-'+lv]={ok:qs.length-wrong.length,n:qs.length,d:todayN()};stSave();return;}
     const q=qs[i];
     runTask(host,Object.assign({kind:'opts',label:`Předtest ${i+1} z ${qs.length}`},q),{noHints:true,noFocus:true,next:i<qs.length-1?'Další':'Hotovo',onDone:r=>{if(!r.ok)wrong.push(q);i++;show();}});
@@ -726,7 +970,7 @@ function pretest(host,qs,lv,course){
 }
 
 function practice(host,lv){
-  const ids=Object.keys(SK).filter(k=>SK[k].lv===lv);
+  const ids=Object.keys(SK).filter(k=>SK[k].lv.includes(lv));
   host.innerHTML=`<div class="panel prac2"><div class="seg" role="group" aria-label="Režim"><button type="button" data-m="due" aria-pressed="false">Na dnešek <span class="dn"></span></button><button type="button" data-m="mix" aria-pressed="true">Mix</button><button type="button" data-m="one" aria-pressed="false">Jedna dovednost</button></div>
     <div class="field one" hidden><label for="prsel">Dovednost</label><select id="prsel">${ids.map(k=>`<option value="${k}">${esc(SK[k].title)}</option>`).join('')}</select></div>
     <div class="gstat"><span class="pst"></span><span class="pnote">Bez času a bez bodů. Cílem je vědět, co ti jde.</span></div>
@@ -792,7 +1036,7 @@ function loadCode(code){
   stSave();
 }
 function overview(host,lv){
-  const ids=Object.keys(SK).filter(k=>SK[k].lv===lv);
+  const ids=Object.keys(SK).filter(k=>SK[k].lv.includes(lv));
   const rows=ids.map(k=>{const [cls,txt]=skillState(k),s=ST.stats[k]||[0,0];
     return `<tr><td>${esc(SK[k].title)}</td><td><span class="st st-${cls}">${txt}</span></td><td class="r">${s[1]?`${s[0]} z ${s[1]}`:'–'}</td></tr>`;}).join('');
   const c=ST.conf, pc=k=>c[k]&&c[k][1]?Math.round(100*c[k][0]/c[k][1]):null;
@@ -831,7 +1075,7 @@ const SIGS=[
  ['data uložená v souboru zvukové nahrávky','digi','V souboru je řada čísel zapsaných dvojkově. To je digitální záznam.'],
  ['řada čísel mezi A/D a D/A převodníkem','digi','Mezi převodníky jsou čísla, tedy digitální signál.']
 ];
-SK['s-typ']={lv:'s',title:'Analog × digitál',gen(){const s=pick(SIGS);
+SK['s-typ']={lv:'zs',title:'Analog × digitál',gen(){const s=pick(SIGS);
   return {kind:'opts',q:`Je <b>${s[0]}</b> analogový, nebo digitální?`,opts:[{v:'analog',t:'Analogový (plynulý)'},{v:'digi',t:'Digitální (řada čísel)'}],right:s[1],rightText:`<b>${s[1]==='analog'?'analogový':'digitální'}</b>`,
     why:s[2],wrong:()=>s[1]==='analog'?'Za A/D převodníkem jsou čísla, ale před ním a za D/A převodníkem je signál plynulý, tedy analogový.':'Digitální je jen ta část cesty, kde jsou čísla: od A/D převodníku po D/A převodník.'};}};
 
@@ -844,52 +1088,52 @@ SK['s-zarizeni']={lv:'s',title:'Co dělá které zařízení',gen(){const d=pick
     hints:['Vzpomeň si na cestu zvuku: tlak → napětí → čísla → napětí → tlak.','Převodník A/D vyrábí čísla, D/A z čísel vyrábí napětí. Mikrofon a reproduktor jsou analogové.',`Správně je ${d[1]}.`],
     why:d[2],wrong:()=>null};}};
 
-SK['s-urovne']={lv:'s',title:'Počet úrovní z bitů',gen(){const n=[2,3,4,5,6,7,8][rnd(7)];
+SK['s-urovne']={lv:'zs',title:'Počet úrovní z bitů',gen(){const n=[2,3,4,5,6,7,8][rnd(7)];
   return {kind:'num',q:`Bitová hloubka je <b>${n}</b> ${cz(n,'bit','bity','bitů')}. Kolik různých úrovní se dá zapsat?`,ph:'číslo',check:s=>normNum(s)===2**n,rightText:`<b>${2**n}</b>`,
     hints:['Jeden bit má 2 hodnoty, dva bity 4 kombinace (00, 01, 10, 11).','Každý další bit počet úrovní zdvojnásobí: 2 × 2 × … tolikrát, kolik je bitů.',`Správně je 2<sup>${n}</sup> = ${2**n}.`],
     why:`${n} bitů dává 2<sup>${n}</sup> = ${2**n} úrovní. CD má 16 bitů, tedy 65 536 úrovní.`,
     wrong:raw=>{const v=normNum(raw);if(v===2*n)return 'To je dvakrát počet bitů. Každý bit ale počet možností násobí dvěma, takže je to 2 × 2 × 2 …';if(v===n*n)return 'To je n × n. Správně se dvojka násobí n-krát: 2 × 2 × …';if(v===2**n-1)return 'To je nejvyšší číslo úrovně. Úrovní je o jednu víc, protože se počítá i nula.';return null;}};}};
 
-SK['s-bity-L']={lv:'s',title:'Bity pro daný počet úrovní',gen(){const m=[2,3,4,5,6,7,8][rnd(7)],L=2**m;
+SK['s-bity-L']={lv:'zs',title:'Bity pro daný počet úrovní',gen(){const m=[2,3,4,5,6,7,8][rnd(7)],L=2**m;
   return {kind:'num',q:`Kolik bitů potřebuje bitová hloubka, aby rozlišila <b>${L}</b> úrovní?`,ph:'počet bitů',check:s=>normNum(s)===m,rightText:`<b>${m}</b>`,
     hints:['Hledáš, kolikrát se musí vynásobit dvojka, aby vyšlo toto číslo.','Zkoušej: 2, 4, 8, 16, 32, 64, 128, 256 … a počítej kroky.',`Správně je ${m}, protože 2<sup>${m}</sup> = ${L}.`],
     why:`2<sup>${m}</sup> = ${L}, proto stačí ${m} ${cz(m,'bit','bity','bitů')}.`,
     wrong:raw=>{const v=normNum(raw);if(v===L)return 'To je počet úrovní. Ptáme se na počet bitů, tedy na to, kolikrát se dvojka násobí.';if(v===L/2)return 'To je poloviční počet úrovní. Počet bitů je mnohem menší: každý bit úrovně zdvojnásobí.';return null;}};}};
 
-SK['s-kvantuj']={lv:'s',title:'Zaokrouhlení na úroveň',gen(){const n=pick([3,4]),N=2**n,base=rnd(N-1),fr=pick([1,2,3,4,6,7,8,9]),x=base+fr/10,ans=fr>5?base+1:base;
+SK['s-kvantuj']={lv:'zs',title:'Zaokrouhlení na úroveň',gen(){const n=pick([3,4]),N=2**n,base=rnd(N-1),fr=pick([1,2,3,4,6,7,8,9]),x=base+fr/10,ans=fr>5?base+1:base;
   const xs=nf(x,1);
   return {kind:'num',q:`Převodník má ${n} bity, tedy ${N} úrovní očíslovaných 0 až ${N-1}. Naměřená hodnota je <b>${xs}</b>. Na kterou úroveň se zaokrouhlí?`,ph:'číslo úrovně',check:s=>normNum(s)===ans,rightText:`<b>${ans}</b>`,
     hints:['Převodník vybere úroveň, která je naměřené hodnotě nejblíž.',`Hodnota ${xs} leží mezi úrovněmi ${base} a ${base+1}.`,`Vzdálenost od ${base} je ${nf(x-base,1)}, od ${base+1} je ${nf(base+1-x,1)}. Správně je ${ans}.`],
     why:`Hodnota ${xs} je nejblíž úrovni ${ans}. Rozdíl mezi naměřenou a zaokrouhlenou hodnotou se ve zvuku projeví jako kvantizační šum.`,
     wrong:raw=>{const v=normNum(raw);if(v===base&&ans!==base)return 'To je zaokrouhlení dolů. Převodník ale vybírá nejbližší úroveň, ne tu nižší.';if(v===base+1&&ans!==base+1)return 'Tahle úroveň je dál. Porovnej vzdálenost od obou sousedních úrovní.';return null;}};}};
 
-SK['s-cislo-bin']={lv:'s',title:'Číslo úrovně → dvojkově',gen(){const n=pick([3,4,5]),N=2**n,v=1+rnd(N-1),parts=[];for(let i=n-1;i>=0;i--)if(v&(1<<i))parts.push(2**i);
+SK['s-cislo-bin']={lv:'zs',title:'Číslo úrovně → dvojkově',gen(){const n=pick([3,4,5]),N=2**n,v=1+rnd(N-1),parts=[];for(let i=n-1;i>=0;i--)if(v&(1<<i))parts.push(2**i);
   return {kind:'text',q:`Zapiš číslo úrovně <b>${v}</b> dvojkově na ${n} bity (přesně ${n} číslic).`,ph:`${n} číslic 0 a 1`,
     check:s=>{const b=normBin(s);return /^[01]+$/.test(b)&&b.length===n&&parseInt(b,2)===v;},rightText:`<b class="mono">${bin(v,n)}</b>`,
     hints:[`Váhy bitů zleva doprava jsou ${Array.from({length:n},(_,i)=>2**(n-1-i)).join(', ')}. Kde bit zapneš, váha se přičte.`,`Rozlož ${v} na váhy: ${v} = ${parts.join(' + ')}.`,`Zapni bity s vahami ${parts.join(', ')}. Správně je ${bin(v,n)}.`],
     why:`${v} = ${parts.join(' + ')}, tedy ${bin(v,n)}.`,
     wrong:raw=>{const b=normBin(raw);if(!/^[01]+$/.test(b))return 'Dvojkový zápis má jen číslice 0 a 1.';if(parseInt(b,2)===v&&b.length!==n)return `Hodnota sedí, ale vzorek se zapisuje přesně na ${n} bitů. Na začátek doplň nuly.`;if(b.length!==n)return `Zapiš přesně ${n} číslic.`;return null;}};}};
 
-SK['s-bin-cislo']={lv:'s',title:'Dvojkově → číslo úrovně',gen(){const n=pick([3,4,5]),N=2**n,v=1+rnd(N-1),b=bin(v,n),parts=[];for(let i=n-1;i>=0;i--)if(v&(1<<i))parts.push(2**i);
+SK['s-bin-cislo']={lv:'zs',title:'Dvojkově → číslo úrovně',gen(){const n=pick([3,4,5]),N=2**n,v=1+rnd(N-1),b=bin(v,n),parts=[];for(let i=n-1;i>=0;i--)if(v&(1<<i))parts.push(2**i);
   return {kind:'num',q:`Vzorek je v souboru zapsán jako <b class="mono">${b}</b>. Které číslo úrovně to je?`,ph:'číslo',check:s=>normNum(s)===v,rightText:`<b>${v}</b>`,
     hints:[`Váhy bitů zleva doprava jsou ${Array.from({length:n},(_,i)=>2**(n-1-i)).join(', ')}.`,`Sečti váhy tam, kde je jednička: ${parts.join(' + ')}.`,`Správně je ${v}.`],
     why:`${parts.join(' + ')} = ${v}.`,
     wrong:raw=>{const r=normNum(raw);if(r===parseInt(b.split('').reverse().join(''),2)&&r!==v)return 'Váhy se přiřazují zleva doprava: nejvyšší váha je u prvního bitu.';return null;}};}};
 
-SK['s-vzorky']={lv:'s',title:'Počet vzorků',gen(){const f=pick(FSL),t=pick([2,3,5,10]);
+SK['s-vzorky']={lv:'zs',title:'Počet vzorků',gen(){const f=pick(FSL),t=pick([2,3,5,10]);
   return {kind:'num',q:`Vzorkovací frekvence je <b>${nf(f,0)} Hz</b>. Kolik vzorků vznikne za <b>${t} s</b>?`,ph:'počet vzorků',check:s=>normNum(s)===f*t,rightText:`<b>${nf(f*t,0)}</b>`,
     hints:['Vzorkovací frekvence říká, kolik vzorků vznikne za jednu sekundu.',`Za 1 s je ${nf(f,0)} vzorků. Za ${t} s je ${t}× víc.`,`Správně je ${nf(f,0)} · ${t} = ${nf(f*t,0)}.`],
     why:`${nf(f,0)} vzorků za sekundu · ${t} s = ${nf(f*t,0)} vzorků.`,
     wrong:raw=>normNum(raw)===f?'To je počet vzorků za jednu sekundu. Ptáme se na delší dobu, vynásob ji.':null};}};
 
-SK['s-tok']={lv:'s',title:'Datový tok',gen(){const f=pick([8000,16000,44100,48000]),n=pick([8,16,24]),k=pick([1,2]),ans=f*n*k/1000;
+SK['s-tok']={lv:'zs',title:'Datový tok',gen(){const f=pick([8000,16000,44100,48000]),n=pick([8,16,24]),k=pick([1,2]),ans=f*n*k/1000;
   return {kind:'text',q:`Zvuk má <b>${nf(f,0)} Hz</b>, <b>${n} bitů</b> a <b>${k} ${cz(k,'kanál','kanály','kanálů')}</b>. Jaký je datový tok v <b>kbit/s</b>?`,ph:'např. 128 nebo 705,6',
     check:s=>Math.abs(normDec(s)-ans)<0.05,rightText:`<b>${nf(ans,1)} kbit/s</b>`,
     hints:['Datový tok = vzorkovací frekvence · bitová hloubka · počet kanálů. Vyjde v bit/s.',`${nf(f,0)} · ${n} · ${k} = ${nf(f*n*k,0)} bit/s.`,`Na kbit/s převeď dělením tisícem. Správně je ${nf(ans,1)} kbit/s.`],
     why:`${nf(f,0)} · ${n} · ${k} = ${nf(f*n*k,0)} bit/s = ${nf(ans,1)} kbit/s.`,
     wrong:raw=>{const v=normDec(raw);if(Math.abs(v-f*n*k)<1)return 'To je datový tok v bit/s. Zadání chce kbit/s, tedy dělit tisícem.';if(Math.abs(v-f*n/1000)<0.05&&k>1)return 'Zapomněl jsi na počet kanálů. Stereo má dvakrát víc dat než mono.';if(Math.abs(v-f*n*k/8000)<0.05)return 'To je v kB/s. Ptáme se na kbit/s, osmkrát větší číslo.';return null;}};}};
 
-SK['s-velikost']={lv:'s',title:'Velikost záznamu',gen(){const f=pick([8000,16000,44100,48000]),n=pick([8,16]),k=pick([1,2]),t=pick([10,30,60]),B=f*n*k*t/8,ans=B/1000;
+SK['s-velikost']={lv:'zs',title:'Velikost záznamu',gen(){const f=pick([8000,16000,44100,48000]),n=pick([8,16]),k=pick([1,2]),t=pick([10,30,60]),B=f*n*k*t/8,ans=B/1000;
   return {kind:'text',q:`Zvuk má <b>${nf(f,0)} Hz</b>, <b>${n} bitů</b>, <b>${k} ${cz(k,'kanál','kanály','kanálů')}</b> a trvá <b>${t} s</b>. Kolik kB (1 kB = 1 000 B) zabere bez komprese?`,ph:'číslo v kB',
     check:s=>Math.abs(normDec(s)-ans)<0.5,rightText:`<b>${nf(ans,0)} kB</b>`,
     hints:[`Nejdřív datový tok v bit/s: ${nf(f,0)} · ${n} · ${k} = ${nf(f*n*k,0)}.`,`Vynásob délkou ${t} s a vyděl osmi (bity → bajty): ${nf(f*n*k*t,0)} ÷ 8 = ${nf(B,0)} B.`,`Na kB vyděl tisícem. Správně je ${nf(ans,0)} kB.`],
@@ -901,16 +1145,83 @@ const POJ=[
  {q:'Co určuje bitová hloubka?',opts:['Počet úrovní, na které se hodnota zaokrouhlí','Kolikrát za sekundu se měří','Délku nahrávky'],right:0,why:'n bitů dává 2<sup>n</sup> úrovní. Víc bitů znamená jemnější úrovně.'},
  {q:'Co je uloženo v souboru s digitálním zvukem?',opts:['Řada čísel (vzorků) zapsaných dvojkově','Zvlněná čára jako na osciloskopu','Napětí pro reproduktor'],right:0,why:'Soubor obsahuje jen čísla a krátkou hlavičku. Zvlněnou čáru z nich vyrobí D/A převodník a filtr.',wrong:'Křivku ani napětí do souboru uložit nejde. Soubor je řada čísel.'},
  {q:'Co se stane po zvýšení bitové hloubky?',opts:['Úrovně budou jemnější, ale soubor větší','Zvuk bude vyšší','Zvuk bude hlasitější'],right:0,why:'Víc bitů na vzorek znamená přesnější zaokrouhlení, ale i víc dat. Výška ani hlasitost se nemění.',wrong:'Výšku tónu určuje frekvence signálu a hlasitost jeho amplituda. Bitová hloubka mění jen jemnost úrovní.'},
- {q:'Co dělá D/A převodník?',opts:['Z čísel vyrobí napětí','Z napětí vyrobí čísla','Z napětí vyrobí zvuk ve vzduchu'],right:0,why:'D/A převodník dělá z čísel napětí. Zvuk ve vzduchu až z napětí vyrobí reproduktor.',wrong:'Z napětí čísla dělá A/D převodník. Zvuk ve vzduchu vyrobí až reproduktor.'},
+ {s:1,q:'Co dělá D/A převodník?',opts:['Z čísel vyrobí napětí','Z napětí vyrobí čísla','Z napětí vyrobí zvuk ve vzduchu'],right:0,why:'D/A převodník dělá z čísel napětí. Zvuk ve vzduchu až z napětí vyrobí reproduktor.',wrong:'Z napětí čísla dělá A/D převodník. Zvuk ve vzduchu vyrobí až reproduktor.'},
  {q:'Co je PCM (pulzně kódová modulace)?',opts:['Způsob zápisu zvuku: vzorkování, kvantování a zápis čísla','Typ mikrofonu','Druh komprese'],right:0,why:'PCM jsou tři kroky A/D převodníku. Komprese je zvláštní krok až po nich.'},
  {q:'Který krok digitalizace zaokrouhluje naměřenou hodnotu?',opts:['Kvantování','Vzorkování','Rekonstrukční filtr'],right:0,why:'Vzorkování určuje, kdy se měří. Kvantování určuje, na jakou úroveň se výsledek zaokrouhlí.',wrong:'Vzorkování rozhoduje o času měření. Zaokrouhlení hodnoty je kvantování.'},
- {q:'Je výstup přehrávače digitálního zvuku schodovitý?',opts:['Ne, filtr za D/A převodníkem schody vyhladí','Ano, vždy, a proto digitální zvuk zní hrubě','Jen u stereo'],right:0,why:'D/A převodník vytvoří schody, rekonstrukční filtr je vyhladí. Při dostatečné vzorkovací frekvenci a bitové hloubce vznikne věrný průběh.',wrong:'Schody jsou jen mezistupeň. Filtr je vyhladí a při CD kvalitě je rozdíl oproti originálu velmi malý.'}
+ {s:1,q:'Je výstup přehrávače digitálního zvuku schodovitý?',opts:['Ne, filtr za D/A převodníkem schody vyhladí','Ano, vždy, a proto digitální zvuk zní hrubě','Jen u stereo'],right:0,why:'D/A převodník vytvoří schody, rekonstrukční filtr je vyhladí. Při dostatečné vzorkovací frekvenci a bitové hloubce vznikne věrný průběh.',wrong:'Schody jsou jen mezistupeň. Filtr je vyhladí a při CD kvalitě je rozdíl oproti originálu velmi malý.'}
 ];
-SK['s-pojmy']={lv:'s',title:'Pojmy digitalizace',gen(){const p=pick(POJ);return {kind:'opts',q:p.q,opts:p.opts.map((t,i)=>({v:i,t:esc(t)})),right:p.right,rightText:`<b>${esc(p.opts[p.right])}</b>`,why:p.why,wrong:()=>p.wrong||null};}};
+SK['s-pojmy']={lv:'zs',title:'Pojmy digitalizace',gen(){const p=pick(POJ.filter(x=>!x.s));return {kind:'opts',q:p.q,opts:p.opts.map((t,i)=>({v:i,t:esc(t)})),right:p.right,rightText:`<b>${esc(p.opts[p.right])}</b>`,why:p.why,wrong:()=>p.wrong||null};}};
+
+
+/* ---- nové dovednosti (Standardní znalosti) ---- */
+const POJ2=[
+ {q:'Co určuje výšku tónu?',opts:['Frekvence','Amplituda','Rychlost zvuku'],right:0,why:'Výšku tónu určuje frekvence, hlasitost amplituda.',wrong:'Amplituda je velikost výchylky a určuje hlasitost. Výšku určuje frekvence.'},
+ {q:'Co je Nyquistova frekvence?',opts:['Polovina vzorkovací frekvence','Dvojnásobek vzorkovací frekvence','Nejnižší slyšitelná frekvence'],right:0,why:'Nyquistova frekvence je f<sub>s</sub> / 2. Tóny nad ní se vzorkují špatně.',wrong:'Vzorkovací frekvence musí být víc než dvojnásobek nejvyšší frekvence signálu, takže Nyquistova frekvence je její polovina.'},
+ {q:'Co je aliasing?',opts:['Zkreslení, kdy tón nad Nyquistovou frekvencí vypadá jako nižší tón','Šum, který vzniká zaokrouhlováním na úrovně','Vyhlazení schodů filtrem'],right:0,why:'Vzorky příliš vysokého tónu vypadají, jako by patřily pomalejšímu tónu.',wrong:'Šum ze zaokrouhlování je kvantizační šum a vyhlazení schodů dělá rekonstrukční filtr. Aliasing vzniká při vzorkování.'},
+ {q:'Co je bezeztrátová komprese?',opts:['Zmenšení souboru, ze kterého se dá získat přesně původní zvuk','Zahození složek, které ucho neslyší','Zvýšení vzorkovací frekvence'],right:0,why:'Bezeztrátová komprese odstraní nadbytečnost a data se dají vrátit beze změny (FLAC).',wrong:'Zahazování neslyšitelného je ztrátová komprese. Bezeztrátová nic nezahodí.'},
+ {q:'Na čem stojí ztrátová komprese zvuku?',opts:['Na tom, že ucho neslyší všechno stejně (například maskování)','Na zaokrouhlení délky skladby','Na zvětšení bitové hloubky'],right:0,why:'Kodek zahodí nebo zapíše hrubě složky, které ucho kvůli maskování nevnímá.'}
+];
+SK['s-pojmy-s']={lv:'s',title:'Pojmy: D/A, vlnění, komprese',gen(){const p=pick(POJ.filter(x=>x.s).concat(POJ2));return {kind:'opts',q:p.q,opts:p.opts.map((t,i)=>({v:i,t:esc(t)})),right:p.right,rightText:`<b>${esc(p.opts[p.right])}</b>`,why:p.why,wrong:()=>p.wrong||null};}};
+
+SK['s-frekvence']={lv:'s',title:'Frekvence, perioda, vlnová délka',gen(){
+  const t=rnd(3);
+  if(t===0){const f=pick([100,125,200,250,400,500,1000,2000]),ans=1000/f;
+    return {kind:'text',q:`Tón má frekvenci <b>${nf(f,0)} Hz</b>. Jak dlouho trvá jedna perioda v <b>ms</b>?`,ph:'např. 2,5',check:s=>Math.abs(normDec(s)-ans)<0.005,rightText:`<b>${nf(ans,3)} ms</b>`,
+      hints:['Perioda je převrácená hodnota frekvence: T = 1 / f.',`T = 1 / ${nf(f,0)} s.`,`Výsledek v sekundách vynásob tisícem, abys dostal ms. Správně je ${nf(ans,3)} ms.`],
+      why:`T = 1 / f = 1 / ${nf(f,0)} s = ${nf(ans,3)} ms.`,
+      wrong:raw=>{const v=normDec(raw);if(Math.abs(v-1/f)<1e-6)return 'To je perioda v sekundách. Zadání chce milisekundy, tedy vynásobit tisícem.';if(Math.abs(v-f)<1e-9)return 'To je frekvence. Perioda je její převrácená hodnota.';return null;}};}
+  if(t===1){const T=pick([0.5,1,2,4,5,10]),ans=1000/T;
+    return {kind:'num',q:`Jedna perioda tónu trvá <b>${nf(T,1)} ms</b>. Jaká je frekvence v <b>Hz</b>?`,ph:'číslo',check:s=>normNum(s)===ans,rightText:`<b>${nf(ans,0)} Hz</b>`,
+      hints:['Frekvence je převrácená hodnota periody: f = 1 / T.',`${nf(T,1)} ms je ${nf(T/1000,4)} s.`,`f = 1 / ${nf(T/1000,4)} s. Správně je ${nf(ans,0)} Hz.`],
+      why:`f = 1 / T = 1 / ${nf(T/1000,4)} s = ${nf(ans,0)} Hz.`,
+      wrong:raw=>{const v=normNum(raw);if(v===T)return 'To je perioda. Frekvence je její převrácená hodnota, a perioda je v milisekundách.';if(v===ans/1000)return 'Zapomněl jsi převést milisekundy na sekundy. 1 ms je 0,001 s.';return null;}};}
+  const f=pick([343,686,1372]),ans=343/f;
+  return {kind:'text',q:`Rychlost zvuku ve vzduchu je <b>343 m/s</b>. Jaká je vlnová délka tónu <b>${nf(f,0)} Hz</b> v <b>metrech</b>?`,ph:'např. 0,5',check:s=>Math.abs(normDec(s)-ans)<0.005,rightText:`<b>${nf(ans,2)} m</b>`,
+    hints:['Vlnová délka je rychlost dělená frekvencí: λ = c / f.',`λ = 343 / ${nf(f,0)}.`,`Správně je ${nf(ans,2)} m.`],
+    why:`λ = c / f = 343 / ${nf(f,0)} = ${nf(ans,2)} m.`,
+    wrong:raw=>{const v=normDec(raw);if(Math.abs(v-f/343)<0.005)return 'Máš to obráceně. Vlnová délka je rychlost dělená frekvencí, ne naopak.';return null;}};
+}};
+
+SK['s-nyquist']={lv:'s',title:'Nyquistova podmínka a aliasing',gen(){
+  const t=rnd(3);
+  if(t===0){const fs=pick([8000,16000,22050,44100,48000]),ans=fs/2;
+    return {kind:'num',q:`Vzorkovací frekvence je <b>${nf(fs,0)} Hz</b>. Jaká je Nyquistova frekvence, tedy nejvyšší frekvence tónu, kterou lze ještě správně zachytit (v Hz)?`,ph:'číslo',check:s=>normNum(s)===ans,rightText:`<b>${nf(ans,0)} Hz</b>`,
+      hints:['Nyquistova frekvence je polovina vzorkovací frekvence.',`${nf(fs,0)} děleno dvěma.`,`Správně je ${nf(ans,0)} Hz.`],
+      why:`Nyquistova frekvence = f<sub>s</sub> / 2 = ${nf(fs,0)} / 2 = ${nf(ans,0)} Hz.`,
+      wrong:raw=>normNum(raw)===fs*2?'To je dvojnásobek. Vzorkovací frekvence musí být dvojnásobná než nejvyšší tón, takže tón může mít nejvýš polovinu.':null};}
+  if(t===1){const fm=pick([3400,4000,8000,16000,20000]),ans=2*fm;
+    return {kind:'num',q:`Signál obsahuje frekvence až do <b>${nf(fm,0)} Hz</b>. Vzorkovací frekvence musí být větší než kolik Hz?`,ph:'číslo',check:s=>normNum(s)===ans,rightText:`<b>${nf(ans,0)} Hz</b>`,
+      hints:['Podle Nyquistova–Shannonova teorému musí být vzorkovací frekvence víc než dvojnásobná než nejvyšší frekvence signálu.',`2 · ${nf(fm,0)}.`,`Správně je ${nf(ans,0)} Hz.`],
+      why:`f<sub>s</sub> &gt; 2 · f<sub>max</sub> = 2 · ${nf(fm,0)} = ${nf(ans,0)} Hz.`,
+      wrong:raw=>normNum(raw)===fm/2?'To je polovina. Vzorkovací frekvence musí být naopak dvojnásobná.':null};}
+  const fs=pick([8000,10000,12000]),f=Math.round(fs*pick([0.6,0.75,0.9,1.1])),ans=Math.abs(f-Math.round(f/fs)*fs);
+  return {kind:'num',q:`Tón <b>${nf(f,0)} Hz</b> se vzorkuje při <b>${nf(fs,0)} Hz</b>. Jakou frekvenci bude mít tón, který z vzorků vznikne (v Hz)?`,ph:'číslo',check:s=>normNum(s)===ans,rightText:`<b>${nf(ans,0)} Hz</b>`,
+    hints:[`Nyquistova frekvence je ${nf(fs/2,0)} Hz. Tón ${nf(f,0)} Hz je nad ní, vznikne aliasing.`,'Falešná frekvence je vzdálenost tónu od nejbližšího násobku vzorkovací frekvence.',`|${nf(f,0)} − ${nf(Math.round(f/fs)*fs,0)}| = ${nf(ans,0)}.`],
+    why:`Tón je nad Nyquistovou frekvencí ${nf(fs/2,0)} Hz. Nejbližší násobek ${nf(fs,0)} je ${nf(Math.round(f/fs)*fs,0)}, rozdíl je ${nf(ans,0)} Hz.`,
+    wrong:raw=>normNum(raw)===f?'To je původní frekvence. Vzorkování ale tón nad Nyquistovou frekvencí zkreslí a vznikne nižší.':null};
+}};
+
+const KF=[['FLAC','bezeztrátová'],['ALAC (Apple Lossless)','bezeztrátová'],['MP3','ztrátová'],['AAC','ztrátová'],['Ogg Vorbis','ztrátová'],['Opus','ztrátová'],['WAV (PCM)','žádná']];
+const KS=[['Po rozbalení vznikne přesně původní zvuk, bit po bitu.','bezeztrátová'],['Trvale zahodí složky, které ucho kvůli maskování neslyší.','ztrátová'],['Hledá v datech opakování a předvídatelnost.','bezeztrátová'],['Z výsledku už nelze získat původní nahrávku.','ztrátová'],['Úspora bývá zhruba na polovinu až dvě třetiny, podle hudby.','bezeztrátová'],['Soubor může být i desetkrát menší, ale část informace je nenávratně pryč.','ztrátová']];
+const KNAME={'bezeztrátová':'bezeztrátová komprese','ztrátová':'ztrátová komprese','žádná':'žádná komprese'};
+SK['s-komprese']={lv:'s',title:'Bezeztrátová × ztrátová komprese',gen(){
+  if(Math.random()<.5){const k=pick(KF);
+    return {kind:'opts',q:`Jaký druh komprese používá <b>${esc(k[0])}</b>?`,opts:[{v:'bezeztrátová',t:'Bezeztrátovou'},{v:'ztrátová',t:'Ztrátovou'},{v:'žádná',t:'Žádnou, data jsou nekomprimovaná'}],right:k[1],rightText:`<b>${KNAME[k[1]]}</b>`,
+      hints:['Bezeztrátové formáty jdou rozbalit na přesně původní zvuk (FLAC, ALAC). Ztrátové část informace zahodí (MP3, AAC, Ogg Vorbis, Opus).','WAV s PCM je jen řada čísel z A/D převodníku.',`Správně je ${KNAME[k[1]]}.`],
+      why:k[1]==='bezeztrátová'?`${esc(k[0])} soubor zmenší tak, že se z něj dá získat přesně původní zvuk.`:k[1]==='ztrátová'?`${esc(k[0])} trvale zahazuje část informace, kterou ucho nejméně slyší.`:'WAV s PCM data nekomprimuje, je v něm přímo řada čísel z A/D převodníku.',wrong:()=>null};}
+  const k=pick(KS);
+  return {kind:'opts',q:`Které komprese se týká toto tvrzení? <i>${esc(k[0])}</i>`,opts:[{v:'bezeztrátová',t:'Bezeztrátové'},{v:'ztrátová',t:'Ztrátové'}],right:k[1],rightText:`<b>${KNAME[k[1]]}</b>`,
+    hints:['Ptej se: dá se z výsledku získat přesně původní zvuk?','Bezeztrátová data nezahazuje, ztrátová ano.',`Správně je ${KNAME[k[1]]}.`],
+    why:k[1]==='bezeztrátová'?'Bezeztrátová komprese nic nezahodí, jen odstraní nadbytečnost.':'Ztrátová komprese zahodí část informace a nedá se vrátit.',wrong:()=>null};
+}};
+
+CHK.sw1={q:'Který tón zní výš: 220 Hz, nebo 880 Hz?',opts:[{v:'a',t:'220 Hz'},{v:'b',t:'880 Hz'}],right:'b',rightText:'<b>880 Hz</b>',why:'Výšku tónu určuje frekvence: čím větší, tím výš tón zní. Hlasitost s tím nesouvisí, ta závisí na amplitudě.',wrong:()=>'Větší frekvence znamená vyšší tón. V simulaci to zkus: zvyš frekvenci a poslechni si to.'};
+CHK.sn1={q:'Při vzorkovací frekvenci 8 000 Hz se vzorkuje tón 6 000 Hz. Jaký tón z vzorků vznikne?',opts:[{v:'a',t:'Tón 6 000 Hz, beze změny'},{v:'b',t:'Nižší tón 2 000 Hz'},{v:'c',t:'Žádný, vzorky budou nulové'}],right:'b',rightText:'<b>nižší tón 2 000 Hz</b>',why:'Nyquistova frekvence je 4 000 Hz, tón ji překračuje. Nejbližší násobek 8 000 je 8 000, rozdíl |6 000 − 8 000| = 2 000 Hz.',wrong:()=>'Tón 6 000 Hz je nad Nyquistovou frekvencí 4 000 Hz, takže se zkreslí. Zkus to v simulaci výše.'};
+CHK.sk1={q:'Dá se z MP3 souboru získat přesně původní nahrávku z CD?',opts:[{v:'a',t:'Ne, ztrátová komprese část informace trvale zahodila.'},{v:'b',t:'Ano, stačí MP3 převést na WAV.'},{v:'c',t:'Ano, pokud má MP3 aspoň 128 kbit/s.'}],right:'a',rightText:'<b>ne</b>',why:'Ztrátová komprese informaci zahodí navždy. Převod do WAV vytvoří větší soubor, ale ztracené se nevrátí.',wrong:()=>'Převod do jiného formátu ani vyšší datový tok zahozenou informaci nevrátí.'};
 
 /* kontrolní otázky v kapitolách */
 CHK.s2={skill:'s-typ',n:3};
-CHK.s2b={q:'Proč se zvuk převádí na čísla?',opts:[{v:'a',t:'Čísla se dají kopírovat beze změny, ukládat a posílat po síti.'},{v:'b',t:'Čísla zní lépe než analogový signál.'},{v:'c',t:'Čísla zabírají vždycky méně místa.'}],right:'a',rightText:'<b>čísla se dají kopírovat beze změny</b>',why:'Digitální data se dají přesně zkopírovat, uložit, přenést a zpracovat. Zabírají často víc místa, než by člověk čekal, a o kvalitě zvuku to nic neříká.',wrong:()=>'Čísla samy o sobě lépe nezní a místa mnohdy zabírají hodně (viz kapitola 5). Výhoda je v přesném kopírování a zpracování.'};
+CHK.s2b={q:'Proč se zvuk převádí na čísla?',opts:[{v:'a',t:'Čísla se dají kopírovat beze změny, ukládat a posílat po síti.'},{v:'b',t:'Čísla zní lépe než analogový signál.'},{v:'c',t:'Čísla zabírají vždycky méně místa.'}],right:'a',rightText:'<b>čísla se dají kopírovat beze změny</b>',why:'Digitální data se dají přesně zkopírovat, uložit, přenést a zpracovat. Zabírají často víc místa, než by člověk čekal, a o kvalitě zvuku to nic neříká.',wrong:()=>'Čísla samy o sobě lépe nezní a místa mnohdy zabírají hodně (viz kapitola Velikost a datový tok). Výhoda je v přesném kopírování a zpracování.'};
 CHK.s3={q:'Co určuje, kolik úrovní má kvantování?',opts:[{v:'a',t:'Vzorkovací frekvence'},{v:'b',t:'Bitová hloubka'},{v:'c',t:'Délka nahrávky'}],right:'b',rightText:'<b>bitová hloubka</b>',why:'n bitů dává 2<sup>n</sup> úrovní. Vzorkovací frekvence říká jen, jak často se měří.',wrong:()=>'Vzorkovací frekvence určuje, kolikrát za sekundu se měří. Úrovně určuje bitová hloubka.'};
 CHK.s3b={skill:'s-urovne',n:3};
 CHK.s4={q:'Kolik bitů zabere v souboru jeden vzorek při bitové hloubce 16?',opts:[{v:'a',t:'8 bitů'},{v:'b',t:'16 bitů'},{v:'c',t:'32 bitů'}],right:'b',rightText:'<b>16 bitů</b>',why:'Bitová hloubka je přesně počet bitů jednoho vzorku. Při dvou kanálech má každý kanál svůj vzorek.'};
@@ -918,10 +1229,10 @@ CHK.s5={q:'Co z toho nezmění datový tok (v bit/s)?',opts:[{v:'a',t:'Vyšší 
 CHK.s6={q:'Proč se výstup D/A převodníku vyhlazuje filtrem?',opts:[{v:'a',t:'Schody obsahují rychlé skoky, které zvuk zkreslují.'},{v:'b',t:'Aby byl zvuk hlasitější.'},{v:'c',t:'Aby byl soubor menší.'}],right:'a',rightText:'<b>schody zkreslují zvuk</b>',why:'Skoky ve schodovitém průběhu přidávají vysoké frekvence, které v původním zvuku nebyly. Filtr je odstraní.',wrong:()=>'Filtr nemění hlasitost ani velikost souboru. Odstraňuje jen schody, které by zkreslily zvuk.'};
 
 const PRE_S=[
- {q:'Co dělá mikrofon?',opts:[{v:0,t:'Změní tlak vzduchu na elektrický signál (typicky napětí)'},{v:1,t:'Změní napětí na čísla'},{v:2,t:'Změní čísla na zvuk'}],right:0,rightText:'<b>tlak vzduchu → elektrický signál</b>',ch:1,why:'Čísla vyrábí až A/D převodník.'},
- {q:'Co je vzorek?',opts:[{v:0,t:'Jedno změřené napětí v určitém okamžiku'},{v:1,t:'Celá nahrávka'},{v:2,t:'Typ souboru'}],right:0,rightText:'<b>jedno změřené napětí v okamžiku</b>',ch:2,why:'Vzorků vzniká mnoho za sekundu.'},
- {q:'Kolik různých hodnot zapíšou 3 bity?',opts:[{v:0,t:'6'},{v:1,t:'8'},{v:2,t:'9'}],right:1,rightText:'<b>8</b>',ch:2,why:'2 · 2 · 2 = 2³ = 8.'},
- {q:'Jak se číslo 5 zapíše dvojkově?',opts:[{v:0,t:'101'},{v:1,t:'110'},{v:2,t:'011'}],right:0,rightText:'<b>101</b>',ch:3,why:'5 = 4 + 1, tedy 1 0 1.'}
+ {q:'Co dělá mikrofon?',opts:[{v:0,t:'Změní tlak vzduchu na elektrický signál (typicky napětí)'},{v:1,t:'Změní napětí na čísla'},{v:2,t:'Změní čísla na zvuk'}],right:0,rightText:'<b>tlak vzduchu → elektrický signál</b>',ch:'Cesta zvuku',why:'Čísla vyrábí až A/D převodník.'},
+ {q:'Co je vzorek?',opts:[{v:0,t:'Jedno změřené napětí v určitém okamžiku'},{v:1,t:'Celá nahrávka'},{v:2,t:'Typ souboru'}],right:0,rightText:'<b>jedno změřené napětí v okamžiku</b>',ch:'A/D převodník',why:'Vzorků vzniká mnoho za sekundu.'},
+ {q:'Kolik různých hodnot zapíšou 3 bity?',opts:[{v:0,t:'6'},{v:1,t:'8'},{v:2,t:'9'}],right:1,rightText:'<b>8</b>',ch:'A/D převodník',why:'2 · 2 · 2 = 2³ = 8.'},
+ {q:'Jak se číslo 5 zapíše dvojkově?',opts:[{v:0,t:'101'},{v:1,t:'110'},{v:2,t:'011'}],right:0,rightText:'<b>101</b>',ch:'Soubor',why:'5 = 4 + 1, tedy 1 0 1.'}
 ];
 
 /* ================= VYKRESLOVÁNÍ A NÁSTROJE ================= */
@@ -1069,6 +1380,71 @@ function playBuf(fn,secs){
     const s=AC.createBufferSource();s.buffer=buf;s.connect(AC.destination);s.start();ACsrc=s;
   }catch(e){toast('Přehrávání se nepodařilo.');}
 }
+
+
+/* ---- Standard: zvuk jako vlnění ---- */
+(function(){
+  const cv=$('#wvCv'); if(!cv) return;
+  const F=$('#wvF'),A=$('#wvA');
+  function draw(){
+    const f=+F.value,amp=+A.value/100,T=1000/f,n=f*0.01,lam=343/f;
+    $('#wvFV').textContent=nf(f,0)+' Hz';$('#wvAV').textContent=Math.round(amp*100)+' %';
+    $('#wvOut').innerHTML=`<div><b>${nf(T,2)} ms</b><span>perioda T = 1 / f</span></div><div><b>${nf(n,1)}</b><span>kmitů v okně 10 ms</span></div><div><b>${nf(lam,2)} m</b><span>vlnová délka λ = c / f</span></div>`;
+    const g=fit(cv); if(!g) return; const {x,w,h,c}=g,pl=36,pr=10,pt=12,pb=28;
+    const X=t=>pl+t/10*(w-pl-pr),Y=v=>pt+(1-(v+1)/2)*(h-pt-pb);
+    x.strokeStyle=c.line;x.lineWidth=1;x.fillStyle=c.muted;x.font='12px "IBM Plex Sans",system-ui,sans-serif';x.textBaseline='middle';
+    [[1,'+1'],[0,'0'],[-1,'−1']].forEach(([v,l])=>{x.beginPath();x.moveTo(pl,Y(v));x.lineTo(w-pr,Y(v));x.stroke();x.fillText(l,6,Y(v));});
+    x.textBaseline='alphabetic';x.textAlign='center';[0,2,4,6,8,10].forEach(t=>x.fillText(t,X(t),h-12));x.fillText('čas (ms)',(pl+w-pr)/2,h-1);x.textAlign='left';
+    x.beginPath();x.strokeStyle=c.k2;x.lineWidth=2.4;
+    for(let i=0;i<=400;i++){const t=i/40,v=amp*Math.sin(2*Math.PI*f*t/1000);i?x.lineTo(X(t),Y(v)):x.moveTo(X(t),Y(v));}
+    x.stroke();
+    if(T<=10){x.strokeStyle=c.k1;x.fillStyle=c.k1;x.lineWidth=3;x.beginPath();x.moveTo(X(0),Y(-1)+2);x.lineTo(X(T),Y(-1)+2);x.stroke();x.textAlign='center';x.fillText('T',X(T/2),Y(-1)-5);x.textAlign='left';}
+  }
+  F.addEventListener('input',draw);A.addEventListener('input',draw);
+  $('#wvPlay').onclick=()=>{const f=+F.value,amp=+A.value/100;playBuf(t=>amp*Math.sin(2*Math.PI*f*t),1.2);};
+  REDRAW.push(draw);draw();
+})();
+
+/* ---- Standard: nejjednodušší bezeztrátová komprese (RLE) ---- */
+(function(){
+  const inp=$('#rlIn'); if(!inp) return;
+  function upd(){
+    const chars=[...inp.value].slice(0,40),runs=[];
+    chars.forEach(ch=>{const r=runs[runs.length-1];if(r&&r[0]===ch)r[1]++;else runs.push([ch,1]);});
+    const vis=ch=>ch===' '?'␣':esc(ch);
+    const enc=runs.map(r=>`${r[1]}×${vis(r[0])}`).join(' ');
+    const dec=runs.map(r=>r[0].repeat(r[1])).join(''),same=dec===chars.join('');
+    const n=chars.length,pairs=runs.length;
+    $('#rlOut').innerHTML=n?`<div><b class="mono">${enc}</b><span>zápis (počet × znak)</span></div><div><b>${n} → ${pairs*2}</b><span>symbolů původně → po kompresi (počet i znak)</span></div><div><b>${same?'shodné':'liší se'}</b><span>${pairs*2<n?'po rozbalení vznikne přesně původní text':'rozbalení vrátí původní text; zkrácení tu ale nevyšlo, znaky se málo opakují'}</span></div>`:'<div><b>–</b><span>napiš nějaký text</span></div>';
+  }
+  inp.addEventListener('input',upd);upd();
+})();
+
+/* ---- Extra E: kroky kódování MP3 ---- */
+(function(){
+  const host=$('#mpStrip'),info=$('#mpInfo'); if(!host) return;
+  const ST7=[
+   {n:'Rámce',cls:'dg',tag:'bez ztráty',txt:'Zvuk v PCM se rozdělí na rámce po 1 152 vzorcích, což je při 44,1 kHz asi 26 ms. Každý rámec má dvě poloviny (granule) po 576 vzorcích.'},
+   {n:'Pásma',cls:'dg',tag:'bez ztráty',txt:'Banka filtrů (32 pásem) a transformace MDCT rozloží každou granuli na 576 frekvenčních čar. Dál se pracuje s frekvencemi, ne s časovým průběhem.'},
+   {n:'Model sluchu',cls:'',tag:'analýza',txt:'Psychoakustický model odhadne, co ucho neslyší. Pro každé pásmo spočítá práh maskování, pod kterým šum zanikne. Využívá hlavně frekvenční maskování. U náhlého úderu přepne na kratší okna, aby se šum nerozlil před úder.'},
+   {n:'Kvantování',cls:'cv',tag:'ztrátový',txt:'Frekvenční čáry se zaokrouhlí nerovnoměrně: pásma, kde šum zanikne, se zapíšou hrubě, ostatní jemněji. Dvě smyčky hlídají, aby se výsledek vešel do povoleného datového toku a aby šum zůstal pod prahem maskování. Tady vzniká ztráta, kterou už nejde vrátit.'},
+   {n:'Huffman',cls:'dg',tag:'bez ztráty',txt:'Zaokrouhlené hodnoty se zapíšou Huffmanovým kódem: častější hodnoty dostanou kratší kódy, vzácné delší. Je to bezeztrátová komprese, nic dalšího se nezahodí.'},
+   {n:'Zásobník',cls:'dg',tag:'bez ztráty',txt:'Bit reservoir: rámec, kterému se podařilo ušetřit bity, je přenechá náročnějším rámcům po něm. Datový tok je tak průměrně stálý, i když se obtížnost zvuku mění.'},
+   {n:'Soubor',cls:'dg',tag:'bez ztráty',txt:'Zapíše se hlavička rámce, informace o nastavení (například přidělení bitů a váhy pásem) a zakódovaná data. MP3 soubor je posloupnost takových rámců.'}
+  ];
+  host.innerHTML=ST7.map((s,i)=>`<button type="button" class="${s.cls}" data-i="${i}" aria-pressed="false"><b>${i+1}. ${esc(s.n)}</b><small>${s.tag}</small></button>`).join('');
+  function sel(i){host.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-pressed',k===i));const s=ST7[i];info.innerHTML=`<b>${i+1}. ${esc(s.n)} (${s.tag})</b><span>${esc(s.txt)}</span>`;}
+  host.onclick=e=>{const b=e.target.closest('[data-i]');if(b)sel(+b.dataset.i);};
+  sel(3);
+})();
+
+/* ---- Extra F: filtr formátů ---- */
+(function(){
+  const seg=$('#fmF'),t=$('#fmT'); if(!seg||!t) return;
+  seg.onclick=e=>{const b=e.target.closest('[data-f]');if(!b)return;
+    seg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+    t.querySelectorAll('tbody tr').forEach(r=>{r.hidden=!(b.dataset.f==='all'||r.dataset.k===b.dataset.f);});};
+})();
 
 /* ---- Extra A: kopie ---- */
 (function(){
@@ -1222,54 +1598,73 @@ CHK.x5={q:'Proč může být slabý zvuk těsně po silném úderu neslyšiteln�
 })();
 
 /* ================= NAVIGACE A KAPITOLY ================= */
-const TABS=['s','x'];
+const TABS=['z','s','x','t'];
+function applyLevel(l){
+  const co=document.querySelector('.course[data-course="s"]');
+  if(co&&co._lvl!==l){co._setLevel(l);renderLevel(l);}
+}
 function setTab(t,push){
   if(!TABS.includes(t)) t='s';
   document.documentElement.dataset.tab=t;
   document.querySelectorAll('button[data-go]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===t));
   lsSet('zvukplTab',t);
   if(push){try{history.replaceState(null,'','#'+t);}catch(e){}}
+  if(t==='z'||t==='s') applyLevel(t);
   redrawAll();
 }
 function goTab(t){setTab(t,true);const r=$('#obsah').getBoundingClientRect();if(r.top<0||r.top>innerHeight*.6)$('#obsah').scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});}
 document.addEventListener('click',e=>{
-  const b=e.target.closest('[data-go]'); if(b){e.preventDefault();goTab(b.dataset.go);return;}
-  const c=e.target.closest('[data-go-ch]'); if(c){const co=document.querySelector('.course[data-course="s"]');setTab('s',true);co._show&&co._show(+c.dataset.goCh,true);}
+  const b=e.target.closest('button[data-go]'); if(b){e.preventDefault();goTab(b.dataset.go);return;}
+  const c=e.target.closest('[data-go-ch]'); if(c){const t=document.documentElement.dataset.tab,l=t==='z'?'z':'s';setTab(l,true);const co=document.querySelector('.course[data-course="s"]'),k=co._find(c.dataset.goCh);if(k>=0)co._show(k,true);}
 });
 document.querySelectorAll('.course').forEach(co=>{
-  const id=co.dataset.course, chs=[...co.querySelectorAll('.ch')], prog=co.querySelector('.prog');
-  const nav=co.querySelector('.chnav'), done=new Set((lsGet('zvukpl-done-'+id)||'').split(',').filter(Boolean).map(Number));
-  prog.innerHTML=chs.map((c,i)=>`<li><button data-i="${i}">${id==='x'?'':(i+1)+'. '}${esc(c.dataset.title)}</button></li>`).join('');
-  let cur=Math.min(+(lsGet('zvukpl-ch-'+id)||0)||0,chs.length-1);
+  const cid=co.dataset.course, all=[...co.querySelectorAll('.ch')], prog=co.querySelector('.prog'), nav=co.querySelector('.chnav');
+  let lvl=cid==='x'?'x':'s', chs=all, cur=0, done=new Set();
+  const K=()=>cid==='x'?'x':lvl;
+  function build(){
+    all.forEach(c=>c.classList.remove('on'));
+    chs=cid==='x'?all:all.filter(c=>(c.dataset.lv||'z s').split(' ').includes(lvl));
+    co.querySelectorAll('[data-lv]').forEach(e=>{if(e.classList.contains('ch'))return;e.hidden=!e.dataset.lv.split(' ').includes(lvl);});
+    chs.forEach((c,i)=>{const e=c.querySelector('[data-ey]');if(e)e.textContent='Kapitola '+(i+1);});
+    done=new Set((lsGet('zvukpl2-done-'+K())||'').split(',').filter(Boolean).map(Number));
+    cur=Math.min(+(lsGet('zvukpl2-ch-'+K())||0)||0,chs.length-1);
+    let h='',lastG=null;
+    chs.forEach((c,i)=>{const g=c.dataset.group;if(g&&g!==lastG){h+=`<li class="grp">${esc(g)}</li>`;lastG=g;}h+=`<li><button data-i="${i}">${cid==='x'?'':(i+1)+'. '}${esc(c.dataset.title)}</button></li>`;});
+    prog.innerHTML=h;
+  }
   function show(i,scroll){
     cur=i; chs.forEach((c,k)=>c.classList.toggle('on',k===i));
-    done.add(i); lsSet('zvukpl-done-'+id,[...done].join(',')); lsSet('zvukpl-ch-'+id,i);
-    prog.querySelectorAll('button').forEach((b,k)=>{b.classList.toggle('done',done.has(k)&&k!==i);if(k===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
+    done.add(i); lsSet('zvukpl2-done-'+K(),[...done].join(',')); lsSet('zvukpl2-ch-'+K(),i);
+    prog.querySelectorAll('button').forEach(b=>{const k=+b.dataset.i;b.classList.toggle('done',done.has(k)&&k!==i);if(k===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
     nav.querySelector('.prev').disabled=i===0;
     const nx=nav.querySelector('.next'); nx.disabled=i===chs.length-1; nx.textContent=chs[i+1]&&chs[i+1].dataset.title==='Test a přehled'?'Na test ›':'Další kapitola ›';
-    nav.querySelector('.pos').textContent=`${id==='x'?'Část':'Kapitola'} ${i+1} z ${chs.length}`;
+    nav.querySelector('.pos').textContent=`${cid==='x'?'Část':'Kapitola'} ${i+1} z ${chs.length}`;
     if(scroll) co.querySelector('.course-head').scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});
     redrawAll();
   }
   prog.onclick=e=>{const b=e.target.closest('[data-i]');if(b)show(+b.dataset.i,false);};
   nav.querySelector('.prev').onclick=()=>show(Math.max(0,cur-1),true);
   nav.querySelector('.next').onclick=()=>show(Math.min(chs.length-1,cur+1),true);
-  co._show=show;
-  show(cur,false);
+  co._show=show; co._find=t=>chs.findIndex(c=>c.dataset.title===t);
+  co._setLevel=l=>{lvl=l;co._lvl=l;build();show(cur,false);};
+  build(); show(cur,false);
 });
 let startTab=(location.hash||'').slice(1);
 if(!TABS.includes(startTab)) startTab=lsGet('zvukplTab')||'s';
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS.includes(h))setTab(h);});
 
 /* ---------- inicializace ---------- */
-function initLoop(){
-  renderChecks();
-  const ps=$('#preS'); if(ps) pretest(ps,PRE_S,'s','s');
-  const prs=$('#pracS'); if(prs) practice(prs,'s');
-  const ts=$('#testS'); if(ts) runTest(ts,'s',['s-pojmy','s-typ','s-zarizeni','s-urovne','s-kvantuj','s-cislo-bin','s-tok','s-velikost'],()=>{const o=$('#ovS');o&&overview(o,'s');});
-  const os=$('#ovS'); if(os) overview(os,'s');
+const PLAN={
+  z:['s-pojmy','s-typ','s-urovne','s-kvantuj','s-cislo-bin','s-tok','s-velikost'],
+  s:['s-pojmy','s-pojmy-s','s-typ','s-zarizeni','s-urovne','s-kvantuj','s-cislo-bin','s-tok','s-velikost','s-frekvence','s-nyquist','s-komprese']
+};
+function renderLevel(lv){
+  const ps=$('#preS'); if(ps) pretest(ps,PRE_S,lv,'s');
+  const prs=$('#pracS'); if(prs) practice(prs,lv);
+  const ts=$('#testS'); if(ts){const tn=$('#testN');if(tn)tn.textContent=PLAN[lv].length;runTest(ts,lv,PLAN[lv],()=>{const o=$('#ovS');o&&overview(o,lv);});}
+  const os=$('#ovS'); if(os) overview(os,lv);
 }
-initLoop();
+renderChecks();
 adUpdate();
 setTab(startTab);
 window.addEventListener('resize',redrawAll);
