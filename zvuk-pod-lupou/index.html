@@ -648,7 +648,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
         <div class="field"><label for="mkP">Hlasitost druhého tónu: <span class="vl" id="mkPV"></span></label><input type="range" id="mkP" min="0" max="80" step="1" value="35"></div>
       </div>
       <div class="legend" aria-hidden="true"><span style="--c:var(--muted)"><i class="d"></i>práh slyšitelnosti za ticha</span><span style="--c:var(--k2)"><i></i>práh s maskováním</span></div>
-      <div class="lrow"><button type="button" class="btn pri" id="mkPlay">Přehrát oba zvuky</button><button type="button" class="btn" id="mkPlay2">Jen druhý (slabý) zvuk</button><span class="muted" style="font-size:.9rem">Hlasitost nech nízkou. Zvuk se spustí jen po klepnutí. Poměr hlasitostí odpovídá posuvníkům, skutečnou hlasitost určuje tvůj přehrávač.</span></div>
+      <div class="lrow"><button type="button" class="btn pri" id="mkPlay">Přehrát oba zvuky</button><button type="button" class="btn" id="mkPlay2">Jen druhý (slabý) zvuk</button><span class="muted" style="font-size:.9rem">Hlasitost nech nízkou. Zvuk se spustí jen po klepnutí a hraje, dokud ho nezastavíš. Posuvníky ho mění za chodu. Poměr hlasitostí odpovídá posuvníkům, skutečnou hlasitost určuje tvůj přehrávač.</span></div>
       <div class="out" id="mkOut"></div>
       <p class="muted" style="font-size:.9rem"><b>Zjednodušený model.</b> Práh za ticha podle běžně užívané aproximace, maskování schematicky. Ukazuje princip, ne naměřené hodnoty.</p>
     </div>
@@ -669,7 +669,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
         <div class="field"><label for="tmP">Hlasitost slabého zvuku: <span class="vl" id="tmPV"></span></label><input type="range" id="tmP" min="0" max="80" step="1" value="30"></div>
       </div>
       <div class="legend" aria-hidden="true"><span style="--c:var(--muted)"><i class="d"></i>práh slyšitelnosti za ticha</span><span style="--c:var(--k2)"><i></i>práh s maskováním</span></div>
-      <div class="lrow"><button type="button" class="btn pri" id="tmPlay">Přehrát oba zvuky</button><button type="button" class="btn" id="tmPlay2">Jen druhý (slabý) zvuk</button><span class="muted" style="font-size:.9rem">Hlasitý zvuk je tón 1 000 Hz, slabý 1 200 Hz. Přehraje se půl sekundy záznamu. Poměr hlasitostí odpovídá posuvníkům.</span></div>
+      <div class="lrow"><button type="button" class="btn pri" id="tmPlay">Přehrát oba zvuky</button><button type="button" class="btn" id="tmPlay2">Jen druhý (slabý) zvuk</button><span class="muted" style="font-size:.9rem">Hlasitý zvuk je tón 1 000 Hz, slabý 1 200 Hz. Záznam se opakuje, dokud ho nezastavíš, a posuvníky ho mění při dohrání dalšího opakování. Poměr hlasitostí odpovídá posuvníkům.</span></div>
       <div class="out" id="tmOut"></div>
       <p class="muted" style="font-size:.9rem"><b>Zjednodušený model.</b> Průběh prahu je schematický (zpětné maskování řádově desítky ms, dopředné řádově stovky ms). Skutečné hodnoty závisejí na hlasitosti, délce zvuků i na posluchači.</p>
     </div>
@@ -1600,6 +1600,7 @@ REDRAW.push(drawAD,drawDA);
 let AC=null,ACsrc=null;
 function playBuf(fn,secs){
   try{
+    stopLive();
     AC=AC||new (window.AudioContext||window.webkitAudioContext)();
     if(AC.state==='suspended')AC.resume();
     if(ACsrc){try{ACsrc.stop();}catch(e){}}
@@ -1608,6 +1609,26 @@ function playBuf(fn,secs){
     const s=AC.createBufferSource();s.buffer=buf;s.connect(AC.destination);s.start();ACsrc=s;
   }catch(e){toast('Přehrávání se nepodařilo.');}
 }
+
+/* ---- živý zvuk: hraje, dokud ho nezastavíš, a mění se spolu s posuvníky ---- */
+let LIVE=null;
+function stopLive(){
+  if(!LIVE)return; const l=LIVE; LIVE=null;
+  l.btn.textContent=l.btn.dataset.t; l.btn.setAttribute('aria-pressed','false');
+  try{l.stop();}catch(e){}
+}
+function liveToggle(btn,start,upd){
+  if(LIVE&&LIVE.btn===btn){stopLive();return;}
+  stopLive();
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended')AC.resume();
+    if(ACsrc){try{ACsrc.stop();}catch(e){}}
+    const l=start(); l.btn=btn; LIVE=l;
+    btn.dataset.t=btn.textContent; btn.textContent='Zastavit'; btn.setAttribute('aria-pressed','true');
+  }catch(e){toast('Přehrávání se nepodařilo.');}
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopLive();});
 
 
 /* ---- Standard: zvuk jako vlnění ---- */
@@ -1705,15 +1726,15 @@ function playBuf(fn,secs){
     const f=+$('#nyF').value,fs=+$('#nyS').value; $('#nyFV').textContent=nf(f,0)+' Hz'; $('#nySV').textContent=nf(fs,0)+' Hz';
     const fa=alias(f,fs),fN=fs/2;
     let msg;
-    if(f<fN) msg=`Nyquistova frekvence je <b>${nf(fN,0)} Hz</b> a tón ji nepřesahuje, takže se zachytí věrně.`;
+    if(f<fN) msg=`Nyquistova frekvence je <b>${nf(fN,0)} Hz</b> a tón ji nepřesahuje, takže se zachytí věrně: červená křivka z vzorků splývá s původním tónem.`;
     else if(f===fN) msg=`Tón leží přesně na Nyquistově frekvenci (<b>${nf(fN,0)} Hz</b>). To je mezní případ a vzorky ho nezachytí spolehlivě.`;
     else msg=`Tón (<b>${nf(f,0)} Hz</b>) je nad Nyquistovou frekvencí <b>${nf(fN,0)} Hz</b>. Vzorky vypadají, jako by patřily tónu <b>${nf(Math.abs(fa),0)} Hz</b>: nastal aliasing.`;
     $('#nyOut').innerHTML=msg;
     const g=fit(cv); if(!g) return; const {x,w,h,c}=g,pad=20,X=t=>pad+t/W*(w-2*pad),Y=v=>h/2-v*(h/2-pad)/1.1;
     axes(g,pad,[]);
     const fT=f/1000,faT=fa/1000;
-    line(g,t=>[X(t),Y(Math.sin(2*Math.PI*fT*t))],0,W,c.k2,1.6,[5,4],700);
-    if(f>=fN) line(g,t=>[X(t),Y(Math.sin(2*Math.PI*faT*t))],0,W,c.k1,2.4,[],700);
+    const orig=()=>line(g,t=>[X(t),Y(Math.sin(2*Math.PI*fT*t))],0,W,c.k2,1.6,[5,4],700),rec=()=>line(g,t=>[X(t),Y(Math.sin(2*Math.PI*faT*t))],0,W,c.k1,2.4,[],700);
+    if(f>=fN){orig();rec();}else{rec();orig();}
     const fk=fs/1000,cnt=Math.floor(W*fk); x.fillStyle=c.ink;
     for(let k=0;k<=cnt;k++){const t=k/fk;x.beginPath();x.arc(X(t),Y(Math.sin(2*Math.PI*fT*t)),3.2,0,7);x.fill();}
     if(stp<2){x.fillStyle=c.muted;x.textAlign='right';x.textBaseline='alphabetic';x.fillText(nf(N,0)+' úrovní: příliš husté na vykreslení',w-pad/2,pad-6);x.textAlign='left';}
@@ -1816,9 +1837,19 @@ CHK.x5={q:'Proč může být slabý zvuk těsně po silném úderu neslyšiteln�
     x.fillStyle=aud?c.k4:c.k1;x.beginPath();x.arc(X(fp),Y(Lp),7,0,7);x.fill();x.strokeStyle=c.paper;x.lineWidth=2;x.stroke();
   }
   ['mkL','mkF','mkP'].forEach(i=>$('#'+i).addEventListener('input',draw));
-  const mkSnd=only=>{const L=+$('#mkL').value,fp=+$('#mkF').value,Lp=+$('#mkP').value,r=Math.pow(10,(Lp-L)/20),w=2*Math.PI;
-    playBuf(t=>(only?0:Math.sin(w*FM*t))+r*Math.sin(w*fp*t),1.6);};
-  $('#mkPlay').onclick=()=>mkSnd(false);$('#mkPlay2').onclick=()=>mkSnd(true);
+  const mkLive=only=>{
+    const read=()=>{const L=+$('#mkL').value,fp=+$('#mkF').value,Lp=+$('#mkP').value,r=Math.pow(10,(Lp-L)/20),n=Math.max(1,r);return {fp,g1:only?0:.18/n,g2:.18*r/n};};
+    const mk=(f,g0)=>{const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.value=g0;o.connect(g);g.connect(m);o.start();return {o,g};};
+    const m=AC.createGain();m.gain.value=0;m.connect(AC.destination);
+    const v=read(),a=mk(FM,v.g1),b=mk(v.fp,v.g2);
+    m.gain.setTargetAtTime(1,AC.currentTime,.02);
+    return {
+      upd(){const w=read(),t=AC.currentTime;b.o.frequency.setTargetAtTime(w.fp,t,.02);a.g.gain.setTargetAtTime(w.g1,t,.02);b.g.gain.setTargetAtTime(w.g2,t,.02);},
+      stop(){const t=AC.currentTime;m.gain.setTargetAtTime(0,t,.02);a.o.stop(t+.15);b.o.stop(t+.15);}
+    };};
+  const mkGo=only=>liveToggle(only?$('#mkPlay2'):$('#mkPlay'),()=>{const l=mkLive(only);l.kind='mk';return l;});
+  ['mkL','mkF','mkP'].forEach(i=>$('#'+i).addEventListener('input',()=>{if(LIVE&&LIVE.kind==='mk')LIVE.upd();}));
+  $('#mkPlay').onclick=()=>mkGo(false);$('#mkPlay2').onclick=()=>mkGo(true);
   REDRAW.push(draw);
 })();
 
@@ -1852,10 +1883,26 @@ CHK.x5={q:'Proč může být slabý zvuk těsně po silném úderu neslyšiteln�
     x.fillStyle=aud?c.k4:c.k1;x.beginPath();x.arc(X(tp),Y(Lp),7,0,7);x.fill();x.strokeStyle=c.paper;x.lineWidth=2;x.stroke();
   }
   ['tmL','tmT','tmP'].forEach(i=>$('#'+i).addEventListener('input',draw));
-  const tmSnd=only=>{const L=+$('#tmL').value,tp=+$('#tmT').value/1000,Lp=+$('#tmP').value,r=Math.pow(10,(Lp-L)/20),w=2*Math.PI,t0=0.1,D=0.03;
+  const tmLive=only=>{
+    const P=.75,t0=.13,w=2*Math.PI;
     const env=(t,a,b,f)=>{if(t<a||t>b)return 0;const e=Math.min(t-a,b-t,f);return e<f?e/f:1;};
-    playBuf(t=>{const s=t-t0;return (only?0:env(s,0,0.1,0.005)*Math.sin(w*1000*s))+r*env(s,tp-D/2,tp+D/2,0.003)*Math.sin(w*1200*s);},0.5);};
-  $('#tmPlay').onclick=()=>tmSnd(false);$('#tmPlay2').onclick=()=>tmSnd(true);
+    const mkBuf=()=>{const L=+$('#tmL').value,tp=+$('#tmT').value/1000,Lp=+$('#tmP').value,r=Math.pow(10,(Lp-L)/20),n=Math.max(1,r),D=.03;
+      const sr=AC.sampleRate,len=Math.floor(sr*P),buf=AC.createBuffer(1,len,sr),d=buf.getChannelData(0);
+      for(let i=0;i<len;i++){const s=i/sr-t0;d[i]=.18/n*((only?0:env(s,0,.1,.005)*Math.sin(w*1000*s))+r*env(s,tp-D/2,tp+D/2,.003)*Math.sin(w*1200*s));}
+      return buf;};
+    const mk=(at)=>{const s=AC.createBufferSource();s.buffer=mkBuf();s.loop=true;s.connect(AC.destination);s.start(at);return s;};
+    let cur=mk(AC.currentTime+.02),start=AC.currentTime+.02,pend=null,pat=0;
+    return {
+      upd(){const now=AC.currentTime;
+        if(pend&&pat<=now){cur=pend;start=pat;pend=null;}
+        if(pend){try{pend.stop();}catch(e){}pend=null;}
+        let nb=start+Math.ceil((now-start)/P)*P; if(nb-now<.03)nb+=P;
+        pend=mk(nb);pat=nb;cur.stop(nb);},
+      stop(){try{cur.stop();}catch(e){} if(pend){try{pend.stop();}catch(e){}}}
+    };};
+  const tmGo=only=>liveToggle(only?$('#tmPlay2'):$('#tmPlay'),()=>{const l=tmLive(only);l.kind='tm';return l;});
+  ['tmL','tmT','tmP'].forEach(i=>$('#'+i).addEventListener('input',()=>{if(LIVE&&LIVE.kind==='tm')LIVE.upd();}));
+  $('#tmPlay').onclick=()=>tmGo(false);$('#tmPlay2').onclick=()=>tmGo(true);
   REDRAW.push(draw);
 })();
 
@@ -1866,6 +1913,7 @@ function applyLevel(l){
   if(co&&co._lvl!==l){co._setLevel(l);renderLevel(l);}
 }
 function setTab(t,push){
+  stopLive();
   if(!TABS.includes(t)) t='s';
   document.documentElement.dataset.tab=t;
   document.querySelectorAll('.lv[data-go]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===t));
