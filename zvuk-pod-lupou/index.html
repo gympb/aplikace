@@ -287,7 +287,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
 
   <article class="ch" data-title="Cesta zvuku">
     <div><span class="eyebrow">Kapitola 2</span><h2>Cesta zvuku: analog a digitál</h2></div>
-    <p>Zvuk vzniká jako <b>změna tlaku vzduchu</b>: zhuštění a zředění se střídají. Mikrofon tuto změnu převede na <b>elektrické napětí</b>. Napětí se v čase plynule mění a v každém okamžiku má nějakou hodnotu. Takovému signálu se říká <b>analogový</b>. <b>Digitální</b> signál je naopak řada čísel.</p>
+    <p>Zvuk vzniká jako <b>změna tlaku vzduchu</b>: zhuštění a zředění se střídají. Mikrofon tuto změnu převede na <b>elektrický signál</b>, nejčastěji na <b>elektrické napětí</b> (podle typu mikrofonu to může být i proud). Signál se v čase plynule mění a v každém okamžiku má nějakou hodnotu. Takovému signálu se říká <b>analogový</b>. <b>Digitální</b> signál je naopak řada čísel.</p>
     <p>Mezi analogovým a digitálním světem stojí <b>převodníky</b>. A/D převodník dělá z napětí čísla, D/A převodník z čísel zase napětí. Klepni na kterýkoli krok cesty:</p>
     <div class="box try"><span class="lbl">Vyzkoušej: cesta zvuku</span>
       <div class="path" id="pathStrip" role="group" aria-label="Kroky cesty zvuku"></div>
@@ -398,7 +398,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div><span class="eyebrow">Kapitola 8</span><h2>Test a přehled</h2></div>
     <p>Osm otázek bez nápověd. Test neznámkujeme, ukáže ti jen, co zopakovat.</p>
     <div id="testS"></div>
-    <div class="box tip"><span class="lbl">Co si odnášíš</span><ul class="check"><li>Zvuk je změna tlaku, mikrofon ji převede na napětí. Analogový signál je plynulý, digitální je řada čísel.</li><li>A/D převodník vzorkuje (měří v pravidelných okamžicích), kvantuje (zaokrouhluje na 2<sup>n</sup> úrovní) a zapíše číslo dvojkově.</li><li>Datový tok = f · n · k, velikost = datový tok · t ÷ 8.</li><li>D/A převodník z čísel vyrobí napětí, filtr ho vyhladí, reproduktor z napětí vyrobí zvuk.</li></ul></div>
+    <div class="box tip"><span class="lbl">Co si odnášíš</span><ul class="check"><li>Zvuk je změna tlaku, mikrofon ji převede na elektrický signál, typicky napětí. Analogový signál je plynulý, digitální je řada čísel.</li><li>A/D převodník vzorkuje (měří v pravidelných okamžicích), kvantuje (zaokrouhluje na 2<sup>n</sup> úrovní) a zapíše číslo dvojkově.</li><li>Datový tok = f · n · k, velikost = datový tok · t ÷ 8.</li><li>D/A převodník z čísel vyrobí napětí, filtr ho vyhladí, reproduktor z napětí vyrobí zvuk.</li></ul></div>
     <div id="ovS"></div>
   </article>
 
@@ -784,7 +784,7 @@ const bin=(v,n)=>v.toString(2).padStart(n,'0');
 const FSL=[8000,16000,22050,44100,48000];
 
 const SIGS=[
- ['signál na výstupu mikrofonu','analog','Mikrofon převádí tlak vzduchu na napětí, které se plynule mění v čase. Je to analogový signál.'],
+ ['signál na výstupu mikrofonu','analog','Mikrofon převádí tlak vzduchu na elektrický signál (typicky napětí), který se plynule mění v čase. Je to analogový signál.'],
  ['zvuková vlna ve vzduchu','analog','Změny tlaku vzduchu jsou spojité, bez jakéhokoli zaokrouhlení. Je to analogový děj.'],
  ['napětí na vstupu reproduktoru','analog','Reproduktor dostává plynule se měnící napětí. Čísla už jsou za D/A převodníkem.'],
  ['napětí na výstupu D/A převodníku','analog','D/A převodník z čísel vyrábí napětí, tedy analogový signál.'],
@@ -795,7 +795,7 @@ SK['s-typ']={lv:'s',title:'Analog × digitál',gen(){const s=pick(SIGS);
   return {kind:'opts',q:`Je <b>${s[0]}</b> analogový, nebo digitální?`,opts:[{v:'analog',t:'Analogový (plynulý)'},{v:'digi',t:'Digitální (řada čísel)'}],right:s[1],rightText:`<b>${s[1]==='analog'?'analogový':'digitální'}</b>`,
     why:s[2],wrong:()=>s[1]==='analog'?'Za A/D převodníkem jsou čísla, ale před ním a za D/A převodníkem je signál plynulý, tedy analogový.':'Digitální je jen ta část cesty, kde jsou čísla: od A/D převodníku po D/A převodník.'};}};
 
-const DEV=[['mikrofon','tlak vzduchu → napětí','Mikrofon převádí změny tlaku vzduchu (zvuk) na elektrické napětí.'],
+const DEV=[['mikrofon','tlak vzduchu → elektrický signál (typicky napětí)','Mikrofon převádí změny tlaku vzduchu (zvuk) na elektrický signál, nejčastěji napětí.'],
  ['A/D převodník','napětí → čísla','A/D převodník napětí vzorkuje, kvantuje a zapisuje jako čísla.'],
  ['D/A převodník','čísla → napětí','D/A převodník z čísel vyrábí napětí.'],
  ['reproduktor','napětí → zvuk (tlak vzduchu)','Reproduktor podle napětí chvěje membránou a vzniká zvuk.']];
@@ -878,7 +878,7 @@ CHK.s5={q:'Co z toho nezmění datový tok (v bit/s)?',opts:[{v:'a',t:'Vyšší 
 CHK.s6={q:'Proč se výstup D/A převodníku vyhlazuje filtrem?',opts:[{v:'a',t:'Schody obsahují rychlé skoky, které zvuk zkreslují.'},{v:'b',t:'Aby byl zvuk hlasitější.'},{v:'c',t:'Aby byl soubor menší.'}],right:'a',rightText:'<b>schody zkreslují zvuk</b>',why:'Skoky ve schodovitém průběhu přidávají vysoké frekvence, které v původním zvuku nebyly. Filtr je odstraní.',wrong:()=>'Filtr nemění hlasitost ani velikost souboru. Odstraňuje jen schody, které by zkreslily zvuk.'};
 
 const PRE_S=[
- {q:'Co dělá mikrofon?',opts:[{v:0,t:'Změní tlak vzduchu na elektrické napětí'},{v:1,t:'Změní napětí na čísla'},{v:2,t:'Změní čísla na zvuk'}],right:0,rightText:'<b>tlak vzduchu → napětí</b>',ch:1,why:'Čísla vyrábí až A/D převodník.'},
+ {q:'Co dělá mikrofon?',opts:[{v:0,t:'Změní tlak vzduchu na elektrický signál (typicky napětí)'},{v:1,t:'Změní napětí na čísla'},{v:2,t:'Změní čísla na zvuk'}],right:0,rightText:'<b>tlak vzduchu → elektrický signál</b>',ch:1,why:'Čísla vyrábí až A/D převodník.'},
  {q:'Co je vzorek?',opts:[{v:0,t:'Jedno změřené napětí v určitém okamžiku'},{v:1,t:'Celá nahrávka'},{v:2,t:'Typ souboru'}],right:0,rightText:'<b>jedno změřené napětí v okamžiku</b>',ch:2,why:'Vzorků vzniká mnoho za sekundu.'},
  {q:'Kolik různých hodnot zapíšou 3 bity?',opts:[{v:0,t:'6'},{v:1,t:'8'},{v:2,t:'9'}],right:1,rightText:'<b>8</b>',ch:2,why:'2 · 2 · 2 = 2³ = 8.'},
  {q:'Jak se číslo 5 zapíše dvojkově?',opts:[{v:0,t:'101'},{v:1,t:'110'},{v:2,t:'011'}],right:0,rightText:'<b>101</b>',ch:3,why:'5 = 4 + 1, tedy 1 0 1.'}
@@ -919,8 +919,8 @@ function line(g,fn,x0,x1,col,wd,dash,steps){
   };
   const ST6=[
    {n:'Zvuk',ic:IC.zvuk,cls:'an',tag:'analogový',in:'zdroj zvuku (hlas, nástroj)',out:'změny tlaku vzduchu',txt:'Zvuk je mechanické vlnění vzduchu: střídá se zhuštění a zředění. Je spojitý, v každém okamžiku má nějakou hodnotu.'},
-   {n:'Mikrofon',ic:IC.mik,cls:'an',tag:'analogový',in:'změny tlaku vzduchu',out:'elektrické napětí',txt:'Mikrofon sleduje změny tlaku v reálném čase. Výsledné napětí je spojité, tedy analogové.'},
-   {n:'A/D převodník',ic:IC.ad,cls:'cv',tag:'převodník',in:'napětí (analogový signál)',out:'čísla (digitální signál)',txt:'V pravidelných intervalech změří napětí (vzorkování), zaokrouhlí ho na nejbližší úroveň (kvantování) a zapíše číslo úrovně.'},
+   {n:'Mikrofon',ic:IC.mik,cls:'an',tag:'analogový',in:'změny tlaku vzduchu',out:'elektrický signál (typicky napětí)',txt:'Mikrofon sleduje změny tlaku v reálném čase. Výsledný elektrický signál, nejčastěji napětí, je spojitý, tedy analogový.'},
+   {n:'A/D převodník',ic:IC.ad,cls:'cv',tag:'převodník',in:'analogový signál (napětí)',out:'čísla (digitální signál)',txt:'V pravidelných intervalech změří napětí (vzorkování), zaokrouhlí ho na nejbližší úroveň (kvantování) a zapíše číslo úrovně.'},
    {n:'Soubor',ic:IC.sou,cls:'dg',tag:'digitální',in:'čísla ze vzorků',out:'soubor s nulami a jedničkami',txt:'Každý vzorek je jedno číslo zapsané dvojkově. Soubor je dlouhá řada nul a jedniček a pár údajů v hlavičce.'},
    {n:'D/A převodník',ic:IC.da,cls:'cv',tag:'převodník',in:'čísla ze souboru',out:'napětí (zprvu schody, pak vyhlazené)',txt:'Z čísel vyrábí napětí. Výstup má zprvu podobu schodů, rekonstrukční filtr je vyhladí.'},
    {n:'Reproduktor',ic:IC.rep,cls:'an',tag:'analogový',in:'elektrické napětí',out:'zvuk (změny tlaku vzduchu)',txt:'Membrána reproduktoru kmitá podle napětí a rozechvěje vzduch. Uši slyší zvuk.'}
