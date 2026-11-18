@@ -243,7 +243,6 @@ h3.xsub{display:inline-block;margin:26px 0 8px;font-size:1rem}
 @media (max-width:1000px){.levels{grid-template-columns:repeat(3,minmax(0,1fr))}.toolcol{grid-column:1/-1;grid-template-columns:1fr 1fr}}
 @media (max-width:860px){.levels{grid-template-columns:1fr;gap:8px}.levels .lv{min-height:0;padding-block:10px}.lv:not(.tool)>span{display:none}.lv.tool small,.lv.tool span{display:none}.lv.tool{padding-left:46px}.lv.tool .ico{left:12px}.toolcol{grid-template-columns:1fr 1fr;gap:8px}}
 @media (max-width:420px){.toolcol{grid-template-columns:1fr}}
-.v-v .tk .plus{font-size:.8125rem}
 </style>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="gymplikace">
@@ -857,20 +856,31 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
 <!-- ================= VÝPOČTY ================= -->
 <div class="view v-v">
 <div class="course-head" style="margin-top:24px"><div><span class="eyebrow">Nástroj pro všechny stupně</span><h2 style="margin:4px 0 6px">Výpočty</h2></div>
-  <p class="muted">Kalkulačky k učivu. Štítek <span class="plus">PLUS</span> mají výpočty, které souvisejí s učivem z části Extra (Hi-Res, SACD, prostorový zvuk, MP3).</p></div>
+  <p class="muted">Kalkulačky k učivu o digitalizaci zvuku, datovém toku a formátech.</p></div>
 
-<section class="tk" aria-labelledby="vyFa"><h3 id="vyFa">Falešná frekvence (alias)</h3>
-    <p>Tón se správně zaznamená, když je jeho frekvence menší než polovina vzorkovací frekvence. Vyšší tón se „přeloží“ do slyšitelné oblasti jako tón s falešnou frekvencí: <b>f<sub>a</sub> = |f − m · f<sub>s</sub></b>|, kde <b>m</b> je celé číslo, při kterém je výsledek nejmenší.</p>
-    <div class="box try"><span class="lbl">Vyzkoušej: jaký tón vznikne</span>
+<section class="tk" aria-labelledby="vyNos"><h3 id="vyNos">Kolik hudby se vejde na nosič</h3>
+    <p>Délku záznamu zjistíš z kapacity a datového toku: <b>čas = kapacita · 8 / datový tok</b>. Kapacity jsou počítané v desítkové soustavě (1 MB = 1 000 000 B), jak je u výrobců zvykem.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: kapacita a formát</span>
       <div class="ctl">
-        <div class="field"><label for="alS">Vzorkovací frekvence f<sub>s</sub> (Hz)</label><input type="number" id="alS" min="100" max="400000" step="any" value="8000" inputmode="decimal"></div>
-        <div class="field"><label for="alF">Frekvence tónu f (Hz)</label><input type="number" id="alF" min="1" max="1000000" step="any" value="6000" inputmode="decimal"></div>
+        <div class="field"><label for="kpM">Nosič</label><select id="kpM"><option value="700e6">CD-R (700 MB dat)</option><option value="4.7e9" selected>DVD (4,7 GB)</option><option value="25e9">Blu-ray (25 GB)</option><option value="16e9">USB flash 16 GB</option><option value="128e9">Telefon 128 GB</option></select></div>
+        <div class="field"><label for="kpF">Formát</label><select id="kpF"><option value="1411.2">CD / WAV (1 411,2 kbit/s)</option><option value="4608">Hi-Res 96 kHz, 24 b (4 608 kbit/s)</option><option value="9216">Hi-Res 192 kHz, 24 b (9 216 kbit/s)</option><option value="320">MP3 320 kbit/s</option><option value="128" selected>MP3 128 kbit/s</option></select></div>
       </div>
-      <div class="sms" id="alOut"></div>
-      <p class="muted" style="font-size:.9rem">Příklad ze Standardu: při f<sub>s</sub> = 8 000 Hz a tónu 6 000 Hz vznikne tón 2 000 Hz. Skutečné převodníky před vzorkováním vysoké frekvence odfiltrují, tady vidíš, co by se stalo bez filtru.</p>
+      <div class="sms" id="kpOut"></div>
+      <p class="muted" style="font-size:.9rem">Počítá se jen se zvukem, bez dalších souborů. Audio CD má jiný způsob zápisu než datový disk, proto se na něj vejde 74 minut a víc, i když datový disk CD-R s WAV pojme méně.</p>
     </div>
 </section>
-
+<section class="tk" aria-labelledby="vyDl"><h3 id="vyDl">Stahování a streamování</h3>
+    <p>Internetové připojení se udává v <b>Mbit/s</b>, soubory v <b>MB</b> (bajtech), proto se dělí osmi: <b>čas stahování = velikost · 8 / rychlost</b>. Pro plynulé streamování musí být rychlost připojení větší než datový tok hudby.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: stáhne se, nebo se stihne přehrát?</span>
+      <div class="ctl">
+        <div class="field"><label for="dlF">Formát</label><select id="dlF"><option value="1411.2">CD / WAV (1 411,2 kbit/s)</option><option value="4608">Hi-Res 96 kHz, 24 b (4 608 kbit/s)</option><option value="9216">Hi-Res 192 kHz, 24 b (9 216 kbit/s)</option><option value="320">MP3 320 kbit/s</option><option value="128" selected>MP3 128 kbit/s</option></select></div>
+        <div class="field"><label for="dlT">Délka skladby (min)</label><input type="number" id="dlT" min="1" max="600" step="1" value="4" inputmode="numeric"></div>
+        <div class="field"><label for="dlS">Rychlost připojení (Mbit/s)</label><input type="number" id="dlS" min="0.1" max="10000" step="any" value="20" inputmode="decimal"></div>
+      </div>
+      <div class="sms" id="dlOut"></div>
+      <p class="muted" style="font-size:.9rem">Skutečná rychlost bývá nižší než udávaná a při streamování se přidává režie přenosu. Výsledky berou jen datový tok zvuku.</p>
+    </div>
+</section>
 <section class="tk" aria-labelledby="vyVel"><h3 id="vyVel">Velikost skladby v různých formátech</h3>
     <p>Rozdíl mezi bezeztrátovou a ztrátovou kompresí je vysvětlen ve Standardních znalostech. Tady si spočítáš, kolik místa zabere skladba v různých formátech. U ztrátových formátů zadáváš datový tok, u FLAC se velikost liší podle hudby.</p>
     <div class="box try"><span class="lbl">Vyzkoušej: velikost skladby</span>
@@ -882,8 +892,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
       <p class="muted" style="font-size:.9rem">U FLAC je uveden rozsah, protože záleží na hudbě. U ostatních se velikost počítá z datového toku. Porovnání je vůči nekomprimovanému CD (1 411,2 kbit/s).</p>
     </div>
 </section>
-
-<section class="tk" aria-labelledby="vyTok"><h3 id="vyTok">Datové toky zvukových formátů <span class="plus" title="Souvisí s učivem v části Extra">PLUS</span></h3>
+<section class="tk" aria-labelledby="vyTok"><h3 id="vyTok">Datové toky zvukových formátů</h3>
     <p>Datový tok nekomprimovaného zvuku spočítáš jako <b>f · n · k</b> (vzorkovací frekvence · bitová hloubka · počet kanálů). Tabulka porovnává formáty, které se probírají v části Extra. Poměr je vždy vůči CD (1 411,2 kbit/s).</p>
     <div class="tblw"><table class="t">
       <thead><tr><th>Formát</th><th>Výpočet</th><th>Datový tok</th><th>Oproti CD</th></tr></thead>
@@ -899,34 +908,18 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
         <tr><th scope="row">MP3 128 kbit/s</th><td>zadaný tok</td><td>128 kbit/s</td><td>asi 11× menší</td></tr>
       </tbody>
     </table></div>
+    <div class="box try"><span class="lbl">Vyzkoušej: spočítej datový tok</span>
+      <div class="ctl">
+        <div class="field"><label for="tkF">Vzorkovací frekvence f (Hz)</label><input type="number" id="tkF" min="1" max="10000000" step="any" value="44100" inputmode="decimal"></div>
+        <div class="field"><label for="tkN">Bitová hloubka n (bity)</label><input type="number" id="tkN" min="1" max="64" step="1" value="16" inputmode="numeric"></div>
+        <div class="field"><label for="tkK">Počet kanálů k</label><input type="number" id="tkK" min="1" max="64" step="1" value="2" inputmode="numeric"></div>
+      </div>
+      <div class="sms" id="tkOut"></div>
+      <p class="muted" style="font-size:.9rem">Zkus třeba 96 000 Hz, 24 bitů, 2 kanály, nebo 2 822 400 Hz, 1 bit, 2 kanály (SACD). Počítá se nekomprimovaný zvuk.</p>
+    </div>
     <div class="box tip"><span class="lbl">Spočítej si: proč se 5.1 komprimuje</span><p>Nekomprimované 5.1 (6 kanálů, 48 kHz, 24 bitů) má 48 000 · 24 · 6 = 6 912 000 bit/s, tedy 6 912 kbit/s. Dolby Digital s 448 kbit/s je asi 15× menší.</p></div>
     <div class="box tip"><span class="lbl">Spočítej si: kolik zvuku má kino</span><p>Zvuk 7.1 (8 kanálů, 48 kHz, 24 bitů) má 48 000 · 24 · 8 = 9 216 000 bit/s, tedy 9 216 kbit/s. Plných 16 kanálů dává 18 432 kbit/s, asi 18,4 Mbit/s. Dolby Digital pro DVD má nejvýš 640 kbit/s.</p></div>
     <p class="muted" style="font-size:.92rem">Velikost souboru z datového toku spočítáš jako tok · čas / 8. Vyzkoušej si to v části Velikost skladby.</p>
-</section>
-
-<section class="tk" aria-labelledby="vyNos"><h3 id="vyNos">Kolik hudby se vejde na nosič <span class="plus" title="Souvisí s učivem v části Extra">PLUS</span></h3>
-    <p>Délku záznamu zjistíš z kapacity a datového toku: <b>čas = kapacita · 8 / datový tok</b>. Kapacity jsou počítané v desítkové soustavě (1 MB = 1 000 000 B), jak je u výrobců zvykem.</p>
-    <div class="box try"><span class="lbl">Vyzkoušej: kapacita a formát</span>
-      <div class="ctl">
-        <div class="field"><label for="kpM">Nosič</label><select id="kpM"><option value="700e6">CD-R (700 MB dat)</option><option value="4.7e9" selected>DVD (4,7 GB)</option><option value="25e9">Blu-ray (25 GB)</option><option value="16e9">USB flash 16 GB</option><option value="128e9">Telefon 128 GB</option></select></div>
-        <div class="field"><label for="kpF">Formát</label><select id="kpF"><option value="1411.2">CD / WAV (1 411,2 kbit/s)</option><option value="4608">Hi-Res 96 kHz, 24 b (4 608 kbit/s)</option><option value="9216">Hi-Res 192 kHz, 24 b (9 216 kbit/s)</option><option value="320">MP3 320 kbit/s</option><option value="128" selected>MP3 128 kbit/s</option></select></div>
-      </div>
-      <div class="sms" id="kpOut"></div>
-      <p class="muted" style="font-size:.9rem">Počítá se jen se zvukem, bez dalších souborů. Audio CD má jiný způsob zápisu než datový disk, proto se na něj vejde 74 minut a víc, i když datový disk CD-R s WAV pojme méně.</p>
-    </div>
-</section>
-
-<section class="tk" aria-labelledby="vyDl"><h3 id="vyDl">Stahování a streamování <span class="plus" title="Souvisí s učivem v části Extra">PLUS</span></h3>
-    <p>Internetové připojení se udává v <b>Mbit/s</b>, soubory v <b>MB</b> (bajtech), proto se dělí osmi: <b>čas stahování = velikost · 8 / rychlost</b>. Pro plynulé streamování musí být rychlost připojení větší než datový tok hudby.</p>
-    <div class="box try"><span class="lbl">Vyzkoušej: stáhne se, nebo se stihne přehrát?</span>
-      <div class="ctl">
-        <div class="field"><label for="dlF">Formát</label><select id="dlF"><option value="1411.2">CD / WAV (1 411,2 kbit/s)</option><option value="4608">Hi-Res 96 kHz, 24 b (4 608 kbit/s)</option><option value="9216">Hi-Res 192 kHz, 24 b (9 216 kbit/s)</option><option value="320">MP3 320 kbit/s</option><option value="128" selected>MP3 128 kbit/s</option></select></div>
-        <div class="field"><label for="dlT">Délka skladby (min)</label><input type="number" id="dlT" min="1" max="600" step="1" value="4" inputmode="numeric"></div>
-        <div class="field"><label for="dlS">Rychlost připojení (Mbit/s)</label><input type="number" id="dlS" min="0.1" max="10000" step="any" value="20" inputmode="decimal"></div>
-      </div>
-      <div class="sms" id="dlOut"></div>
-      <p class="muted" style="font-size:.9rem">Skutečná rychlost bývá nižší než udávaná a při streamování se přidává režie přenosu. Výsledky berou jen datový tok zvuku.</p>
-    </div>
 </section>
 
 </div>
@@ -1784,13 +1777,13 @@ CHK.x5={q:'Proč může být slabý zvuk těsně po silném úderu neslyšiteln�
       $('#dlOut').innerHTML=`<div><b>${nf(mb,2)} MB</b><span>velikost souboru</span></div><div><b>${dur(dsec)}</b><span>stažení (${nf(sp,1)} Mbit/s)</span></div><div><b>${use<100?'stíhá se':'nestíhá se'}</b><span>streamování: využije ${nf(use,use<10?1:0)} % připojení; vedle sebe by šlo ${nf(n,0)} proudů</span></div>`;};
     dl.addEventListener('input',upd);T.addEventListener('input',upd);$('#dlS').addEventListener('input',upd);upd();
   }
-  const al=$('#alS'); if(al){
-    const F=$('#alF');
-    const upd=()=>{const fs=+al.value,f=+F.value;
-      if(!(fs>0)||!(f>0)){$('#alOut').innerHTML='<div><b>–</b><span>zadej obě frekvence</span></div>';return;}
-      const ny=fs/2,m=Math.round(f/fs),fa=Math.abs(f-m*fs),ok=f<ny;
-      $('#alOut').innerHTML=`<div><b>${nf(ny,0)} Hz</b><span>Nyquistova frekvence f<sub>s</sub> / 2</span></div><div><b>${ok?nf(f,0)+' Hz':nf(fa,0)+' Hz'}</b><span>${ok?'zazní správně, tón je pod Nyquistovou frekvencí':'tón zazní jako falešný, m = '+nf(m,0)+': |'+nf(f,0)+' − '+nf(m,0)+' · '+nf(fs,0)+'|'}</span></div><div><b>${nf(2*f,0)} Hz</b><span>nejmenší vzorkovací frekvence pro tento tón (musí být větší)</span></div>`;};
-    al.addEventListener('input',upd);$('#alF').addEventListener('input',upd);upd();
+  const tk=$('#tkF'); if(tk){
+    const N=$('#tkN'),K=$('#tkK');
+    const upd=()=>{const f=+tk.value,n=+N.value,k=+K.value;
+      if(!(f>0)||!(n>0)||!(k>0)){$('#tkOut').innerHTML='<div><b>–</b><span>zadej všechny tři hodnoty</span></div>';return;}
+      const bps=f*n*k,kb=bps/1000,r=kb/1411.2;
+      $('#tkOut').innerHTML=`<div><b>${nf(kb,1)} kbit/s</b><span>${nf(f,0)} · ${nf(n,0)} · ${nf(k,0)} = ${nf(bps,0)} bit/s</span></div><div><b>${nf(r,2)}×</b><span>oproti CD (1 411,2 kbit/s)</span></div><div><b>${nf(bps*60/8/1e6,1)} MB</b><span>jedna minuta zvuku</span></div>`;};
+    [tk,N,K].forEach(x=>x.addEventListener('input',upd));upd();
   }
 })();
 
