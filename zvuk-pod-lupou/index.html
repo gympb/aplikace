@@ -1,0 +1,1203 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zvuk pod lupou</title>
+<meta name="description" content="Digitalizace zvuku od mikrofonu k reproduktoru. Standardní znalosti (A/D převodník, vzorkování a kvantování, soubor jako řada čísel, datový tok a velikost, D/A převodník) a nepovinné Extra PLUS (Nyquist a aliasing, kvantizační šum, komprese, maskování). Úlohy s nápovědami, odhadem jistoty a opakováním.">
+<meta name="author" content="Ivo Bešťák, Gymnázium Příbram">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+.back{font-size:14px;color:var(--accent);text-decoration:none;justify-self:start}
+.back:hover{text-decoration:underline}
+:root{
+  --bg:#f2f6f4; --paper:#ffffff; --ink:#121f1a; --muted:#586b62; --line:#cfdad4;
+  --accent:#0b6e5b; --accent-soft:#def0e8;
+  --k1:#c2461b; --k2:#1e71b5; --k3:#7d40b3; --k4:#2a8740;
+  --display:"Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+  --body:"IBM Plex Sans", system-ui, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1613; --paper:#16211d; --ink:#e0eae5; --muted:#90a69c; --line:#2a3a33;
+  --accent:#5fd0b0; --accent-soft:#14302a;
+  --k1:#f08b5f; --k2:#69aeea; --k3:#bb8ce8; --k4:#6ec880; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1613; --paper:#16211d; --ink:#e0eae5; --muted:#90a69c; --line:#2a3a33;
+  --accent:#5fd0b0; --accent-soft:#14302a;
+  --k1:#f08b5f; --k2:#69aeea; --k3:#bb8ce8; --k4:#6ec880; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1100px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2.3rem,6vw,3.8rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.6rem,3.4vw,2.2rem);font-weight:800}
+h3{font-size:1.25rem;font-weight:600}
+p{margin:0;max-width:68ch}
+code,.mono{font-family:var(--mono)}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted)}
+.eyebrow{font:600 .8125rem/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.plus,.lv b .plus{display:inline-block;background:#1c3f8f;color:#fff;font:700 .8125rem/1 var(--mono);letter-spacing:.08em;padding:3px 6px;border-radius:4px;vertical-align:middle;margin-left:6px}
+
+.hero{padding-block:44px 28px;display:grid;gap:18px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:14px;min-width:0;align-content:start}
+.field{display:grid;gap:6px}
+.field label{font-size:.85rem;font-weight:600;color:var(--muted)}
+input[type=text],input[type=number],select,textarea{font:500 1.05rem/1.3 var(--body);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;min-width:0;min-height:44px}
+textarea{font-family:var(--mono);font-size:.85rem;min-height:0}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:.92rem;min-height:40px}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.btn{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:500;min-height:40px;min-width:40px}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.btn.pri:hover{filter:brightness(1.1)}
+.btn.sm{font-size:.92rem;padding:6px 12px}
+.btn:disabled{opacity:.45;cursor:default}
+
+section,.view{scroll-margin-top:12px}
+.view{display:none}
+:root[data-tab="s"] .v-s,:root[data-tab="x"] .v-x{display:block}
+.levels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:6px}
+@media (max-width:640px){.levels{grid-template-columns:1fr;gap:8px}.levels .lv{min-height:0;padding-block:10px}.lv>span{display:none}}
+.lv{position:relative;text-align:left;border:1px solid var(--line);border-left:5px solid var(--lc);border-radius:12px;background:var(--paper);padding:14px 16px 14px 18px;cursor:pointer;display:grid;gap:4px;align-content:start;min-height:110px}
+.lv b{font:800 1.35rem/1.15 var(--display)}
+.lv span{font-size:.93rem;color:var(--muted)}
+.lv b span.plus{font-size:.8125rem;color:#fff}
+.lv small{font:600 .8125rem/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--lc);margin-top:auto}
+.lv:hover{border-color:var(--lc)}
+.lv[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--lc);border-color:var(--lc)}
+.lv.l4{--lc:var(--k2)}.lv.lp{--lc:var(--k3)}
+details.svp{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--paper);font-size:.94rem}
+details.svp summary,details.teacher summary{cursor:pointer;font-weight:600;min-height:40px;display:flex;align-items:center}
+details.svp ul{margin:8px 0;padding-left:1.2em;display:grid;gap:4px}
+details.svp p{margin-top:6px}
+
+.course{display:grid;gap:18px;padding-block:28px 48px}
+.course-head{display:grid;gap:10px}
+.goals{margin:0;padding:12px 16px 12px 34px;border-radius:10px;background:var(--accent-soft);display:grid;gap:3px;font-size:.95rem}
+.goals::before{content:"Po této lekci umíš:";font-weight:700;margin-left:-18px}
+.findlist{margin:0;padding:12px 16px 12px 34px;border-radius:10px;background:var(--accent-soft);display:grid;gap:3px;font-size:.95rem}
+.findlist::before{content:"Co tu najdeš (nepovinné):";font-weight:700;margin-left:-18px}
+.prog{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}
+.prog button{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 12px;font-size:.88rem;cursor:pointer;color:var(--muted);min-height:40px}
+.prog button:hover{border-color:var(--accent);color:var(--accent)}
+.prog button.done::before{content:"✓ ";color:var(--k4);font-weight:700}
+.prog button[aria-current="step"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.prog button[aria-current="step"].done::before{color:var(--paper)}
+.ch{display:none;gap:18px;scroll-margin-top:70px}
+.ch.on{display:grid}
+.ch>p{font-size:1.05rem}
+.ch ul,.ch ol{margin:0;padding-left:1.3em;display:grid;gap:4px;max-width:68ch}
+.chnav{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:16px;flex-wrap:wrap}
+.chnav span{color:var(--muted);font-size:.9rem}
+.box{border-left:4px solid var(--bc,var(--accent));background:var(--paper);border-radius:0 10px 10px 0;padding:12px 16px;display:grid;gap:8px;min-width:0}
+.box>.lbl{font:700 .8125rem/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--bc,var(--accent))}
+.box.ask{--bc:var(--k2)}.box.try{--bc:var(--k4)}.box.fun{--bc:var(--k1)}.box.tip{--bc:var(--k3)}
+.links2{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.95rem}
+.xnote{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--line);border-radius:10px;padding:10px 14px;background:var(--paper);font-size:.95rem;margin-top:24px}
+.xnote p{margin:0}
+.xnote .plus{margin:2px 0 0;flex:none}
+.note{font-size:.92rem;padding:10px 12px;border-radius:8px;background:var(--accent-soft)}
+.out{padding:10px 12px;border-radius:8px;background:var(--accent-soft);font-size:.97rem}
+.formula{font:600 1.05rem/1.5 var(--mono);padding:10px 14px;border-radius:8px;background:var(--accent-soft);overflow-wrap:anywhere}
+.hl{color:var(--k1);font-weight:700}
+
+/* kontrolní otázky, úlohy */
+.kq{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--paper);display:grid;gap:10px;min-width:0}
+.kq .q{font-weight:600;font-size:1.02rem}
+.kq .q::before{content:attr(data-lbl);font:700 .8125rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--k2);display:block;margin-bottom:4px}
+.kq.poll .q::before{content:"Tvůj tip před výkladem"}
+.opts{display:grid;gap:6px}
+.opts button{text-align:left;border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:var(--bg);cursor:pointer;font-size:.98rem;min-height:44px}
+.opts button:hover:not(:disabled){border-color:var(--accent)}
+.opts button:disabled{cursor:default;color:var(--ink)}
+.opts button.right{border-color:var(--k4);background:color-mix(in srgb,var(--k4) 16%,var(--paper))}
+.opts button.wrong{border-color:var(--k1);background:color-mix(in srgb,var(--k1) 14%,var(--paper))}
+.opts button.picked{border-color:var(--k2);background:color-mix(in srgb,var(--k2) 14%,var(--paper))}
+.why{display:none;font-size:.95rem}
+.kq.done .why{display:block}
+.qres{border-radius:12px;padding:16px;background:var(--accent-soft);display:grid;gap:12px}
+.qres .score{font:800 2rem/1 var(--display)}
+.conf{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.9rem;color:var(--muted)}
+.conf button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 14px;min-height:40px;cursor:pointer;font-size:.92rem;color:var(--ink)}
+.conf button:hover:not(:disabled){border-color:var(--accent)}
+.conf button[aria-pressed="true"]{background:var(--accent);color:var(--paper);border-color:var(--accent)}
+.conf small{margin-left:auto;font-size:.8125rem}
+.ans.inp{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+.ans.inp input{flex:1 1 160px;min-width:0;min-height:44px;font-family:var(--mono)}
+.lrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.hints{display:grid;gap:6px}
+.hint{margin:0;padding:8px 12px;border-radius:8px;background:var(--accent-soft);font-size:.95rem}
+.fb{display:grid;gap:8px}
+.fb-in{padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);font-size:.97rem}
+.fb-in.ok{border-color:var(--k4);background:color-mix(in srgb,var(--k4) 14%,var(--paper))}
+.fb-in.bad{border-color:var(--k1);background:color-mix(in srgb,var(--k1) 12%,var(--paper))}
+.fb-in.info{border-color:var(--k2);background:color-mix(in srgb,var(--k2) 12%,var(--paper))}
+.fb-in.note{border-style:dashed}
+.seg{justify-self:start;display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--paper);flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:7px 14px;cursor:pointer;font-weight:600;font-size:.92rem;color:var(--muted);min-height:40px;min-width:40px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--paper)}
+.gstat{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font:600 .9rem var(--mono);color:var(--muted)}
+.t{width:100%;border-collapse:collapse;font-size:.93rem}
+.t th,.t td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+.t th{font-size:.8125rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.t .r{text-align:right}
+.tblw{overflow-x:auto}
+.st{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.82rem;border:1px solid var(--line)}
+.st-ok{background:color-mix(in srgb,var(--k4) 18%,var(--paper));border-color:var(--k4)}
+.st-due{background:color-mix(in srgb,var(--k1) 15%,var(--paper));border-color:var(--k1)}
+.st-grow{background:color-mix(in srgb,var(--k2) 14%,var(--paper));border-color:var(--k2)}
+.ov h3{margin:6px 0 0}
+.check{margin:0;padding-left:1.3em;display:grid;gap:4px}
+
+/* cesta zvuku */
+.path{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.path button{border:1.5px solid var(--line);background:var(--paper);border-radius:10px;padding:8px 4px;display:grid;gap:3px;justify-items:center;cursor:pointer;min-height:84px;align-content:start;text-align:center}
+.path button .ic{width:30px;height:30px}
+.path button b{font:700 .8125rem/1.2 var(--display)}
+.path button small{font:700 .8125rem/1 var(--mono);letter-spacing:0;text-transform:uppercase;padding:2px 5px;border-radius:4px;background:var(--line);color:var(--ink)}
+.path button.an small{background:color-mix(in srgb,var(--k2) 22%,var(--paper))}
+.path button.cv small{background:var(--k1);color:#fff}
+.path button.dg small{background:var(--k4);color:#fff}
+.path button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.path svg{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.pathinfo{display:grid;gap:6px;padding:12px 14px;border-radius:10px;background:var(--accent-soft)}
+.pathinfo b{font-family:var(--display)}
+@media (max-width:640px){.path{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* grafy a ovladače */
+canvas.cv{width:100%;height:auto;aspect-ratio:2/1;display:block;border:1px solid var(--line);border-radius:10px;background:var(--paper);touch-action:pan-y}
+@media (max-width:560px){canvas.cv{aspect-ratio:4/3}}
+.ctl{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.ctl .field{gap:2px}
+.ctl .vl{font:600 .95rem var(--mono);color:var(--ink)}
+input[type=range]{width:100%;height:40px;accent-color:var(--accent);margin:0;background:transparent}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:0;border-top:3px solid var(--c);vertical-align:middle;margin-right:5px}
+.legend i.d{border-top-style:dotted}
+.sms{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.sms div{background:var(--paper);padding:10px 14px;display:grid;gap:2px}
+.sms b{font:600 1.25rem/1.15 var(--mono);overflow-wrap:anywhere}
+.sms span{font-size:.8125rem;color:var(--muted)}
+.bitsrow{font:500 .95rem/1.7 var(--mono);overflow-wrap:anywhere;letter-spacing:.04em}
+.bitsrow span.s{display:inline-block;padding:0 3px;border-radius:3px;margin-right:3px}
+.bitsrow span.s:nth-child(odd){background:color-mix(in srgb,var(--k2) 16%,var(--paper))}
+.bitsrow span.s:nth-child(even){background:color-mix(in srgb,var(--k1) 14%,var(--paper))}
+
+footer{border-top:1px solid var(--line);padding-block:28px 40px;color:var(--muted);font-size:.9rem;display:grid;gap:12px}
+details.teacher{border:1px dashed var(--muted);border-radius:10px;padding:6px 14px;background:var(--paper);font-size:.94rem;color:var(--ink)}
+details.teacher ol{margin:8px 0 6px;padding-left:1.3em;display:grid;gap:4px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:.2s;z-index:20;font-size:.92rem}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+@media (max-width:700px),(pointer:coarse){
+  .back{display:inline-block;padding:10px 0;min-height:40px}
+  summary{min-height:40px}
+}
+</style>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="gymplikace">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Zvuk pod lupou">
+<meta property="og:description" content="Digitalizace zvuku od mikrofonu k reproduktoru. Standardní znalosti (A/D převodník, vzorkování a kvantování, soubor jako řada čísel, datový tok a velikost, D/A převodník) a nepovinné Extra PLUS (Nyquist a aliasing, kvantizační šum, komprese, maskování). Úlohy s nápovědami, odhadem jistoty a opakováním.">
+<meta property="og:url" content="https://aplikace.gympb.cz/zvuk-pod-lupou/">
+<meta property="og:image" content="https://aplikace.gympb.cz/zvuk-pod-lupou/nahled.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style id="cr-css">
+<meta name="twitter:card" content="summary_large_image">
+
+.cr-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box}
+.cr-row>a{width:auto!important;flex:0 1 auto;min-width:0}
+.cr-row.cr-left{width:auto;justify-content:flex-start;gap:18px}
+.cr-btn{font:inherit;font-size:14px;line-height:1.2;color:inherit;opacity:.8;background:none;border:0;padding:0 4px;margin:0;min-height:40px;width:auto;cursor:pointer;text-decoration:underline;white-space:nowrap;flex:0 0 auto}
+.cr-btn:hover,.cr-btn:focus-visible{opacity:1}
+.cr-btn.cr-stack{display:block;text-align:left;padding:0;min-height:36px}
+dialog.cr{position:fixed;inset:0;margin:auto;height:fit-content;box-sizing:border-box;width:min(30rem,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;border:1px solid #cfc9bb;border-radius:14px;padding:20px 22px;background:#fff;color:#1b2230;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;text-align:left;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+dialog.cr::backdrop{background:rgba(10,14,22,.55)}
+dialog.cr h2{margin:0 0 12px;font:700 20px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1b2230;text-transform:none;letter-spacing:0}
+dialog.cr dl{margin:0 0 14px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:16px}
+dialog.cr dt{color:#5b6475;margin:0}
+dialog.cr dd{margin:0}
+dialog.cr a{color:#1d4ed8}
+dialog.cr>p{margin:0 0 10px;font-size:15px;color:#3b4556}
+dialog.cr .cr-note{margin:0 0 14px;font-size:14px;color:#3b4556}
+dialog.cr .cr-note p{margin:0 0 8px;font-size:14px;color:#3b4556}
+dialog.cr .cr-extra{margin:0 0 14px}
+dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;width:auto;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid #cfc9bb;background:#fff;color:#1b2230;cursor:pointer;margin:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <span class="cr-row"><a class="back" href="../">← Všechny školní aplikace</a><button type="button" class="cr-btn" data-credits aria-haspopup="dialog">Autor a licence</button></span>
+  <span class="eyebrow">Samostudijní průvodce · digitalizace zvuku</span>
+  <h1>Zvuk pod lupou</h1>
+  <p>Jak se zvuk z mikrofonu změní na čísla, jak se uloží do souboru a jak se z čísel stane zase zvuk. Vyber si stupeň. Každý má cíle, úlohy s nápovědami, opakování a test; Extra je nepovinné čtení s nástroji:</p>
+  <div class="levels">
+    <button class="lv l4" data-go="s"><small>2–3 vyučovací hodiny</small><b>Standardní znalosti</b><span>Cesta zvuku od mikrofonu k reproduktoru, A/D převodník, vzorkování a kvantování, soubor jako řada čísel, velikost a datový tok.</span></button>
+    <button class="lv lp" data-go="x"><small>nepovinné</small><b>Extra<span class="plus" title="Obsah nad rámec úrovně Standardní znalosti">PLUS</span></b><span>Kopie bez ztráty, Nyquistova podmínka a aliasing, kvantizační šum, komprese, psychoakustické maskování. Nástroje k vyzkoušení, bez povinných úloh.</span></button>
+  </div>
+  <details class="svp"><summary>Vazba na ŠVP</summary>
+    <p>Školní vzdělávací program Gymnázia Příbram, Informatika, ŠVP 2026/27, <b>4. ročník (oktáva), 1.2 Kódování a přenos dat</b>:</p>
+    <ul>
+      <li>výstup „vysvětlí kódování zvuku pomocí PCM, vypočítá velikost takto kódovaných dat a datový tok“;</li>
+      <li>učivo „digitalizace spojitého signálu, vzorkování (Nyquistův–Shannonův teorém), kvantování“, mezipředmětově Fyzika (vlnění, frekvence);</li>
+      <li>výstup „porovná principy bezeztrátové a ztrátové komprese dat“.</li>
+    </ul>
+    <p>Standardní znalosti pokrývají PCM, vzorkování, kvantování, velikost a datový tok. Nyquistův–Shannonův teorém a komprese jsou podle rozhodnutí autora v části Extra (PLUS), proto Extra obsahuje i témata, která ŠVP uvádí. Aplikace je určená pro oktávu.</p>
+  </details>
+</header>
+
+<div id="obsah" style="scroll-margin-top:12px"></div>
+
+<!-- ================= STANDARD ================= -->
+<div class="view v-s">
+<div class="course" data-course="s">
+  <div class="course-head">
+    <ul class="goals"><li>popsat cestu zvuku od mikrofonu k reproduktoru a u každého kroku říct, jestli je signál analogový, nebo digitální,</li><li>vysvětlit, co dělá A/D převodník: vzorkování, kvantování a zápis čísla,</li><li>určit počet úrovní z bitové hloubky, zaokrouhlit hodnotu na úroveň a zapsat ji dvojkově,</li><li>spočítat datový tok a velikost nekomprimovaného zvuku,</li><li>vysvětlit, co dělá D/A převodník a proč se výstup vyhlazuje.</li></ul>
+    <ol class="prog" aria-label="Kapitoly"></ol>
+  </div>
+
+  <article class="ch" data-title="Záhada z mikrofonu">
+    <div><span class="eyebrow">Kapitola 1</span><h2>Záhada ze záznamníku</h2></div>
+    <p>Na telefonu nahraješ minutu hlasu. Soubor má několik set kilobajtů. Počítač umí uložit jen čísla, nuly a jedničky. Zvuk je přitom něco, co se chvěje ve vzduchu. Jak se do souboru vejde?</p>
+    <div class="kq poll" data-ok="*">
+      <p class="q">Co myslíš, že je v souboru s nahrávkou uloženo?</p>
+      <div class="opts"><button data-v="a">Zvlněná čára, přesně tak, jak vypadá zvuk.</button><button data-v="b">Velmi dlouhá řada čísel.</button><button data-v="c">Maličký mikrofon, který se při přehrávání znovu rozezní.</button></div>
+      <div class="why">Tvůj tip si zapamatuj. V souboru je <b>řada čísel</b>. V kapitolách 3 a 4 uvidíš, jak vznikají a jak vypadají.</div>
+    </div>
+    <div class="box ask"><span class="lbl">Co už víš? Předtest, nehodnotí se</span>
+      <p>Čtyři krátké otázky. Odpověď „Nevím“ je v pořádku. Podle výsledku ti doporučím, kterou kapitolu si projít pozorněji.</p>
+      <div id="preS"></div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="Cesta zvuku">
+    <div><span class="eyebrow">Kapitola 2</span><h2>Cesta zvuku: analog a digitál</h2></div>
+    <p>Zvuk vzniká jako <b>změna tlaku vzduchu</b>: zhuštění a zředění se střídají. Mikrofon tuto změnu převede na <b>elektrické napětí</b>. Napětí se v čase plynule mění a v každém okamžiku má nějakou hodnotu. Takovému signálu se říká <b>analogový</b>. <b>Digitální</b> signál je naopak řada čísel.</p>
+    <p>Mezi analogovým a digitálním světem stojí <b>převodníky</b>. A/D převodník dělá z napětí čísla, D/A převodník z čísel zase napětí. Klepni na kterýkoli krok cesty:</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: cesta zvuku</span>
+      <div class="path" id="pathStrip" role="group" aria-label="Kroky cesty zvuku"></div>
+      <div class="pathinfo" id="pathInfo" aria-live="polite"></div>
+    </div>
+    <p>Proč vůbec zvuk převádět na čísla? Analogový signál se při každém přenosu a kopírování trochu zhorší: přibývá šum a už ho nelze oddělit. Čísla se dají zkopírovat beze změny, uložit, poslat po síti, střihat a zabezpečit proti chybám. Jak to vypadá při opakovaném kopírování, ukazuje Extra A.</p>
+    <div data-chk="s2"></div>
+    <div data-chk="s2b"></div>
+  </article>
+
+  <article class="ch" data-title="A/D převodník">
+    <div><span class="eyebrow">Kapitola 3</span><h2>A/D převodník: vzorkování a kvantování</h2></div>
+    <div class="kq poll" data-ok="*">
+      <p class="q">Převodník měří napětí jen v pravidelných okamžicích a mezi nimi nic neví. Co se stane, když bude měřit málo často?</p>
+      <div class="opts"><button data-v="a">Nic, křivku z pár bodů poznáme vždycky.</button><button data-v="b">Zmizí rychlé změny, zvuk se zkreslí a ztratí vysoké tóny.</button><button data-v="c">Zvuk bude jen hlasitější.</button></div>
+      <div class="why">Vyzkoušej to hned v laboratoři níže: posuň vzorkovací frekvenci dolů a sleduj, jak z bodů vzniká jiná křivka.</div>
+    </div>
+    <p>A/D převodník dělá <b>tři kroky</b>. Dohromady se jim říká <b>PCM</b> (pulzně kódová modulace):</p>
+    <ol>
+      <li><b>Vzorkování:</b> v pravidelných okamžicích změří napětí. Každé měření je jeden <b>vzorek</b>. Kolikrát za sekundu se měří, říká <b>vzorkovací frekvence</b> (v hertzích, třeba 44 100 Hz).</li>
+      <li><b>Kvantování:</b> naměřenou hodnotu zaokrouhlí na nejbližší z pevně daných <b>úrovní</b>. Počet úrovní určuje <b>bitová hloubka</b> <i>n</i>: n bitů dává 2<sup>n</sup> úrovní.</li>
+      <li><b>Kódování:</b> číslo úrovně zapíše dvojkově, to uvidíš v kapitole 4.</li>
+    </ol>
+    <div class="box try"><span class="lbl">Vyzkoušej: laboratoř A/D převodníku</span>
+      <p>Tón o frekvenci 1 kHz (jedna perioda trvá 1 ms) vidíš 2 ms dlouhý. Tenká čára je původní signál, puntíky vzorky po zaokrouhlení. Měň vzorkovací frekvenci a bitovou hloubku.</p>
+      <canvas class="cv" id="adCv" width="680" height="340" role="img" aria-label="Graf vzorkování a kvantování sinusového signálu"></canvas>
+      <div class="ctl">
+        <div class="field"><label for="adFs">Vzorkovací frekvence: <span class="vl" id="adFsV"></span></label><input type="range" id="adFs" min="0" max="5" step="1" value="3"></div>
+        <div class="field"><label for="adBits">Bitová hloubka: <span class="vl" id="adBitsV"></span></label><input type="range" id="adBits" min="1" max="6" step="1" value="3"></div>
+      </div>
+      <div class="legend" aria-hidden="true"><span style="--c:var(--k2)"><i></i>původní signál</span><span style="--c:var(--k1)"><i></i>vzorky po zaokrouhlení</span><span style="--c:var(--muted)"><i class="d"></i>úrovně</span></div>
+      <div class="sms" id="adStat"></div>
+    </div>
+    <div class="box tip"><span class="lbl">Co z toho plyne</span><p>Vyšší vzorkovací frekvence zachytí rychlejší změny, vyšší bitová hloubka dá jemnější úrovně. Obojí ale zvětšuje soubor, jak spočítáš v kapitole 5.</p></div>
+    <div data-chk="s3"></div>
+    <div class="box fun"><span class="lbl">Počítej: zaokrouhli na úroveň</span>
+      <p>Jedna úroveň odpovídá jednomu celému číslu. Převodník vždy vybere nejbližší.</p>
+      <div data-drill="s-kvantuj" data-n="3"></div>
+    </div>
+    <div data-chk="s3b"></div>
+  </article>
+
+  <article class="ch" data-title="Soubor">
+    <div><span class="eyebrow">Kapitola 4</span><h2>Soubor: čísla zapsaná jako 0 a 1</h2></div>
+    <p>Každý vzorek je po kvantování jedno celé číslo, číslo úrovně. V počítači se zapíše <b>dvojkově</b>, přesně na tolik bitů, kolik je bitová hloubka. Zvukový soubor je pak jen dlouhá řada takových čísel a před ní krátká hlavička s údaji, třeba se vzorkovací frekvencí.</p>
+    <p>Dvojkový zápis už znáš: každý bit má váhu o polovinu menší než ten před ním. Například na čtyři bity jsou váhy 8, 4, 2, 1 a číslo 11 = 8 + 2 + 1 se zapíše <b class="mono">1011</b>.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: začátek souboru</span>
+      <p>Takhle vypadá začátek souboru pro nastavení z laboratoře v kapitole 3. Číslo vzorku, číslo úrovně a její dvojkový zápis:</p>
+      <div class="lrow"><span class="muted" id="fileSet"></span><button type="button" class="btn sm" data-go-ch="2">Změnit nastavení</button></div>
+      <div class="tblw"><table class="t" id="fileTbl"></table></div>
+      <p class="muted" style="font-size:.92rem">V souboru jsou ta čísla zapsaná za sebou bez mezer a oddělovačů. Kam končí jeden vzorek, se pozná jen podle bitové hloubky, a proto je uvedená v hlavičce:</p>
+      <div class="bitsrow" id="fileBits" aria-label="Bity za sebou"></div>
+    </div>
+    <div class="kq"><p class="q" data-lbl="Řešený příklad">Zapiš číslo úrovně <b>11</b> na 4 bity.</p>
+      <ol class="steps"><li>Váhy bitů zleva: 8, 4, 2, 1.</li><li>11 = 8 + 2 + 1, tedy zapneme bity s váhou 8, 2 a 1, bit s váhou 4 zůstane vypnutý.</li><li>Zápis: <b class="mono">1 0 1 1</b>.</li></ol></div>
+    <div class="box fun"><span class="lbl">Doplň a zkus sám</span>
+      <div data-drill="s-cislo-bin" data-n="3"></div>
+      <div data-drill="s-bin-cislo" data-n="2"></div>
+    </div>
+    <div data-chk="s4"></div>
+  </article>
+
+  <article class="ch" data-title="Velikost a datový tok">
+    <div><span class="eyebrow">Kapitola 5</span><h2>Velikost a datový tok</h2></div>
+    <p>Kolik bitů vznikne za jednu sekundu? Za sekundu je <b>f</b> vzorků (f je vzorkovací frekvence), každý má <b>n</b> bitů a u stereo je kanálů <b>k</b> (mono 1, stereo 2). Tomu se říká <b>datový tok</b>:</p>
+    <div class="formula">datový tok = f · n · k   [bit/s]<br>velikost = datový tok · t ÷ 8   [bajtů]</div>
+    <p>Dělení osmi převádí bity na bajty. Pro kilobity a kilobajty se dělí tisícem. U zvuku se v praxi používá <b>kbit/s</b> a velikost se píše v kB nebo MB (v této aplikaci 1 kB = 1 000 B).</p>
+    <div class="kq"><p class="q" data-lbl="Řešený příklad: CD">Zvuk na CD má 44 100 Hz, 16 bitů a 2 kanály. Jaký je datový tok a kolik zabere 1 minuta?</p>
+      <ol class="steps"><li>Datový tok = 44 100 · 16 · 2 = 1 411 200 bit/s = <b>1 411,2 kbit/s</b>.</li><li>Za 60 s: 1 411 200 · 60 = 84 672 000 bitů.</li><li>Na bajty: 84 672 000 ÷ 8 = 10 584 000 B = <b>10,584 MB</b>.</li></ol></div>
+    <div class="box try"><span class="lbl">Vyzkoušej: kalkulačka zvuku</span>
+      <div class="chips" id="szPre" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      <div class="ctl">
+        <div class="field"><label for="szF">Vzorkovací frekvence (Hz)</label><input type="number" id="szF" min="1" max="384000" step="1" value="44100" inputmode="numeric"></div>
+        <div class="field"><label for="szN">Bitová hloubka (bitů)</label><select id="szN"><option>8</option><option selected>16</option><option>24</option></select></div>
+        <div class="field"><label for="szK">Kanály</label><select id="szK"><option value="1">1 (mono)</option><option value="2" selected>2 (stereo)</option></select></div>
+        <div class="field"><label for="szT">Délka (s)</label><input type="number" id="szT" min="1" max="36000" step="1" value="60" inputmode="numeric"></div>
+      </div>
+      <div class="sms" id="szOut"></div>
+    </div>
+    <div class="box fun"><span class="lbl">Počítej</span>
+      <div data-drill="s-tok" data-n="2"></div>
+      <div data-drill="s-velikost" data-n="2"></div>
+    </div>
+    <div data-chk="s5"></div>
+  </article>
+
+  <article class="ch" data-title="D/A převodník a reproduktor">
+    <div><span class="eyebrow">Kapitola 6</span><h2>Zpátky: D/A převodník a reproduktor</h2></div>
+    <p>Při přehrávání jde cesta opačným směrem. <b>D/A převodník</b> čte čísla ze souboru a pro každé nastaví na výstupu odpovídající napětí. Drží ho až do dalšího vzorku, proto vzniká „schodovitý“ průběh. <b>Rekonstrukční filtr</b> schody vyhladí a vznikne plynulá křivka, která se původnímu signálu podobá. Zesilovač napětí zesílí a <b>reproduktor</b> podle něj chvěje membránou: z napětí je zase změna tlaku vzduchu.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: schody a vyhlazení</span>
+      <p>Graf používá nastavení z kapitoly 3. Přepni zobrazení a porovnej s původním signálem.</p>
+      <div class="lrow"><div class="seg" id="daMode" role="group" aria-label="Zobrazení"><button type="button" data-m="step" aria-pressed="true">Schody</button><button type="button" data-m="smooth" aria-pressed="false">Vyhlazení</button></div><span class="muted" id="daSet"></span><button type="button" class="btn sm" data-go-ch="2">Změnit nastavení</button></div>
+      <canvas class="cv" id="daCv" width="680" height="340" role="img" aria-label="Rekonstrukce signálu z čísel"></canvas>
+      <div class="legend" aria-hidden="true"><span style="--c:var(--k2)"><i class="d"></i>původní signál</span><span style="--c:var(--k1)"><i></i>výstup D/A převodníku</span></div>
+    </div>
+    <p>Celá cesta tedy je: tlak → napětí → čísla → napětí → tlak. Digitální je jen prostřední část, ostatní je analogová. Co se v digitální části ztratí (rychlé změny mezi vzorky a jemné odstíny mezi úrovněmi), už se nevrátí. Proto záleží na vzorkovací frekvenci a bitové hloubce.</p>
+    <div data-chk="s6"></div>
+    <div class="links2"><a href="../digitalizace-zvuku/">Sound Lab Pro: celá laboratoř digitalizace hudby →</a></div>
+  </article>
+
+  <article class="ch" data-title="Procvičování">
+    <div><span class="eyebrow">Kapitola 7</span><h2>Procvičování</h2></div>
+    <p>Úlohy se generují náhodně a můžeš si před kontrolou označit, jak jsi si jistý. Úloha, která se nepovede, se vrátí v části <b>Na dnešek</b>, povedená později a později. Čas ani body se tady nepočítají.</p>
+    <div id="pracS"></div>
+  </article>
+
+  <article class="ch" data-title="Test a přehled">
+    <div><span class="eyebrow">Kapitola 8</span><h2>Test a přehled</h2></div>
+    <p>Osm otázek bez nápověd. Test neznámkujeme, ukáže ti jen, co zopakovat.</p>
+    <div id="testS"></div>
+    <div class="box tip"><span class="lbl">Co si odnášíš</span><ul class="check"><li>Zvuk je změna tlaku, mikrofon ji převede na napětí. Analogový signál je plynulý, digitální je řada čísel.</li><li>A/D převodník vzorkuje (měří v pravidelných okamžicích), kvantuje (zaokrouhluje na 2<sup>n</sup> úrovní) a zapíše číslo dvojkově.</li><li>Datový tok = f · n · k, velikost = datový tok · t ÷ 8.</li><li>D/A převodník z čísel vyrobí napětí, filtr ho vyhladí, reproduktor z napětí vyrobí zvuk.</li></ul></div>
+    <div id="ovS"></div>
+  </article>
+
+  <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
+</div>
+</div>
+
+<!-- ================= EXTRA ================= -->
+<div class="view v-x">
+<div class="xnote"><span class="plus">PLUS</span><p><b>Extra</b> je nepovinná část. Nemusíš ji projít a nic se tu nevyžaduje. Čti, zkoušej nástroje a vybírej si, co tě zajímá. Postup se tady nepočítá do přehledu zvládnutí.</p></div>
+<div class="course" data-course="x">
+  <div class="course-head">
+    <ul class="findlist"><li>A: proč se čísla kopírují beze ztráty a analogový signál ne,</li><li>B: Nyquistova podmínka a aliasing, kdy vzorkování zkreslí tón,</li><li>C: kvantizační šum a bitová hloubka, s poslechem,</li><li>D: bezeztrátová a ztrátová komprese a velikost souboru,</li><li>E: psychoakustické maskování, na kterém stojí MP3.</li></ul>
+    <ol class="prog" aria-label="Části Extra"></ol>
+  </div>
+
+  <article class="ch" data-title="A · Kopie bez ztráty">
+    <div><span class="eyebrow">Extra A</span><h2>Analog × digitál: kopie bez ztráty</h2></div>
+    <p>U analogového záznamu (magnetofonová páska, gramofonová deska) se při přepisování k signálu přidává šum a každá další kopie je o kousek horší. Šum se s původním signálem smísil, takže už ho nelze oddělit. Digitální kopie je kopie čísel. Dokud se čísla neporuší, je kopie přesně stejná a po sté i po tisící.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: kolikátá kopie</span>
+      <canvas class="cv" id="cpCv" width="680" height="340" role="img" aria-label="Porovnání analogové a digitální kopie"></canvas>
+      <div class="ctl"><div class="field"><label for="cpN">Počet přepsání: <span class="vl" id="cpNV"></span></label><input type="range" id="cpN" min="0" max="40" step="1" value="8"></div></div>
+      <div class="legend" aria-hidden="true"><span style="--c:var(--k2)"><i class="d"></i>originál</span><span style="--c:var(--k1)"><i></i>analogová kopie</span><span style="--c:var(--k4)"><i></i>digitální kopie (překrývá originál)</span></div>
+      <div class="out" id="cpOut"></div>
+      <p class="muted" style="font-size:.9rem">Simulace: každé přepsání přidá k analogovému signálu malý náhodný šum. Hodnoty jsou ilustrativní, ne měření konkrétní techniky.</p>
+    </div>
+    <div class="note">Digitální signál má i své slabiny: poškozený soubor nebo ztrátová komprese kvalitu snížit mohou. Ale prosté kopírování ne.</div>
+  </article>
+
+  <article class="ch" data-title="B · Nyquist a aliasing">
+    <div><span class="eyebrow">Extra B</span><h2>Vzorkování a Nyquistova podmínka</h2></div>
+    <p>Aby šlo z vzorků zvuk věrně obnovit, musí se měřit dost často. <b>Nyquistův–Shannonův teorém</b> říká: vzorkovací frekvence musí být <b>víc než dvojnásobná</b> než nejvyšší frekvence v signálu. Polovině vzorkovací frekvence se říká <b>Nyquistova frekvence</b>. Při 44 100 Hz je to 22 050 Hz, a proto CD zvládne celé slyšitelné pásmo (člověk slyší zhruba do 20 kHz).</p>
+    <p>Když je frekvence tónu větší než Nyquistova, vzorky vypadají, jako by patřily <b>pomalejšímu tónu</b>. Tomu se říká <b>aliasing</b>. Nová, falešná frekvence je vzdálenost tónu od nejbližšího násobku vzorkovací frekvence. Stejně vypadá kolo vozu ve filmu, které se zdánlivě točí pozpátku.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: kdy vzorkování oklame</span>
+      <p>Okno trvá 5 ms. Zkus nejdřív tón 1 000 Hz při 8 000 Hz, pak zvyš tón nad 4 000 Hz.</p>
+      <canvas class="cv" id="nyCv" width="680" height="340" role="img" aria-label="Graf aliasingu"></canvas>
+      <div class="ctl">
+        <div class="field"><label for="nyF">Frekvence tónu: <span class="vl" id="nyFV"></span></label><input type="range" id="nyF" min="200" max="7000" step="50" value="1000"></div>
+        <div class="field"><label for="nyS">Vzorkovací frekvence: <span class="vl" id="nySV"></span></label><input type="range" id="nyS" min="2000" max="16000" step="500" value="8000"></div>
+      </div>
+      <div class="legend" aria-hidden="true"><span style="--c:var(--k2)"><i class="d"></i>skutečný tón</span><span style="--c:var(--k1)"><i></i>co z vzorků vznikne</span></div>
+      <div class="out" id="nyOut"></div>
+      <div class="lrow"><button type="button" class="btn" id="nyPlay">Přehrát, co z toho vznikne</button><span class="muted" style="font-size:.9rem">Hlasitost nech nízkou. Zvuk se spustí jen po klepnutí.</span></div>
+    </div>
+    <div class="note">Proti aliasingu stojí před A/D převodníkem <b>antialiasingový filtr</b>, který vysoké frekvence odřízne dřív, než se začne vzorkovat.</div>
+  </article>
+
+  <article class="ch" data-title="C · Kvantizační šum">
+    <div><span class="eyebrow">Extra C</span><h2>Kvantování a kvantizační šum</h2></div>
+    <p>Rozdíl mezi skutečnou a zaokrouhlenou hodnotou se ve zvuku projeví jako šum, <b>kvantizační šum</b>. Každý další bit zdvojnásobí počet úrovní a sníží šum zhruba o 6 dB. Pro ideální sinusový signál s plnou amplitudou platí přibližně <b>SNR ≈ 6,02 · n + 1,76 dB</b>. U 16 bitů je to asi 98 dB, u 24 bitů asi 146 dB.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: kolik bitů stačí</span>
+      <canvas class="cv" id="qnCv" width="680" height="340" role="img" aria-label="Graf kvantování a chyby"></canvas>
+      <div class="ctl"><div class="field"><label for="qnB">Bitová hloubka: <span class="vl" id="qnBV"></span></label><input type="range" id="qnB" min="1" max="12" step="1" value="3"></div></div>
+      <div class="legend" aria-hidden="true"><span style="--c:var(--k2)"><i class="d"></i>původní signál</span><span style="--c:var(--k1)"><i></i>po kvantování</span><span style="--c:var(--k3)"><i></i>chyba (zvětšená)</span></div>
+      <div class="sms" id="qnStat"></div>
+      <div class="lrow"><button type="button" class="btn" id="qnPlay">Přehrát tón s touto bitovou hloubkou</button><span class="muted" style="font-size:.9rem">Hlasitost nech nízkou. Při malé hloubce uslyšíš zkreslení.</span></div>
+    </div>
+  </article>
+
+  <article class="ch" data-title="D · Komprese">
+    <div><span class="eyebrow">Extra D</span><h2>Komprese zvuku</h2></div>
+    <p><b>Bezeztrátová komprese</b> (třeba FLAC) soubor zmenší tak, že se z něj dá získat přesně původní. Hledá v datech opakování a předvídatelnost. Úspora je zhruba na polovinu až dvě třetiny původní velikosti, podle hudby. <b>Ztrátová komprese</b> (třeba MP3, AAC, Ogg Vorbis) část informace trvale zahodí, a to takovou, které si ucho nejméně všimne. Soubor je mnohem menší, ale původní se už získat nedá.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: velikost skladby</span>
+      <div class="ctl">
+        <div class="field"><label for="cmR">Formát</label><select id="cmR"><option value="1411.2">CD / WAV (nekomprimovaný)</option><option value="FLAC">FLAC (bezeztrátově)</option><option value="320">MP3 320 kbit/s</option><option value="192">MP3 192 kbit/s</option><option value="128" selected>MP3 128 kbit/s</option><option value="64">Telefonní kvalita 64 kbit/s</option></select></div>
+        <div class="field"><label for="cmT">Délka skladby (min)</label><input type="number" id="cmT" min="1" max="600" step="1" value="4" inputmode="numeric"></div>
+      </div>
+      <div class="sms" id="cmOut"></div>
+      <p class="muted" style="font-size:.9rem">U FLAC je uveden rozsah, protože záleží na hudbě. U ostatních se velikost počítá z datového toku. Porovnání je vůči nekomprimovanému CD (1 411,2 kbit/s).</p>
+    </div>
+  </article>
+
+  <article class="ch" data-title="E · Maskování">
+    <div><span class="eyebrow">Extra E</span><h2>Psychoakustické maskování</h2></div>
+    <p>Ucho neslyší všechno stejně. Za ticha slyšíme nejlépe kolem 3 kHz, u hlubokých a velmi vysokých tónů potřebujeme víc hlasitosti. A hlasitý tón <b>zakryje</b> tišší tóny s podobnou frekvencí: říká se tomu <b>maskování</b>. Ztrátová komprese toho využívá. Kodek rozloží zvuk na pásma, spočítá, co je maskované, a ta pásma kvantuje tak hrubě, aby byl šum pod prahem slyšitelnosti.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: slyšitelné, nebo maskované</span>
+      <p>Hlasitý tón 1 000 Hz zvedne práh slyšitelnosti ve svém okolí. Zkus druhý, tišší tón. Zelená tečka znamená slyšitelný, červená maskovaný.</p>
+      <canvas class="cv" id="mkCv" width="680" height="340" role="img" aria-label="Schéma maskování"></canvas>
+      <div class="ctl">
+        <div class="field"><label for="mkL">Hlasitost maskujícího tónu: <span class="vl" id="mkLV"></span></label><input type="range" id="mkL" min="30" max="90" step="1" value="70"></div>
+        <div class="field"><label for="mkF">Frekvence druhého tónu: <span class="vl" id="mkFV"></span></label><input type="range" id="mkF" min="200" max="6000" step="50" value="1400"></div>
+        <div class="field"><label for="mkP">Hlasitost druhého tónu: <span class="vl" id="mkPV"></span></label><input type="range" id="mkP" min="0" max="80" step="1" value="35"></div>
+      </div>
+      <div class="legend" aria-hidden="true"><span style="--c:var(--muted)"><i class="d"></i>práh slyšitelnosti za ticha</span><span style="--c:var(--k2)"><i></i>práh s maskováním</span></div>
+      <div class="out" id="mkOut"></div>
+      <p class="muted" style="font-size:.9rem"><b>Zjednodušený model.</b> Práh za ticha podle běžně užívané aproximace, maskování schematicky. Ukazuje princip, ne naměřené hodnoty.</p>
+    </div>
+  </article>
+
+  <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
+</div>
+</div>
+
+<footer>
+  <p>Související aplikace: <a href="../digitalizace-zvuku/">Sound Lab Pro</a> · <a href="../bitmapa-pod-lupou/">Bitmapa pod lupou</a> · <a href="../ascii-kod-pod-lupou/">ASCII kód pod lupou</a> · <a href="../dvojkova-soustava/">Dvojková soustava</a></p>
+  <p>Zvuk pod lupou · výukový materiál. Vzorec SNR a práh slyšitelnosti za ticha jsou standardní aproximace, simulace jsou ilustrativní.</p>
+  <p>Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 18. 11. 2026</p>
+  <details class="teacher"><summary>Pro učitele</summary>
+    <p><b>Standardní znalosti, plán 2–3 vyučovacích hodin.</b></p>
+    <ol>
+      <li><b>1. hodina</b> · Kapitola 1: promítněte hlasování (co je v souboru), krátký předtest. Kapitola 2: cesta zvuku, žáci u každého kroku říkají, jaký je signál.</li>
+      <li><b>2. hodina</b> · Kapitoly 3–4: laboratoř A/D převodníku na projekci, žáci předpovídají, co se stane po snížení vzorkovací frekvence, pak zaokrouhlování na úrovně a dvojkový zápis ve dvojicích.</li>
+      <li><b>3. hodina</b> · Kapitoly 5–6: datový tok a velikost (řešený příklad CD, pak samostatně), D/A převodník a vyhlazení, test. Procvičování doma, žák má v přehledu kód zálohy pro přenos mezi zařízeními.</li>
+    </ol>
+    <p><b>Extra</b> je nepovinná část pro zájemce, referát nebo projekt. Plnou laboratoř pro velké dotykové panely najdete v aplikaci Sound Lab Pro.</p></details>
+</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+</div>
+<dialog class="cr" id="credits" aria-labelledby="cr-h">
+<h2 id="cr-h">Autor a licence</h2>
+<dl>
+<dt>Aplikace</dt><dd>Zvuk pod lupou</dd>
+<dt>Autor</dt><dd>Ivo Bešťák, Gymnázium Příbram</dd>
+<dt>Licence</dt><dd><a href="https://creativecommons.org/licenses/by/4.0/deed.cs" target="_blank" rel="noopener">CC BY 4.0</a></dd>
+<dt>Aktualizace</dt><dd>18. 11. 2026</dd>
+</dl>
+<button type="button" class="cr-x" id="cr-x">Zavřít</button>
+</dialog>
+<script>
+(function () {
+  var dlg = document.getElementById('credits'), opener = null;
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-credits]') : null;
+    if (b) { opener = b; if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); return; }
+    if (e.target === dlg || e.target.id === 'cr-x') dlg.close();
+  });
+  dlg.addEventListener('close', function () { if (opener && document.contains(opener)) opener.focus(); });
+})();
+</script>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const rnd=n=>Math.floor(Math.random()*n);
+const cz=(n,a,b,c)=>n===1?a:n>=2&&n<=4?b:c;
+const nf=(x,d)=>Number(x).toLocaleString('cs-CZ',{maximumFractionDigits:d==null?2:d,minimumFractionDigits:0});
+
+let toastT;
+function toast(html){const t=$('#toast');t.innerHTML=html;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1900);}
+function fallbackCopy(text){
+  const ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy');}catch(e){}ta.remove();return ok;
+}
+function copyText(text,okHtml){
+  const done=ok=>toast(ok?okHtml:'Kopírování se nepodařilo.');
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(()=>done(true),()=>done(fallbackCopy(text)));
+  else done(fallbackCopy(text));
+}
+
+/* ================= SMYČKA: úlohy, nápovědy, jistota, opakování, záloha ================= */
+const L2='zvukpl2';
+const todayN=()=>{const d=new Date();return Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/864e5);};
+const INTERVALS=[0,1,2,4,8,16,32];
+let ST=(function(){try{const o=JSON.parse(lsGet(L2)||'{}');return Object.assign({cards:{},conf:{},stats:{},test:{}},o);}catch(e){return {cards:{},conf:{},stats:{},test:{}};}})();
+const stSave=()=>lsSet(L2,JSON.stringify(ST));
+const SK={};
+const CONFN={j:'Jistě',s:'Spíš ano',h:'Hádám'};
+function record(skill,ok,conf,nev,hints){
+  if(skill){
+    const s=ST.stats[skill]||(ST.stats[skill]=[0,0]); s[1]++; if(ok&&!nev) s[0]++;
+    const c=ST.cards[skill]||(ST.cards[skill]={b:0,d:todayN()});
+    if(ok&&!nev&&hints<3) c.b=Math.min(6,c.b+1); else c.b=0;
+    c.d=todayN()+INTERVALS[c.b];
+  }
+  if(nev) ST.conf.n=(ST.conf.n||0)+1;
+  else if(conf){const k=ST.conf[conf]||(ST.conf[conf]=[0,0]); k[1]++; if(ok) k[0]++;}
+  stSave();
+}
+const dueSkills=lv=>Object.keys(SK).filter(id=>SK[id].lv===lv&&ST.cards[id]&&ST.cards[id].d<=todayN());
+const skillState=id=>{const c=ST.cards[id];if(!c)return ['none','zatím nezkoušeno'];
+  if(c.d<=todayN())return ['due','opakovat dnes'];
+  if(c.b>=3)return ['ok','zvládáš'];return ['grow','upevňuješ'];};
+
+/* normalizace odpovědí */
+const normNum=s=>{s=String(s).trim().replace(/\s+/g,'');if(/^\d+$/.test(s))return parseInt(s,10);return NaN;};
+const normDec=s=>{s=String(s).toLowerCase().replace(/\s+/g,'').replace(/kbit\/s|kbps|kb|mb|bit\/s|b$/g,'').replace(',','.');if(/^\d+(\.\d+)?$/.test(s))return parseFloat(s);return NaN;};
+const normBin=s=>String(s).replace(/[\s_]/g,'');
+
+/* task: {q, kind:'num'|'text'|'opts', check(raw)->bool, opts:[{v,t}], right:v, hints:[h1,h2,h3], why, wrong(raw)->html, ph, label, rightText}
+   o: {skill, noHints, next:label|null, onDone(res), nevim} */
+function runTask(host,task,o){
+  o=o||{};
+  host.innerHTML='';
+  const box=document.createElement('div');box.className='kq loop';
+  const id='t'+Math.random().toString(36).slice(2,8);
+  let conf=null,used=0,done=false;
+  box.innerHTML=`<p class="q" data-lbl="${esc(task.label||'Úloha')}">${task.q}</p>
+    <div class="conf" role="group" aria-label="Jak jsi si jistý?"><span>Jak jsi si jistý?</span>${Object.keys(CONFN).map(k=>`<button type="button" data-c="${k}" aria-pressed="false">${CONFN[k]}</button>`).join('')}<small>nepovinné</small></div>
+    <div class="ans"></div>
+    <div class="lrow"><button type="button" class="btn sm hb">Nápověda</button><button type="button" class="btn sm nvb">Nevím</button></div>
+    <div class="hints" aria-live="polite"></div>
+    <div class="fb" aria-live="polite"></div>
+    <div class="lrow nx" hidden></div>`;
+  host.appendChild(box);
+  const ans=box.querySelector('.ans'), fb=box.querySelector('.fb'), hb=box.querySelector('.hb'), nvb=box.querySelector('.nvb'), hints=box.querySelector('.hints');
+  if(o.noHints||!task.hints){hb.hidden=true;}
+  if(o.nevim===false) nvb.hidden=true;
+  box.querySelector('.conf').onclick=e=>{const b=e.target.closest('[data-c]');if(!b||done)return;
+    conf=conf===b.dataset.c?null:b.dataset.c;box.querySelectorAll('.conf button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.c===conf));};
+  const lock=()=>{done=true;box.classList.add('done');box.querySelectorAll('.ans button,.ans input,.lrow button,.conf button').forEach(x=>x.disabled=true);};
+  function finish(ok,nev,raw){
+    if(done)return; lock();
+    record(o.skill||null,ok,conf,nev,used);
+    let h;
+    if(nev) h=`<div class="fb-in info"><b>Nevím je v pořádku.</b> Správně je ${task.rightText||''}</div>`;
+    else if(ok) h=`<div class="fb-in ok"><b>${pick(['Správně.','Sedí.','Ano.'])}</b>${used?` Použil jsi ${used} z 3 nápověd.`:''}</div>`;
+    else h=`<div class="fb-in bad"><b>Zatím ne.</b> ${task.rightText?'Správně je '+task.rightText:''}</div>`;
+    if(!ok&&!nev&&task.wrong){const w=task.wrong(raw);if(w)h+=`<div class="fb-in note">${w}</div>`;}
+    if(task.why)h+=`<div class="fb-in info">${task.why}</div>`;
+    if(ok&&conf==='h') h+=`<div class="fb-in note">Hádal jsi a trefil ses. Zkus příště vysvětlit, proč to tak je.</div>`;
+    if(!ok&&!nev&&conf==='j') h+=`<div class="fb-in note">Byl jsi si jistý, ale vyšlo to jinak. Právě tyhle omyly se vyplatí si zapamatovat.</div>`;
+    fb.innerHTML=h;
+    const nx=box.querySelector('.nx');
+    if(o.next){nx.hidden=false;nx.innerHTML=`<button type="button" class="btn pri nxb">${o.next}</button>`;nx.querySelector('.nxb').onclick=()=>o.onDone&&o.onDone({ok:ok&&!nev,nev,hints:used});nx.querySelector('.nxb').focus();}
+    else if(o.onDone) o.onDone({ok:ok&&!nev,nev,hints:used});
+  }
+  if(task.kind==='opts'){
+    ans.className='ans opts';
+    ans.innerHTML=task.opts.map(p=>`<button type="button" data-v="${esc(p.v)}">${p.t}</button>`).join('');
+    ans.onclick=e=>{const b=e.target.closest('[data-v]');if(!b||done)return;
+      const ok=b.dataset.v===String(task.right);
+      ans.querySelectorAll('button').forEach(x=>{if(x.dataset.v===String(task.right))x.classList.add('right');else if(x===b)x.classList.add('wrong');});
+      finish(ok,false,b.dataset.v);};
+  }else{
+    ans.className='ans inp';
+    ans.innerHTML=`<label class="sr" for="${id}">Odpověď</label><input type="text" id="${id}" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text" placeholder="${esc(task.ph||'Odpověď')}"><button type="button" class="btn pri chk">Zkontrolovat</button>`;
+    const inp=ans.querySelector('input'), go=()=>{const v=inp.value;if(!v.trim())return;finish(!!task.check(v),false,v);};
+    ans.querySelector('.chk').onclick=go; inp.addEventListener('keydown',e=>{if(e.key==='Enter')go();});
+    if(!o.noFocus) setTimeout(()=>{try{inp.focus({preventScroll:true});}catch(e){}},0);
+  }
+  hb.onclick=()=>{if(done||!task.hints)return;if(used<task.hints.length){used++;
+      hints.innerHTML=task.hints.slice(0,used).map((t,i)=>`<p class="hint"><b>Nápověda ${i+1}:</b> ${t}</p>`).join('');}
+    hb.textContent=used>=task.hints.length?'Nápověd už není':`Další nápověda (${used}/${task.hints.length})`;if(used>=task.hints.length)hb.disabled=true;};
+  nvb.onclick=()=>finish(false,true,'');
+  return box;
+}
+
+function drill(host,skill,n,opt){
+  opt=opt||{};let i=0,okN=0;
+  const next=()=>{
+    if(i>=n){host.innerHTML=`<div class="kq loop done"><p class="q" data-lbl="Hotovo">${okN} z ${n} správně na první pokus a bez nevím.</p><div class="lrow"><button type="button" class="btn sm" data-again>Zkusit další sadu</button></div></div>`;
+      host.querySelector('[data-again]').onclick=()=>{i=0;okN=0;next();};return;}
+    const t=SK[skill].gen(); t.label=`Úloha ${i+1} z ${n}`;
+    runTask(host,t,{skill,next:i<n-1?'Další úloha':'Dokončit',noFocus:opt.noFocus,noHints:opt.noHints,onDone:r=>{if(r.ok&&r.hints===0)okN++;i++;next();}});
+  };
+  next();
+}
+
+const CHK={};
+function renderChecks(){
+  document.querySelectorAll('[data-chk]').forEach(h=>{
+    const c=CHK[h.dataset.chk]; if(!c){h.textContent='';return;}
+    if(c.skill){drill(h,c.skill,c.n||3,{noFocus:true});return;}
+    runTask(h,Object.assign({kind:'opts',label:'Kontrolní otázka'},c),{noHints:!c.hints,noFocus:true,nevim:true});
+  });
+  document.querySelectorAll('[data-drill]').forEach(h=>drill(h,h.dataset.drill,+h.dataset.n||3,{noFocus:true,noHints:h.hasAttribute('data-nohints')}));
+}
+
+/* hlasování (tip před výkladem) */
+document.querySelectorAll('.kq.poll').forEach(kq=>{
+  kq.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{
+    if(kq.classList.contains('done'))return;
+    kq.classList.add('done');
+    kq.querySelectorAll('.opts button').forEach(x=>{x.disabled=true;if(x===b)x.classList.add('picked');});
+  });
+});
+
+const q_titles=co=>{const c=document.querySelector(`.course[data-course="${co}"]`);return c?[...c.querySelectorAll('.ch')].map(x=>x.dataset.title):[];};
+function pretest(host,qs,lv,course){
+  let i=0,wrong=[];
+  const show=()=>{
+    if(i>=qs.length){
+      host.innerHTML=`<div class="kq loop done"><p class="q" data-lbl="Předtest hotov">${qs.length-wrong.length} z ${qs.length} v pořádku. Nic se nehodnotí, jen ti poradím, kam se podívat.</p>
+      ${wrong.length?`<p>Doporučuju projít: ${[...new Set(wrong.map(q=>q.ch))].map(k=>`<button type="button" class="chip" data-go-ch="${k}">${esc(q_titles(course)[k]||('Kapitola '+(k+1)))}</button>`).join(' ')}</p>`:'<p>Všechno sedí. Můžeš rovnou na procvičování, nebo si projít kapitoly pro jistotu.</p>'}</div>`;
+      ST.test['pre-'+lv]={ok:qs.length-wrong.length,n:qs.length,d:todayN()};stSave();return;}
+    const q=qs[i];
+    runTask(host,Object.assign({kind:'opts',label:`Předtest ${i+1} z ${qs.length}`},q),{noHints:true,noFocus:true,next:i<qs.length-1?'Další':'Hotovo',onDone:r=>{if(!r.ok)wrong.push(q);i++;show();}});
+  };
+  show();
+}
+
+function practice(host,lv){
+  const ids=Object.keys(SK).filter(k=>SK[k].lv===lv);
+  host.innerHTML=`<div class="panel prac2"><div class="seg" role="group" aria-label="Režim"><button type="button" data-m="due" aria-pressed="false">Na dnešek <span class="dn"></span></button><button type="button" data-m="mix" aria-pressed="true">Mix</button><button type="button" data-m="one" aria-pressed="false">Jedna dovednost</button></div>
+    <div class="field one" hidden><label for="prsel">Dovednost</label><select id="prsel">${ids.map(k=>`<option value="${k}">${esc(SK[k].title)}</option>`).join('')}</select></div>
+    <div class="gstat"><span class="pst"></span><span class="pnote">Bez času a bez bodů. Cílem je vědět, co ti jde.</span></div>
+    <div class="ph"></div></div>`;
+  const ph=host.querySelector('.ph'), segs=host.querySelectorAll('.seg button'), one=host.querySelector('.one'), sel=one.querySelector('select');
+  let mode='mix', last=null, nDone=0, nOk=0;
+  const stat=()=>{host.querySelector('.pst').textContent=nDone?`V tomto sezení: ${nOk} z ${nDone} správně`:'';
+    const d=dueSkills(lv).length;host.querySelector('.dn').textContent=d?`(${d})`:'';};
+  function chooseSkill(){
+    if(mode==='one')return sel.value;
+    const due=dueSkills(lv);
+    let pool=mode==='due'?due:ids;
+    if(mode==='mix'&&due.length&&Math.random()<.6) pool=due;
+    pool=pool.filter(k=>k!==last).length?pool.filter(k=>k!==last):pool;
+    if(!pool.length) return null;
+    const w=pool.map(k=>{const c=ST.cards[k];return c?Math.max(1,7-c.b):4;});
+    let r=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return pool[i];}
+    return pool[0];
+  }
+  function nextTask(){
+    stat();const s=chooseSkill();
+    if(!s){ph.innerHTML='<div class="kq loop done"><p class="q" data-lbl="Na dnešek">Dnes nic k opakování nemáš. Zkus Mix a procvič něco nového.</p></div>';return;}
+    last=s;const t=SK[s].gen();t.label=SK[s].title;
+    runTask(ph,t,{skill:s,next:'Další úloha',noFocus:true,onDone:r=>{nDone++;if(r.ok&&!r.hints)nOk++;nextTask();}});
+  }
+  segs.forEach(b=>b.onclick=()=>{mode=b.dataset.m;segs.forEach(x=>x.setAttribute('aria-pressed',x===b));one.hidden=mode!=='one';nextTask();});
+  sel.onchange=nextTask;
+  stat();
+  if(dueSkills(lv).length){mode='due';segs.forEach(x=>x.setAttribute('aria-pressed',x.dataset.m==='due'));}
+  nextTask();
+}
+
+function runTest(host,lv,plan,after){
+  const items=plan.map(p=>typeof p==='string'?{skill:p}:p);
+  let i=0,score=0,wrongSk=[];
+  const show=()=>{
+    if(i>=items.length){
+      const sk=[...new Set(wrongSk)];
+      ST.test[lv]={ok:score,n:items.length,d:todayN()};stSave();
+      host.innerHTML=`<div class="qres"><div class="score">${score} z ${items.length}</div><p>${score===items.length?'Plný počet. Všechno, co jsme ověřovali, ti sedí.':score>=items.length*.75?'Výborně, skoro všechno sedí.':score>=items.length*.5?'Slušný základ. Projdi si, co se nepovedlo.':'Zatím to nesedí. Vrať se ke kapitolám a zkus procvičování.'}</p>
+        ${sk.length?`<p><b>Co zopakovat:</b> ${sk.map(k=>esc(SK[k].title)).join(', ')}. Tyhle dovednosti se ti vrátí v části „Na dnešek“.</p>`:''}
+        <div class="lrow"><button type="button" class="btn" data-again>Zkusit test znovu</button></div></div>`;
+      host.querySelector('[data-again]').onclick=()=>{i=0;score=0;wrongSk=[];show();};
+      after&&after();return;}
+    const it=items[i], t=SK[it.skill].gen(); t.label=`Test: otázka ${i+1} z ${items.length}`;
+    runTask(host,t,{skill:it.skill,noHints:true,noFocus:true,next:i<items.length-1?'Další otázka':'Zobrazit výsledek',onDone:r=>{if(r.ok)score++;else wrongSk.push(it.skill);i++;show();}});
+  };
+  show();
+}
+
+/* přehled, kalibrace, záloha */
+const b64e=s=>btoa(String.fromCharCode(...new TextEncoder().encode(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const b64d=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return new TextDecoder().decode(Uint8Array.from(atob(s),c=>c.charCodeAt(0)));};
+const hsh=s=>{let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h.toString(16);};
+function makeCode(){const p=b64e(JSON.stringify({c:ST.cards,k:ST.conf,s:ST.stats,t:ST.test}));return 'ZV1.'+p+'.'+hsh(p);}
+function loadCode(code){
+  const p=String(code).trim().split('.');if(p.length!==3||p[0]!=='ZV1'||hsh(p[1])!==p[2])throw new Error('bad');
+  const o=JSON.parse(b64d(p[1]));
+  Object.keys(o.c||{}).forEach(k=>{const a=ST.cards[k],b=o.c[k];if(!a||b.b>a.b||(b.b===a.b&&b.d<a.d))ST.cards[k]=b;});
+  Object.keys(o.s||{}).forEach(k=>{const a=ST.stats[k],b=o.s[k];if(!a||b[1]>a[1])ST.stats[k]=b;});
+  Object.keys(o.k||{}).forEach(k=>{const a=ST.conf[k],b=o.k[k];if(k==='n'){ST.conf.n=Math.max(ST.conf.n||0,b);return;}if(!a||b[1]>a[1])ST.conf[k]=b;});
+  Object.keys(o.t||{}).forEach(k=>{if(!ST.test[k]||(o.t[k].d||0)>(ST.test[k].d||0))ST.test[k]=o.t[k];});
+  stSave();
+}
+function overview(host,lv){
+  const ids=Object.keys(SK).filter(k=>SK[k].lv===lv);
+  const rows=ids.map(k=>{const [cls,txt]=skillState(k),s=ST.stats[k]||[0,0];
+    return `<tr><td>${esc(SK[k].title)}</td><td><span class="st st-${cls}">${txt}</span></td><td class="r">${s[1]?`${s[0]} z ${s[1]}`:'–'}</td></tr>`;}).join('');
+  const c=ST.conf, pc=k=>c[k]&&c[k][1]?Math.round(100*c[k][0]/c[k][1]):null;
+  const crow=['j','s','h'].map(k=>`<tr><td>${CONFN[k]}</td><td class="r">${c[k]?`${c[k][0]} z ${c[k][1]}`:'–'}</td><td class="r">${pc(k)==null?'–':pc(k)+' %'}</td></tr>`).join('');
+  let msg='Označuj si při procvičování, jak jsi si jistý. Tady pak uvidíš, jestli tvoje jistota odpovídá výsledkům.';
+  const tot=['j','s','h'].reduce((a,k)=>a+(c[k]?c[k][1]:0),0);
+  if(tot>=8){
+    if(c.j&&c.j[1]>=4&&pc('j')<75) msg='Když sis byl jistý, mýlil ses častěji, než by se čekalo. Zkus se u „jistě“ zastavit a ověřit si to výpočtem.';
+    else if(c.h&&c.h[1]>=4&&pc('h')>=60) msg='I když hádáš, trefuješ se často. Můžeš si věřit víc.';
+    else msg='Tvoje jistota zhruba odpovídá výsledkům.';
+  }
+  const t=ST.test[lv];
+  host.innerHTML=`<div class="panel ov"><h3>Co ti jde</h3><div class="tblw"><table class="t"><thead><tr><th>Dovednost</th><th>Stav</th><th class="r">Správně</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="muted">${t?`Poslední test: ${t.ok} z ${t.n}.`:'Test jsi zatím neudělal.'} Stav „zvládáš“ znamená, že se úloha už třikrát za sebou povedla bez nápovědy a bez „Nevím“.</p>
+    <h3>Odhad jistoty</h3><div class="tblw"><table class="t"><thead><tr><th>Řekl jsi</th><th class="r">Správně</th><th class="r">Podíl</th></tr></thead><tbody>${crow}</tbody></table></div>
+    <p class="muted">${msg}${c.n?` Odpověď „Nevím“ jsi použil ${c.n}×, a je to v pořádku.`:''}</p>
+    <h3>Záloha postupu</h3><p class="muted">Postup se ukládá jen v tomto prohlížeči. Kód ho přenese na jiné zařízení.</p>
+    <div class="lrow"><button type="button" class="btn" data-mk>Vytvořit kód zálohy</button></div>
+    <div class="field"><label for="bk-${lv}">Kód zálohy</label><textarea id="bk-${lv}" rows="3" placeholder="ZV1.…" spellcheck="false"></textarea></div>
+    <div class="lrow"><button type="button" class="btn" data-cp>Zkopírovat</button><button type="button" class="btn" data-ld>Načíst kód z jiného zařízení</button></div><p class="muted" data-bm role="status"></p></div>`;
+  const ta=host.querySelector('textarea'), bm=host.querySelector('[data-bm]');
+  host.querySelector('[data-mk]').onclick=()=>{ta.value=makeCode();bm.textContent='Kód je vytvořený. Zkopíruj ho a vlož na druhém zařízení.';};
+  host.querySelector('[data-cp]').onclick=()=>{if(!ta.value)ta.value=makeCode();copyText(ta.value,'Kód zálohy zkopírován');};
+  host.querySelector('[data-ld]').onclick=()=>{try{loadCode(ta.value);overview(host,lv);host.querySelector('[data-bm]').textContent='Postup načten.';}catch(e){bm.textContent='Kód se nepodařilo načíst. Zkontroluj, že je zkopírovaný celý.';}};
+}
+
+/* ================= DOVEDNOSTI (Standardní znalosti) ================= */
+const bin=(v,n)=>v.toString(2).padStart(n,'0');
+const FSL=[8000,16000,22050,44100,48000];
+
+const SIGS=[
+ ['signál na výstupu mikrofonu','analog','Mikrofon převádí tlak vzduchu na napětí, které se plynule mění v čase. Je to analogový signál.'],
+ ['zvuková vlna ve vzduchu','analog','Změny tlaku vzduchu jsou spojité, bez jakéhokoli zaokrouhlení. Je to analogový děj.'],
+ ['napětí na vstupu reproduktoru','analog','Reproduktor dostává plynule se měnící napětí. Čísla už jsou za D/A převodníkem.'],
+ ['napětí na výstupu D/A převodníku','analog','D/A převodník z čísel vyrábí napětí, tedy analogový signál.'],
+ ['data uložená v souboru zvukové nahrávky','digi','V souboru je řada čísel zapsaných dvojkově. To je digitální záznam.'],
+ ['řada čísel mezi A/D a D/A převodníkem','digi','Mezi převodníky jsou čísla, tedy digitální signál.']
+];
+SK['s-typ']={lv:'s',title:'Analog × digitál',gen(){const s=pick(SIGS);
+  return {kind:'opts',q:`Je <b>${s[0]}</b> analogový, nebo digitální?`,opts:[{v:'analog',t:'Analogový (plynulý)'},{v:'digi',t:'Digitální (řada čísel)'}],right:s[1],rightText:`<b>${s[1]==='analog'?'analogový':'digitální'}</b>`,
+    why:s[2],wrong:()=>s[1]==='analog'?'Za A/D převodníkem jsou čísla, ale před ním a za D/A převodníkem je signál plynulý, tedy analogový.':'Digitální je jen ta část cesty, kde jsou čísla: od A/D převodníku po D/A převodník.'};}};
+
+const DEV=[['mikrofon','tlak vzduchu → napětí','Mikrofon převádí změny tlaku vzduchu (zvuk) na elektrické napětí.'],
+ ['A/D převodník','napětí → čísla','A/D převodník napětí vzorkuje, kvantuje a zapisuje jako čísla.'],
+ ['D/A převodník','čísla → napětí','D/A převodník z čísel vyrábí napětí.'],
+ ['reproduktor','napětí → zvuk (tlak vzduchu)','Reproduktor podle napětí chvěje membránou a vzniká zvuk.']];
+SK['s-zarizeni']={lv:'s',title:'Co dělá které zařízení',gen(){const d=pick(DEV),all=DEV.map(x=>x[1]);const opts=shuffle([d[1],...shuffle(all.filter(x=>x!==d[1])).slice(0,2)]);
+  return {kind:'opts',q:`Co dělá <b>${d[0]}</b>?`,opts:opts.map(t=>({v:t,t:esc(t)})),right:d[1],rightText:`<b>${esc(d[1])}</b>`,
+    hints:['Vzpomeň si na cestu zvuku: tlak → napětí → čísla → napětí → tlak.','Převodník A/D vyrábí čísla, D/A z čísel vyrábí napětí. Mikrofon a reproduktor jsou analogové.',`Správně je ${d[1]}.`],
+    why:d[2],wrong:()=>null};}};
+
+SK['s-urovne']={lv:'s',title:'Počet úrovní z bitů',gen(){const n=[2,3,4,5,6,7,8][rnd(7)];
+  return {kind:'num',q:`Bitová hloubka je <b>${n}</b> ${cz(n,'bit','bity','bitů')}. Kolik různých úrovní se dá zapsat?`,ph:'číslo',check:s=>normNum(s)===2**n,rightText:`<b>${2**n}</b>`,
+    hints:['Jeden bit má 2 hodnoty, dva bity 4 kombinace (00, 01, 10, 11).','Každý další bit počet úrovní zdvojnásobí: 2 × 2 × … tolikrát, kolik je bitů.',`Správně je 2<sup>${n}</sup> = ${2**n}.`],
+    why:`${n} bitů dává 2<sup>${n}</sup> = ${2**n} úrovní. CD má 16 bitů, tedy 65 536 úrovní.`,
+    wrong:raw=>{const v=normNum(raw);if(v===2*n)return 'To je dvakrát počet bitů. Každý bit ale počet možností násobí dvěma, takže je to 2 × 2 × 2 …';if(v===n*n)return 'To je n × n. Správně se dvojka násobí n-krát: 2 × 2 × …';if(v===2**n-1)return 'To je nejvyšší číslo úrovně. Úrovní je o jednu víc, protože se počítá i nula.';return null;}};}};
+
+SK['s-bity-L']={lv:'s',title:'Bity pro daný počet úrovní',gen(){const m=[2,3,4,5,6,7,8][rnd(7)],L=2**m;
+  return {kind:'num',q:`Kolik bitů potřebuje bitová hloubka, aby rozlišila <b>${L}</b> úrovní?`,ph:'počet bitů',check:s=>normNum(s)===m,rightText:`<b>${m}</b>`,
+    hints:['Hledáš, kolikrát se musí vynásobit dvojka, aby vyšlo toto číslo.','Zkoušej: 2, 4, 8, 16, 32, 64, 128, 256 … a počítej kroky.',`Správně je ${m}, protože 2<sup>${m}</sup> = ${L}.`],
+    why:`2<sup>${m}</sup> = ${L}, proto stačí ${m} ${cz(m,'bit','bity','bitů')}.`,
+    wrong:raw=>{const v=normNum(raw);if(v===L)return 'To je počet úrovní. Ptáme se na počet bitů, tedy na to, kolikrát se dvojka násobí.';if(v===L/2)return 'To je poloviční počet úrovní. Počet bitů je mnohem menší: každý bit úrovně zdvojnásobí.';return null;}};}};
+
+SK['s-kvantuj']={lv:'s',title:'Zaokrouhlení na úroveň',gen(){const n=pick([3,4]),N=2**n,base=rnd(N-1),fr=pick([1,2,3,4,6,7,8,9]),x=base+fr/10,ans=fr>5?base+1:base;
+  const xs=nf(x,1);
+  return {kind:'num',q:`Převodník má ${n} bity, tedy ${N} úrovní očíslovaných 0 až ${N-1}. Naměřená hodnota je <b>${xs}</b>. Na kterou úroveň se zaokrouhlí?`,ph:'číslo úrovně',check:s=>normNum(s)===ans,rightText:`<b>${ans}</b>`,
+    hints:['Převodník vybere úroveň, která je naměřené hodnotě nejblíž.',`Hodnota ${xs} leží mezi úrovněmi ${base} a ${base+1}.`,`Vzdálenost od ${base} je ${nf(x-base,1)}, od ${base+1} je ${nf(base+1-x,1)}. Správně je ${ans}.`],
+    why:`Hodnota ${xs} je nejblíž úrovni ${ans}. Rozdíl mezi naměřenou a zaokrouhlenou hodnotou se ve zvuku projeví jako kvantizační šum.`,
+    wrong:raw=>{const v=normNum(raw);if(v===base&&ans!==base)return 'To je zaokrouhlení dolů. Převodník ale vybírá nejbližší úroveň, ne tu nižší.';if(v===base+1&&ans!==base+1)return 'Tahle úroveň je dál. Porovnej vzdálenost od obou sousedních úrovní.';return null;}};}};
+
+SK['s-cislo-bin']={lv:'s',title:'Číslo úrovně → dvojkově',gen(){const n=pick([3,4,5]),N=2**n,v=1+rnd(N-1),parts=[];for(let i=n-1;i>=0;i--)if(v&(1<<i))parts.push(2**i);
+  return {kind:'text',q:`Zapiš číslo úrovně <b>${v}</b> dvojkově na ${n} bity (přesně ${n} číslic).`,ph:`${n} číslic 0 a 1`,
+    check:s=>{const b=normBin(s);return /^[01]+$/.test(b)&&b.length===n&&parseInt(b,2)===v;},rightText:`<b class="mono">${bin(v,n)}</b>`,
+    hints:[`Váhy bitů zleva doprava jsou ${Array.from({length:n},(_,i)=>2**(n-1-i)).join(', ')}. Kde bit zapneš, váha se přičte.`,`Rozlož ${v} na váhy: ${v} = ${parts.join(' + ')}.`,`Zapni bity s vahami ${parts.join(', ')}. Správně je ${bin(v,n)}.`],
+    why:`${v} = ${parts.join(' + ')}, tedy ${bin(v,n)}.`,
+    wrong:raw=>{const b=normBin(raw);if(!/^[01]+$/.test(b))return 'Dvojkový zápis má jen číslice 0 a 1.';if(parseInt(b,2)===v&&b.length!==n)return `Hodnota sedí, ale vzorek se zapisuje přesně na ${n} bitů. Na začátek doplň nuly.`;if(b.length!==n)return `Zapiš přesně ${n} číslic.`;return null;}};}};
+
+SK['s-bin-cislo']={lv:'s',title:'Dvojkově → číslo úrovně',gen(){const n=pick([3,4,5]),N=2**n,v=1+rnd(N-1),b=bin(v,n),parts=[];for(let i=n-1;i>=0;i--)if(v&(1<<i))parts.push(2**i);
+  return {kind:'num',q:`Vzorek je v souboru zapsán jako <b class="mono">${b}</b>. Které číslo úrovně to je?`,ph:'číslo',check:s=>normNum(s)===v,rightText:`<b>${v}</b>`,
+    hints:[`Váhy bitů zleva doprava jsou ${Array.from({length:n},(_,i)=>2**(n-1-i)).join(', ')}.`,`Sečti váhy tam, kde je jednička: ${parts.join(' + ')}.`,`Správně je ${v}.`],
+    why:`${parts.join(' + ')} = ${v}.`,
+    wrong:raw=>{const r=normNum(raw);if(r===parseInt(b.split('').reverse().join(''),2)&&r!==v)return 'Váhy se přiřazují zleva doprava: nejvyšší váha je u prvního bitu.';return null;}};}};
+
+SK['s-vzorky']={lv:'s',title:'Počet vzorků',gen(){const f=pick(FSL),t=pick([2,3,5,10]);
+  return {kind:'num',q:`Vzorkovací frekvence je <b>${nf(f,0)} Hz</b>. Kolik vzorků vznikne za <b>${t} s</b>?`,ph:'počet vzorků',check:s=>normNum(s)===f*t,rightText:`<b>${nf(f*t,0)}</b>`,
+    hints:['Vzorkovací frekvence říká, kolik vzorků vznikne za jednu sekundu.',`Za 1 s je ${nf(f,0)} vzorků. Za ${t} s je ${t}× víc.`,`Správně je ${nf(f,0)} · ${t} = ${nf(f*t,0)}.`],
+    why:`${nf(f,0)} vzorků za sekundu · ${t} s = ${nf(f*t,0)} vzorků.`,
+    wrong:raw=>normNum(raw)===f?'To je počet vzorků za jednu sekundu. Ptáme se na delší dobu, vynásob ji.':null};}};
+
+SK['s-tok']={lv:'s',title:'Datový tok',gen(){const f=pick([8000,16000,44100,48000]),n=pick([8,16,24]),k=pick([1,2]),ans=f*n*k/1000;
+  return {kind:'text',q:`Zvuk má <b>${nf(f,0)} Hz</b>, <b>${n} bitů</b> a <b>${k} ${cz(k,'kanál','kanály','kanálů')}</b>. Jaký je datový tok v <b>kbit/s</b>?`,ph:'např. 128 nebo 705,6',
+    check:s=>Math.abs(normDec(s)-ans)<0.05,rightText:`<b>${nf(ans,1)} kbit/s</b>`,
+    hints:['Datový tok = vzorkovací frekvence · bitová hloubka · počet kanálů. Vyjde v bit/s.',`${nf(f,0)} · ${n} · ${k} = ${nf(f*n*k,0)} bit/s.`,`Na kbit/s převeď dělením tisícem. Správně je ${nf(ans,1)} kbit/s.`],
+    why:`${nf(f,0)} · ${n} · ${k} = ${nf(f*n*k,0)} bit/s = ${nf(ans,1)} kbit/s.`,
+    wrong:raw=>{const v=normDec(raw);if(Math.abs(v-f*n*k)<1)return 'To je datový tok v bit/s. Zadání chce kbit/s, tedy dělit tisícem.';if(Math.abs(v-f*n/1000)<0.05&&k>1)return 'Zapomněl jsi na počet kanálů. Stereo má dvakrát víc dat než mono.';if(Math.abs(v-f*n*k/8000)<0.05)return 'To je v kB/s. Ptáme se na kbit/s, osmkrát větší číslo.';return null;}};}};
+
+SK['s-velikost']={lv:'s',title:'Velikost záznamu',gen(){const f=pick([8000,16000,44100,48000]),n=pick([8,16]),k=pick([1,2]),t=pick([10,30,60]),B=f*n*k*t/8,ans=B/1000;
+  return {kind:'text',q:`Zvuk má <b>${nf(f,0)} Hz</b>, <b>${n} bitů</b>, <b>${k} ${cz(k,'kanál','kanály','kanálů')}</b> a trvá <b>${t} s</b>. Kolik kB (1 kB = 1 000 B) zabere bez komprese?`,ph:'číslo v kB',
+    check:s=>Math.abs(normDec(s)-ans)<0.5,rightText:`<b>${nf(ans,0)} kB</b>`,
+    hints:[`Nejdřív datový tok v bit/s: ${nf(f,0)} · ${n} · ${k} = ${nf(f*n*k,0)}.`,`Vynásob délkou ${t} s a vyděl osmi (bity → bajty): ${nf(f*n*k*t,0)} ÷ 8 = ${nf(B,0)} B.`,`Na kB vyděl tisícem. Správně je ${nf(ans,0)} kB.`],
+    why:`${nf(f,0)} · ${n} · ${k} · ${t} ÷ 8 = ${nf(B,0)} B = ${nf(ans,0)} kB.`,
+    wrong:raw=>{const v=normDec(raw);if(Math.abs(v-B)<1)return 'To je velikost v bajtech. Zadání chce kB, tedy dělit tisícem.';if(Math.abs(v-B*8/1000)<0.5)return 'Zapomněl jsi dělit osmi: bity musíš převést na bajty.';return null;}};}};
+
+const POJ=[
+ {q:'Co je vzorkovací frekvence?',opts:['Kolikrát za sekundu se změří napětí','Jak hlasitý je zvuk','Na kolik bitů se číslo zapíše'],right:0,why:'Vzorkovací frekvence je počet vzorků za sekundu. CD má 44 100 Hz.',wrong:'Hlasitost je amplituda a počet bitů je bitová hloubka. Vzorkovací frekvence je jen počet měření za sekundu.'},
+ {q:'Co určuje bitová hloubka?',opts:['Počet úrovní, na které se hodnota zaokrouhlí','Kolikrát za sekundu se měří','Délku nahrávky'],right:0,why:'n bitů dává 2<sup>n</sup> úrovní. Víc bitů znamená jemnější úrovně.'},
+ {q:'Co je uloženo v souboru s digitálním zvukem?',opts:['Řada čísel (vzorků) zapsaných dvojkově','Zvlněná čára jako na osciloskopu','Napětí pro reproduktor'],right:0,why:'Soubor obsahuje jen čísla a krátkou hlavičku. Zvlněnou čáru z nich vyrobí D/A převodník a filtr.',wrong:'Křivku ani napětí do souboru uložit nejde. Soubor je řada čísel.'},
+ {q:'Co se stane po zvýšení bitové hloubky?',opts:['Úrovně budou jemnější, ale soubor větší','Zvuk bude vyšší','Zvuk bude hlasitější'],right:0,why:'Víc bitů na vzorek znamená přesnější zaokrouhlení, ale i víc dat. Výška ani hlasitost se nemění.',wrong:'Výšku tónu určuje frekvence signálu a hlasitost jeho amplituda. Bitová hloubka mění jen jemnost úrovní.'},
+ {q:'Co dělá D/A převodník?',opts:['Z čísel vyrobí napětí','Z napětí vyrobí čísla','Z napětí vyrobí zvuk ve vzduchu'],right:0,why:'D/A převodník dělá z čísel napětí. Zvuk ve vzduchu až z napětí vyrobí reproduktor.',wrong:'Z napětí čísla dělá A/D převodník. Zvuk ve vzduchu vyrobí až reproduktor.'},
+ {q:'Co je PCM (pulzně kódová modulace)?',opts:['Způsob zápisu zvuku: vzorkování, kvantování a zápis čísla','Typ mikrofonu','Druh komprese'],right:0,why:'PCM jsou tři kroky A/D převodníku. Komprese je zvláštní krok až po nich.'},
+ {q:'Který krok digitalizace zaokrouhluje naměřenou hodnotu?',opts:['Kvantování','Vzorkování','Rekonstrukční filtr'],right:0,why:'Vzorkování určuje, kdy se měří. Kvantování určuje, na jakou úroveň se výsledek zaokrouhlí.',wrong:'Vzorkování rozhoduje o času měření. Zaokrouhlení hodnoty je kvantování.'},
+ {q:'Je výstup přehrávače digitálního zvuku schodovitý?',opts:['Ne, filtr za D/A převodníkem schody vyhladí','Ano, vždy, a proto digitální zvuk zní hrubě','Jen u stereo'],right:0,why:'D/A převodník vytvoří schody, rekonstrukční filtr je vyhladí. Při dostatečné vzorkovací frekvenci a bitové hloubce vznikne věrný průběh.',wrong:'Schody jsou jen mezistupeň. Filtr je vyhladí a při CD kvalitě je rozdíl oproti originálu velmi malý.'}
+];
+SK['s-pojmy']={lv:'s',title:'Pojmy digitalizace',gen(){const p=pick(POJ);return {kind:'opts',q:p.q,opts:p.opts.map((t,i)=>({v:i,t:esc(t)})),right:p.right,rightText:`<b>${esc(p.opts[p.right])}</b>`,why:p.why,wrong:()=>p.wrong||null};}};
+
+/* kontrolní otázky v kapitolách */
+CHK.s2={skill:'s-typ',n:3};
+CHK.s2b={q:'Proč se zvuk převádí na čísla?',opts:[{v:'a',t:'Čísla se dají kopírovat beze změny, ukládat a posílat po síti.'},{v:'b',t:'Čísla zní lépe než analogový signál.'},{v:'c',t:'Čísla zabírají vždycky méně místa.'}],right:'a',rightText:'<b>čísla se dají kopírovat beze změny</b>',why:'Digitální data se dají přesně zkopírovat, uložit, přenést a zpracovat. Zabírají často víc místa, než by člověk čekal, a o kvalitě zvuku to nic neříká.',wrong:()=>'Čísla samy o sobě lépe nezní a místa mnohdy zabírají hodně (viz kapitola 5). Výhoda je v přesném kopírování a zpracování.'};
+CHK.s3={q:'Co určuje, kolik úrovní má kvantování?',opts:[{v:'a',t:'Vzorkovací frekvence'},{v:'b',t:'Bitová hloubka'},{v:'c',t:'Délka nahrávky'}],right:'b',rightText:'<b>bitová hloubka</b>',why:'n bitů dává 2<sup>n</sup> úrovní. Vzorkovací frekvence říká jen, jak často se měří.',wrong:()=>'Vzorkovací frekvence určuje, kolikrát za sekundu se měří. Úrovně určuje bitová hloubka.'};
+CHK.s3b={skill:'s-urovne',n:3};
+CHK.s4={q:'Kolik bitů zabere v souboru jeden vzorek při bitové hloubce 16?',opts:[{v:'a',t:'8 bitů'},{v:'b',t:'16 bitů'},{v:'c',t:'32 bitů'}],right:'b',rightText:'<b>16 bitů</b>',why:'Bitová hloubka je přesně počet bitů jednoho vzorku. Při dvou kanálech má každý kanál svůj vzorek.'};
+CHK.s5={q:'Co z toho nezmění datový tok (v bit/s)?',opts:[{v:'a',t:'Vyšší vzorkovací frekvence'},{v:'b',t:'Přechod z mono na stereo'},{v:'c',t:'Delší skladba'}],right:'c',rightText:'<b>delší skladba</b>',why:'Datový tok říká, kolik bitů vznikne za sekundu. Delší skladba má stejný tok, jen větší velikost souboru.',wrong:()=>'Frekvence i počet kanálů do vzorce vstupují. Délka ne: ta zvětší jen celkovou velikost.'};
+CHK.s6={q:'Proč se výstup D/A převodníku vyhlazuje filtrem?',opts:[{v:'a',t:'Schody obsahují rychlé skoky, které zvuk zkreslují.'},{v:'b',t:'Aby byl zvuk hlasitější.'},{v:'c',t:'Aby byl soubor menší.'}],right:'a',rightText:'<b>schody zkreslují zvuk</b>',why:'Skoky ve schodovitém průběhu přidávají vysoké frekvence, které v původním zvuku nebyly. Filtr je odstraní.',wrong:()=>'Filtr nemění hlasitost ani velikost souboru. Odstraňuje jen schody, které by zkreslily zvuk.'};
+
+const PRE_S=[
+ {q:'Co dělá mikrofon?',opts:[{v:0,t:'Změní tlak vzduchu na elektrické napětí'},{v:1,t:'Změní napětí na čísla'},{v:2,t:'Změní čísla na zvuk'}],right:0,rightText:'<b>tlak vzduchu → napětí</b>',ch:1,why:'Čísla vyrábí až A/D převodník.'},
+ {q:'Co je vzorek?',opts:[{v:0,t:'Jedno změřené napětí v určitém okamžiku'},{v:1,t:'Celá nahrávka'},{v:2,t:'Typ souboru'}],right:0,rightText:'<b>jedno změřené napětí v okamžiku</b>',ch:2,why:'Vzorků vzniká mnoho za sekundu.'},
+ {q:'Kolik různých hodnot zapíšou 3 bity?',opts:[{v:0,t:'6'},{v:1,t:'8'},{v:2,t:'9'}],right:1,rightText:'<b>8</b>',ch:2,why:'2 · 2 · 2 = 2³ = 8.'},
+ {q:'Jak se číslo 5 zapíše dvojkově?',opts:[{v:0,t:'101'},{v:1,t:'110'},{v:2,t:'011'}],right:0,rightText:'<b>101</b>',ch:3,why:'5 = 4 + 1, tedy 1 0 1.'}
+];
+
+/* ================= VYKRESLOVÁNÍ A NÁSTROJE ================= */
+const REDRAW=[];
+function redrawAll(){REDRAW.forEach(f=>{try{f();}catch(e){}});}
+function theme(){const cs=getComputedStyle(document.documentElement),g=n=>cs.getPropertyValue(n).trim();return {k1:g('--k1'),k2:g('--k2'),k3:g('--k3'),k4:g('--k4'),muted:g('--muted'),line:g('--line'),ink:g('--ink'),paper:g('--paper')};}
+function fit(cv){
+  const r=cv.getBoundingClientRect(); if(r.width<10||r.height<10) return null;
+  const d=Math.min(2,window.devicePixelRatio||1);
+  const W=Math.round(r.width*d),H=Math.round(r.height*d);
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  const x=cv.getContext('2d'); x.setTransform(d,0,0,d,0,0); x.clearRect(0,0,r.width,r.height);
+  return {x,w:r.width,h:r.height,c:theme()};
+}
+function axes(g,pad,yLabels){
+  const {x,w,h,c}=g; x.strokeStyle=c.line; x.lineWidth=1; x.beginPath(); x.moveTo(pad,h/2); x.lineTo(w-pad/2,h/2); x.stroke();
+  x.fillStyle=c.muted; x.font='12px "IBM Plex Sans",system-ui,sans-serif'; x.textBaseline='middle';
+  (yLabels||[]).forEach(([v,t])=>{const y=h/2-v*(h/2-pad); x.fillText(t,4,y);});
+}
+function line(g,fn,x0,x1,col,wd,dash,steps){
+  const {x}=g; x.beginPath(); x.strokeStyle=col; x.lineWidth=wd; x.setLineDash(dash||[]); x.lineJoin='round';
+  for(let i=0;i<=steps;i++){const t=x0+(x1-x0)*i/steps,p=fn(t,i); if(i===0)x.moveTo(p[0],p[1]); else x.lineTo(p[0],p[1]);}
+  x.stroke(); x.setLineDash([]);
+}
+
+/* ---- cesta zvuku ---- */
+(function(){
+  const IC={
+    zvuk:'<path d="M3 15h2M8 9v12M13 5v20M18 8v14M23 11v8M27 14v2"/>',
+    mik:'<rect x="10" y="3" width="10" height="15" rx="5"/><path d="M6 14a9 9 0 0 0 18 0M15 23v4M10 27h10"/>',
+    ad:'<rect x="6" y="6" width="18" height="18" rx="3"/><path d="M10 6V2M15 6V2M20 6V2M10 28v-4M15 28v-4M20 28v-4"/><text x="15" y="18" font-size="7" text-anchor="middle" stroke="none" fill="currentColor" font-family="IBM Plex Mono,monospace" font-weight="700">A/D</text>',
+    sou:'<path d="M7 3h12l5 5v19H7z"/><path d="M19 3v5h5"/><text x="15.5" y="21" font-size="7" text-anchor="middle" stroke="none" fill="currentColor" font-family="IBM Plex Mono,monospace" font-weight="700">0101</text>',
+    da:'<rect x="6" y="6" width="18" height="18" rx="3"/><path d="M10 6V2M15 6V2M20 6V2M10 28v-4M15 28v-4M20 28v-4"/><text x="15" y="18" font-size="7" text-anchor="middle" stroke="none" fill="currentColor" font-family="IBM Plex Mono,monospace" font-weight="700">D/A</text>',
+    rep:'<path d="M4 12h5l7-6v18l-7-6H4z"/><path d="M20 11a6 6 0 0 1 0 8M23 8a10 10 0 0 1 0 14"/>'
+  };
+  const ST6=[
+   {n:'Zvuk',ic:IC.zvuk,cls:'an',tag:'analogový',in:'zdroj zvuku (hlas, nástroj)',out:'změny tlaku vzduchu',txt:'Zvuk je mechanické vlnění vzduchu: střídá se zhuštění a zředění. Je spojitý, v každém okamžiku má nějakou hodnotu.'},
+   {n:'Mikrofon',ic:IC.mik,cls:'an',tag:'analogový',in:'změny tlaku vzduchu',out:'elektrické napětí',txt:'Mikrofon sleduje změny tlaku v reálném čase. Výsledné napětí je spojité, tedy analogové.'},
+   {n:'A/D převodník',ic:IC.ad,cls:'cv',tag:'převodník',in:'napětí (analogový signál)',out:'čísla (digitální signál)',txt:'V pravidelných intervalech změří napětí (vzorkování), zaokrouhlí ho na nejbližší úroveň (kvantování) a zapíše číslo úrovně.'},
+   {n:'Soubor',ic:IC.sou,cls:'dg',tag:'digitální',in:'čísla ze vzorků',out:'soubor s nulami a jedničkami',txt:'Každý vzorek je jedno číslo zapsané dvojkově. Soubor je dlouhá řada nul a jedniček a pár údajů v hlavičce.'},
+   {n:'D/A převodník',ic:IC.da,cls:'cv',tag:'převodník',in:'čísla ze souboru',out:'napětí (zprvu schody, pak vyhlazené)',txt:'Z čísel vyrábí napětí. Výstup má zprvu podobu schodů, rekonstrukční filtr je vyhladí.'},
+   {n:'Reproduktor',ic:IC.rep,cls:'an',tag:'analogový',in:'elektrické napětí',out:'zvuk (změny tlaku vzduchu)',txt:'Membrána reproduktoru kmitá podle napětí a rozechvěje vzduch. Uši slyší zvuk.'}
+  ];
+  const host=$('#pathStrip'), info=$('#pathInfo'); if(!host) return;
+  host.innerHTML=ST6.map((s,i)=>`<button type="button" class="${s.cls}" data-i="${i}" aria-pressed="false"><svg class="ic" viewBox="0 0 30 30" aria-hidden="true">${s.ic}</svg><b>${esc(s.n)}</b><small>${s.tag}</small></button>`).join('');
+  function sel(i){
+    host.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-pressed',k===i));
+    const s=ST6[i]; info.innerHTML=`<b>${i+1}. ${esc(s.n)}</b><span>${esc(s.txt)}</span><span class="muted">Vstup: ${esc(s.in)} → výstup: ${esc(s.out)}</span>`;
+  }
+  host.onclick=e=>{const b=e.target.closest('[data-i]');if(b)sel(+b.dataset.i);};
+  sel(2);
+})();
+
+/* ---- laboratoř A/D převodníku (sdílené nastavení) ---- */
+const FSK=[6,8,12,16,24,44.1];       // kHz
+const SIG=t=>0.7*Math.sin(2*Math.PI*t)+0.25*Math.sin(4*Math.PI*t+0.5);   // t v ms, tón 1 kHz
+const WIN=2;                          // ms
+const AD={fi:3,bits:3};
+const qlev=(v,n)=>{const N=2**n;return Math.max(0,Math.min(N-1,Math.round((v+1)/2*(N-1))));};
+const qval=(L,n)=>L/(2**n-1)*2-1;
+const adSamples=()=>{const f=FSK[AD.fi],cnt=Math.ceil(WIN*f-1e-9),a=[];for(let k=0;k<cnt;k++){const t=k/f,L=qlev(SIG(t),AD.bits);a.push({k,t,L,q:qval(L,AD.bits)});}return a;};
+const fsHz=()=>Math.round(FSK[AD.fi]*1000);
+function drawAD(){
+  const cv=$('#adCv'); if(!cv) return; const g=fit(cv); if(!g) return;
+  const {x,w,h,c}=g, pad=22, N=2**AD.bits;
+  const X=t=>pad+t/WIN*(w-2*pad), Y=v=>h/2-v*(h/2-pad)/1.1;
+  axes(g,pad,[[1,'+1'],[-1,'−1']]);
+  if(N<=32){x.strokeStyle=c.muted;x.globalAlpha=.55;x.lineWidth=1;x.setLineDash([2,4]);for(let L=0;L<N;L++){const y=Y(qval(L,AD.bits));x.beginPath();x.moveTo(pad,y);x.lineTo(w-pad/2,y);x.stroke();}x.setLineDash([]);x.globalAlpha=1;}
+  line(g,t=>[X(t),Y(SIG(t))],0,WIN,c.k2,2,[],300);
+  const S=adSamples();
+  x.strokeStyle=c.k1;x.fillStyle=c.k1;x.lineWidth=1.5;
+  S.forEach(s=>{x.beginPath();x.moveTo(X(s.t),h/2);x.lineTo(X(s.t),Y(s.q));x.stroke();x.beginPath();x.arc(X(s.t),Y(s.q),S.length>40?2.4:4,0,7);x.fill();});
+  x.fillStyle=c.muted;x.textBaseline='alphabetic';x.fillText('0 ms',pad,h-5);x.textAlign='right';x.fillText(WIN+' ms',w-pad/2,h-5);x.textAlign='left';
+}
+function adUpdate(){
+  const f=fsHz(),n=AD.bits,N=2**n,cnt=adSamples().length;
+  $('#adFsV').textContent=nf(f,0)+' Hz'; $('#adBitsV').textContent=n+' '+cz(n,'bit','bity','bitů');
+  $('#adStat').innerHTML=`<div><b>${nf(f,0)}</b><span>vzorků za sekundu</span></div><div><b>2<sup>${n}</sup> = ${nf(N,0)}</b><span>úrovní</span></div><div><b>${cnt}</b><span>vzorků v okně ${WIN} ms</span></div><div><b>${nf(f*n,0)}</b><span>bitů za sekundu (mono)</span></div>`;
+  drawAD(); fileUpdate(); drawDA();
+}
+function fileUpdate(){
+  const t=$('#fileTbl'); if(!t) return; const n=AD.bits,S=adSamples().slice(0,10);
+  $('#fileSet').textContent=`${nf(fsHz(),0)} Hz, ${n} ${cz(n,'bit','bity','bitů')}`;
+  t.innerHTML=`<thead><tr><th>Vzorek</th><th class="r">Číslo úrovně</th><th>Dvojkově (${n} ${cz(n,'bit','bity','bitů')})</th></tr></thead><tbody>${S.map(s=>`<tr><td>${s.k+1}</td><td class="r mono">${s.L}</td><td class="mono">${bin(s.L,n)}</td></tr>`).join('')}</tbody>`;
+  $('#fileBits').innerHTML=S.map(s=>`<span class="s">${bin(s.L,n)}</span>`).join('');
+}
+$('#adFs').addEventListener('input',e=>{AD.fi=+e.target.value;adUpdate();});
+$('#adBits').addEventListener('input',e=>{AD.bits=+e.target.value;adUpdate();});
+
+/* ---- D/A převodník ---- */
+let daMode='step';
+function drawDA(){
+  const cv=$('#daCv'); if(!cv) return; const g=fit(cv); if(!g) return;
+  const {x,w,h,c}=g,pad=22,X=t=>pad+t/WIN*(w-2*pad),Y=v=>h/2-v*(h/2-pad)/1.1;
+  $('#daSet').textContent=`${nf(fsHz(),0)} Hz, ${AD.bits} ${cz(AD.bits,'bit','bity','bitů')}`;
+  axes(g,pad,[[1,'+1'],[-1,'−1']]);
+  line(g,t=>[X(t),Y(SIG(t))],0,WIN,c.k2,2,[5,4],300);
+  const S=adSamples(),f=FSK[AD.fi]; x.strokeStyle=c.k1;x.lineWidth=2.4;x.lineJoin='round';x.beginPath();
+  if(daMode==='step'){
+    S.forEach((s,i)=>{const t1=Math.min(WIN,(i+1)/f);if(i===0)x.moveTo(X(s.t),Y(s.q));else x.lineTo(X(s.t),Y(s.q));x.lineTo(X(t1),Y(s.q));});
+  }else{
+    const P=S.map(s=>[X(s.t),Y(s.q)]); if(P.length>1){
+      x.moveTo(P[0][0],P[0][1]);
+      for(let i=0;i<P.length-1;i++){const p0=P[Math.max(0,i-1)],p1=P[i],p2=P[i+1],p3=P[Math.min(P.length-1,i+2)];
+        for(let u=1;u<=12;u++){const s=u/12,s2=s*s,s3=s2*s;
+          const px=.5*((2*p1[0])+(-p0[0]+p2[0])*s+(2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*s2+(-p0[0]+3*p1[0]-3*p2[0]+p3[0])*s3);
+          const py=.5*((2*p1[1])+(-p0[1]+p2[1])*s+(2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*s2+(-p0[1]+3*p1[1]-3*p2[1]+p3[1])*s3);
+          x.lineTo(px,py);}}
+    }
+  }
+  x.stroke();
+  x.fillStyle=c.muted;x.textBaseline='alphabetic';x.fillText('0 ms',pad,h-5);x.textAlign='right';x.fillText(WIN+' ms',w-pad/2,h-5);x.textAlign='left';
+}
+$('#daMode').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;daMode=b.dataset.m;$('#daMode').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));drawDA();});
+REDRAW.push(drawAD,drawDA);
+
+/* ---- kalkulačka velikosti ---- */
+(function(){
+  const PRE=[['Telefon',8000,8,1],['CD',44100,16,2],['Studio',96000,24,2]];
+  $('#szPre').innerHTML=PRE.map((p,i)=>`<button type="button" class="chip" data-i="${i}">${p[0]}: ${nf(p[1],0)} Hz, ${p[2]} b, ${p[3]===1?'mono':'stereo'}</button>`).join('');
+  const F=$('#szF'),N=$('#szN'),K=$('#szK'),T=$('#szT');
+  function upd(){
+    const f=+F.value,n=+N.value,k=+K.value,t=+T.value;
+    if(!(f>0&&t>0)){$('#szOut').innerHTML='<div><b>–</b><span>zadej kladná čísla</span></div>';return;}
+    const rate=f*n*k,B=rate*t/8;
+    const sz=B>=1e6?`${nf(B/1e6,2)} MB`:`${nf(B/1e3,1)} kB`;
+    $('#szOut').innerHTML=`<div><b>${nf(rate,0)}</b><span>bit/s</span></div><div><b>${nf(rate/1000,2)}</b><span>kbit/s</span></div><div><b>${nf(B,0)}</b><span>bajtů celkem</span></div><div><b>${sz}</b><span>velikost bez komprese</span></div>`;
+  }
+  [F,N,K,T].forEach(e=>e.addEventListener('input',upd));
+  $('#szPre').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;const p=PRE[+b.dataset.i];F.value=p[1];N.value=p[2];K.value=p[3];upd();};
+  upd();
+})();
+
+/* ---- zvuk (jen po klepnutí) ---- */
+let AC=null,ACsrc=null;
+function playBuf(fn,secs){
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended')AC.resume();
+    if(ACsrc){try{ACsrc.stop();}catch(e){}}
+    const sr=AC.sampleRate,len=Math.floor(sr*secs),buf=AC.createBuffer(1,len,sr),d=buf.getChannelData(0),fade=Math.floor(sr*.015);
+    for(let i=0;i<len;i++){let v=fn(i/sr)*.18;const e=Math.min(i,len-1-i);if(e<fade)v*=e/fade;d[i]=v;}
+    const s=AC.createBufferSource();s.buffer=buf;s.connect(AC.destination);s.start();ACsrc=s;
+  }catch(e){toast('Přehrávání se nepodařilo.');}
+}
+
+/* ---- Extra A: kopie ---- */
+(function(){
+  const cv=$('#cpCv'); if(!cv) return;
+  const M=300,G=40; let seed=12345; const rn=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+  const gauss=()=>{let u=0;for(let i=0;i<6;i++)u+=rn();return (u-3)*Math.SQRT2;};
+  const S=Array.from({length:M},(_,i)=>{const t=i/(M-1);return 0.6*Math.sin(2*Math.PI*t)+0.25*Math.sin(6*Math.PI*t);});
+  const NZ=Array.from({length:G},()=>Array.from({length:M},()=>0.035*gauss()));
+  const rmsS=Math.sqrt(S.reduce((a,v)=>a+v*v,0)/M);
+  function copyN(n){const a=S.slice();for(let g=0;g<n;g++)for(let i=0;i<M;i++)a[i]+=NZ[g][i];return a;}
+  function draw(){
+    const n=+$('#cpN').value; $('#cpNV').textContent=n;
+    const a=copyN(n); let e=0;for(let i=0;i<M;i++)e+=(a[i]-S[i])**2; const rmsN=Math.sqrt(e/M);
+    $('#cpOut').innerHTML=n===0?'Zatím žádná kopie, signály jsou stejné.':`Po ${n} ${cz(n,'přepsání','přepsáních','přepsáních')}: šum analogové kopie má efektivní hodnotu <b>${nf(rmsN/rmsS*100,1)} %</b> signálu (odstup signálu od šumu asi <b>${nf(20*Math.log10(rmsS/rmsN),0)} dB</b>). Digitální kopie: chyba <b>0 %</b>.`;
+    const g=fit(cv); if(!g) return; const {x,w,h,c}=g,pad=20,X=i=>pad+i/(M-1)*(w-2*pad),Y=v=>h/2-v*(h/2-pad)/1.1;
+    axes(g,pad,[]);
+    x.beginPath();x.strokeStyle=c.k1;x.lineWidth=1.4;a.forEach((v,i)=>{i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v));});x.stroke();
+    x.beginPath();x.strokeStyle=c.k2;x.lineWidth=2;x.setLineDash([5,4]);S.forEach((v,i)=>{i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v));});x.stroke();x.setLineDash([]);
+    x.beginPath();x.strokeStyle=c.k4;x.lineWidth=1.2;S.forEach((v,i)=>{i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v));});x.stroke();
+  }
+  $('#cpN').addEventListener('input',draw); REDRAW.push(draw);
+})();
+
+/* ---- Extra B: Nyquist ---- */
+(function(){
+  const cv=$('#nyCv'); if(!cv) return;
+  const W=5; // ms
+  const alias=(f,fs)=>{const m=Math.round(f/fs);return f-m*fs;};
+  function draw(){
+    const f=+$('#nyF').value,fs=+$('#nyS').value; $('#nyFV').textContent=nf(f,0)+' Hz'; $('#nySV').textContent=nf(fs,0)+' Hz';
+    const fa=alias(f,fs),fN=fs/2;
+    let msg;
+    if(f<fN) msg=`Nyquistova frekvence je <b>${nf(fN,0)} Hz</b> a tón ji nepřesahuje, takže se zachytí věrně.`;
+    else if(f===fN) msg=`Tón leží přesně na Nyquistově frekvenci (<b>${nf(fN,0)} Hz</b>). To je mezní případ a vzorky ho nezachytí spolehlivě.`;
+    else msg=`Tón (<b>${nf(f,0)} Hz</b>) je nad Nyquistovou frekvencí <b>${nf(fN,0)} Hz</b>. Vzorky vypadají, jako by patřily tónu <b>${nf(Math.abs(fa),0)} Hz</b>: nastal aliasing.`;
+    $('#nyOut').innerHTML=msg;
+    const g=fit(cv); if(!g) return; const {x,w,h,c}=g,pad=20,X=t=>pad+t/W*(w-2*pad),Y=v=>h/2-v*(h/2-pad)/1.1;
+    axes(g,pad,[]);
+    const fT=f/1000,faT=fa/1000;
+    line(g,t=>[X(t),Y(Math.sin(2*Math.PI*fT*t))],0,W,c.k2,1.6,[5,4],700);
+    if(f>=fN) line(g,t=>[X(t),Y(Math.sin(2*Math.PI*faT*t))],0,W,c.k1,2.4,[],700);
+    const fk=fs/1000,cnt=Math.floor(W*fk); x.fillStyle=c.ink;
+    for(let k=0;k<=cnt;k++){const t=k/fk;x.beginPath();x.arc(X(t),Y(Math.sin(2*Math.PI*fT*t)),3.2,0,7);x.fill();}
+    x.fillStyle=c.muted;x.textBaseline='alphabetic';x.fillText('0 ms',pad,h-5);x.textAlign='right';x.fillText(W+' ms',w-pad/2,h-5);x.textAlign='left';
+  }
+  $('#nyF').addEventListener('input',draw);$('#nyS').addEventListener('input',draw);
+  $('#nyPlay').onclick=()=>{const f=+$('#nyF').value,fs=+$('#nyS').value,fo=Math.abs(alias(f,fs));playBuf(t=>Math.sin(2*Math.PI*fo*t),1);toast(`Přehrává se tón ${nf(fo,0)} Hz`);};
+  REDRAW.push(draw);
+})();
+
+/* ---- Extra C: kvantizační šum ---- */
+(function(){
+  const cv=$('#qnCv'); if(!cv) return;
+  const snr=n=>{const M=4000;let ps=0,pn=0;for(let i=0;i<M;i++){const v=Math.sin(2*Math.PI*i/M),q=qval(qlev(v,n),n);ps+=v*v;pn+=(q-v)**2;}return 10*Math.log10(ps/pn);};
+  function draw(){
+    const n=+$('#qnB').value,N=2**n; $('#qnBV').textContent=n+' '+cz(n,'bit','bity','bitů');
+    $('#qnStat').innerHTML=`<div><b>${nf(N,0)}</b><span>úrovní (2<sup>${n}</sup>)</span></div><div><b>${nf(snr(n),1)} dB</b><span>změřený odstup signálu od šumu (SNR)</span></div><div><b>${nf(6.02*n+1.76,1)} dB</b><span>vzorec 6,02 · n + 1,76</span></div>`;
+    const g=fit(cv); if(!g) return; const {x,w,h,c}=g,pad=20,X=t=>pad+t*(w-2*pad),Y=v=>h/2-v*(h/2-pad)/1.1;
+    axes(g,pad,[[1,'+1'],[-1,'−1']]);
+    if(N<=32){x.strokeStyle=c.muted;x.globalAlpha=.5;x.setLineDash([2,4]);x.lineWidth=1;for(let L=0;L<N;L++){const y=Y(qval(L,n));x.beginPath();x.moveTo(pad,y);x.lineTo(w-pad/2,y);x.stroke();}x.setLineDash([]);x.globalAlpha=1;}
+    const sg=t=>Math.sin(4*Math.PI*t),lsb=2/(N-1);
+    line(g,t=>[X(t),Y(sg(t))],0,1,c.k2,1.6,[5,4],500);
+    line(g,t=>[X(t),Y(qval(qlev(sg(t),n),n))],0,1,c.k1,2.2,[],500);
+    line(g,t=>[X(t),Y((qval(qlev(sg(t),n),n)-sg(t))/(lsb/2)*0.25)],0,1,c.k3,1.2,[],500);
+  }
+  $('#qnB').addEventListener('input',draw);
+  $('#qnPlay').onclick=()=>{const n=+$('#qnB').value;playBuf(t=>qval(qlev(Math.sin(2*Math.PI*440*t),n),n),1);toast(`Přehrává se tón 440 Hz, ${n} ${cz(n,'bit','bity','bitů')}`);};
+  REDRAW.push(draw);
+})();
+
+/* ---- Extra D: komprese ---- */
+(function(){
+  const R=$('#cmR'),T=$('#cmT'),CD=1411.2;
+  function upd(){
+    const min=+T.value; if(!(min>0)){$('#cmOut').innerHTML='<div><b>–</b><span>zadej délku</span></div>';return;}
+    const mb=r=>r*60*min/8/1000;
+    let rate,size,ratio;
+    if(R.value==='FLAC'){rate=`${nf(CD*.5,0)}–${nf(CD*.7,0)} kbit/s`;size=`${nf(mb(CD*.5),1)}–${nf(mb(CD*.7),1)} MB`;ratio=`asi ${nf(1/.7,1)}× až ${nf(2,1)}× menší`;}
+    else{const r=+R.value;rate=`${nf(r,1)} kbit/s`;size=`${nf(mb(r),2)} MB`;ratio=r===CD?'bez komprese':`asi ${nf(CD/r,1)}× menší`;}
+    $('#cmOut').innerHTML=`<div><b>${rate}</b><span>datový tok</span></div><div><b>${size}</b><span>velikost ${min} min</span></div><div><b>${ratio}</b><span>oproti nekomprimovanému CD</span></div>`;
+  }
+  R.addEventListener('input',upd);T.addEventListener('input',upd);upd();
+})();
+
+/* ---- Extra E: maskování ---- */
+(function(){
+  const cv=$('#mkCv'); if(!cv) return;
+  const FM=1000,bark=f=>13*Math.atan(0.00076*f)+3.5*Math.atan((f/7500)**2);
+  const quiet=f=>{const k=f/1000;return 3.64*k**-0.8-6.5*Math.exp(-0.6*(k-3.3)**2)+1e-3*k**4;};
+  const mask=(f,L)=>{const d=bark(f)-bark(FM);return L-10-(d<0?27:12)*Math.abs(d);};
+  const thr=(f,L)=>Math.max(quiet(f),mask(f,L));
+  const F0=100,F1=8000,Y0=-10,Y1=100;
+  function draw(){
+    const L=+$('#mkL').value,fp=+$('#mkF').value,Lp=+$('#mkP').value;
+    $('#mkLV').textContent=L+' dB';$('#mkFV').textContent=nf(fp,0)+' Hz';$('#mkPV').textContent=Lp+' dB';
+    const th=thr(fp,L),aud=Lp>th;
+    $('#mkOut').innerHTML=`Druhý tón (${nf(fp,0)} Hz, ${Lp} dB) je <b>${aud?'slyšitelný':'maskovaný'}</b>: práh slyšitelnosti je tam asi ${nf(th,0)} dB.${!aud&&Lp>quiet(fp)?' Za ticha by ho bylo slyšet, ale hlasitý tón ho zakryl.':''}${!aud&&Lp<=quiet(fp)?' Neslyšel bys ho ani za ticha.':''}`;
+    const g=fit(cv); if(!g) return; const {x,w,h,c}=g,pl=36,pr=10,pt=10,pb=26;
+    const X=f=>pl+(Math.log10(f)-Math.log10(F0))/(Math.log10(F1)-Math.log10(F0))*(w-pl-pr),Y=v=>h-pb-(v-Y0)/(Y1-Y0)*(h-pt-pb);
+    x.strokeStyle=c.line;x.lineWidth=1;x.fillStyle=c.muted;x.font='12px "IBM Plex Sans",system-ui,sans-serif';x.textBaseline='middle';
+    [0,20,40,60,80].forEach(v=>{x.beginPath();x.moveTo(pl,Y(v));x.lineTo(w-pr,Y(v));x.stroke();x.fillText(v,6,Y(v));});
+    x.textBaseline='alphabetic';x.textAlign='center';[100,300,1000,3000,8000].forEach(f=>{x.fillText(f>=1000?(f/1000)+' k':f,X(f),h-8);});x.textAlign='left';
+    const pts=(fn)=>{const a=[];for(let i=0;i<=200;i++){const f=F0*Math.pow(F1/F0,i/200);a.push([X(f),Y(Math.max(Y0,Math.min(Y1,fn(f))))]);}return a;};
+    const path=(a,col,wd,dash)=>{x.beginPath();x.strokeStyle=col;x.lineWidth=wd;x.setLineDash(dash||[]);a.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.stroke();x.setLineDash([]);};
+    path(pts(quiet),c.muted,2,[5,4]);
+    const tp=pts(f=>thr(f,L));
+    x.beginPath();x.fillStyle=c.k2;x.globalAlpha=.16;tp.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.lineTo(X(F1),Y(Y0));x.lineTo(X(F0),Y(Y0));x.closePath();x.fill();x.globalAlpha=1;
+    path(tp,c.k2,2.4);
+    x.strokeStyle=c.ink;x.lineWidth=4;x.beginPath();x.moveTo(X(FM),Y(Y0));x.lineTo(X(FM),Y(L));x.stroke();
+    x.fillStyle=c.ink;x.textAlign='center';x.fillText('1 kHz',X(FM),Y(L)-6);x.textAlign='left';
+    x.fillStyle=aud?c.k4:c.k1;x.beginPath();x.arc(X(fp),Y(Lp),7,0,7);x.fill();x.strokeStyle=c.paper;x.lineWidth=2;x.stroke();
+  }
+  ['mkL','mkF','mkP'].forEach(i=>$('#'+i).addEventListener('input',draw));
+  REDRAW.push(draw);
+})();
+
+/* ================= NAVIGACE A KAPITOLY ================= */
+const TABS=['s','x'];
+function setTab(t,push){
+  if(!TABS.includes(t)) t='s';
+  document.documentElement.dataset.tab=t;
+  document.querySelectorAll('button[data-go]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===t));
+  lsSet('zvukplTab',t);
+  if(push){try{history.replaceState(null,'','#'+t);}catch(e){}}
+  redrawAll();
+}
+function goTab(t){setTab(t,true);const r=$('#obsah').getBoundingClientRect();if(r.top<0||r.top>innerHeight*.6)$('#obsah').scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-go]'); if(b){e.preventDefault();goTab(b.dataset.go);return;}
+  const c=e.target.closest('[data-go-ch]'); if(c){const co=document.querySelector('.course[data-course="s"]');setTab('s',true);co._show&&co._show(+c.dataset.goCh,true);}
+});
+document.querySelectorAll('.course').forEach(co=>{
+  const id=co.dataset.course, chs=[...co.querySelectorAll('.ch')], prog=co.querySelector('.prog');
+  const nav=co.querySelector('.chnav'), done=new Set((lsGet('zvukpl-done-'+id)||'').split(',').filter(Boolean).map(Number));
+  prog.innerHTML=chs.map((c,i)=>`<li><button data-i="${i}">${id==='x'?'':(i+1)+'. '}${esc(c.dataset.title)}</button></li>`).join('');
+  let cur=Math.min(+(lsGet('zvukpl-ch-'+id)||0)||0,chs.length-1);
+  function show(i,scroll){
+    cur=i; chs.forEach((c,k)=>c.classList.toggle('on',k===i));
+    done.add(i); lsSet('zvukpl-done-'+id,[...done].join(',')); lsSet('zvukpl-ch-'+id,i);
+    prog.querySelectorAll('button').forEach((b,k)=>{b.classList.toggle('done',done.has(k)&&k!==i);if(k===i)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
+    nav.querySelector('.prev').disabled=i===0;
+    const nx=nav.querySelector('.next'); nx.disabled=i===chs.length-1; nx.textContent=chs[i+1]&&chs[i+1].dataset.title==='Test a přehled'?'Na test ›':'Další kapitola ›';
+    nav.querySelector('.pos').textContent=`${id==='x'?'Část':'Kapitola'} ${i+1} z ${chs.length}`;
+    if(scroll) co.querySelector('.course-head').scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});
+    redrawAll();
+  }
+  prog.onclick=e=>{const b=e.target.closest('[data-i]');if(b)show(+b.dataset.i,false);};
+  nav.querySelector('.prev').onclick=()=>show(Math.max(0,cur-1),true);
+  nav.querySelector('.next').onclick=()=>show(Math.min(chs.length-1,cur+1),true);
+  co._show=show;
+  show(cur,false);
+});
+let startTab=(location.hash||'').slice(1);
+if(!TABS.includes(startTab)) startTab=lsGet('zvukplTab')||'s';
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS.includes(h))setTab(h);});
+
+/* ---------- inicializace ---------- */
+function initLoop(){
+  renderChecks();
+  const ps=$('#preS'); if(ps) pretest(ps,PRE_S,'s','s');
+  const prs=$('#pracS'); if(prs) practice(prs,'s');
+  const ts=$('#testS'); if(ts) runTest(ts,'s',['s-pojmy','s-typ','s-zarizeni','s-urovne','s-kvantuj','s-cislo-bin','s-tok','s-velikost'],()=>{const o=$('#ovS');o&&overview(o,'s');});
+  const os=$('#ovS'); if(os) overview(os,'s');
+}
+initLoop();
+adUpdate();
+setTab(startTab);
+window.addEventListener('resize',redrawAll);
+if(window.ResizeObserver){const ro=new ResizeObserver(()=>redrawAll());document.querySelectorAll('canvas.cv').forEach(c=>ro.observe(c));}
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redrawAll);}catch(e){}
+
+</script>
+</body>
+</html>
