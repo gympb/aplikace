@@ -861,11 +861,11 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <p>Délku záznamu zjistíš z kapacity a datového toku: <b>čas = kapacita · 8 / datový tok</b>. Kapacity jsou počítané v desítkové soustavě (1 MB = 1 000 000 B), jak je u výrobců zvykem.</p>
     <div class="box try"><span class="lbl">Vyzkoušej: kapacita a formát</span>
       <div class="ctl">
-        <div class="field"><label for="kpM">Nosič</label><select id="kpM"><option value="700e6">CD-R (700 MB dat)</option><option value="4.7e9" selected>DVD (4,7 GB)</option><option value="25e9">Blu-ray (25 GB)</option><option value="16e9">USB flash 16 GB</option><option value="128e9">Telefon 128 GB</option></select></div>
+        <div class="field"><label for="kpM">Nosič</label><select id="kpM"><option value="audiocd">Audio CD (74 min zvuku)</option><option value="700e6">CD-R (700 MB dat)</option><option value="4.7e9" selected>DVD (4,7 GB)</option><option value="25e9">Blu-ray (25 GB)</option><option value="16e9">USB flash 16 GB</option><option value="128e9">Telefon 128 GB</option></select></div>
         <div class="field"><label for="kpF">Formát</label><select id="kpF"><option value="1411.2">CD / WAV (1 411,2 kbit/s)</option><option value="4608">Hi-Res 96 kHz, 24 b (4 608 kbit/s)</option><option value="9216">Hi-Res 192 kHz, 24 b (9 216 kbit/s)</option><option value="320">MP3 320 kbit/s</option><option value="128" selected>MP3 128 kbit/s</option></select></div>
       </div>
       <div class="sms" id="kpOut"></div>
-      <p class="muted" style="font-size:.9rem">Počítá se jen se zvukem, bez dalších souborů. Audio CD má jiný způsob zápisu než datový disk, proto se na něj vejde 74 minut a víc, i když datový disk CD-R s WAV pojme méně.</p>
+      <p class="muted" style="font-size:.9rem">Počítá se jen se zvukem, bez dalších souborů. Audio CD má jiný způsob zápisu než datový disk a ukládá jen nekomprimovaný zvuk (PCM, 74 minut, u delších disků i 80), takže formát tu nehraje roli. Datový disk CD-R s WAV pojme méně.</p>
     </div>
 </section>
 <section class="tk" aria-labelledby="vyDl"><h3 id="vyDl">Stahování a streamování</h3>
@@ -1777,8 +1777,9 @@ CHK.x5={q:'Proč může být slabý zvuk těsně po silném úderu neslyšiteln�
   const dur=sec=>{if(sec<90)return nf(sec,sec<10?1:0)+' s';const m=sec/60;if(m<120)return nf(m,m<10?1:0)+' min';const h=m/60;if(h<48)return nf(h,1)+' h';return nf(h/24,1)+' dní';};
   const kp=$('#kpM'); if(kp){
     const F=$('#kpF');
-    const upd=()=>{const cap=+kp.value,r=+F.value,sec=cap*8/(r*1000);
-      $('#kpOut').innerHTML=`<div><b>${dur(sec)}</b><span>délka hudby (${nf(r,1)} kbit/s)</span></div><div><b>${nf(sec/240,0)}</b><span>čtyřminutových skladeb</span></div><div><b>${nf(r*1000*240/8/1e6,2)} MB</b><span>velikost jedné skladby (4 min)</span></div>`;};
+    const upd=()=>{const au=kp.value==='audiocd',r=au?1411.2:+F.value,sec=au?74*60:+kp.value*8/(r*1000);
+      F.disabled=au;
+      $('#kpOut').innerHTML=`<div><b>${dur(sec)}</b><span>${au?'délka hudby (Audio CD, vždy PCM 1 411,2 kbit/s)':'délka hudby ('+nf(r,1)+' kbit/s)'}</span></div><div><b>${nf(Math.floor(sec/240),0)}</b><span>čtyřminutových skladeb</span></div><div><b>${nf(r*1000*240/8/1e6,2)} MB</b><span>velikost jedné skladby (4 min)</span></div>`;};
     kp.addEventListener('input',upd);F.addEventListener('input',upd);upd();
   }
   const dl=$('#dlF'); if(dl){
