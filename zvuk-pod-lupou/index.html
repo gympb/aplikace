@@ -66,9 +66,8 @@ textarea{font-family:var(--mono);font-size:.85rem;min-height:0}
 
 section,.view{scroll-margin-top:12px}
 .view{display:none}
-:root[data-tab="z"] .v-s,:root[data-tab="s"] .v-s,:root[data-tab="x"] .v-x,:root[data-tab="t"] .v-t{display:block}
-.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:6px}
-@media (max-width:860px){.levels{grid-template-columns:1fr;gap:8px}.levels .lv{min-height:0;padding-block:10px}.lv>span{display:none}}
+:root[data-tab="z"] .v-s,:root[data-tab="s"] .v-s,:root[data-tab="x"] .v-x,:root[data-tab="t"] .v-t,:root[data-tab="v"] .v-v{display:block}
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,.9fr);gap:12px;margin-top:6px}
 @media (max-width:640px){.levels{grid-template-columns:1fr;gap:8px}.levels .lv{min-height:0;padding-block:10px}.lv>span{display:none}}
 .lv{position:relative;text-align:left;border:1px solid var(--line);border-left:5px solid var(--lc);border-radius:12px;background:var(--paper);padding:14px 16px 14px 18px;cursor:pointer;display:grid;gap:4px;align-content:start;min-height:110px}
 .lv b{font:800 1.35rem/1.15 var(--display)}
@@ -209,7 +208,6 @@ details.teacher ol{margin:8px 0 6px;padding-left:1.3em;display:grid;gap:4px}
 
 /* tři stupně, skupiny v Extra, Tahák */
 [hidden]{display:none!important}
-.levels.tools{grid-template-columns:1fr;margin-top:10px}
 .lnk{background:none;border:0;padding:10px 2px;margin:-10px 0;font:inherit;color:var(--accent);text-decoration:underline;cursor:pointer}
 .xsub{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:.88rem;background:var(--accent-soft)}
 .tg{display:inline-block;font:700 .8125rem/1 var(--mono);padding:3px 6px;border-radius:4px;background:var(--line);color:var(--ink);margin-left:4px;vertical-align:middle;white-space:nowrap}
@@ -232,6 +230,20 @@ details.teacher ol{margin:8px 0 6px;padding-left:1.3em;display:grid;gap:4px}
 
 .ch h4{font-size:1.02rem;margin:18px 0 4px}
 h3.xsub{display:inline-block;margin:26px 0 8px;font-size:1rem}
+
+/* nástroje (Výpočty, Tahák): odlišené od stupňů, ikona, čárkovaný rámeček */
+.toolcol{display:grid;gap:12px}
+.lv.tool{--lc:var(--accent);border:1.5px dashed var(--line);background:transparent;min-height:0;padding:10px 12px 10px 52px;gap:1px;align-content:center}
+.lv.tool .ico{position:absolute;left:14px;top:50%;width:26px;height:26px;margin-top:-13px;color:var(--accent)}
+.lv.tool b{font-size:1.05rem}
+.lv.tool span{font-size:.88rem}
+.lv.tool small{order:-1;margin-top:0;color:var(--muted)}
+.lv.tool:hover{border-color:var(--accent);background:var(--paper)}
+.lv.tool[aria-pressed="true"]{border-style:solid;background:var(--accent-soft);box-shadow:none}
+@media (max-width:1000px){.levels{grid-template-columns:repeat(3,minmax(0,1fr))}.toolcol{grid-column:1/-1;grid-template-columns:1fr 1fr}}
+@media (max-width:860px){.levels{grid-template-columns:1fr;gap:8px}.levels .lv{min-height:0;padding-block:10px}.lv:not(.tool)>span{display:none}.lv.tool small,.lv.tool span{display:none}.lv.tool{padding-left:46px}.lv.tool .ico{left:12px}.toolcol{grid-template-columns:1fr 1fr;gap:8px}}
+@media (max-width:420px){.toolcol{grid-template-columns:1fr}}
+.v-v .tk .plus{font-size:.8125rem}
 </style>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="gymplikace">
@@ -276,9 +288,12 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
   <div class="levels">
     <button class="lv l1" data-go="z"><small>1–2 vyučovací hodiny</small><b>Základy</b><span>Jak se zvuk zapíše pomocí PCM, jak spočítat velikost takto zapsaných dat a datový tok.</span></button>
     <button class="lv l4" data-go="s"><small>3–4 vyučovací hodiny</small><b>Standardní znalosti</b><span>Základy a k nim zvuk jako vlnění (frekvence), vzorkování a Nyquistův–Shannonův teorém, vznik a standard CD, D/A převodník, bezeztrátová a ztrátová komprese.</span></button>
-    <button class="lv lp" data-go="x"><small>nepovinné</small><b>Extra<span class="plus" title="Obsah nad rámec úrovně Standardní znalosti">PLUS</span></b><span>Přesný postup komprese MP3, kvantizační šum, maskování, srovnání formátů, Hi-Fi a Hi-Res, SACD a DSD, prostorový zvuk pro doma i pro kino, výpočty. Bez povinných úloh.</span></button>
+    <button class="lv lp" data-go="x"><small>nepovinné</small><b>Extra<span class="plus" title="Obsah nad rámec úrovně Standardní znalosti">PLUS</span></b><span>Přesný postup komprese MP3, kvantizační šum, maskování, srovnání formátů, Hi-Fi a Hi-Res, SACD a DSD, prostorový zvuk pro doma i pro kino. Bez povinných úloh.</span></button>
+    <div class="toolcol">
+      <button class="lv tool" data-go="v"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 7h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8.5 11.5h1.5M12 11.5h1.5M15.5 11.5h0M8.5 15h1.5M12 15h1.5M15.5 15h0" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><small>pro všechny stupně</small><b>Výpočty</b><span>Velikost, datový tok, kapacita, stahování, alias</span></button>
+      <button class="lv tool" data-go="t"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 11h7M9 15h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><small>pro všechny stupně</small><b>Tahák</b><span>Vzorce, tabulky a pojmy</span></button>
+    </div>
   </div>
-  <div class="levels tools"><button class="lv tool" data-go="t"><small>nástroj pro všechny stupně</small><b>Tahák</b><span>Vzorce, tabulky a pojmy na jednom místě.</span></button></div>
 </header>
 
 <div id="obsah" style="scroll-margin-top:12px"></div>
@@ -546,7 +561,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
 <div class="xnote"><span class="plus">PLUS</span><p><b>Extra</b> je nepovinná část. Nemusíš ji projít a nic se tu nevyžaduje. Čti, zkoušej nástroje a vybírej si, co tě zajímá. Postup se tady nepočítá do přehledu zvládnutí.</p></div>
 <div class="course" data-course="x">
   <div class="course-head">
-    <ul class="findlist"><li><b>Digitalizace a komprese do hloubky:</b> A přesný postup komprese MP3 krok za krokem, B kvantizační šum a bitová hloubka (s poslechem),</li><li><b>Komprese a lidský sluch:</b> C frekvenční a časové maskování (s poslechem), D MP3 v kostce,</li><li><b>Formáty a kvalita zvuku:</b> E srovnání formátů, F Hi-Fi a Hi-Res (historická norma DIN 45500, kde koupit), G SACD a DSD, H prostorový zvuk pro doma (5.1, DTS, Atmos, Sony 360, Apple) a pro kino,</li><li><b>Výpočty:</b> I velikost skladby, J datové toky formátů, K kolik hudby se vejde na nosič, L stahování a streamování, M falešná frekvence.</li></ul>
+    <ul class="findlist"><li><b>Digitalizace a komprese do hloubky:</b> A přesný postup komprese MP3 krok za krokem, B kvantizační šum a bitová hloubka (s poslechem),</li><li><b>Komprese a lidský sluch:</b> C frekvenční a časové maskování (s poslechem), D MP3 v kostce,</li><li><b>Formáty a kvalita zvuku:</b> E srovnání formátů, F Hi-Fi a Hi-Res (historická norma DIN 45500, kde koupit), G SACD a DSD, H prostorový zvuk pro doma (5.1, DTS, Atmos, Sony 360, Apple) a pro kino.</li></ul>
     <ol class="prog" aria-label="Části Extra"></ol>
   </div>
 
@@ -742,6 +757,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
       <li><a href="https://www.nugs.net/" target="_blank" rel="noopener noreferrer">nugs.net</a> – oficiální záznamy živých koncertů.</li>
     </ul>
     <p class="muted" style="font-size:.92rem">Odkazy vedou na cizí stránky a nejsou doporučením k nákupu. Hi-res kvalitu lze také <b>streamovat</b> za předplatné (například Qobuz, Tidal, Amazon Music, Apple Music), ale tím si soubory nekoupíš.</p>
+    <div class="links2"><button type="button" class="lnk" data-go="v">Spočítej si to v sekci Výpočty →</button></div>
   </article>
 
   <article class="ch" data-group="Formáty a kvalita zvuku" data-title="G · SACD a DSD">
@@ -767,6 +783,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <h3>Hybridní disk a vyšší rychlosti DSD</h3>
     <p>Hybridní SACD má kromě vrstvy DSD i obyčejnou vrstvu CD, takže ho přehraje i běžný přehrávač CD. Soubory se dnes nabízejí i ve vyšších rychlostech: <b>DSD128</b> (5,6448 MHz), <b>DSD256</b> (11,2896 MHz) a <b>DSD512</b> (22,5792 MHz). Samotný SACD zůstává u DSD64. Počítač, který DSD neumí přímo předat, může DSD zabalit do toku PCM metodou <b>DoP</b> (DSD over PCM), a konvertor ho pak rozbalí.</p>
     <div class="note">Rozdíl ve zvuku je předmětem sporů. Kritici, například J. Vanderkooy a S. Lipshitz, upozorňovali, že jednobitový záznam se špatně upravuje a že šum nad 20 kHz může zatěžovat zesilovač. Studia proto s DSD často pracují jako s koncovým formátem a pro střih používají PCM, například DXD (24 bitů, 352,8 kHz). Čísla výrobců je proto lepší brát jako popis technologie, ne jako důkaz lepšího zvuku.</div>
+    <div class="links2"><button type="button" class="lnk" data-go="v">Spočítej si to v sekci Výpočty →</button></div>
   </article>
 
   <article class="ch" data-group="Formáty a kvalita zvuku" data-title="H · Prostorový zvuk">
@@ -830,10 +847,31 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
       </tbody>
     </table></div>
     <div class="note">Přesné datum a seznam prvních filmů se u různých autorů mírně liší, někde se uvádí i předcházející zkušební projekce. V tabulce jsou roky, které se objevují ve většině zdrojů.</div>
+    <div class="links2"><button type="button" class="lnk" data-go="v">Spočítej si to v sekci Výpočty →</button></div>
   </article>
 
-  <article class="ch" data-group="Výpočty" data-title="I · Velikost skladby">
-    <div><span class="eyebrow">Extra I</span><h2>Velikost skladby v různých formátech</h2></div>
+  <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
+</div>
+</div>
+
+<!-- ================= VÝPOČTY ================= -->
+<div class="view v-v">
+<div class="course-head" style="margin-top:24px"><div><span class="eyebrow">Nástroj pro všechny stupně</span><h2 style="margin:4px 0 6px">Výpočty</h2></div>
+  <p class="muted">Kalkulačky k učivu. Štítek <span class="plus">PLUS</span> mají výpočty, které souvisejí s učivem z části Extra (Hi-Res, SACD, prostorový zvuk, MP3).</p></div>
+
+<section class="tk" aria-labelledby="vyFa"><h3 id="vyFa">Falešná frekvence (alias)</h3>
+    <p>Tón se správně zaznamená, když je jeho frekvence menší než polovina vzorkovací frekvence. Vyšší tón se „přeloží“ do slyšitelné oblasti jako tón s falešnou frekvencí: <b>f<sub>a</sub> = |f − m · f<sub>s</sub></b>|, kde <b>m</b> je celé číslo, při kterém je výsledek nejmenší.</p>
+    <div class="box try"><span class="lbl">Vyzkoušej: jaký tón vznikne</span>
+      <div class="ctl">
+        <div class="field"><label for="alS">Vzorkovací frekvence f<sub>s</sub> (Hz)</label><input type="number" id="alS" min="100" max="400000" step="any" value="8000" inputmode="decimal"></div>
+        <div class="field"><label for="alF">Frekvence tónu f (Hz)</label><input type="number" id="alF" min="1" max="1000000" step="any" value="6000" inputmode="decimal"></div>
+      </div>
+      <div class="sms" id="alOut"></div>
+      <p class="muted" style="font-size:.9rem">Příklad ze Standardu: při f<sub>s</sub> = 8 000 Hz a tónu 6 000 Hz vznikne tón 2 000 Hz. Skutečné převodníky před vzorkováním vysoké frekvence odfiltrují, tady vidíš, co by se stalo bez filtru.</p>
+    </div>
+</section>
+
+<section class="tk" aria-labelledby="vyVel"><h3 id="vyVel">Velikost skladby v různých formátech</h3>
     <p>Rozdíl mezi bezeztrátovou a ztrátovou kompresí je vysvětlen ve Standardních znalostech. Tady si spočítáš, kolik místa zabere skladba v různých formátech. U ztrátových formátů zadáváš datový tok, u FLAC se velikost liší podle hudby.</p>
     <div class="box try"><span class="lbl">Vyzkoušej: velikost skladby</span>
       <div class="ctl">
@@ -843,11 +881,10 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
       <div class="sms" id="cmOut"></div>
       <p class="muted" style="font-size:.9rem">U FLAC je uveden rozsah, protože záleží na hudbě. U ostatních se velikost počítá z datového toku. Porovnání je vůči nekomprimovanému CD (1 411,2 kbit/s).</p>
     </div>
-  </article>
+</section>
 
-  <article class="ch" data-group="Výpočty" data-title="J · Datové toky formátů">
-    <div><span class="eyebrow">Extra J</span><h2>Datové toky zvukových formátů</h2></div>
-    <p>Datový tok nekomprimovaného zvuku spočítáš jako <b>f · n · k</b> (vzorkovací frekvence · bitová hloubka · počet kanálů). Tabulka porovnává formáty z celého Extra. Poměr je vždy vůči CD (1 411,2 kbit/s).</p>
+<section class="tk" aria-labelledby="vyTok"><h3 id="vyTok">Datové toky zvukových formátů <span class="plus" title="Souvisí s učivem v části Extra">PLUS</span></h3>
+    <p>Datový tok nekomprimovaného zvuku spočítáš jako <b>f · n · k</b> (vzorkovací frekvence · bitová hloubka · počet kanálů). Tabulka porovnává formáty, které se probírají v části Extra. Poměr je vždy vůči CD (1 411,2 kbit/s).</p>
     <div class="tblw"><table class="t">
       <thead><tr><th>Formát</th><th>Výpočet</th><th>Datový tok</th><th>Oproti CD</th></tr></thead>
       <tbody>
@@ -865,10 +902,9 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="box tip"><span class="lbl">Spočítej si: proč se 5.1 komprimuje</span><p>Nekomprimované 5.1 (6 kanálů, 48 kHz, 24 bitů) má 48 000 · 24 · 6 = 6 912 000 bit/s, tedy 6 912 kbit/s. Dolby Digital s 448 kbit/s je asi 15× menší.</p></div>
     <div class="box tip"><span class="lbl">Spočítej si: kolik zvuku má kino</span><p>Zvuk 7.1 (8 kanálů, 48 kHz, 24 bitů) má 48 000 · 24 · 8 = 9 216 000 bit/s, tedy 9 216 kbit/s. Plných 16 kanálů dává 18 432 kbit/s, asi 18,4 Mbit/s. Dolby Digital pro DVD má nejvýš 640 kbit/s.</p></div>
     <p class="muted" style="font-size:.92rem">Velikost souboru z datového toku spočítáš jako tok · čas / 8. Vyzkoušej si to v části Velikost skladby.</p>
-  </article>
+</section>
 
-  <article class="ch" data-group="Výpočty" data-title="K · Kolik se vejde na nosič">
-    <div><span class="eyebrow">Extra K</span><h2>Kolik hudby se vejde na nosič</h2></div>
+<section class="tk" aria-labelledby="vyNos"><h3 id="vyNos">Kolik hudby se vejde na nosič <span class="plus" title="Souvisí s učivem v části Extra">PLUS</span></h3>
     <p>Délku záznamu zjistíš z kapacity a datového toku: <b>čas = kapacita · 8 / datový tok</b>. Kapacity jsou počítané v desítkové soustavě (1 MB = 1 000 000 B), jak je u výrobců zvykem.</p>
     <div class="box try"><span class="lbl">Vyzkoušej: kapacita a formát</span>
       <div class="ctl">
@@ -878,10 +914,9 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
       <div class="sms" id="kpOut"></div>
       <p class="muted" style="font-size:.9rem">Počítá se jen se zvukem, bez dalších souborů. Audio CD má jiný způsob zápisu než datový disk, proto se na něj vejde 74 minut a víc, i když datový disk CD-R s WAV pojme méně.</p>
     </div>
-  </article>
+</section>
 
-  <article class="ch" data-group="Výpočty" data-title="L · Stahování a streamování">
-    <div><span class="eyebrow">Extra L</span><h2>Stahování a streamování</h2></div>
+<section class="tk" aria-labelledby="vyDl"><h3 id="vyDl">Stahování a streamování <span class="plus" title="Souvisí s učivem v části Extra">PLUS</span></h3>
     <p>Internetové připojení se udává v <b>Mbit/s</b>, soubory v <b>MB</b> (bajtech), proto se dělí osmi: <b>čas stahování = velikost · 8 / rychlost</b>. Pro plynulé streamování musí být rychlost připojení větší než datový tok hudby.</p>
     <div class="box try"><span class="lbl">Vyzkoušej: stáhne se, nebo se stihne přehrát?</span>
       <div class="ctl">
@@ -892,24 +927,8 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
       <div class="sms" id="dlOut"></div>
       <p class="muted" style="font-size:.9rem">Skutečná rychlost bývá nižší než udávaná a při streamování se přidává režie přenosu. Výsledky berou jen datový tok zvuku.</p>
     </div>
-  </article>
+</section>
 
-  <article class="ch" data-group="Výpočty" data-title="M · Falešná frekvence">
-    <div><span class="eyebrow">Extra M</span><h2>Falešná frekvence (alias)</h2></div>
-    <p>Tón se správně zaznamená, když je jeho frekvence menší než polovina vzorkovací frekvence. Vyšší tón se „přeloží“ do slyšitelné oblasti jako tón s falešnou frekvencí: <b>f<sub>a</sub> = |f − m · f<sub>s</sub></b>|, kde <b>m</b> je celé číslo, při kterém je výsledek nejmenší.</p>
-    <div class="box try"><span class="lbl">Vyzkoušej: jaký tón vznikne</span>
-      <div class="ctl">
-        <div class="field"><label for="alS">Vzorkovací frekvence f<sub>s</sub> (Hz)</label><input type="number" id="alS" min="100" max="400000" step="any" value="8000" inputmode="decimal"></div>
-        <div class="field"><label for="alF">Frekvence tónu f (Hz)</label><input type="number" id="alF" min="1" max="1000000" step="any" value="6000" inputmode="decimal"></div>
-      </div>
-      <div class="sms" id="alOut"></div>
-      <p class="muted" style="font-size:.9rem">Příklad ze Standardu: při f<sub>s</sub> = 8 000 Hz a tónu 6 000 Hz vznikne tón 2 000 Hz. Skutečné převodníky před vzorkováním vysoké frekvence odfiltrují, tady vidíš, co by se stalo bez filtru.</p>
-    </div>
-  </article>
-
-
-  <div class="chnav"><button class="btn prev">‹ Předchozí</button><span class="pos"></span><button class="btn pri next">Další kapitola ›</button></div>
-</div>
 </div>
 
 <!-- ================= TAHÁK ================= -->
@@ -1848,7 +1867,7 @@ CHK.x5={q:'Proč může být slabý zvuk těsně po silném úderu neslyšiteln�
 })();
 
 /* ================= NAVIGACE A KAPITOLY ================= */
-const TABS=['z','s','x','t'];
+const TABS=['z','s','x','t','v'];
 function applyLevel(l){
   const co=document.querySelector('.course[data-course="s"]');
   if(co&&co._lvl!==l){co._setLevel(l);renderLevel(l);}
@@ -1856,7 +1875,7 @@ function applyLevel(l){
 function setTab(t,push){
   if(!TABS.includes(t)) t='s';
   document.documentElement.dataset.tab=t;
-  document.querySelectorAll('button[data-go]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===t));
+  document.querySelectorAll('.lv[data-go]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.go===t));
   lsSet('zvukplTab',t);
   if(push){try{history.replaceState(null,'','#'+t);}catch(e){}}
   if(t==='z'||t==='s') applyLevel(t);
