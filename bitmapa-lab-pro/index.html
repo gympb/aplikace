@@ -924,7 +924,7 @@ TABS.push({name:tx('Poměr stran','Aspect ratio'),side:'27rem',
    <div class="card kpi"><span class="lbl" data-o="k6cl"></span><div class="big sm" data-o="k6c"></div><small data-o="k6cs"></small></div>
   </div></div>
   <div class="side card">
-   <div class="ctl"><div class="chips g3">${[['common','Běžné','Common'],['extra','Zajímavé','Curious'],['all','Všechny','All']].map(v=>`<button class="chip sm" data-k="as6" data-v="${v[0]}">${tx(v[1],v[2])}</button>`).join('')}</div><div class="hint" data-o="hs6"></div></div>
+   <div class="ctl"><div class="chips g2">${[['common','Běžné','Common'],['extra','Zajímavé','Curious']].map(v=>`<button class="chip sm" data-k="as6" data-v="${v[0]}">${tx(v[1],v[2])}</button>`).join('')}</div><div class="hint" data-o="hs6"></div></div>
    ${modeSw(6,[['cmp','Srovnání','Comparison'],['conv','Převod','Conversion']])}
    <div class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div>
     <div class="chips g2">${['house','land','test','own'].map(k=>`<button class="chip sm" data-k="img6" data-v="${k}"${k==='own'?' data-act="own6"':''}>${tx(IMGN[k][0],IMGN[k][1])}</button>`).join('')}</div>
@@ -941,7 +941,7 @@ TABS.push({name:tx('Poměr stran','Aspect ratio'),side:'27rem',
   const f=$('#f6'),cv=$('#cr');
   const sel=()=>arOf(S.tr6);
   const cv6=()=>{const rs=arOf(S.sr6).r,rt=arOf(S.tr6).r,wide=rs>rt+1e-6,narrow=rs<rt-1e-6;return{rs,rt,wide,narrow,same:!wide&&!narrow,loss:wide?1-rt/rs:narrow?1-rs/rt:0}};
-  OUT.hs6=()=>S.as6==='common'?tx('Běžné poměry stran, se kterými se potkáte denně.','Common aspect ratios you meet every day.'):S.as6==='extra'?tx('Zajímavosti: monitory, telefony, kino a IMAX. Jejich znalost se nepožaduje.','Curiosities: monitors, phones, cinema and IMAX. Knowing them is not required.'):tx('Běžné poměry i zajímavosti. Znalost zajímavostí se nepožaduje.','Common ratios and curiosities. Knowing the curiosities is not required.');
+  OUT.hs6=()=>S.as6==='common'?tx('Běžné poměry stran, se kterými se potkáte denně.','Common aspect ratios you meet every day.'):S.as6==='extra'?tx('Zajímavosti: monitory, telefony, kino a IMAX. Jejich znalost se nepožaduje.','Curiosities: monitors, phones, cinema and IMAX. Knowing them is not required.'):tx('Žádné tlačítko není zapnuté, zobrazují se všechny poměry. Znalost zajímavostí se nepožaduje.','No button is on, so all ratios are shown. Knowing the curiosities is not required.');
   OUT.tag6=()=>S.m6==='cmp'?(S.as6==='common'?tx('běžné poměry stran','common aspect ratios'):S.as6==='extra'?tx('zajímavé poměry stran','curious aspect ratios'):tx('všechny poměry stran','all aspect ratios')):tx('ořez a černé pruhy při převodu poměru stran','cropping and black bars when converting the aspect ratio');
   OUT.u6=()=>{const a=arOf(S.ar6);return `<b class="l">${tx(a.l[0],a.l[1])}</b>${tx(a.u[0],a.u[1])}`};
   OUT.k6al=()=>S.m6==='cmp'?tx('Poměr stran','Aspect ratio'):tx('Převod','Conversion');
@@ -956,6 +956,7 @@ TABS.push({name:tx('Poměr stran','Aspect ratio'),side:'27rem',
   OUT.h6=()=>tx('Vyplnit: obraz zaplní celý cíl a přebytek se ořízne. Vměstnat: celý obraz se vejde do cíle a zbytek zaplní černé pruhy.','Fill: the picture covers the whole target and the excess is cropped. Fit: the whole picture fits into the target and black bars fill the rest.');
   const norm6=()=>{const V=vis6(),ok=id=>V.some(a=>a.id===String(id));if(!ok(S.ar6))S.ar6=V[0].id;if(!ok(S.sr6))S.sr6=V[0].id;if(!ok(S.tr6))S.tr6=(V[1]||V[0]).id};
   ['tag6','u6','k6al','k6a','k6as','k6bl','k6b','k6bs','k6cl','k6c','k6cs','h6'].forEach(k=>{const g=OUT[k];OUT[k]=()=>{norm6();return g()}});
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-k=as6],[data-k=as8]');if(!b)return;const k=b.dataset.k;if(S[k]===b.dataset.v){e.stopPropagation();e.preventDefault();S[k]='all';refresh()}},true);
   ACT.own6=()=>{f.value='';f.click()};
   f.addEventListener('change',()=>{
    const file=f.files&&f.files[0];if(!file)return;
@@ -1167,7 +1168,7 @@ TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
    <div class="card kpi"><span class="lbl">${tx('Průhlednost umí','Can do transparency')}</span><div class="big sm" data-o="k8c"></div><small>${tx('formátů v zobrazené tabulce','formats in the shown table')}</small></div>
   </div></div>
   <div class="side card">
-   <div class="ctl"><div class="chips g3">${[['common','Běžné','Common'],['extra','Zajímavé','Curious'],['all','Všechny','All']].map(v=>`<button class="chip sm" data-k="as8" data-v="${v[0]}">${tx(v[1],v[2])}</button>`).join('')}</div><div class="hint" data-o="hs8"></div></div>
+   <div class="ctl"><div class="chips g2">${[['common','Běžné','Common'],['extra','Zajímavé','Curious']].map(v=>`<button class="chip sm" data-k="as8" data-v="${v[0]}">${tx(v[1],v[2])}</button>`).join('')}</div><div class="hint" data-o="hs8"></div></div>
    <div class="ctl"><div class="hd"><span class="lbl">${tx('Co ukládáme','What we store')}</span></div><div class="chips g2" style="grid-template-columns:1fr">${Object.keys(CT8).map(k=>`<button class="chip sm" data-k="ct8" data-v="${k}">${tx(CT8[k].n[0],CT8[k].n[1])}</button>`).join('')}</div></div>
    <div class="callout" data-o="why8"></div>
    <div class="hint">${tx('Tečky ukazují vhodnost formátu pro vybraný obsah. Podbarvený řádek je nejlepší volba.','The dots show how well a format suits the chosen content. The highlighted row is the best choice.')}</div>
@@ -1175,7 +1176,7 @@ TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
  init(){
   const best=()=>{const V=vis8(),m=Math.max(...V.map(f=>f.s[S.ct8]));return{m,L:V.filter(f=>f.s[S.ct8]===m)}};
   OUT.tag8=()=>tx('srovnání formátů podle přípon a vhodnosti','comparison of formats by extension and suitability');
-  OUT.hs8=()=>S.as8==='common'?tx('Běžné formáty, které potkáte nejčastěji.','Common formats you meet most often.'):S.as8==='extra'?tx('Zajímavosti. Jejich znalost se nepožaduje.','Curiosities. Knowing them is not required.'):tx('Běžné formáty i zajímavosti. Znalost zajímavostí se nepožaduje.','Common formats and curiosities. Knowing the curiosities is not required.');
+  OUT.hs8=()=>S.as8==='common'?tx('Běžné formáty, které potkáte nejčastěji.','Common formats you meet most often.'):S.as8==='extra'?tx('Zajímavosti. Jejich znalost se nepožaduje.','Curiosities. Knowing them is not required.'):tx('Žádné tlačítko není zapnuté, zobrazují se všechny formáty. Znalost zajímavostí se nepožaduje.','No button is on, so all formats are shown. Knowing the curiosities is not required.');
   OUT.k8a=()=>best().L.map(f=>f.n).join(', ');OUT.k8a2=()=>tx(CT8[S.ct8].n[0],CT8[S.ct8].n[1]);
   OUT.k8b=()=>{const V=vis8();return V.filter(f=>f.cm==='ly'||f.cm==='bo').length+' '+tx('z','of')+' '+V.length};
   OUT.k8c=()=>{const V=vis8();return V.filter(f=>f.tr>0).length+' '+tx('z','of')+' '+V.length};
