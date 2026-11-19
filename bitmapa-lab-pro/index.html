@@ -152,7 +152,7 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 .seg.modes.m3{grid-template-columns:1fr}.seg.modes.m3 .chip{min-height:2.8rem}
 .seg.modes .chip{display:flex;flex-direction:column;align-items:center;gap:.25rem;min-height:3.4rem;justify-content:center}
 .chip.sm{min-height:2.4rem;padding:.35rem .3rem;text-align:center}
-.ctls{display:grid;grid-template-columns:1fr 1fr;gap:.2rem .9rem}.ctls .chips{grid-column:1/-1}
+.ctls{display:grid;grid-template-columns:1fr;gap:.2rem .9rem}.ctls .chips{grid-column:1/-1}
 .ctls .ctl input[type=range]{height:2rem}
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
 .tile{display:flex;flex-direction:column;gap:.3rem;align-items:flex-start;text-align:left;padding:.8rem 1rem;border-radius:1.2rem;background:var(--card);box-shadow:var(--shadow);min-height:5rem}
@@ -169,6 +169,13 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 
 .tab-b .nm{white-space:normal;font-size:.9rem;line-height:1.1;max-width:9.5rem}
 .cd{font:600 .95rem/1.4 'Atkinson Hyperlegible Mono',monospace;margin-top:.15rem}.cd b{color:var(--orange-t);margin-right:.3rem}
+
+.chn{height:.95rem;border-radius:.35rem;margin-top:.1rem;overflow:hidden;box-shadow:inset 0 0 0 .1rem var(--line2)}.chn i{display:block;height:100%}
+.plist{display:grid;grid-template-columns:auto 1fr;gap:.25rem .8rem;align-items:center}.plist .chip{min-height:2rem;text-align:left;display:flex;align-items:center;padding:.2rem .7rem}.plist .sw{width:1.1rem;height:1.1rem;margin-right:.5rem;vertical-align:0}
+.pc{font:600 .82rem/1.1 'Atkinson Hyperlegible Mono',monospace;white-space:nowrap}
+.bn{font-size:.6em;letter-spacing:.01em}
+
+.scope:has(#c2){background:#000}
 
 </style>
 <meta property="og:type" content="website">
@@ -353,7 +360,7 @@ function boot(){
 <script>
 /* ===== Bitmapa Lab Pro: společné části ===== */
 Object.assign(S,{m4:'res',ct4:'logo',ls5:'lossless',
- img1:'house',img2:'land',z2:40,lx2:700,ly2:520,img5:'land',bc5:8,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'col',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
+ img1:'house',img2:'land',fm2:'dec',z2:40,lx2:700,ly2:520,img5:'land',bc5:8,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'col',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
  b2:3,r:255,g:151,b:46,
  rs:32,bd:24,sz4:'fhd'});
 const MK={6:'m4'};
@@ -671,42 +678,50 @@ TABS.push({name:tx('Paleta a bity','Palette and bits'),side:'27rem',
 /* ---------- 2 Mixér RGB ---------- */
 const RGBP={red:[255,0,0],green:[0,255,0],blue:[0,0,255],yellow:[255,255,0],cyan:[0,255,255],magenta:[255,0,255],white:[255,255,255],black:[0,0,0],orange:[255,151,46]};
 const RGBN={red:['červená','red'],green:['zelená','green'],blue:['modrá','blue'],yellow:['žlutá','yellow'],cyan:['azurová','cyan'],magenta:['purpurová','magenta'],white:['bílá','white'],black:['černá','black'],orange:['oranžová','orange']};
-const slider=(k,lbl,max)=>`<div class="ctl"><div class="hd"><span class="lbl">${lbl}</span><span class="val" data-o="v_${k}"></span></div><input type="range" data-k="${k}" min="0" max="${max}" step="1"></div>`;
+const FMN={dec:['desítkově','decimal'],bin:['dvojkově','binary'],hex:['šestnáctkově','hexadecimal']};
+const fch=v=>S.fm2==='bin'?v.toString(2).padStart(8,'0'):S.fm2==='hex'?hx2(v):String(v);
+const fcol=(r,g,b,sep)=>S.fm2==='hex'?'#'+hx2(r)+hx2(g)+hx2(b):[r,g,b].map(fch).join(sep||(S.fm2==='bin'?' ':', '));
+const slider=(k,lbl,max)=>`<div class="ctl"><div class="hd"><span class="lbl">${lbl}</span><span class="val" data-o="v_${k}"></span></div><input type="range" data-k="${k}" min="0" max="${max}" step="1"><div class="chn" data-o="s_${k}"></div></div>`;
 TABS.push({name:tx('Mixér RGB','RGB mixer'),side:'27rem',
  build(){return `<div class="split"><div class="col">
   <div class="scope grow"><canvas id="c2"></canvas><div class="tag">${tx('světlo se sčítá: tři čísla 0 až 255','light adds up: three numbers 0 to 255')}</div></div>
   <div class="kpis">
-   <div class="card kpi"><span class="lbl">${tx('Desítkově','Decimal')}</span><div class="big sm" data-o="k2a"></div><small>${tx('červená, zelená, modrá','red, green, blue')}</small></div>
-   <div class="card kpi"><span class="lbl">${tx('Šestnáctkově','Hexadecimal')}</span><div class="big sm" data-o="k2b"></div><small>${tx('dvě číslice na kanál','two digits per channel')}</small></div>
+   <div class="card kpi"><span class="lbl" data-o="k2l"></span><div class="big sm" data-o="k2a"></div><small data-o="k2s"></small></div>
+   <div class="card kpi"><span class="lbl">${tx('Počet barev','Number of colours')}</span><div class="big sm">16 777 216</div><small>${tx('256 · 256 · 256 = 2²⁴','256 · 256 · 256 = 2²⁴')}</small></div>
    <div class="card kpi"><span class="lbl">${tx('Velikost jedné barvy','Size of one colour')}</span><div class="big sm">3 <u>${tx('bajty','bytes')}</u></div><small>${tx('3 kanály · 8 bitů = 24 bitů','3 channels · 8 bits = 24 bits')}</small></div>
   </div></div>
   <div class="side card">
-   <div class="ctls">${slider('r',tx('R · červená','R · red'),255)}${slider('g',tx('G · zelená','G · green'),255)}${slider('b',tx('B · modrá','B · blue'),255)}
-    <div class="chips g3">${Object.keys(RGBP).map(k=>`<button class="chip sm" data-act="pre2" data-v="${k}">${tx(RGBN[k][0],RGBN[k][1])}</button>`).join('')}</div></div>
-   ${note(tx('Displej míchá každou barvu ze tří světel. Každé má sílu 0 až 255, tedy jeden bajt. Červená a zelená naplno dají žlutou, všechna tři naplno bílou.','A display mixes every colour from three lights. Each has a strength of 0 to 255, that is one byte. Red and green at full make yellow, all three at full make white.'))}
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Zápis kódu','Code notation')}</span></div>
+    <div class="chips g3"><button class="chip sm" data-k="fm2" data-v="dec">DEC</button><button class="chip sm" data-k="fm2" data-v="bin">BIN</button><button class="chip sm" data-k="fm2" data-v="hex">HEX</button></div></div>
+   <div class="ctls">${slider('r',tx('R · červená','R · red'),255)}${slider('g',tx('G · zelená','G · green'),255)}${slider('b',tx('B · modrá','B · blue'),255)}</div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Barvy','Colours')}</span></div>
+    <div class="plist">${Object.keys(RGBP).map(k=>`<button class="chip sm" data-act="pre2" data-v="${k}"><i class="sw" style="background:${rgbS(...RGBP[k])}"></i>${tx(RGBN[k][0],RGBN[k][1])}</button><span class="pc" data-o="pc_${k}"></span>`).join('')}</div></div>
   </div></div>`},
  init(){
-  ['r','g','b'].forEach(k=>OUT['v_'+k]=()=>S[k]);
-  OUT.k2a=()=>`${S.r} · ${S.g} · ${S.b}`;
-  OUT.k2b=()=>'#'+[S.r,S.g,S.b].map(hx2).join('');
+  ['r','g','b'].forEach((k,n)=>{OUT['v_'+k]=()=>fch(S[k]);OUT['s_'+k]=()=>`<i style="background:rgb(${n===0?S.r:0},${n===1?S.g:0},${n===2?S.b:0})"></i>`});
+  Object.keys(RGBP).forEach(k=>OUT['pc_'+k]=()=>fcol(...RGBP[k]));
+  OUT.k2l=()=>tx(FMN[S.fm2][0][0].toUpperCase()+FMN[S.fm2][0].slice(1),FMN[S.fm2][1][0].toUpperCase()+FMN[S.fm2][1].slice(1));
+  OUT.k2a=()=>S.fm2==='bin'?`<span class="bn">${fcol(S.r,S.g,S.b)}</span>`:S.fm2==='dec'?`${S.r} · ${S.g} · ${S.b}`:fcol(S.r,S.g,S.b);
+  OUT.k2s=()=>S.fm2==='bin'?tx('8 bitů na kanál: červená, zelená, modrá','8 bits per channel: red, green, blue'):S.fm2==='hex'?tx('dvě číslice na kanál','two digits per channel'):tx('červená, zelená, modrá','red, green, blue');
   ACT.pre2=v=>{const a=RGBP[v];S.r=a[0];S.g=a[1];S.b=a[2];refresh()};
  },
  render(){
   const cv=$('#c2');if(!cv)return;const {x,w,h,R}=setup(cv);const pad=R*1.6,wl=w*.6,top0=R*1.8;
+  x.fillStyle='#000';x.fillRect(0,0,w,h);
   const rad=Math.min(wl*.25,(h-top0-R*5.5)*.3),cx=wl/2,cy=top0+(h-top0-R*2.5)/2-rad*.05;
   const pts=[[cx,cy-rad*.62],[cx-rad*.72,cy+rad*.55],[cx+rad*.72,cy+rad*.55]];
   const lab=(t,i,col)=>TH(x,t,pts[i][0],i?pts[i][1]+rad+R*1.2:pts[i][1]-rad-R*1,R*.95,col,'center');
   x.globalCompositeOperation='lighter';
   [[S.r,0,0],[0,S.g,0],[0,0,S.b]].forEach((c,i)=>{x.fillStyle=rgbS(c[0],c[1],c[2]);x.beginPath();x.arc(pts[i][0],pts[i][1],rad,0,TAU);x.fill()});
   x.globalCompositeOperation='source-over';
-  lab('R '+S.r,0,C.cream);lab('G '+S.g,1,C.cream);lab('B '+S.b,2,C.cream);
+  lab('R '+fch(S.r),0,C.cream);lab('G '+fch(S.g),1,C.cream);lab('B '+fch(S.b),2,C.cream);
   const sx=wl+pad*.8,sw=w-sx-pad,sh=Math.min(h*.5,sw*.9),sy=h/2-sh/2-R*1.2;
   TH(x,tx('Výsledná barva','Resulting colour'),sx,sy-R*1.1,R*.8,TXT);
   rr(x,sx,sy,sw,sh,R*1.2,rgbS(S.r,S.g,S.b),GR2,1.2);
   const fc=fgOn(S.r,S.g,S.b);
-  TH(x,'#'+[S.r,S.g,S.b].map(hx2).join(''),sx+sw/2,sy+sh/2,R*2.1,fc,'center');
-  TH(x,`RGB (${S.r}, ${S.g}, ${S.b})`,sx+sw/2,sy+sh+R*1.5,R*.95,C.cream,'center');
-  T(x,[S.r,S.g,S.b].map(v=>v.toString(2).padStart(8,'0')).join(' '),sx+sw/2,sy+sh+R*3,R*.62,TXT,'center');
+  if(S.fm2==='bin'){[['R',S.r],['G',S.g],['B',S.b]].forEach((p,i)=>TH(x,p[0]+' '+fch(p[1]),sx+sw/2,sy+sh/2+(i-1)*R*2.1,R*1.35,fc,'center'))}
+  else TH(x,fcol(S.r,S.g,S.b,S.fm2==='dec'?' · ':null),sx+sw/2,sy+sh/2,R*(S.fm2==='hex'?2.1:1.7),fc,'center');
+  TH(x,tx('RGB · '+FMN[S.fm2][0],'RGB · '+FMN[S.fm2][1]),sx+sw/2,sy+sh+R*1.5,R*.95,C.cream,'center');
   renderModes();
  }});
 
