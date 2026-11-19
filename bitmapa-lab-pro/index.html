@@ -1146,7 +1146,12 @@ const FM8=[
  {id:'avif',ext:'.avif',n:'AVIF',c:0,col:['16,7 mil. i víc (10 a 12 bitů)','16.7 million or more (10 and 12 bits)'],cm:'bo',cmT:['ztrátová i bezeztrátová','lossy and lossless'],tr:2,trT:['ano, plynulá','yes, smooth'],use:['moderní web, malé soubory','modern web, small files'],s:{foto:3,logo:2,text:2,anim:2,archiv:1}},
  {id:'raw',ext:'.dng  .cr2  .nef',n:'RAW',c:0,col:['12 až 14 bitů na kanál','12 to 14 bits per channel'],cm:'nl',cmT:['žádná nebo bezeztrátová','none or lossless'],tr:0,trT:['ne','no'],use:['surová data z fotoaparátu','raw data from a camera'],s:{foto:2,logo:0,text:0,anim:0,archiv:3}},
  {id:'ico',ext:'.ico',n:'ICO',c:0,col:['až 16,7 mil.','up to 16.7 million'],cm:'ll',cmT:['bezeztrátová','lossless'],tr:2,trT:['ano, plynulá','yes, smooth'],use:['ikony programů a webů','program and website icons'],s:{foto:0,logo:1,text:0,anim:0,archiv:0}},
- {id:'psd',ext:'.psd',n:'PSD',c:0,col:['8, 16 nebo 32 bitů na kanál','8, 16 or 32 bits per channel'],cm:'ll',cmT:['bezeztrátová','lossless'],tr:2,trT:['ano','yes'],use:['pracovní soubor s vrstvami (Photoshop)','working file with layers (Photoshop)'],s:{foto:1,logo:1,text:0,anim:0,archiv:2}}];
+ {id:'psd',ext:'.psd',n:'PSD',c:0,col:['8, 16 nebo 32 bitů na kanál','8, 16 or 32 bits per channel'],cm:'ll',cmT:['bezeztrátová','lossless'],tr:2,trT:['ano','yes'],use:['pracovní soubor s vrstvami (Photoshop)','working file with layers (Photoshop)'],s:{foto:1,logo:1,text:0,anim:0,archiv:2}},
+ {id:'jxl',ext:'.jxl',n:'JPEG XL',c:0,col:['16,7 mil. i víc (až 32 bitů na kanál)','16.7 million or more (up to 32 bits per channel)'],cm:'bo',cmT:['ztrátová i bezeztrátová','lossy and lossless'],tr:2,trT:['ano, plynulá','yes, smooth'],use:['nástupce JPEG: menší soubory a bezeztrátový převod z JPEG','successor to JPEG: smaller files and lossless conversion from JPEG'],s:{foto:3,logo:2,text:2,anim:2,archiv:2}},
+ {id:'jp2',ext:'.jp2  .j2k',n:'JPEG 2000',c:0,col:['až 16 bitů na kanál','up to 16 bits per channel'],cm:'bo',cmT:['ztrátová i bezeztrátová','lossy and lossless'],tr:2,trT:['ano','yes'],use:['digitální kino, lékařské snímky, archivace map a knih','digital cinema, medical images, archiving of maps and books'],s:{foto:2,logo:1,text:1,anim:0,archiv:2}},
+ {id:'tga',ext:'.tga',n:'TGA',c:0,col:['8 až 32 bitů na pixel','8 to 32 bits per pixel'],cm:'nl',cmT:['žádná nebo bezeztrátová (RLE)','none or lossless (RLE)'],tr:2,trT:['ano','yes'],use:['textury a grafika ve hrách a 3D','textures and graphics in games and 3D'],s:{foto:1,logo:1,text:1,anim:0,archiv:1}},
+ {id:'exr',ext:'.exr',n:'OpenEXR',c:0,col:['16 nebo 32 bitů plovoucí čárkou na kanál','16 or 32 bits floating point per channel'],cm:'bo',cmT:['bezeztrátová i ztrátová','lossless and lossy'],tr:2,trT:['ano','yes'],use:['filmové efekty a 3D, obraz s obrovským rozsahem jasu (HDR)','film effects and 3D, pictures with a huge brightness range (HDR)'],s:{foto:2,logo:0,text:0,anim:0,archiv:2}},
+ {id:'ppm',ext:'.ppm  .pgm  .pbm',n:'PPM',c:0,col:['1 až 16 bitů na kanál','1 to 16 bits per channel'],cm:'no',cmT:['žádná','none'],tr:0,trT:['ne','no'],use:['nejjednodušší formát, pixely jako čísla, na výuku','the simplest format, pixels as numbers, for teaching'],s:{foto:0,logo:0,text:0,anim:0,archiv:1}}];
 const CT8={foto:{n:['Fotografie','Photograph'],why:['Plynulé přechody a miliony barev. Ztrátová komprese zahodí jemné detaily, které oko nepozná, a soubor je několikrát menší. Novější WebP, HEIC a AVIF to umějí ještě úsporněji.','Smooth gradients and millions of colours. Lossy compression drops fine detail the eye cannot notice, and the file is several times smaller. The newer WebP, HEIC and AVIF do it even more economically.']},
  logo:{n:['Logo a schéma','Logo or diagram'],why:['Ostré hrany a plné barvy. Bezeztrátový PNG zachová hrany přesně a umí plynulou průhlednost. JPEG by kolem hran dělal šum.','Sharp edges and flat colours. Lossless PNG keeps edges exact and handles smooth transparency. JPEG would add noise around edges.']},
  text:{n:['Snímek obrazovky s textem','Screenshot with text'],why:['Ostré písmo musí zůstat přesné. Bezeztrátový formát ho zachová, ztrátový by kolem písmen vytvořil mžitky.','Sharp letters must stay exact. A lossless format keeps them, a lossy one would add speckles around letters.']},
@@ -1183,17 +1188,17 @@ TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
   let cx=pd;const xs=cols.map(c=>{const v=cx;cx+=c*tw;return v});
   heads.forEach((t,i)=>TH(x,t,xs[i]+R*.5,top2+hh/2,R*.85,TXT));
   line(x,pd,top2+hh,pd+tw,top2+hh,GR2,1.2);
-  const fs=R*.92,cc={ly:C.orange,ll:C.good,bo:C.cream,no:TXT,nl:C.good};
+  const kk=Math.min(1,Math.max(.74,rowH/(R*4.4))),fs=R*.92*kk,cc={ly:C.orange,ll:C.good,bo:C.cream,no:TXT,nl:C.good};
   V.forEach((f,r)=>{
    const y=top2+hh+r*rowH,sc=f.s[S.ct8],isB=sc===m&&m>0;
    if(isB)rr(x,pd-R*.4,y+rowH*.05,tw+R*.8,rowH*.9,R*.5,'rgba(255,151,46,.2)',C.orange,2);
-   TH(x,f.n,xs[0]+R*.5,y+rowH/2-R*.55,R*1.35,isB?C.orange:C.cream);T(x,f.ext,xs[0]+R*.5,y+rowH/2+R*.95,R*.75,TXT);
+   TH(x,f.n,xs[0]+R*.5,y+rowH*.33,Math.min(R*1.35*kk,rowH*.36),isB?C.orange:C.cream);T(x,f.ext,xs[0]+R*.5,y+rowH*.72,Math.min(R*.75*kk,rowH*.2),TXT);
    [[f.col,C.cream,1],[f.cmT,cc[f.cm],2],[f.trT,f.tr?C.cream:TXT,3],[f.use,C.cream,4]].forEach(([t,colr,i])=>{
     const maxW=cols[i]*tw-R;let lines=[''];x.font=`500 ${fs}px "Atkinson Hyperlegible Next",sans-serif`;
     tx(t[0],t[1]).split(' ').forEach(wd=>{const tr=(lines[lines.length-1]+' '+wd).trim();if(x.measureText(tr).width>maxW&&lines[lines.length-1])lines.push(wd);else lines[lines.length-1]=tr});
-    lines.forEach((ln,k)=>T(x,ln,xs[i]+R*.5,y+rowH/2+(k-(lines.length-1)/2)*R*1.15,fs,colr,'left','Atkinson Hyperlegible Next',500));
+    lines.forEach((ln,k)=>T(x,ln,xs[i]+R*.5,y+rowH/2+(k-(lines.length-1)/2)*R*1.15*kk,fs,colr,'left','Atkinson Hyperlegible Next',500));
    });
-   for(let k=0;k<3;k++){x.beginPath();x.arc(xs[5]+R*1.1+k*R*1.8,y+rowH/2,R*.6,0,TAU);if(k<sc){x.fillStyle=isB?C.orange:C.cream;x.fill()}else{x.strokeStyle=GR2;x.lineWidth=1.5;x.stroke()}}
+   for(let k=0;k<3;k++){x.beginPath();x.arc(xs[5]+R*1.1+k*R*1.8,y+rowH/2,R*.6*Math.max(kk,.7),0,TAU);if(k<sc){x.fillStyle=isB?C.orange:C.cream;x.fill()}else{x.strokeStyle=GR2;x.lineWidth=1.5;x.stroke()}}
    if(r<V.length-1)line(x,pd,y+rowH,pd+tw,y+rowH,GR,1);
   });
  }});
