@@ -457,7 +457,7 @@ TABS.push({name:tx('Pixel','Pixel'),side:'27rem',
   <div class="kpis">
    <div class="card kpi"><span class="lbl">${tx('Celý obrázek','Whole picture')}</span><div class="big sm" data-o="k1a"></div><small>${tx('šířka × výška v pixelech','width × height in pixels')}</small></div>
    <div class="card kpi"><span class="lbl">${tx('Vybraný pixel','Selected pixel')}</span><div class="big sm" data-o="k1b"></div><small>${tx('sloupec, řádek (od nuly)','column, row (from zero)')}</small></div>
-   <div class="card kpi"><span class="lbl">${tx('Jeho barva','Its colour')}</span><div class="big sm" data-o="k1c"></div><small>${tx('červená, zelená, modrá','red, green, blue')}</small></div>
+   <div class="card kpi" id="kc1"><span class="lbl">${tx('Jeho barva','Its colour')}</span><div class="big sm" data-o="k1c"></div><small>${tx('červená, zelená, modrá','red, green, blue')}</small></div>
   </div></div>
   <div class="side card">
    <div class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div>
@@ -511,6 +511,7 @@ TABS.push({name:tx('Pixel','Pixel'),side:'27rem',
   const cv=$('#c1');if(!cv)return;const {x,w,h,R}=setup(cv);const im=img1(S.img1),cols=zmCols(),rows=cols*3/4;
   clampLens();
   $$('.tg').forEach(b=>{const o=!!S[b.dataset.v];b.classList.toggle('on',o);b.setAttribute('aria-pressed',o)});
+  {const k=$('#kc1');if(k)k.style.visibility=S.nums1?'visible':'hidden'}
   const pad=R*1.6,gap=R*3.4,top=R*3.6;
   let pw=Math.min((w-pad*2-gap)/2,(h-top-pad)/.75);const ph=pw*.75;
   const ax=pad+((w-pad*2-gap)/2-pw)/2,ay=top+(h-top-pad-ph)/2,mx=w-pad-((w-pad*2-gap)/2)+((w-pad*2-gap)/2-pw)/2,my=ay,cs=pw/cols;
@@ -530,7 +531,7 @@ TABS.push({name:tx('Pixel','Pixel'),side:'27rem',
   if(S.grid1&&cs>=R*1.1){x.strokeStyle='rgba(23,20,15,.55)';x.lineWidth=1;x.beginPath();for(let i=0;i<=cols;i++){x.moveTo(mx+i*cs,my);x.lineTo(mx+i*cs,my+ph)}for(let j=0;j<=rows;j++){x.moveTo(mx,my+j*cs);x.lineTo(mx+pw,my+j*cs)}x.stroke()}
   if(S.nums1&&cols>8)T(x,tx(`Čísla RGB se ukážou od zvětšení × ${nf(W1/8)}`,`RGB numbers appear from magnification × ${nf(W1/8)}`),mx+pw/2,my+ph+R*1.3,R*.8,C.orange,'center');
   const si=S.sp[0]-S.lx,sj=S.sp[1]-S.ly;
-  if(S.nums1&&si>=0&&si<cols&&sj>=0&&sj<rows&&cs>=4){x.strokeStyle=C.cream;x.lineWidth=3.5;x.strokeRect(mx+si*cs,my+sj*cs,cs,cs);x.strokeStyle=C.orange;x.lineWidth=1.8;x.strokeRect(mx+si*cs+2,my+sj*cs+2,cs-4,cs-4)}
+  if(si>=0&&si<cols&&sj>=0&&sj<rows&&cs>=4){x.strokeStyle=C.cream;x.lineWidth=3.5;x.strokeRect(mx+si*cs,my+sj*cs,cs,cs);x.strokeStyle=C.orange;x.lineWidth=1.8;x.strokeRect(mx+si*cs+2,my+sj*cs+2,cs-4,cs-4)}
   x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(mx,my,pw,ph);
   renderModes();
  }});
