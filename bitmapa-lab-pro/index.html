@@ -353,7 +353,7 @@ function boot(){
 <script>
 /* ===== Bitmapa Lab Pro: společné části ===== */
 Object.assign(S,{m4:'res',ct4:'logo',ls5:'lossless',
- img1:'house',img2:'land',img5:'land',bc5:8,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'col',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
+ img1:'house',img2:'land',z2:40,lx2:700,ly2:520,img5:'land',bc5:8,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'col',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
  b2:3,r:255,g:151,b:46,
  rs:32,bd:24,sz4:'fhd'});
 const MK={6:'m4'};
@@ -541,9 +541,8 @@ TABS.push({name:tx('Pixel','Pixel'),side:'27rem',
 
 /* ---------- 2 Paleta a bitová hloubka ---------- */
 let OWNV=0;const PQ={};
-const CG={1:[32,24],2:[20,15],4:[12,9],8:[8,6]};
 function medianCut(d,n){
- const pts=[];for(let y=0;y<480;y+=4)for(let x=0;x<640;x+=4){const i=(y*640+x)*4;pts.push([d[i],d[i+1],d[i+2]])}
+ const pts=[];for(let y=0;y<960;y+=8)for(let x=0;x<1280;x+=8){const i=(y*1280+x)*4;pts.push([d[i],d[i+1],d[i+2]])}
  const rng=a=>{let mn=[255,255,255],mx=[0,0,0];for(const p of a)for(let k=0;k<3;k++){if(p[k]<mn[k])mn[k]=p[k];if(p[k]>mx[k])mx[k]=p[k]}let ch=0,r=0;for(let k=0;k<3;k++)if(mx[k]-mn[k]>r){r=mx[k]-mn[k];ch=k}return{ch,r}};
  let bx=[{a:pts,...rng(pts)}];
  while(bx.length<n){let bi=-1,br=0;bx.forEach((b,i)=>{if(b.a.length>1&&b.r>br){br=b.r;bi=i}});if(bi<0)break;
@@ -556,22 +555,20 @@ function medianCut(d,n){
 function palImg(id,bits,mode){
  const gray=mode==='gray',web=mode==='web';
  const key=[id,LAND1?1:0,OWNV,bits,mode].join();if(PQ[key])return PQ[key];
- const L=1<<bits,W=640,H=480,c0=cvx(W,H),g0=c0.getContext('2d',{willReadFrequently:true});g0.imageSmoothingQuality='high';g0.drawImage(img1(id).c,0,0,W,H);
+ const L=1<<bits,W=W1,H=H1,c0=cvx(W,H),g0=c0.getContext('2d',{willReadFrequently:true});g0.imageSmoothingQuality='high';g0.drawImage(img1(id).c,0,0);
  const d=g0.getImageData(0,0,W,H).data;
  if(gray)for(let i=0;i<W*H;i++){const v=Math.round(lum(d[i*4],d[i*4+1],d[i*4+2]));d[i*4]=d[i*4+1]=d[i*4+2]=v}
  let pal,n=L;if(web){pal=[];for(let r=0;r<6;r++)for(let g2=0;g2<6;g2++)for(let b2=0;b2<6;b2++)pal.push([r*51,g2*51,b2*51]);n=216}else if(gray){pal=[];for(let i=0;i<L;i++){const v=Math.round(i*255/(L-1));pal.push([v,v,v])}}else pal=medianCut(d,L);
  const memo=new Int16Array(32768).fill(-1);
  const idx=(r,g,b)=>{const k=(r>>3)<<10|(g>>3)<<5|b>>3;if(memo[k]>=0)return memo[k];let bi=0,bd=1e9;for(let i=0;i<n;i++){const p=pal[i],e=(p[0]-r)**2+(p[1]-g)**2+(p[2]-b)**2;if(e<bd){bd=e;bi=i}}memo[k]=bi;return bi};
- const c=cvx(W,H),g=c.getContext('2d'),o=g.createImageData(W,H);
- for(let i=0;i<W*H;i++){const p=pal[idx(d[i*4],d[i*4+1],d[i*4+2])];o.data[i*4]=p[0];o.data[i*4+1]=p[1];o.data[i*4+2]=p[2];o.data[i*4+3]=255}
- g.putImageData(o,0,0);return PQ[key]={c,pal,idx,n};
+ const c=cvx(W,H),g=c.getContext('2d'),o=g.createImageData(W,H),ix=new Uint8Array(W*H);
+ for(let i=0;i<W*H;i++){const k=idx(d[i*4],d[i*4+1],d[i*4+2]);ix[i]=k;const p=pal[k];o.data[i*4]=p[0];o.data[i*4+1]=p[1];o.data[i*4+2]=p[2];o.data[i*4+3]=255}
+ g.putImageData(o,0,0);return PQ[key]={c,pal,idx,n,ix};
 }
-function codeGrid(id,bits,mode){
- const gray=mode==='gray',[cw,ch]=CG[bits],pq=palImg(id,bits,mode),t=cvx(cw,ch),g=t.getContext('2d',{willReadFrequently:true});g.imageSmoothingQuality='high';g.drawImage(img1(id).c,0,0,cw,ch);
- const d=g.getImageData(0,0,cw,ch).data,out=[];
- for(let i=0;i<cw*ch;i++){let r=d[i*4],gg=d[i*4+1],b=d[i*4+2];if(gray)r=gg=b=Math.round(lum(r,gg,b));out.push(pq.idx(r,gg,b))}
- return{cw,ch,out,pal:pq.pal};
-}
+let G2=null;
+const zc2=()=>clamp(Math.round(W1/S.z2/4)*4,4,W1);
+function clamp2(){const c=zc2(),r=c*3/4;S.lx2=clamp(S.lx2,0,W1-c);S.ly2=clamp(S.ly2,0,H1-r)}
+function setZoom2(z,fx,fy){const c0=zc2(),r0=c0*3/4;fx=fx==null?.5:fx;fy=fy==null?.5:fy;const ux=S.lx2+fx*c0,uy=S.ly2+fy*r0;S.z2=clamp(z,1,320);const c=zc2(),r=c*3/4;S.lx2=Math.round(ux-fx*c);S.ly2=Math.round(uy-fy*r);clamp2()}
 const bitW=(n,en)=>en?`${n} bit${n===1?'':'s'}`:(n===1?'1 bit':n<5?`${n} bity`:`${n} bitů`);
 TABS.push({name:tx('Paleta a bity','Palette and bits'),side:'27rem',
  build(){return `<div class="split"><div class="col">
@@ -590,6 +587,9 @@ TABS.push({name:tx('Paleta a bity','Palette and bits'),side:'27rem',
    <div class="ctl"><div class="hd"><span class="lbl">${tx('Paleta','Palette')}</span></div>
     <div class="chips g3"><button class="chip sm" data-k="pl2" data-v="col">${tx('Barvy','Colours')}</button><button class="chip sm" data-k="pl2" data-v="gray">${tx('Odstíny šedi','Greys')}</button><button class="chip sm" data-k="pl2" data-v="web" data-act="web2">${tx('Paleta GIF','GIF palette')}</button></div>
     <div class="chips" style="display:grid;grid-template-columns:1fr"><button class="chip sm tg" data-act="tg1" data-v="cd2" aria-pressed="true">${tx('Kódy pixelů (nuly a jedničky)','Pixel codes (zeros and ones)')}</button></div></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Zvětšení lupy','Lens magnification')}</span><span class="val" data-o="v_z2"></span></div>
+    <input type="range" data-k="z2" data-map="zm" min="0" max="100" step="1">
+    <div class="chips g4">${[1,8,64,320].map(v=>`<button class="chip sm" data-k="z2" data-v="${v}">${v}×</button>`).join('')}</div></div>
    <div class="hint" data-o="h2"></div>
    ${note(tx('<b>Paleta</b> je tabulka barev. Pixel si pamatuje jen <b>číslo</b> řádku v tabulce, a to zapsané n bity. Čím víc bitů, tím víc barev se do palety vejde: 1 bit dává 2 barvy, 8 bitů 256.','A <b>palette</b> is a table of colours. A pixel remembers only the <b>number</b> of a row in the table, written in n bits. The more bits, the more colours fit into the palette: 1 bit gives 2 colours, 8 bits 256.'))}
   </div></div>`},
@@ -601,9 +601,11 @@ TABS.push({name:tx('Paleta a bity','Palette and bits'),side:'27rem',
   OUT.kpb=()=>nf(S.pl2==='web'?216:1<<S.bd2);
   OUT.kpc=()=>`${nf(W1*H1*S.bd2/8)} <u>B</u>`;
   OUT.kpd=()=>S.pl2==='web'?tx(`+ paleta ${nf(216*3)} B`,`+ palette ${nf(216*3)} B`):S.pl2==='gray'?tx(`${nf(W1)} · ${nf(H1)} · ${S.bd2} ÷ 8`,`${nf(W1)} · ${nf(H1)} · ${S.bd2} ÷ 8`):tx(`+ paleta ${nf((1<<S.bd2)*3)} B`,`+ palette ${nf((1<<S.bd2)*3)} B`);
-  OUT.h2=()=>S.pl2==='web'?tx('Paleta GIF: pevných 216 barev, stejných pro každý obrázek. Dříve se používala pro GIF a web na displejích s 256 barvami. Barvy nejsou vybrané podle obrázku, proto je výsledek hrubý. Zbylých 40 míst z 256 zůstává nepoužito.','GIF palette: a fixed 216 colours, the same for every picture. It used to be common for GIF and the web on displays with 256 colours. The colours are not chosen from the picture, so the result is coarse. The remaining 40 of the 256 slots stay unused.'):S.cd2?tx(`Vpravo je zmenšený obrázek ${CG[S.bd2][0]} × ${CG[S.bd2][1]} pixelů. Každý čtvereček je jeden pixel a nese svůj kód. Tlačítkem Kódy pixelů se vrátíte k obrázku.`,`On the right is a reduced picture of ${CG[S.bd2][0]} × ${CG[S.bd2][1]} pixels. Every square is one pixel and carries its code. The Pixel codes button switches back to the picture.`):tx('Vpravo je obrázek jen s barvami z palety. Bez rozptylu, každý pixel dostane nejbližší barvu z palety.','On the right is the picture with only the palette colours. Without dithering, every pixel gets the nearest palette colour.');
-  ACT.web2=()=>{S.pl2='web';S.bd2=8;refresh()};
-  ACT.bd2=v=>{S.bd2=+v;if(S.pl2==='web'&&S.bd2!==8)S.pl2='col';refresh()};
+  OUT.h2=()=>(S.pl2==='web'?tx('Paleta GIF: pevných 216 barev, stejných pro každý obrázek. Dříve se používala pro GIF a web na displejích s 256 barvami. Barvy nejsou vybrané podle obrázku, proto je výsledek hrubý. Zbylých 40 míst z 256 zůstává nepoužito. ','GIF palette: a fixed 216 colours, the same for every picture. It used to be common for GIF and the web on displays with 256 colours. The colours are not chosen from the picture, so the result is coarse. The remaining 40 of the 256 slots stay unused. '):'')+tx('Přibližujte lupu kolečkem myši nad pravým detailem nebo posuvníkem. Tažením posunete lupu. Tlačítkem Kódy pixelů se v detailu ukážou kódy.','Zoom the lens with the mouse wheel over the right detail or with the slider. Drag to move the lens. The Pixel codes button shows the codes in the detail.');
+  const fitZ=()=>{if(!S.cd2)return;const c=S.bd2===1?32:S.bd2===2?16:8;setZoom2(W1/c,.5,.5)};
+  ACT.web2=()=>{S.pl2='web';S.bd2=8;fitZ();refresh()};
+  ACT.bd2=v=>{S.bd2=+v;if(S.pl2==='web'&&S.bd2!==8)S.pl2='col';fitZ();refresh()};
+  OUT.v_z2=()=>'× '+nf(W1/zc2(),W1/zc2()<10?1:0);
   ACT.own2=()=>{f.value='';f.click()};
   f.addEventListener('change',()=>{
    const file=f.files&&f.files[0];if(!file)return;
@@ -616,25 +618,46 @@ TABS.push({name:tx('Paleta a bity','Palette and bits'),side:'27rem',
    im.onerror=()=>{URL.revokeObjectURL(u);S.img2='house';refresh()};
    im.src=u;
   });
+  const cv=$('#cp');let mode=null,sx=0,sy=0,l0=null;
+  const inDet=p=>G2&&p.x>=G2.mx&&p.x<=G2.mx+G2.mw&&p.y>=G2.my&&p.y<=G2.my+G2.mh;
+  const inOrig=p=>G2&&p.x>=G2.ax&&p.x<=G2.ax+G2.aw&&p.y>=G2.ay&&p.y<=G2.ay+G2.ah;
+  const lensTo=p=>{const q=G2,c=zc2(),r=c*3/4;S.lx2=Math.round((p.x-q.ax)/q.aw*W1-c/2);S.ly2=Math.round((p.y-q.ay)/q.ah*H1-r/2);clamp2()};
+  cv.addEventListener('pointerdown',e=>{if(!G2)return;const p=ptr(e,cv);
+   if(inOrig(p)){mode='orig';cv.setPointerCapture(e.pointerId);lensTo(p);refresh()}
+   else if(inDet(p)){mode='det';cv.setPointerCapture(e.pointerId);sx=p.x;sy=p.y;l0=[S.lx2,S.ly2]}});
+  cv.addEventListener('pointermove',e=>{if(!mode)return;const p=ptr(e,cv);
+   if(mode==='orig'){lensTo(p);refresh()}
+   else{S.lx2=Math.round(l0[0]-(p.x-sx)/G2.cs);S.ly2=Math.round(l0[1]-(p.y-sy)/G2.cs);clamp2();refresh()}});
+  cv.addEventListener('pointerup',()=>{mode=null});cv.addEventListener('pointercancel',()=>{mode=null});
+  cv.addEventListener('wheel',e=>{if(!G2)return;const p=ptr(e,cv);if(!inDet(p)&&!inOrig(p))return;e.preventDefault();
+   const fx=inDet(p)?(p.x-G2.mx)/G2.mw:.5,fy=inDet(p)?(p.y-G2.my)/G2.mh:.5;
+   setZoom2(S.z2*(e.deltaY<0?1.18:1/1.18),fx,fy);refresh()},{passive:false});
  },
  render(){
   const cv=$('#cp');if(!cv)return;const {x,w,h,R}=setup(cv);
   $$('.tg').forEach(b=>{const o=!!S[b.dataset.v];b.classList.toggle('on',o);b.setAttribute('aria-pressed',o)});
-  const bits=S.bd2,L=1<<bits,gray=S.pl2==='gray',web=S.pl2==='web',nC=web?216:L,pad=R*1.6,gap=R*3.4,top=R*3.8,bot=R*6.6;
+  const bits=S.bd2,L=1<<bits,gray=S.pl2==='gray',web=S.pl2==='web',nC=web?216:L,pad=R*1.6,gap=R*3.4,top=R*3.8,bot=R*8.2;
   const colw=(w-pad*2-gap)/2;let pw=Math.min(colw,(h-top-bot)/.75);const ph=pw*.75;
   const ax=pad+(colw-pw)/2,mx=w-pad-colw+(colw-pw)/2,ay=top+Math.max(0,(h-top-bot-ph)/2),my=ay;
   const pq=palImg(S.img2==='own'&&!OWN1?'house':S.img2,bits,S.pl2),id=S.img2==='own'&&!OWN1?'house':S.img2;
   TH(x,tx('Původní obrázek','Original picture'),ax,ay-R*.9,R*.82,TXT);
   TH(x,bitW(bits,LANG==='en')+' · '+nf(nC)+' '+(gray?tx(L<5?'odstíny':'odstínů','shades'):tx(L<5?'barvy':'barev','colours'))+(web?tx(' (paleta GIF)',' (GIF palette)'):''),mx,ay-R*.9,R*.82,C.orange);
   draw(x,img1(id).c,ax,ay,pw,ph,true);
-  if(S.cd2){
-   const cg=codeGrid(id,bits,S.pl2),cs=pw/cg.cw;
-   for(let j=0;j<cg.ch;j++)for(let i=0;i<cg.cw;i++){const k=cg.out[j*cg.cw+i],p=cg.pal[k];x.fillStyle=rgbS(p[0],p[1],p[2]);x.fillRect(mx+i*cs,my+j*cs,cs+.5,cs+.5);
-    const s=k.toString(2).padStart(bits,'0'),fs=Math.min(cs*.5,cs*.92/((bits*.62+.1)*PZ));T(x,s,mx+(i+.5)*cs,my+(j+.5)*cs,fs,fgOn(p[0],p[1],p[2]),'center')}
-   x.strokeStyle='rgba(23,20,15,.35)';x.lineWidth=1;x.beginPath();for(let i=0;i<=cg.cw;i++){x.moveTo(mx+i*cs,my);x.lineTo(mx+i*cs,my+ph)}for(let j=0;j<=cg.ch;j++){x.moveTo(mx,my+j*cs);x.lineTo(mx+pw,my+j*cs)}x.stroke();
-  }else draw(x,pq.c,mx,my,pw,ph,true);
+  clamp2();const cols=zc2(),rows=cols*3/4,cs=pw/cols;
+  G2={ax,ay,aw:pw,ah:ph,mx,my,mw:pw,mh:ph,cs};
+  const rx=ax+S.lx2/W1*pw,ry=ay+S.ly2/H1*ph,rw=cols/W1*pw,rh=rows/H1*ph;
+  if(cols<W1){line(x,rx+rw,ry,mx,my,'rgba(255,151,46,.55)',1.2,[5,5]);line(x,rx+rw,ry+rh,mx,my+ph,'rgba(255,151,46,.55)',1.2,[5,5])}
+  x.strokeStyle=C.orange;x.lineWidth=2.5;x.strokeRect(rx,ry,Math.max(rw,2),Math.max(rh,2));
+  const t=cvx(cols,rows);t.getContext('2d').drawImage(pq.c,S.lx2,S.ly2,cols,rows,0,0,cols,rows);
+  draw(x,t,mx,my,pw,ph,cs<3);
+  const fs=Math.min(cs*.5,cs*.92/((bits*.62+.1)*PZ));
+  if(S.cd2&&fs>=R*.4){
+   for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){const k=pq.ix[(S.ly2+j)*W1+S.lx2+i],p=pq.pal[k];T(x,k.toString(2).padStart(bits,'0'),mx+(i+.5)*cs,my+(j+.5)*cs,fs,fgOn(p[0],p[1],p[2]),'center')}
+  }
+  if(cs>=R*1.1){x.strokeStyle='rgba(23,20,15,.45)';x.lineWidth=1;x.beginPath();for(let i=0;i<=cols;i++){x.moveTo(mx+i*cs,my);x.lineTo(mx+i*cs,my+ph)}for(let j=0;j<=rows;j++){x.moveTo(mx,my+j*cs);x.lineTo(mx+pw,my+j*cs)}x.stroke()}
+  if(S.cd2&&fs<R*.4){let c=4;for(let k=8;k<=W1;k+=4){const f2=Math.min(pw/k*.5,pw/k*.92/((bits*.62+.1)*PZ));if(f2>=R*.4)c=k;else break}T(x,tx(`Kódy se ukážou od zvětšení × ${nf(Math.round(W1/c))}`,`Codes appear from magnification × ${nf(Math.round(W1/c))}`),mx+pw/2,my+ph+R*1.3,R*.8,C.orange,'center')}
   x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(ax,ay,pw,ph);x.strokeStyle=C.orange;x.lineWidth=2;x.strokeRect(mx,my,pw,ph);
-  const sy=my+ph+R*1.1,sh=R*2.2;
+  const sy=my+ph+R*2.7,sh=R*2.2;
   {const gr=x.createLinearGradient(ax,0,ax+pw,0);for(let i=0;i<=12;i++)gr.addColorStop(i/12,`hsl(${i*30},85%,55%)`);x.fillStyle=gr;x.fillRect(ax,sy,pw,sh)}
   T(x,tx('až 16 777 216 barev','up to 16,777,216 colours'),ax,sy+sh+R*1.1,R*.72,TXT);
   const cw=pw/L;
