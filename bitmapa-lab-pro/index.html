@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bitmapa Lab Pro</title>
-<meta name="description" content="Interaktivní laboratoř bitmapové grafiky pro projekci: co je to pixel, barevná paleta a bitová hloubka, mixér RGB barev, RGB kódování, standardní rozlišení a formáty souborů a princip komprese. Určeno zejména velké dotykové panely. Pro mobily nevhodné.">
+<meta name="description" content="Interaktivní laboratoř bitmapové grafiky pro projekci: co je to pixel, barevná paleta a bitová hloubka, mixér RGB barev, RGB kódování, standardní rozlišení a formáty souborů, poměr stran a princip komprese. Určeno zejména velké dotykové panely. Pro mobily nevhodné.">
 <meta name="author" content="Ivo Bešťák">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/fonty/fonty.css">
@@ -189,7 +189,7 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 <meta property="og:site_name" content="gymplikace">
 <meta property="og:locale" content="cs_CZ">
 <meta property="og:title" content="Bitmapa Lab Pro">
-<meta property="og:description" content="Interaktivní laboratoř bitmapové grafiky pro projekci: co je to pixel, barevná paleta a bitová hloubka, mixér RGB barev, RGB kódování, standardní rozlišení a formáty souborů a princip komprese. Určeno zejména velké dotykové panely. Pro mobily nevhodné.">
+<meta property="og:description" content="Interaktivní laboratoř bitmapové grafiky pro projekci: co je to pixel, barevná paleta a bitová hloubka, mixér RGB barev, RGB kódování, standardní rozlišení a formáty souborů, poměr stran a princip komprese. Určeno zejména velké dotykové panely. Pro mobily nevhodné.">
 <meta property="og:url" content="https://aplikace.gympb.cz/bitmapa-lab-pro/">
 <meta name="robots" content="noindex">
 <meta property="og:image" content="https://aplikace.gympb.cz/bitmapa-lab-pro/nahled.png">
@@ -339,7 +339,7 @@ ACT.full=()=>{if(document.fullscreenElement)document.exitFullscreen();else docum
 function boot(){
  try{const th=localStorage.getItem('blp-theme');if(th==='dark'||th==='light')document.documentElement.dataset.theme=th}catch(e){}
  document.documentElement.lang=LANG;document.title='Bitmapa Lab Pro';
- $('meta[name=description]').content=tx('Interaktivní laboratoř bitmapové grafiky pro projekci: co je to pixel, barevná paleta a bitová hloubka, mixér RGB barev, RGB kódování, standardní rozlišení a formáty souborů a princip komprese. Určeno zejména velké dotykové panely. Pro mobily nevhodné.','Interactive lab on bitmap graphics for projection: what a pixel is, a colour palette and bit depth, an RGB colour mixer, RGB encoding, standard resolutions and file formats and the principle of compression. Intended mainly for large touch panels. Not suitable for phones.');
+ $('meta[name=description]').content=tx('Interaktivní laboratoř bitmapové grafiky pro projekci: co je to pixel, barevná paleta a bitová hloubka, mixér RGB barev, RGB kódování, standardní rozlišení a formáty souborů, poměr stran a princip komprese. Určeno zejména velké dotykové panely. Pro mobily nevhodné.','Interactive lab on bitmap graphics for projection: what a pixel is, a colour palette and bit depth, an RGB colour mixer, RGB encoding, standard resolutions and file formats, aspect ratio and the principle of compression. Intended mainly for large touch panels. Not suitable for phones.');
  $('#tBack').textContent=tx('← Všechny školní aplikace','← All school apps');$('#tSub').textContent=tx('Gymnázium Příbram · Informatika · GymTV','Gymnázium Příbram · Computer science · GymTV');
  $('#tabs').setAttribute('aria-label',tx('Záložky','Tabs'));
  $('#bThm').setAttribute('aria-label',tx('Světlý nebo tmavý vzhled','Light or dark theme'));$('#bFul').setAttribute('aria-label',tx('Celá obrazovka','Fullscreen'));
@@ -366,11 +366,11 @@ function boot(){
 </script>
 <script>
 /* ===== Bitmapa Lab Pro: společné části ===== */
-Object.assign(S,{m4:'res',ct4:'logo',ls5:'lossless',
- img1:'house',img2:'land',fm2:'dec',z2:40,lx2:700,ly2:520,img5:'land',bc5:8,k4r:true,k4g:true,k4b:true,gm4:false,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'col',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
+Object.assign(S,{m4:'res',m6:'cmp',ct4:'logo',ls5:'lossless',
+ img1:'house',img2:'land',fm2:'dec',z2:40,lx2:700,ly2:520,img5:'land',bc5:8,ar6:'169',sr6:'169',tr6:'43',fm6:'crop',img6:'land',ch4:'rgb',gm4:false,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'col',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
  b2:3,r:255,g:151,b:46,
  rs:32,bd:24,sz4:'fhd'});
-const MK={5:'m4'};
+const MK={5:'m4',6:'m6'};
 const modeSw=(n,items)=>`<div class="seg modes${items.length===3?' m3':''}">${items.map(([id,cs,en])=>`<button class="chip" data-k="${MK[n]}" data-v="${id}"><span>${tx(cs,en)}</span></button>`).join('')}</div>`;
 const note=h=>`<div class="callout">${h}</div>`;
 const fB=B=>B>=1e9?nf(B/1e9,2)+' GB':B>=1e6?nf(B/1e6,B>=1e8?0:B>=1e7?1:2)+' MB':B>=1e3?nf(B/1e3,B>=1e5?0:1)+' kB':nf(B)+' B';
@@ -760,7 +760,7 @@ TABS.push({name:tx('RGB kódování','RGB encoding'),side:'27rem',
     <input type="range" data-k="z5" data-map="zm" min="0" max="100" step="1">
     <div class="chips g4">${[1,8,64,320].map(v=>`<button class="chip sm" data-k="z5" data-v="${v}">${v}×</button>`).join('')}</div></div>
    <div class="ctl"><div class="hd"><span class="lbl">${tx('Barevné kanály v lupě','Colour channels in the lens')}</span></div>
-    <div class="chips g3"><button class="chip sm tg" data-act="tg1" data-v="k4r" aria-pressed="true">${tx('R červená','R red')}</button><button class="chip sm tg" data-act="tg1" data-v="k4g" aria-pressed="true">${tx('G zelená','G green')}</button><button class="chip sm tg" data-act="tg1" data-v="k4b" aria-pressed="true">${tx('B modrá','B blue')}</button></div>
+    <div class="chips g4" role="radiogroup" aria-label="${tx('Barevné kanály','Colour channels')}">${[['rgb','RGB','RGB'],['r','R','R'],['g','G','G'],['b','B','B'],['rg','R+G','R+G'],['rb','R+B','R+B'],['gb','G+B','G+B']].map(c=>`<button class="chip sm" role="radio" data-k="ch4" data-v="${c[0]}">${tx(c[1],c[2])}</button>`).join('')}</div>
     <div class="chips" style="display:grid;grid-template-columns:1fr"><button class="chip sm tg" data-act="tg1" data-v="gm4" aria-pressed="false">${tx('Jako odstíny šedi','As shades of grey')}</button></div></div>
    <div class="hint" data-o="h5"></div>
    ${note(tx('<b>Plná barva</b> zapisuje každý pixel třemi kódy, jedním pro červenou, zelenou a modrou. Při 8 bitech na kanál má každý kód 8 číslic a hodnoty 0 až 255, při 10 bitech 10 číslic a hodnoty 0 až 1023.','<b>Full colour</b> writes every pixel with three codes, one each for red, green and blue. With 8 bits per channel every code has 8 digits and values 0 to 255, with 10 bits 10 digits and values 0 to 1023.'))}
@@ -774,7 +774,7 @@ TABS.push({name:tx('RGB kódování','RGB encoding'),side:'27rem',
   OUT.kqc=()=>{const d=img1(S.img5).d,i=(S.sp5[1]*W1+S.sp5[0])*4,b=S.bc5;return ['R','G','B'].map((n,k)=>{const v=v5(d[i+k],b);return `<div class="cd"><b>${n}</b> ${String(v).padStart(4,' ').replace(/ /g,'&nbsp;')} = ${v.toString(2).padStart(b,'0')}</div>`}).join('')};
   OUT.kqd=()=>`${nf(W1*H1*3*S.bc5/8)} <u>B</u>`;
   OUT.kqe=()=>`${nf(W1*H1)} · ${3*S.bc5} ÷ 8`;
-  OUT.h5=()=>(!(S.k4r&&S.k4g&&S.k4b)||S.gm4?tx('Lupa ukazuje jen vybrané kanály. Barevně zůstávají vybrané kanály a ostatní jsou vypnuté, jako odstíny šedi se zobrazí jeden kanál, nebo průměr více kanálů. ','The lens shows only the chosen channels. In colour the chosen channels stay and the others are switched off; as shades of grey a single channel or the average of several channels is shown. '):'')+(S.bc5===10?tx('Zdrojový obrázek i displej mají 8 bitů, desetibitové hodnoty jsou z nich přepočtené (v · 1023 ÷ 255). Skutečný desetibitový snímek by měl jemnější odstupňování. Přibližujte lupu kolečkem myši.','The source picture and the display have 8 bits, the ten-bit values are converted from them (v · 1023 ÷ 255). A real ten-bit picture would have finer steps. Zoom the lens with the mouse wheel.'):tx('Přibližujte lupu kolečkem myši nad pravým detailem nebo posuvníkem. Od většího zvětšení se v pixelech ukážou kódy. Klepnutím vyberete pixel.','Zoom the lens with the mouse wheel over the right detail or with the slider. From a larger magnification the codes appear in the pixels. Tap to select a pixel.'));
+  OUT.h5=()=>(S.ch4!=='rgb'||S.gm4?tx('Lupa ukazuje jen vybrané kanály. Barevně zůstávají vybrané kanály a ostatní jsou vypnuté, jako odstíny šedi se zobrazí jeden kanál, nebo průměr více kanálů. ','The lens shows only the chosen channels. In colour the chosen channels stay and the others are switched off; as shades of grey a single channel or the average of several channels is shown. '):'')+(S.bc5===10?tx('Zdrojový obrázek i displej mají 8 bitů, desetibitové hodnoty jsou z nich přepočtené (v · 1023 ÷ 255). Skutečný desetibitový snímek by měl jemnější odstupňování. Přibližujte lupu kolečkem myši.','The source picture and the display have 8 bits, the ten-bit values are converted from them (v · 1023 ÷ 255). A real ten-bit picture would have finer steps. Zoom the lens with the mouse wheel.'):tx('Přibližujte lupu kolečkem myši nad pravým detailem nebo posuvníkem. Od většího zvětšení se v pixelech ukážou kódy. Klepnutím vyberete pixel.','Zoom the lens with the mouse wheel over the right detail or with the slider. From a larger magnification the codes appear in the pixels. Tap to select a pixel.'));
   ACT.own5=()=>{f.value='';f.click()};
   f.addEventListener('change',()=>{
    const file=f.files&&f.files[0];if(!file)return;
@@ -813,12 +813,12 @@ TABS.push({name:tx('RGB kódování','RGB encoding'),side:'27rem',
   const ax=pad+((w-pad*2-gap)/2-pw)/2,ay=top+(h-top-pad-ph)/2,mx=w-pad-((w-pad*2-gap)/2)+((w-pad*2-gap)/2-pw)/2,my=ay,cs=pw/cols;
   G5={ax,ay,aw:pw,ah:ph,mx,my,mw:pw,mh:ph,cs};
   TH(x,tx('Původní obrázek','Original picture'),ax,top-R*.9,R*.8,TXT);
-  TH(x,tx(`Lupa: ${cols} × ${rows} pixelů · ${b} bitů na kanál`,`Lens: ${cols} × ${rows} pixels · ${b} bits per channel`)+((S.k4r&&S.k4g&&S.k4b&&!S.gm4)?'':' · '+['R','G','B'].filter((n,q)=>[S.k4r,S.k4g,S.k4b][q]).join('+')+(S.gm4?tx(' šedě',' grey'):'')),mx,top-R*.9,R*.8,C.orange);
+  TH(x,tx(`Lupa: ${cols} × ${rows} pixelů · ${b} bitů na kanál`,`Lens: ${cols} × ${rows} pixels · ${b} bits per channel`)+((S.ch4==='rgb'&&!S.gm4)?'':' · '+(S.ch4==='rgb'?'RGB':S.ch4.toUpperCase().split('').join('+'))+(S.gm4?tx(' šedě',' grey'):'')),mx,top-R*.9,R*.8,C.orange);
   draw(x,im.c,ax,ay,pw,ph,true);x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(ax,ay,pw,ph);
   const rx=ax+S.lx5/W1*pw,ry=ay+S.ly5/H1*ph,rw=cols/W1*pw,rh=rows/H1*ph;
   if(cols<W1){line(x,rx+rw,ry,mx,my,'rgba(255,151,46,.55)',1.2,[5,5]);line(x,rx+rw,ry+rh,mx,my+ph,'rgba(255,151,46,.55)',1.2,[5,5])}
   x.strokeStyle=C.orange;x.lineWidth=2.5;x.strokeRect(rx,ry,Math.max(rw,2),Math.max(rh,2));
-  const act=[S.k4r,S.k4g,S.k4b],nAct=act.filter(Boolean).length,proc=!(nAct===3&&!S.gm4);
+  const act=['r','g','b'].map(c=>S.ch4.includes(c)||S.ch4==='rgb'),nAct=act.filter(Boolean).length,proc=!(nAct===3&&!S.gm4);
   const t=cvx(cols,rows),tg=t.getContext('2d',{willReadFrequently:true});tg.drawImage(im.c,S.lx5,S.ly5,cols,rows,0,0,cols,rows);
   if(proc){const dd=tg.getImageData(0,0,cols,rows),q=dd.data;for(let k=0;k<q.length;k+=4){const r=act[0]?q[k]:0,g2=act[1]?q[k+1]:0,b2=act[2]?q[k+2]:0;if(S.gm4){const v=nAct?Math.round(((act[0]?q[k]:0)+(act[1]?q[k+1]:0)+(act[2]?q[k+2]:0))/nAct):0;q[k]=q[k+1]=q[k+2]=v}else{q[k]=r;q[k+1]=g2;q[k+2]=b2}}tg.putImageData(dd,0,0)}
   draw(x,t,mx,my,pw,ph,cs<3);
@@ -924,6 +924,111 @@ TABS.push({name:tx('Standardní rozlišení','Standard resolutions'),side:'27rem
     });
     if(r<3)line(x,pad,y+rowH,pad+tw,y+rowH,GR,1);
    });
+  }
+  renderModes();
+ }});
+
+/* ---------- 6 Poměr stran ---------- */
+const AR=[
+ {id:'43',n:'4:3',r:4/3,l:['4:3','4:3'],u:['Starší televize se standardním rozlišením, monitory VGA a XGA, mnoho kompaktních fotoaparátů a tablety typu iPad.','Older standard-definition TVs, VGA and XGA monitors, many compact cameras and iPad-type tablets.']},
+ {id:'32',n:'3:2',r:1.5,l:['3:2 (na výšku 2:3)','3:2 (portrait 2:3)'],u:['Políčko kinofilmu 35 mm, zrcadlovky a bezzrcadlovky, klasické fotografie 10 × 15 cm. Při fotografování na výšku je to 2:3.','The 35 mm film frame, SLR and mirrorless cameras, classic 10 × 15 cm prints. Shot upright it is 2:3.']},
+ {id:'169',n:'16:9',r:16/9,l:['16:9','16:9'],u:['Televize HD a 4K, Full HD, YouTube, dnešní monitory a notebooky, video z mobilu.','HD and 4K television, Full HD, YouTube, today\'s monitors and laptops, phone video.']},
+ {id:'11',n:'1:1',r:1,l:['1:1 čtverec','1:1 square'],u:['Čtverec: profilové obrázky a ikony, příspěvky na sociálních sítích, středoformátové fotoaparáty 6 × 6 cm.','Square: profile pictures and icons, social network posts, 6 × 6 cm medium-format cameras.']},
+ {id:'239',n:'2,39:1',r:2.39,l:['2,39:1 kino','2.39:1 cinema'],u:['Kino: širokoúhlý anamorfní formát (CinemaScope, Panavision) u mnoha celovečerních filmů. Na televizi 16:9 se doplní černé pruhy nahoře a dole.','Cinema: the widescreen anamorphic format (CinemaScope, Panavision) of many feature films. On a 16:9 television black bars are added at the top and bottom.']},
+ {id:'143',n:'1,43:1',r:1.43,l:['1,43:1 IMAX 70 mm','1.43:1 IMAX 70 mm'],u:['IMAX na 70mm film: téměř čtvercový, velmi vysoký obraz pro obří plátna. Na televizi 16:9 by se doplnily svislé černé pruhy po stranách.','IMAX on 70 mm film: an almost square, very tall picture for giant screens. On a 16:9 television black bars would be added at the sides.']},
+ {id:'190',n:'1,90:1',r:1.9,l:['1,90:1 IMAX digital','1.90:1 IMAX digital'],u:['Digitální IMAX: obraz o něco širší než 16:9, v kině vyšší než kinofilmový 2,39:1.','Digital IMAX: a picture a little wider than 16:9, taller in the cinema than the 2.39:1 film format.']}];
+const arOf=id=>AR.find(a=>a.id===id)||AR[0];
+const arRect=r=>r>W1/H1?{sx:0,sy:(H1-W1/r)/2,sw:W1,sh:W1/r}:{sx:(W1-H1*r)/2,sy:0,sw:H1*r,sh:H1};
+let HIT6=[];
+const fitBox=(bw,bh,r)=>{const w=Math.min(bw,bh*r);return[w,w/r]};
+TABS.push({name:tx('Poměr stran','Aspect ratio'),side:'27rem',
+ build(){return `<div class="split"><div class="col">
+  <div class="scope grow"><canvas id="cr"></canvas><div class="tag" data-o="tag6"></div></div>
+  <div class="kpis">
+   <div class="card kpi"><span class="lbl" data-o="k6al"></span><div class="big sm" data-o="k6a"></div><small data-o="k6as"></small></div>
+   <div class="card kpi"><span class="lbl" data-o="k6bl"></span><div class="big sm" data-o="k6b"></div><small data-o="k6bs"></small></div>
+   <div class="card kpi"><span class="lbl" data-o="k6cl"></span><div class="big sm" data-o="k6c"></div><small data-o="k6cs"></small></div>
+  </div></div>
+  <div class="side card">
+   ${modeSw(6,[['cmp','Srovnání','Comparison'],['conv','Převod','Conversion']])}
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div>
+    <div class="chips g2">${['house','land','test','own'].map(k=>`<button class="chip sm" data-k="img6" data-v="${k}"${k==='own'?' data-act="own6"':''}>${tx(IMGN[k][0],IMGN[k][1])}</button>`).join('')}</div>
+    <input type="file" id="f6" accept="image/*" hidden></div>
+   <div data-mode="cmp" class="callout" data-o="u6"></div>
+   <div data-mode="cmp" class="hint">${tx('Klepnutím na obdélník vyberete poměr stran. Všechny obdélníky mají stejnou výšku.','Tap a rectangle to choose the aspect ratio. All rectangles have the same height.')}</div>
+   <div data-mode="conv" class="ctl"><div class="hd"><span class="lbl">${tx('Zdrojový poměr','Source ratio')}</span></div><div class="chips g4">${AR.map(a=>`<button class="chip sm" data-k="sr6" data-v="${a.id}">${a.n}</button>`).join('')}</div></div>
+   <div data-mode="conv" class="ctl"><div class="hd"><span class="lbl">${tx('Cílový poměr','Target ratio')}</span></div><div class="chips g4">${AR.map(a=>`<button class="chip sm" data-k="tr6" data-v="${a.id}">${a.n}</button>`).join('')}</div></div>
+   <div data-mode="conv" class="ctl"><div class="hd"><span class="lbl">${tx('Přizpůsobení','Fitting')}</span></div><div class="chips g2"><button class="chip sm" data-k="fm6" data-v="crop">${tx('Vyplnit: ořez','Fill: crop')}</button><button class="chip sm" data-k="fm6" data-v="bars">${tx('Vměstnat: pruhy','Fit: bars')}</button></div></div>
+   <div data-mode="conv" class="hint" data-o="h6"></div>
+   <div data-mode="cmp">${note(tx('<b>Poměr stran</b> je šířka děleno výškou. Obrázek s jiným poměrem než obrazovka se musí buď oříznout, nebo se doplní černými pruhy.','The <b>aspect ratio</b> is width divided by height. A picture whose ratio differs from the screen must either be cropped or padded with black bars.'))}</div>
+  </div></div>`},
+ init(){
+  const f=$('#f6'),cv=$('#cr');
+  const sel=()=>arOf(S.tr6);
+  const cv6=()=>{const rs=arOf(S.sr6).r,rt=arOf(S.tr6).r,wide=rs>rt+1e-6,narrow=rs<rt-1e-6;return{rs,rt,wide,narrow,same:!wide&&!narrow,loss:wide?1-rt/rs:narrow?1-rs/rt:0}};
+  OUT.tag6=()=>S.m6==='cmp'?tx('sedm běžných poměrů stran','seven common aspect ratios'):tx('ořez a černé pruhy při převodu poměru stran','cropping and black bars when converting the aspect ratio');
+  OUT.u6=()=>{const a=arOf(S.ar6);return `<b class="l">${tx(a.l[0],a.l[1])}</b>${tx(a.u[0],a.u[1])}`};
+  OUT.k6al=()=>S.m6==='cmp'?tx('Poměr stran','Aspect ratio'):tx('Převod','Conversion');
+  OUT.k6a=()=>S.m6==='cmp'?arOf(S.ar6).n:`${arOf(S.sr6).n} → ${arOf(S.tr6).n}`;
+  OUT.k6as=()=>S.m6==='cmp'?tx('šířka : výška','width : height'):tx('zdroj → cíl','source → target');
+  OUT.k6bl=()=>S.m6==='cmp'?tx('Desetinně','As a decimal'):(S.fm6==='crop'?tx('Ořez','Cropping'):tx('Černé pruhy','Black bars'));
+  OUT.k6b=()=>{if(S.m6==='cmp')return nf(arOf(S.ar6).r,2);const c=cv6();return c.same?tx('žádné','none'):nf(c.loss*100,0)+' %'};
+  OUT.k6bs=()=>{if(S.m6==='cmp')return tx('šířka ÷ výška','width ÷ height');const c=cv6();if(c.same)return tx('poměry jsou stejné','the ratios are equal');return S.fm6==='crop'?tx('plochy zdroje se ztratí','of the source area is lost'):tx('plochy cíle zůstane černé','of the target area stays black')};
+  OUT.k6cl=()=>S.m6==='cmp'?tx('Při výšce 1080 pixelů','At a height of 1080 pixels'):tx('Kde','Where');
+  OUT.k6c=()=>{if(S.m6==='cmp')return nf(Math.round(arOf(S.ar6).r*1080))+' × 1080';const c=cv6();if(c.same)return '–';return S.fm6==='crop'?(c.wide?tx('po stranách','at the sides'):tx('nahoře a dole','top and bottom')):(c.wide?tx('nahoře a dole','top and bottom'):tx('po stranách','at the sides'))};
+  OUT.k6cs=()=>S.m6==='cmp'?tx('šířka × výška','width × height'):tx('kde se obraz ztratí nebo přibudou pruhy','where the picture is lost or bars are added');
+  OUT.h6=()=>tx('Vyplnit: obraz zaplní celý cíl a přebytek se ořízne. Vměstnat: celý obraz se vejde do cíle a zbytek zaplní černé pruhy.','Fill: the picture covers the whole target and the excess is cropped. Fit: the whole picture fits into the target and black bars fill the rest.');
+  ACT.own6=()=>{f.value='';f.click()};
+  f.addEventListener('change',()=>{
+   const file=f.files&&f.files[0];if(!file)return;
+   const im=new Image(),u=URL.createObjectURL(file);
+   im.onload=()=>{
+    const c=cvx(W1,H1),g=c.getContext('2d'),k=Math.max(W1/im.naturalWidth,H1/im.naturalHeight),sw=W1/k,sh=H1/k;
+    g.imageSmoothingQuality='high';g.drawImage(im,(im.naturalWidth-sw)/2,(im.naturalHeight-sh)/2,sw,sh,0,0,W1,H1);
+    URL.revokeObjectURL(u);OWN1=c;OWNV++;delete IM1.own;S.img6='own';refresh();
+   };
+   im.onerror=()=>{URL.revokeObjectURL(u);S.img6='house';refresh()};
+   im.src=u;
+  });
+  cv.addEventListener('pointerdown',e=>{if(S.m6!=='cmp')return;const p=ptr(e,cv);for(const t of HIT6){if(p.x>=t.x&&p.x<=t.x+t.w&&p.y>=t.y&&p.y<=t.y+t.h){S.ar6=t.id;refresh();break}}});
+ },
+ render(){
+  const cv=$('#cr');if(!cv)return;const {x,w,h,R}=setup(cv);const id=S.img6==='own'&&!OWN1?'house':S.img6,base=img1(id).c;
+  const pad=R*1.6;
+  if(S.m6==='cmp'){
+   const rows=[AR.slice(0,4),AR.slice(4)],gap=R*1.6,top=R*3,lab=R*3.2;
+   const sums=rows.map(r=>r.reduce((a,b)=>a+b.r,0));
+   const rh=Math.min((h-top-R*1.5-2*lab)/2,...rows.map((r,i)=>(w-pad*2-gap*(r.length-1))/sums[i]));
+   HIT6=[];
+   rows.forEach((row,ri)=>{
+    const tw=row.reduce((a,b)=>a+b.r*rh,0)+gap*(row.length-1);let cx=(w-tw)/2;const y=top+ri*(rh+lab);
+    row.forEach(a=>{
+     const bw=a.r*rh,sel=a.id===S.ar6,rc=arRect(a.r);
+     x.drawImage(base,rc.sx,rc.sy,rc.sw,rc.sh,cx,y,bw,rh);
+     x.strokeStyle=sel?C.orange:GR2;x.lineWidth=sel?3:1;x.strokeRect(cx,y,bw,rh);
+     TH(x,tx(a.l[0],a.l[1]),cx+bw/2,y+rh+R*1.2,R*.78,sel?C.orange:C.cream,'center');
+     HIT6.push({id:a.id,x:cx,y,w:bw,h:rh+lab*.6});cx+=bw+gap});
+   });
+  }else{
+   const colw=(w-pad*2-R*4)/2,ph=h-R*8,top=R*3.8,cy0=top+(h-top-R*3-ph)/2;
+   const as=arOf(S.sr6),at=arOf(S.tr6),rs=as.r,rt=at.r,wide=rs>rt+1e-6,narrow=rs<rt-1e-6,crop=S.fm6==='crop';
+   const [sw0,sh0]=fitBox(colw,ph,rs),[tw0,th0]=fitBox(colw,ph,rt);
+   const sx0=pad+(colw-sw0)/2,sy0=cy0+(ph-sh0)/2,tx0=w-pad-colw+(colw-tw0)/2,ty0=cy0+(ph-th0)/2;
+   TH(x,tx('Zdroj ','Source ')+as.n,pad,top-R*.9,R*.82,TXT);
+   TH(x,tx('Cíl ','Target ')+at.n+' · '+(wide?(crop?tx('ořez po stranách','cropped at the sides'):tx('pruhy nahoře a dole','bars top and bottom')):narrow?(crop?tx('ořez nahoře a dole','cropped top and bottom'):tx('pruhy po stranách','bars at the sides')):tx('beze změny','unchanged')),w-pad-colw,top-R*.9,R*.82,C.orange);
+   const rc=arRect(rs);x.drawImage(base,rc.sx,rc.sy,rc.sw,rc.sh,sx0,sy0,sw0,sh0);
+   // kept part of source
+   let kx=0,ky=0,kw=1,kh=1;
+   if(crop){if(wide){kw=rt/rs;kx=(1-kw)/2}else if(narrow){kh=rs/rt;ky=(1-kh)/2}
+    x.fillStyle='rgba(0,0,0,.62)';if(wide){x.fillRect(sx0,sy0,sw0*kx,sh0);x.fillRect(sx0+sw0*(kx+kw),sy0,sw0*kx,sh0)}else if(narrow){x.fillRect(sx0,sy0,sw0,sh0*ky);x.fillRect(sx0,sy0+sh0*(ky+kh),sw0,sh0*ky)}
+    x.strokeStyle=C.orange;x.lineWidth=2.5;x.setLineDash([8,6]);x.strokeRect(sx0+sw0*kx,sy0+sh0*ky,sw0*kw,sh0*kh);x.setLineDash([])}
+   x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(sx0,sy0,sw0,sh0);
+   // target
+   x.fillStyle='#000';x.fillRect(tx0,ty0,tw0,th0);
+   if(crop){x.drawImage(base,rc.sx+rc.sw*kx,rc.sy+rc.sh*ky,rc.sw*kw,rc.sh*kh,tx0,ty0,tw0,th0)}
+   else{const [iw,ih]=fitBox(tw0,th0,rs);const ix=tx0+(tw0-iw)/2,iy=ty0+(th0-ih)/2;x.drawImage(base,rc.sx,rc.sy,rc.sw,rc.sh,ix,iy,iw,ih);
+    if(!(wide||narrow)){}else{const bw2=wide?th0-ih:tw0-iw;if(bw2>R*3.5){const lbl=tx('černý pruh','black bar');if(wide){T(x,lbl,tx0+tw0/2,ty0+(th0-ih)/4,R*.7,TXT,'center');T(x,lbl,tx0+tw0/2,ty0+th0-(th0-ih)/4,R*.7,TXT,'center')}else{T(x,lbl,tx0+(tw0-iw)/4,ty0+th0/2,R*.7,TXT,'center');T(x,lbl,tx0+tw0-(tw0-iw)/4,ty0+th0/2,R*.7,TXT,'center')}}}}
+   x.strokeStyle=C.orange;x.lineWidth=2;x.strokeRect(tx0,ty0,tw0,th0);
   }
   renderModes();
  }});
@@ -1051,7 +1156,7 @@ const H=[
  d:tx(`Plná barva jsou tři kódy po n bitech: 8 bitů dává 24 bitů na pixel, 10 bitů dává 30.`,`Full colour is three codes of n bits: 8 bits give 24 bits per pixel, 10 bits give 30.`)},
 {t:tx(`Standardní rozlišení`,`Standard resolutions`),
  a:tx(`<b>Rozlišení</b> je počet pixelů na šířku a na výšku. Počet pixelů je šířka · výška, takže při dvojnásobku obou rozměrů je pixelů čtyřikrát víc. Standardní rozlišení jsou například VGA 640 × 480, HD Ready 1280 × 720, Full HD 1920 × 1080, QHD 2560 × 1440, 4K 3840 × 2160 a 8K 7680 × 4320.`,`<b>Resolution</b> is the number of pixels across and down. The pixel count is width · height, so when both dimensions double there are four times as many pixels. Standard resolutions are for example VGA 640 × 480, HD Ready 1280 × 720, Full HD 1920 × 1080, QHD 2560 × 1440, 4K 3840 × 2160 and 8K 7680 × 4320.`),
- b:tx(`Velikost obrázku bez komprese je pixely · bity na pixel ÷ 8. Full HD ve 24 bitech: 1920 · 1080 · 3 B = 6 220 800 B, asi 6,2 MB. Soubor na disku bývá menší, protože je komprimovaný (kapitola 6).`,`The size of a picture without compression is pixels · bits per pixel ÷ 8. Full HD at 24 bits: 1920 · 1080 · 3 B = 6,220,800 B, about 6.2 MB. A file on disk is usually smaller because it is compressed (chapter 6).`),
+ b:tx(`Velikost obrázku bez komprese je pixely · bity na pixel ÷ 8. Full HD ve 24 bitech: 1920 · 1080 · 3 B = 6 220 800 B, asi 6,2 MB. Soubor na disku bývá menší, protože je komprimovaný (kapitola 7).`,`The size of a picture without compression is pixels · bits per pixel ÷ 8. Full HD at 24 bits: 1920 · 1080 · 3 B = 6,220,800 B, about 6.2 MB. A file on disk is usually smaller because it is compressed (chapter 7).`),
  eh:tx(`Formáty souborů`,`File formats`),
  e:[tx(`<b>BMP</b> bývá bez komprese. <b>GIF</b> je bezeztrátový, má nejvýše 256 barev, jednoduchou průhlednost a animace. <b>PNG</b> je bezeztrátový s plnou barvou a plynulou průhledností. <b>JPEG</b> je ztrátový a hodí se na fotografie.`,`<b>BMP</b> is usually uncompressed. <b>GIF</b> is lossless, has at most 256 colours, simple transparency and animation. <b>PNG</b> is lossless with full colour and smooth transparency. <b>JPEG</b> is lossy and suits photographs.`),
     tx(`<b>Pravidlo výběru.</b> Fotografie: JPEG. Logo, schéma, snímek obrazovky: PNG. Jednoduchá animace: GIF. Archiv originálů: bezeztrátový formát.`,`<b>Rule of choice.</b> Photographs: JPEG. Logos, diagrams, screenshots: PNG. Simple animation: GIF. Archive of originals: a lossless format.`)],
@@ -1059,6 +1164,17 @@ const H=[
     tx(`Ve standardních rozlišeních vyberte Full HD a 24 bitů a přečtěte velikost.`,`In the standard resolutions choose Full HD and 24 bits and read the size.`),
     tx(`Ve formátech klepněte na čtyři druhy obsahu a řekněte, proč by jiný formát nevyhovoval.`,`In the formats tap the four kinds of content and say why another format would not suit.`)],
  d:tx(`Pixely = šířka · výška. Velikost bez komprese = pixely · bity ÷ 8. Formát volte podle obsahu.`,`Pixels = width · height. Size without compression = pixels · bits ÷ 8. Choose the format by content.`)},
+{t:tx(`Poměr stran`,`Aspect ratio`),
+ a:tx(`<b>Poměr stran</b> je šířka děleno výškou. Obrazovka 16:9 je o 78 % širší než vysoká, čtverec 1:1 je stejně široký jako vysoký. Poměr nezávisí na počtu pixelů: Full HD a 4K mají stejný poměr 16:9.`,`The <b>aspect ratio</b> is width divided by height. A 16:9 screen is 78 % wider than tall, a 1:1 square is as wide as tall. The ratio does not depend on the number of pixels: Full HD and 4K both have 16:9.`),
+ b:tx(`Když má obrázek jiný poměr než obrazovka, nejde ho zobrazit celý a zároveň bez pruhů. Buď se přebytek <b>ořízne</b> (obraz zaplní celou obrazovku), nebo se obraz zmenší a zbylé místo vyplní <b>černé pruhy</b>.`,`When a picture has a different ratio from the screen it cannot be shown whole and without bars at the same time. Either the excess is <b>cropped</b> (the picture fills the whole screen) or the picture is shrunk and the remaining space is filled with <b>black bars</b>.`),
+ eh:tx(`Co se tu děje`,`What is going on`),
+ e:[tx(`<b>Zdroj je širší než cíl.</b> Při ořezu se ztratí okraje vlevo a vpravo, při vměstnání jsou černé pruhy nahoře a dole (letterbox).`,`<b>The source is wider than the target.</b> Cropping loses the left and right edges, fitting gives black bars at the top and bottom (letterbox).`),
+    tx(`<b>Zdroj je užší než cíl.</b> Při ořezu se ztratí horní a dolní okraj, při vměstnání jsou černé pruhy po stranách (pillarbox).`,`<b>The source is narrower than the target.</b> Cropping loses the top and bottom edges, fitting gives black bars at the sides (pillarbox).`),
+    tx(`<b>Kino.</b> Filmový formát 2,39:1 je širší než televize 16:9, proto se na televizi objeví černé pruhy. IMAX 1,43:1 je naopak téměř čtvercový a na televizi 16:9 by měl svislé pruhy.`,`<b>Cinema.</b> The 2.39:1 film format is wider than a 16:9 television, so black bars appear on the television. IMAX 1.43:1 is almost square and on a 16:9 television it would have vertical bars.`)],
+ c:[tx(`Převeďte 16:9 na 4:3 s ořezem a pak s pruhy. Co se ztratí v prvním a co zabere místo ve druhém případě?`,`Convert 16:9 to 4:3 with cropping and then with bars. What is lost in the first case and what takes up room in the second?`),
+    tx(`Zvolte zdroj 2,39:1 a cíl 16:9. Kde přibudou černé pruhy?`,`Choose the source 2.39:1 and the target 16:9. Where do the black bars appear?`),
+    tx(`Zvolte zdroj 1:1 a cíl 16:9 a porovnejte, kolik obrazu ztratí ořez.`,`Choose the source 1:1 and the target 16:9 and compare how much of the picture the cropping loses.`)],
+ d:tx(`Různý poměr stran se řeší ořezem, nebo černými pruhy.`,`A different aspect ratio is solved by cropping or by black bars.`)},
 {t:tx(`Princip komprese`,`Compression principle`),
  a:tx(`Komprese zmenšuje datový zápis obrazu. <b>Bezeztrátová</b> komprese po rozbalení obnoví obraz přesně, pixel po pixelu. <b>Ztrátová</b> komprese část údajů nevratně zahodí a po rozbalení je obraz jen podobný originálu.`,`Compression shrinks the data record of a picture. <b>Lossless</b> compression restores the picture exactly after unpacking, pixel by pixel. <b>Lossy</b> compression irreversibly discards part of the data and after unpacking the picture is only similar to the original.`),
  b:tx(`Ztrátová komprese soubor zmenší víc, ale zahozené údaje už nejdou vrátit, proto se hodí tam, kde drobné rozdíly oko nepozná (fotografie). Na ostré hrany, text a grafiku se používá bezeztrátová.`,`Lossy compression shrinks the file more, but discarded data cannot be brought back, so it suits places where the eye cannot see small differences (photographs). Lossless compression is used for sharp edges, text and graphics.`),
@@ -1091,7 +1207,7 @@ window.blpHelpInit=function(){
 <script>
 const A=(u,t)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`;
 const PNG3=A('https://www.w3.org/TR/png-3/','W3C: Portable Network Graphics (PNG) Specification, Third Edition');
-window.LXC={ns:'blp',num:true,min:tx('asi 45 minut','about 45 minutes'),
+window.LXC={ns:'blp',num:true,min:tx('asi 50 minut','about 50 minutes'),
 PRE:[
  {t:tx('Pixel pod lupou','A pixel under the lens'),d:tx('Kapitola 1: největší zvětšení lupy a zapnutá čísla RGB: vidět jsou čísla každého pixelu.','Chapter 1: the largest lens magnification with the RGB numbers on: the numbers of every pixel are visible.'),f:()=>{Object.assign(S,{img1:'house',zm:320,grid1:true,nums1:true,lx:798,ly:550,sp:[800,552]});go(0)}},
  {t:tx('Jeden bit na pixel','One bit per pixel'),d:tx('Kapitola 2: 1 bit, vpravo nuly a jedničky.','Chapter 2: 1 bit, zeros and ones on the right.'),f:()=>{Object.assign(S,{bd2:1,pl2:'col',cd2:true});go(1)}},
@@ -1103,14 +1219,17 @@ PRE:[
  {t:tx('Zdvojnásobení rozlišení','Doubling the resolution'),d:tx('Kapitola 5, Rozlišení: 32 × 24 pixelů, další stupeň je 64 × 48.','Chapter 5, Resolution: 32 × 24 pixels, the next step is 64 × 48.'),f:()=>{Object.assign(S,{m4:'res',rs:32});go(4)}},
  {t:tx('Full HD bez komprese','Full HD without compression'),d:tx('Kapitola 5, Standardní rozlišení: Full HD, 24 bitů.','Chapter 5, Standard resolutions: Full HD, 24 bits.'),f:()=>{Object.assign(S,{m4:'std',sz4:'fhd',bd:24});go(4)}},
  {t:tx('Formát pro logo','Format for a logo'),d:tx('Kapitola 5, Formáty souborů: logo s průhledným pozadím.','Chapter 5, File formats: a logo with a transparent background.'),f:()=>{Object.assign(S,{m4:'fmt',ct4:'logo'});go(4)}},
- {t:tx('Ztrátová a bezeztrátová komprese','Lossy and lossless compression'),d:tx('Kapitola 6: bezeztrátová komprese, pak přepnout na ztrátovou.','Chapter 6: lossless compression, then switch to lossy.'),f:()=>{S.ls5='lossless';go(5)}}],
+ {t:tx('16:9 na 4:3, ořez','16:9 to 4:3, cropping'),d:tx('Kapitola 6: zdroj 16:9, cíl 4:3, vyplnit s ořezem.','Chapter 6: source 16:9, target 4:3, fill with cropping.'),f:()=>{Object.assign(S,{m6:'conv',sr6:'169',tr6:'43',fm6:'crop'});go(5)}},
+ {t:tx('Kinový formát na televizi','Cinema format on television'),d:tx('Kapitola 6: zdroj 2,39:1, cíl 16:9, černé pruhy.','Chapter 6: source 2.39:1, target 16:9, black bars.'),f:()=>{Object.assign(S,{m6:'conv',sr6:'239',tr6:'169',fm6:'bars'});go(5)}},
+ {t:tx('Ztrátová a bezeztrátová komprese','Lossy and lossless compression'),d:tx('Kapitola 7: bezeztrátová komprese, pak přepnout na ztrátovou.','Chapter 7: lossless compression, then switch to lossy.'),f:()=>{S.ls5='lossless';go(6)}}],
 PLAN:[
  [tx('Co je to pixel','What a pixel is'),'5 min',tx('Kap. 1, předvolba pixelu pod lupou.','Ch. 1, the pixel under the lens preset.')],
  [tx('Paleta a bitová hloubka','Palette and bit depth'),'8 min',tx('Kap. 2, předvolby jednoho bitu, 16 barev a 256 odstínů šedi.','Ch. 2, the one bit, 16 colours and 256 greys presets.')],
  [tx('Mixér RGB barev','RGB colour mixer'),'8 min',tx('Kap. 3, předvolby žluté a oranžové #FF972E.','Ch. 3, the yellow and orange #FF972E presets.')],
  [tx('RGB kódování','RGB encoding'),'5 min',tx('Kap. 4, předvolba deseti bitů s lupou.','Ch. 4, the ten bits preset with the lens.')],
  [tx('Standardní rozlišení','Standard resolutions'),'10 min',tx('Kap. 5, předvolby zdvojnásobení, Full HD a loga.','Ch. 5, the doubling, Full HD and logo presets.')],
- [tx('Princip komprese','Compression principle'),'5 min',tx('Kap. 6, bezeztrátová, pak ztrátová.','Ch. 6, lossless, then lossy.')]],
+ [tx('Poměr stran','Aspect ratio'),'5 min',tx('Kap. 6, předvolby převodu 16:9 na 4:3 a kinového formátu.','Ch. 6, the 16:9 to 4:3 and cinema format presets.')],
+ [tx('Princip komprese','Compression principle'),'5 min',tx('Kap. 7, bezeztrátová, pak ztrátová.','Ch. 7, lossless, then lossy.')]],
 NOTES:[tx('Pořadí kapitol vychází jedna z druhé: pixel nese barvu, barva se zapisuje bity, bity určují velikost obrazu a komprese velikost zmenšuje.','The order of the chapters builds on itself: a pixel carries a colour, a colour is written in bits, bits determine the size of a picture and compression reduces the size.'),
  tx('Velikosti a počty se počítají přesně podle vzorců, které najdete v nápovědě (tlačítko ?).','Sizes and counts are calculated exactly by the formulas, which you can find in the help (the ? button).'),
  tx('Ukázka ztrátové komprese je ilustrace, aplikace nevysvětluje, jak komprese uvnitř funguje.','The lossy compression demo is an illustration, the app does not explain how compression works inside.'),
@@ -1121,6 +1240,7 @@ F:[
  [[tx('RGB','RGB'),tx('každý kanál 0 až 255','each channel 0 to 255')],[tx('Dvojice XY','Pair XY'),'16 · X + Y'],[tx('Příklad','Example'),'2E = 16 · 2 + 14 = 46'],[tx('Barva','Colour'),tx('#RRGGBB = 3 bajty','#RRGGBB = 3 bytes')]],
  [[tx('Bity na pixel','Bits per pixel'),tx('3 · n (n = bitů na kanál)','3 · n (n = bits per channel)')],[tx('Hodnoty kanálu','Channel values'),tx('0 až 2ⁿ − 1: 0 až 255 (8 bitů), 0 až 1023 (10 bitů)','0 to 2ⁿ − 1: 0 to 255 (8 bits), 0 to 1023 (10 bits)')],[tx('Příklad','Example'),tx('3 · 10 = 30 bitů → 2³⁰ = 1 073 741 824 barev','3 · 10 = 30 bits → 2³⁰ = 1,073,741,824 colours')]],
  [[tx('Velikost','Size'),tx('B = šířka · výška · bity ÷ 8','B = width · height · bits ÷ 8')],[tx('Full HD, 24 bitů','Full HD, 24 bits'),'1920 · 1080 · 24 ÷ 8 = 6 220 800 B']],
+ [[tx('Poměr stran','Aspect ratio'),tx('šířka ÷ výška','width ÷ height')],[tx('Ztráta při ořezu','Loss when cropping'),tx('1 − užší poměr ÷ širší poměr','1 − narrower ratio ÷ wider ratio')],[tx('Příklad','Example'),tx('16:9 → 4:3: 1 − (4/3) ÷ (16/9) = 25 % ztráta','16:9 → 4:3: 1 − (4/3) ÷ (16/9) = 25 % loss')]],
  [[tx('Dva druhy komprese','Two kinds of compression'),tx('bezeztrátová: po rozbalení přesně originál; ztrátová: část údajů pryč','lossless: exactly the original after unpacking; lossy: part of the data gone')],[tx('Pravidlo výběru','Rule of choice'),tx('fotografie JPEG, grafika PNG, animace GIF','photographs JPEG, graphics PNG, animation GIF')]]],
 GL:[
  [tx('Pixel','Pixel'),tx('Nejmenší bod bitmapy, nese jednu barvu zapsanou čísly.','The smallest dot of a bitmap, carries one colour written as numbers.'),[0,2]],
@@ -1132,20 +1252,23 @@ GL:[
  [tx('Barevná hloubka','Colour depth'),tx('Počet bitů na pixel. 8 bitů dává 256 hodnot, 24 bitů přes 16 milionů barev.','The number of bits per pixel. 8 bits give 256 values, 24 bits over 16 million colours.'),[1,3]],
  [tx('Rozlišení','Resolution'),tx('Počet pixelů na šířku a na výšku.','The number of pixels across and down.'),[4]],
  [tx('Megapixel (Mpx)','Megapixel (Mpx)'),tx('Milion pixelů; 1920 × 1080 je asi 2,1 Mpx.','A million pixels; 1920 × 1080 is about 2.1 Mpx.'),[4]],
- [tx('PNG, GIF, JPEG, BMP','PNG, GIF, JPEG, BMP'),tx('Nejčastější formáty bitmap, každý se hodí na jiný obsah.','The most common bitmap formats, each suits different content.'),[4,5]],
- [tx('Komprese','Compression'),tx('Zmenšení datového zápisu obrazu.','Shrinking the data record of a picture.'),[5]],
- [tx('Bezeztrátová a ztrátová komprese','Lossless and lossy compression'),tx('Bezeztrátová obraz obnoví přesně, ztrátová něco nevratně zahodí.','Lossless restores the picture exactly, lossy irreversibly discards something.'),[5]]],
+ [tx('PNG, GIF, JPEG, BMP','PNG, GIF, JPEG, BMP'),tx('Nejčastější formáty bitmap, každý se hodí na jiný obsah.','The most common bitmap formats, each suits different content.'),[4,6]],
+ [tx('Poměr stran','Aspect ratio'),tx('Šířka děleno výškou obrázku nebo obrazovky, například 16:9.','The width divided by the height of a picture or screen, for example 16:9.'),[5]],
+ [tx('Komprese','Compression'),tx('Zmenšení datového zápisu obrazu.','Shrinking the data record of a picture.'),[6]],
+ [tx('Bezeztrátová a ztrátová komprese','Lossless and lossy compression'),tx('Bezeztrátová obraz obnoví přesně, ztrátová něco nevratně zahodí.','Lossless restores the picture exactly, lossy irreversibly discards something.'),[6]]],
 SRC:[
  [],
  [],
  [A('https://www.w3.org/Graphics/Color/sRGB.html','W3C: A Standard Default Color Space for the Internet, sRGB'),A('https://www.w3.org/TR/css-color-4/','W3C: CSS Color Module Level 4, hexadecimální zápis')],
  [],
  [PNG3,A('https://www.w3.org/Graphics/GIF/spec-gif89a.txt','GIF89a Specification')],
+ [],
  []],
 D:{
  c1:()=>tx('Obrázek 1280 × 960 pixelů, lupa a zvětšená mřížka pixelů s čísly barev.','A 1280 × 960 pixel picture, the lens and the enlarged pixel grid with colour numbers.'),
  cp:()=>tx(`Obrázek ${bitW(S.bd2,false)} na pixel, paleta ${1<<S.bd2} ${S.pl2==='gray'?'odstínů šedi':'barev'}.`,`A picture with ${bitW(S.bd2,true)} per pixel, a palette of ${1<<S.bd2} ${S.pl2==='gray'?'greys':'colours'}.`),
  cq:()=>tx(`RGB kódování, ${S.bc5} bitů na kanál, lupa s kódy RGB pixelů.`,`RGB encoding, ${S.bc5} bits per channel, a lens with the RGB codes of pixels.`),
+ cr:()=>S.m6==='cmp'?tx('Sedm poměrů stran vedle sebe se stejnou výškou.','Seven aspect ratios side by side at the same height.'):tx(`Převod ze zdroje ${arOf(S.sr6).n} na cíl ${arOf(S.tr6).n}, ořez nebo černé pruhy.`,`Converting from the source ${arOf(S.sr6).n} to the target ${arOf(S.tr6).n}, cropping or black bars.`),
  c2:()=>tx(`Míchání světla RGB (${S.r}, ${S.g}, ${S.b}), barva #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`,`Mixing RGB light (${S.r}, ${S.g}, ${S.b}), the colour #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`),
  c4:()=>S.m4==='res'?tx(`Obrázek ${S.rs} × ${S.rs*3/4} pixelů.`,`A picture of ${S.rs} × ${S.rs*3/4} pixels.`):S.m4==='std'?tx('Velikost bez komprese podle standardního rozlišení.','Size without compression by standard resolution.'):tx('Srovnání formátů BMP, GIF, PNG a JPEG.','Comparison of the formats BMP, GIF, PNG and JPEG.'),
  c5:()=>tx('Obrázek před kompresí a po rozbalení, ztrátová a bezeztrátová komprese.','A picture before compression and after unpacking, lossy and lossless compression.')}};
