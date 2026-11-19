@@ -1193,7 +1193,13 @@ TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
  init(){
   const best=()=>{const V=vis8();if(!S.ct8)return{m:0,L:[]};const m=Math.max(...V.map(f=>f.s[S.ct8]));return{m,L:V.filter(f=>f.s[S.ct8]===m)}};
   document.addEventListener('click',e=>{const b=e.target.closest('[data-k=ct8]');if(!b)return;if(S.ct8===b.dataset.v){e.stopPropagation();e.preventDefault();S.ct8='';refresh()}},true);
-  $('#c8').addEventListener('pointerdown',e=>{if(S.ct8||!HIT8.V)return;const p=ptr(e,$('#c8')),g=HIT8;const i=Math.floor((p.y-g.y0)/g.rowH);if(p.y>=g.y0&&i>=0&&i<g.V.length){const id=g.V[i].id;S.f8=S.f8===id?'':id;refresh()}});
+  {const cv=$('#c8');cv.style.touchAction='none';let dr=null;
+   const clampS=()=>{const g=HIT8;S.sc8=Math.max(0,Math.min(g.max||0,S.sc8||0))};
+   cv.addEventListener('wheel',e=>{if(!HIT8.max)return;e.preventDefault();S.sc8=(S.sc8||0)+e.deltaY;clampS();refresh()},{passive:false});
+   cv.addEventListener('pointerdown',e=>{dr={y:e.clientY,s:S.sc8||0,m:false,p:ptr(e,cv)};try{cv.setPointerCapture(e.pointerId)}catch(_){}});
+   cv.addEventListener('pointermove',e=>{if(!dr)return;const dy=e.clientY-dr.y;if(Math.abs(dy)>6)dr.m=true;if(dr.m&&HIT8.max){S.sc8=dr.s-dy*(HIT8.k||1);clampS();refresh()}});
+   cv.addEventListener('pointerup',e=>{const d0=dr;dr=null;if(!d0||d0.m||S.ct8||!HIT8.V)return;const p=d0.p,g=HIT8;const i=Math.floor((p.y-g.y0+(S.sc8||0))/g.rowH);if(p.y>=g.y0&&i>=0&&i<g.V.length){const id=g.V[i].id;S.f8=S.f8===id?'':id;refresh()}});
+   cv.addEventListener('pointercancel',()=>{dr=null})}
   OUT.tag8=()=>tx('srovnání formátů podle přípon a vhodnosti','comparison of formats by extension and suitability');
   OUT.hs8=()=>S.as8==='common'?tx('Běžné formáty, které potkáte nejčastěji.','Common formats you meet most often.'):S.as8==='extra'?tx('Zajímavosti. Jejich znalost se nepožaduje.','Curiosities. Knowing them is not required.'):tx('Běžné formáty i zajímavosti. Znalost zajímavostí se nepožaduje.','Common formats and curiosities. Knowing the curiosities is not required.');
   OUT.k8a=()=>S.ct8?best().L.map(f=>f.n).join(', '):'–';OUT.k8a2=()=>S.ct8?tx(CT8[S.ct8].n[0],CT8[S.ct8].n[1]):tx('žádný obsah není vybrán','no content chosen');
@@ -1209,13 +1215,14 @@ TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
  render(){
   const cv=$('#c8');if(!cv)return;const {x,w,h,R}=setup(cv);const V=vis8(),pd=R*1.6;
   const cols=[.16,.2,.19,.15,.2,.1],heads=[tx('Formát a přípona','Format and extension'),tx('Barev','Colours'),tx('Komprese','Compression'),tx('Průhlednost','Transparency'),tx('Hodí se na','Good for'),tx('Vhodnost','Suitability')];
-  const tw=w-pd*2,top2=R*3.2,hh=R*2.2,rowH=Math.min((h-top2-hh-R*1.2)/V.length,R*7.5),m=S.ct8?Math.max(...V.map(f=>f.s[S.ct8])):0;
-  let cx=pd;const xs=cols.map(c=>{const v=cx;cx+=c*tw;return v});HIT8={y0:top2+hh,rowH,V};
+  const tw=w-pd*2,top2=R*3.2,hh=R*2.2,rowH=Math.min((h-top2-hh-R*1.2)/4,R*7.5),m=S.ct8?Math.max(...V.map(f=>f.s[S.ct8])):0;
+  let cx=pd;const xs=cols.map(c=>{const v=cx;cx+=c*tw;return v});const mx=Math.max(0,V.length*rowH+R*1.2-(h-top2-hh));S.sc8=Math.max(0,Math.min(mx,S.sc8||0));HIT8={y0:top2+hh,rowH,V,max:mx,k:h/cv.getBoundingClientRect().height};
   heads.forEach((t,i)=>{if(i<5||S.ct8)TH(x,t,xs[i]+R*.5,top2+hh/2,R*.85,TXT)});
   line(x,pd,top2+hh,pd+tw,top2+hh,GR2,1.2);
   const kk=Math.min(1,Math.max(.74,rowH/(R*4.4))),fs=R*.92*kk,cc={ly:C.orange,ll:C.good,bo:C.cream,no:TXT,nl:C.good};
+  x.save();x.beginPath();x.rect(0,top2+hh+1,w,h-top2-hh);x.clip();
   V.forEach((f,r)=>{
-   const y=top2+hh+r*rowH,sc=S.ct8?f.s[S.ct8]:0,isB=!!S.ct8&&sc===m&&m>0;
+   const y=top2+hh+r*rowH-(S.sc8||0),sc=S.ct8?f.s[S.ct8]:0,isB=!!S.ct8&&sc===m&&m>0;
    if(isB)rr(x,pd-R*.4,y+rowH*.05,tw+R*.8,rowH*.9,R*.5,'rgba(255,151,46,.2)',C.orange,2);
    if(!S.ct8&&S.f8===f.id)rr(x,pd-R*.4,y+rowH*.05,tw+R*.8,rowH*.9,R*.5,'rgba(244,241,234,.1)',C.cream,2.5);
    TH(x,f.n,xs[0]+R*.5,y+rowH*.33,Math.min(R*1.35*kk,rowH*.36),isB?C.orange:C.cream);T(x,f.ext,xs[0]+R*.5,y+rowH*.72,Math.min(R*.75*kk,rowH*.2),TXT);
@@ -1227,6 +1234,8 @@ TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
    if(S.ct8)for(let k=0;k<3;k++){x.beginPath();x.arc(xs[5]+R*1.1+k*R*1.8,y+rowH/2,R*.6*Math.max(kk,.7),0,TAU);if(k<sc){x.fillStyle=isB?C.orange:C.cream;x.fill()}else{x.strokeStyle=GR2;x.lineWidth=1.5;x.stroke()}}
    if(r<V.length-1)line(x,pd,y+rowH,pd+tw,y+rowH,GR,1);
   });
+  x.restore();
+  if(mx>0){const ty=top2+hh+R*.4,th=h-ty-R*.6,bh=Math.max(R*2,th*th/(th+mx));rr(x,w-R*.9,ty+(th-bh)*(S.sc8/mx),R*.35,bh,R*.17,'rgba(244,241,234,.35)',null,0)}
  }});
 
 /* obrázek zůstává stejný při přepnutí mezi kapitolou 1 a 2 */
