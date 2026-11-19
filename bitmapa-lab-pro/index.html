@@ -681,7 +681,7 @@ const RGBN={red:['červená','red'],green:['zelená','green'],blue:['modrá','bl
 const FMN={dec:['desítkově','decimal'],bin:['dvojkově','binary'],hex:['šestnáctkově','hexadecimal']};
 const fch=v=>S.fm2==='bin'?v.toString(2).padStart(8,'0'):S.fm2==='hex'?hx2(v):String(v);
 const fcol=(r,g,b,sep)=>S.fm2==='hex'?'#'+hx2(r)+hx2(g)+hx2(b):[r,g,b].map(fch).join(sep||(S.fm2==='bin'?' ':', '));
-const slider=(k,lbl,max)=>`<div class="ctl"><div class="hd"><span class="lbl">${lbl}</span><span class="val" data-o="v_${k}"></span></div><input type="range" data-k="${k}" min="0" max="${max}" step="1"><div class="chn" data-o="s_${k}"></div></div>`;
+const slider=(k,lbl,max)=>`<div class="ctl"><div class="hd"><span class="lbl">${lbl}</span><span class="val" data-o="v_${k}"></span></div><input type="range" data-k="${k}" min="0" max="${max}" step="1"></div>`;
 TABS.push({name:tx('Mixér RGB','RGB mixer'),side:'27rem',
  build(){return `<div class="split"><div class="col">
   <div class="scope grow"><canvas id="c2"></canvas><div class="tag">${tx('světlo se sčítá: tři čísla 0 až 255','light adds up: three numbers 0 to 255')}</div></div>
@@ -698,7 +698,7 @@ TABS.push({name:tx('Mixér RGB','RGB mixer'),side:'27rem',
     <div class="plist">${Object.keys(RGBP).map(k=>`<button class="chip sm" data-act="pre2" data-v="${k}"><i class="sw" style="background:${rgbS(...RGBP[k])}"></i>${tx(RGBN[k][0],RGBN[k][1])}</button><span class="pc" data-o="pc_${k}"></span>`).join('')}</div></div>
   </div></div>`},
  init(){
-  ['r','g','b'].forEach((k,n)=>{OUT['v_'+k]=()=>fch(S[k]);OUT['s_'+k]=()=>`<i style="background:rgb(${n===0?S.r:0},${n===1?S.g:0},${n===2?S.b:0})"></i>`});
+  ['r','g','b'].forEach((k,n)=>{OUT['v_'+k]=()=>fch(S[k]);});
   Object.keys(RGBP).forEach(k=>OUT['pc_'+k]=()=>fcol(...RGBP[k]));
   OUT.k2l=()=>tx(FMN[S.fm2][0][0].toUpperCase()+FMN[S.fm2][0].slice(1),FMN[S.fm2][1][0].toUpperCase()+FMN[S.fm2][1].slice(1));
   OUT.k2a=()=>S.fm2==='bin'?`<span class="bn">${fcol(S.r,S.g,S.b)}</span>`:S.fm2==='dec'?`${S.r} · ${S.g} · ${S.b}`:fcol(S.r,S.g,S.b);
