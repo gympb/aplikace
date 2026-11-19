@@ -1198,7 +1198,7 @@ TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
    cv.addEventListener('wheel',e=>{if(!HIT8.max)return;e.preventDefault();S.sc8=(S.sc8||0)+e.deltaY;clampS();refresh()},{passive:false});
    cv.addEventListener('pointerdown',e=>{dr={y:e.clientY,s:S.sc8||0,m:false,p:ptr(e,cv)};try{cv.setPointerCapture(e.pointerId)}catch(_){}});
    cv.addEventListener('pointermove',e=>{if(!dr)return;const dy=e.clientY-dr.y;if(Math.abs(dy)>6)dr.m=true;if(dr.m&&HIT8.max){S.sc8=dr.s-dy*(HIT8.k||1);clampS();refresh()}});
-   cv.addEventListener('pointerup',e=>{const d0=dr;dr=null;if(!d0||d0.m||S.ct8||!HIT8.V)return;const p=d0.p,g=HIT8;const i=Math.floor((p.y-g.y0+(S.sc8||0))/g.rowH);if(p.y>=g.y0&&i>=0&&i<g.V.length){const id=g.V[i].id;S.f8=S.f8===id?'':id;refresh()}});
+   cv.addEventListener('pointerup',e=>{const d0=dr;dr=null;if(!d0||d0.m||!HIT8.V)return;const p=d0.p,g=HIT8;const i=Math.floor((p.y-g.y0+(S.sc8||0))/g.rowH);if(p.y>=g.y0&&i>=0&&i<g.V.length){const id=g.V[i].id;S.f8=S.f8===id?'':id;refresh()}});
    cv.addEventListener('pointercancel',()=>{dr=null})}
   OUT.tag8=()=>tx('srovnání formátů podle přípon a vhodnosti','comparison of formats by extension and suitability');
   OUT.hs8=()=>S.as8==='common'?tx('Běžné formáty, které potkáte nejčastěji.','Common formats you meet most often.'):S.as8==='extra'?tx('Zajímavosti. Jejich znalost se nepožaduje.','Curiosities. Knowing them is not required.'):tx('Běžné formáty i zajímavosti. Znalost zajímavostí se nepožaduje.','Common formats and curiosities. Knowing the curiosities is not required.');
@@ -1206,11 +1206,11 @@ TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
   OUT.k8b=()=>{const V=vis8();return V.filter(f=>f.cm==='ly'||f.cm==='bo').length+' '+tx('z','of')+' '+V.length};
   OUT.k8c=()=>{const V=vis8();return V.filter(f=>f.tr>0).length+' '+tx('z','of')+' '+V.length};
   OUT.why8=()=>{
-   if(!S.ct8&&S.f8){const f=FM8.find(q=>q.id===S.f8),t=DET8[f.id];
+   if(S.f8){const f=FM8.find(q=>q.id===S.f8),t=DET8[f.id];
     return `<b class="l">${f.n} · ${f.ext.trim().replace(/ +/g,' ')}</b><b>${tx('Vlastnosti. ','Properties. ')}</b>${tx('Barev: ','Colours: ')}${tx(f.col[0],f.col[1])}. ${tx('Komprese: ','Compression: ')}${tx(f.cmT[0],f.cmT[1])}. ${tx('Průhlednost: ','Transparency: ')}${tx(f.trT[0],f.trT[1])}. ${tx('Hodí se na: ','Good for: ')}${tx(f.use[0],f.use[1])}.<br><b>${tx('Kódování. ','Coding. ')}</b>${tx(t.e[0],t.e[1])}<br><b>${tx('Historie. ','History. ')}</b>${tx(t.h[0],t.h[1])}`}
    if(!S.ct8)return `<b class="l">${tx('Všechny formáty','All formats')}</b>${tx('Není vybrán žádný obsah, tabulka ukazuje jen vlastnosti formátů. Klepněte na řádek a zobrazí se popis, kódování a historie formátu.','No content is chosen, the table shows only the properties of the formats. Tap a row to show the description, coding and history of the format.')}`;
    return `<b class="l">${tx(CT8[S.ct8].n[0],CT8[S.ct8].n[1])}</b>${tx(CT8[S.ct8].why[0],CT8[S.ct8].why[1])}`};
-  OUT.hint8=()=>!S.ct8?tx('Klepnutím na vybraný obsah ho vypnete. Bez vybraného obsahu se zobrazí všechny formáty bez hodnocení.','Tap the chosen content to turn it off. Without chosen content all formats are shown without rating.'):tx('Tečky ukazují vhodnost formátu pro vybraný obsah. Podbarvený řádek je nejlepší volba.','The dots show how well a format suits the chosen content. The highlighted row is the best choice.');
+  OUT.hint8=()=>!S.ct8?tx('Klepnutím na vybraný obsah ho vypnete. Bez vybraného obsahu se zobrazí všechny formáty bez hodnocení. Klepnutím na řádek zobrazíte popis, kódování a historii formátu.','Tap the chosen content to turn it off. Without chosen content all formats are shown without rating. Tap a row to show its description, coding and history.'):tx('Tečky ukazují vhodnost formátu pro vybraný obsah. Podbarvený řádek je nejlepší volba. Klepnutím na řádek zobrazíte popis, kódování a historii formátu.','The dots show how well a format suits the chosen content. The highlighted row is the best choice. Tap a row to show the description, coding and history of the format.');
  },
  render(){
   const cv=$('#c8');if(!cv)return;const {x,w,h,R}=setup(cv);const V=vis8(),pd=R*1.6;
@@ -1224,7 +1224,7 @@ TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
   V.forEach((f,r)=>{
    const y=top2+hh+r*rowH-(S.sc8||0),sc=S.ct8?f.s[S.ct8]:0,isB=!!S.ct8&&sc===m&&m>0;
    if(isB)rr(x,pd-R*.4,y+rowH*.05,tw+R*.8,rowH*.9,R*.5,'rgba(255,151,46,.2)',C.orange,2);
-   if(!S.ct8&&S.f8===f.id)rr(x,pd-R*.4,y+rowH*.05,tw+R*.8,rowH*.9,R*.5,'rgba(244,241,234,.1)',C.cream,2.5);
+   if(S.f8===f.id)rr(x,pd-R*.4,y+rowH*.05,tw+R*.8,rowH*.9,R*.5,'rgba(244,241,234,.1)',C.cream,2.5);
    TH(x,f.n,xs[0]+R*.5,y+rowH*.33,Math.min(R*1.35*kk,rowH*.36),isB?C.orange:C.cream);T(x,f.ext,xs[0]+R*.5,y+rowH*.72,Math.min(R*.75*kk,rowH*.2),TXT);
    [[f.col,C.cream,1],[f.cmT,cc[f.cm],2],[f.trT,f.tr?C.cream:TXT,3],[f.use,C.cream,4]].forEach(([t,colr,i])=>{
     const maxW=cols[i]*tw-R;let lines=[''];x.font=`500 ${fs}px "Atkinson Hyperlegible Next",sans-serif`;
