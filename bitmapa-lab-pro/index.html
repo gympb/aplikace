@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bitmapa Lab Pro</title>
-<meta name="description" content="Interaktivní laboratoř bitmapové grafiky pro projekci: co je to pixel, barevná paleta a bitová hloubka, mixér RGB barev, barevná hloubka, plná barva 8 a 10 bitů, standardní formáty a rozlišení a princip komprese. Určeno zejména velké dotykové panely. Pro mobily nevhodné.">
+<meta name="description" content="Interaktivní laboratoř bitmapové grafiky pro projekci: co je to pixel, barevná paleta a bitová hloubka, mixér RGB barev, RGB kódování, standardní formáty a rozlišení a princip komprese. Určeno zejména velké dotykové panely. Pro mobily nevhodné.">
 <meta name="author" content="Ivo Bešťák">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/fonty/fonty.css">
@@ -189,7 +189,7 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 <meta property="og:site_name" content="gymplikace">
 <meta property="og:locale" content="cs_CZ">
 <meta property="og:title" content="Bitmapa Lab Pro">
-<meta property="og:description" content="Interaktivní laboratoř bitmapové grafiky pro projekci: co je to pixel, barevná paleta a bitová hloubka, mixér RGB barev, barevná hloubka, plná barva 8 a 10 bitů, standardní formáty a rozlišení a princip komprese. Určeno zejména velké dotykové panely. Pro mobily nevhodné.">
+<meta property="og:description" content="Interaktivní laboratoř bitmapové grafiky pro projekci: co je to pixel, barevná paleta a bitová hloubka, mixér RGB barev, RGB kódování, standardní formáty a rozlišení a princip komprese. Určeno zejména velké dotykové panely. Pro mobily nevhodné.">
 <meta property="og:url" content="https://aplikace.gympb.cz/bitmapa-lab-pro/">
 <meta name="robots" content="noindex">
 <meta property="og:image" content="https://aplikace.gympb.cz/bitmapa-lab-pro/nahled.png">
@@ -339,7 +339,7 @@ ACT.full=()=>{if(document.fullscreenElement)document.exitFullscreen();else docum
 function boot(){
  try{const th=localStorage.getItem('blp-theme');if(th==='dark'||th==='light')document.documentElement.dataset.theme=th}catch(e){}
  document.documentElement.lang=LANG;document.title='Bitmapa Lab Pro';
- $('meta[name=description]').content=tx('Interaktivní laboratoř bitmapové grafiky pro projekci: co je to pixel, barevná paleta a bitová hloubka, mixér RGB barev, barevná hloubka, plná barva 8 a 10 bitů, standardní formáty a rozlišení a princip komprese. Určeno zejména velké dotykové panely. Pro mobily nevhodné.','Interactive lab on bitmap graphics for projection: what a pixel is, a colour palette and bit depth, an RGB colour mixer, colour depth, full colour with 8 and 10 bits, standard formats and resolutions and the principle of compression. Intended mainly for large touch panels. Not suitable for phones.');
+ $('meta[name=description]').content=tx('Interaktivní laboratoř bitmapové grafiky pro projekci: co je to pixel, barevná paleta a bitová hloubka, mixér RGB barev, RGB kódování, standardní formáty a rozlišení a princip komprese. Určeno zejména velké dotykové panely. Pro mobily nevhodné.','Interactive lab on bitmap graphics for projection: what a pixel is, a colour palette and bit depth, an RGB colour mixer, RGB encoding, standard formats and resolutions and the principle of compression. Intended mainly for large touch panels. Not suitable for phones.');
  $('#tBack').textContent=tx('← Všechny školní aplikace','← All school apps');$('#tSub').textContent=tx('Gymnázium Příbram · Informatika · GymTV','Gymnázium Příbram · Computer science · GymTV');
  $('#tabs').setAttribute('aria-label',tx('Záložky','Tabs'));
  $('#bThm').setAttribute('aria-label',tx('Světlý nebo tmavý vzhled','Light or dark theme'));$('#bFul').setAttribute('aria-label',tx('Celá obrazovka','Fullscreen'));
@@ -370,7 +370,7 @@ Object.assign(S,{m4:'res',ct4:'logo',ls5:'lossless',
  img1:'house',img2:'land',fm2:'dec',z2:40,lx2:700,ly2:520,img5:'land',bc5:8,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'col',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
  b2:3,r:255,g:151,b:46,
  rs:32,bd:24,sz4:'fhd'});
-const MK={6:'m4'};
+const MK={5:'m4'};
 const modeSw=(n,items)=>`<div class="seg modes${items.length===3?' m3':''}">${items.map(([id,cs,en])=>`<button class="chip" data-k="${MK[n]}" data-v="${id}"><span>${tx(cs,en)}</span></button>`).join('')}</div>`;
 const note=h=>`<div class="callout">${h}</div>`;
 const fB=B=>B>=1e9?nf(B/1e9,2)+' GB':B>=1e6?nf(B/1e6,B>=1e8?0:B>=1e7?1:2)+' MB':B>=1e3?nf(B/1e3,B>=1e5?0:1)+' kB':nf(B)+' B';
@@ -732,62 +732,7 @@ TABS.push({name:tx('Mixér RGB','RGB mixer'),side:'27rem',
   renderModes();
  }});
 
-/* ---------- 3 Barevná hloubka ---------- */
-const QC={};
-function grayQ(bits){
- if(QC[bits])return QC[bits];
- const s=small(640,480).d,c=cvx(640,480),g=c.getContext('2d'),o=g.createImageData(640,480),L=Math.pow(2,bits);
- for(let i=0;i<640*480;i++){const l=lum(s[i*4],s[i*4+1],s[i*4+2]);const v=bits>=8?Math.round(l):Math.round(Math.round(l/255*(L-1))*255/(L-1));o.data[i*4]=o.data[i*4+1]=o.data[i*4+2]=v;o.data[i*4+3]=255}
- g.putImageData(o,0,0);QC[bits]=c;return c;
-}
-TABS.push({name:tx('Barevná hloubka','Colour depth'),side:'27rem',
- build(){return `<div class="split"><div class="col">
-  <div class="scope grow"><canvas id="c3"></canvas><div class="tag">${tx('bity na pixel a počet odstínů','bits per pixel and number of shades')}</div></div>
-  <div class="kpis">
-   <div class="card kpi"><span class="lbl">${tx('Bitů na pixel','Bits per pixel')}</span><div class="big sm" data-o="k3a"></div><small>${tx('u šedotónového obrazu','for a greyscale picture')}</small></div>
-   <div class="card kpi"><span class="lbl">${tx('Počet odstínů','Number of shades')}</span><div class="big sm" data-o="k3b"></div><small>${tx('2 na počet bitů','2 to the number of bits')}</small></div>
-   <div class="card kpi"><span class="lbl">${tx('Barevně, 3 kanály','In colour, 3 channels')}</span><div class="big sm" data-o="k3c"></div><small data-o="k3d"></small></div>
-  </div></div>
-  <div class="side card">
-   <div class="ctl"><div class="hd"><span class="lbl">${tx('Bitů na pixel','Bits per pixel')}</span><span class="val" data-o="v_b2"></span></div>
-    <input type="range" data-k="b2" min="1" max="8" step="1"></div>
-   <div class="chips g5">${[1,2,3,4,8].map(v=>`<button class="chip" data-k="b2" data-v="${v}">${v}</button>`).join('')}</div>
-   <div class="facts"><span class="lbl">${tx('Typické hloubky na pixel','Typical depths per pixel')}</span>
-    <div><b>1 ${tx('bit','bit')}</b><i>${tx('2 barvy (černobílé)','2 colours (black and white)')}</i></div>
-    <div><b>8 ${tx('bitů','bits')}</b><i>${tx('256 odstínů nebo barev','256 shades or colours')}</i></div>
-    <div><b>16 ${tx('bitů','bits')}</b><i>${tx('65 536 barev','65,536 colours')}</i></div>
-    <div><b>24 ${tx('bitů','bits')}</b><i>${tx('16,7 milionu barev (RGB)','16.7 million colours (RGB)')}</i></div></div>
-   ${note(tx('<b>Barevná hloubka</b> je počet bitů na pixel. Každý bit navíc počet možností zdvojnásobí: n bitů dává 2ⁿ hodnot.','<b>Colour depth</b> is the number of bits per pixel. Every extra bit doubles the number of possibilities: n bits give 2ⁿ values.'))}
-  </div></div>`},
- init(){
-  OUT.v_b2=()=>S.b2;
-  OUT.k3a=()=>`${S.b2} <u>${tx('bit','bit')}</u>`;
-  OUT.k3b=()=>`${nf(Math.pow(2,S.b2))}`;
-  OUT.k3c=()=>`${3*S.b2} <u>${tx('bitů','bits')}</u>`;
-  OUT.k3d=()=>tx(`celkem ${nf(Math.pow(2,3*S.b2))} barev`,`${nf(Math.pow(2,3*S.b2))} colours in total`);
- },
- render(){
-  const cv=$('#c3');if(!cv)return;const {x,w,h,R}=setup(cv);const b=S.b2,L=Math.pow(2,b),pad=R*1.6,top=R*3.8;
-  let iw=(w-pad*3)/2,ih=iw*.75;const maxH=h-top-R*6.6;if(ih>maxH){ih=maxH;iw=ih/.75}
-  const ox=(w-(iw*2+pad))/2,ox2=ox+iw+pad,oy=top+Math.max(0,(h-top-ih-R*6.6)/2);
-  TH(x,tx('Původní, 8 bitů','Original, 8 bits'),ox,oy-R*.9,R*.82,TXT);
-  TH(x,tx(`${b} ${b===1?'bit':b<5?'bity':'bitů'} na pixel`,`${b} bit${b===1?'':'s'} per pixel`)+' · '+tx(`${nf(L)} odstínů`,`${nf(L)} shades`),ox2,oy-R*.9,R*.82,C.orange);
-  draw(x,grayQ(8),ox,oy,iw,ih,true);draw(x,grayQ(b),ox2,oy,iw,ih,true);
-  x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(ox,oy,iw,ih);x.strokeStyle=C.orange;x.lineWidth=2;x.strokeRect(ox2,oy,iw,ih);
-  const sy=oy+ih+R*1.1,sh=R*2.2;
-  for(let i=0;i<iw;i+=2){const v=Math.round(i/iw*255);x.fillStyle=rgbS(v,v,v);x.fillRect(ox+i,sy,2.5,sh)}
-  {
-   const cw=iw/L;
-   for(let i=0;i<L;i++){const v=Math.round(i/(L-1)*255);x.fillStyle=rgbS(v,v,v);x.fillRect(ox2+i*cw,sy,Math.ceil(cw)+(L>64?1:0),sh)}
-   if(L<=8)for(let i=0;i<L;i++)T(x,i.toString(2).padStart(b,'0'),ox2+(i+.5)*cw,sy+sh+R*1.1,R*.72,TXT,'center');
-   if(L<=8){x.strokeStyle='rgba(23,20,15,.6)';x.lineWidth=1;for(let i=1;i<L;i++){x.beginPath();x.moveTo(ox2+i*cw,sy);x.lineTo(ox2+i*cw,sy+sh);x.stroke()}}
-  }
-  T(x,tx('paleta: 256 odstínů','palette: 256 shades'),ox,sy+sh+R*1.1,R*.72,TXT);
-  renderModes();
- }});
-
-
-/* ---------- 5 Plná barva: 8 a 10 bitů ---------- */
+/* ---------- 4 RGB kódování ---------- */
 let G5=null;
 const zc5=()=>clamp(Math.round(W1/S.z5/4)*4,4,W1);
 function clamp5(){const c=zc5(),r=c*3/4;S.lx5=clamp(S.lx5,0,W1-c);S.ly5=clamp(S.ly5,0,H1-r)}
@@ -797,7 +742,7 @@ function setZoom5(z,fx,fy){
  S.lx5=Math.round(ux-fx*c);S.ly5=Math.round(uy-fy*r);clamp5();
 }
 const v5=(v,b)=>b===10?Math.round(v*1023/255):v;
-TABS.push({name:tx('Plná barva 8 a 10 bitů','Full colour 8 and 10 bits'),side:'27rem',
+TABS.push({name:tx('RGB kódování','RGB encoding'),side:'27rem',
  build(){return `<div class="split"><div class="col">
   <div class="scope grow"><canvas id="cq"></canvas><div class="tag">${tx('každý pixel nese tři kódy: červený, zelený a modrý','every pixel carries three codes: red, green and blue')}</div></div>
   <div class="kpis">
@@ -913,7 +858,7 @@ TABS.push({name:tx('Formáty a rozlišení','Formats and resolution'),side:'27re
   </div>
   <div class="tiles" data-mode="fmt">${Object.keys(CT4).map(k=>`<button class="tile${S.ct4===k?' on':''}" data-k="ct4" data-v="${k}"><span class="lbl">${tx('Ukládáme','We store')}</span><b>${tx(CT4[k].n[0],CT4[k].n[1])}</b><i>→ ${FMTS.find(f=>f.id===CT4[k].f).n}</i></button>`).join('')}</div></div>
   <div class="side card">
-   ${modeSw(4,[['res','Rozlišení','Resolution'],['std','Standardní rozlišení','Standard resolutions'],['fmt','Formáty souborů','File formats']])}
+   ${modeSw(5,[['res','Rozlišení','Resolution'],['std','Standardní rozlišení','Standard resolutions'],['fmt','Formáty souborů','File formats']])}
    <div data-mode="res" class="ctl"><div class="hd"><span class="lbl">${tx('Šířka obrázku','Picture width')}</span></div><div class="chips g5">${[8,16,32,64,128].map(v=>`<button class="chip sm" data-k="rs" data-v="${v}">${v}</button>`).join('')}</div></div>
    <div data-mode="std" class="ctl"><div class="hd"><span class="lbl">${tx('Bitů na pixel','Bits per pixel')}</span></div><div class="chips g3">${[8,24,32].map(v=>`<button class="chip sm" data-k="bd" data-v="${v}">${v}</button>`).join('')}</div></div>
    <div data-mode="std" class="hint" data-o="h4"></div>
@@ -1086,17 +1031,7 @@ const H=[
     tx(`Zapněte všechna tři světla naplno: vznikne bílá. Pak vše vypněte.`,`Turn all three lights on at full: white appears. Then turn everything off.`),
     tx(`Posuňte jen jeden posuvník a sledujte, jak se změní jedna dvojice šestnáctkových číslic.`,`Move just one slider and watch how one pair of hexadecimal digits changes.`)],
  d:tx(`Barva na displeji jsou tři čísla 0 až 255, tedy 3 bajty.`,`A colour on a display is three numbers 0 to 255, that is 3 bytes.`)},
-{t:tx(`Barevná hloubka`,`Colour depth`),
- a:tx(`<b>Bit</b> má dvě hodnoty, 0 nebo 1. Pixel zapsaný n bity může mít 2ⁿ různých hodnot. U šedotónového obrazu je hodnotou odstín šedi: 1 bit dává 2 odstíny, 3 bity 8 odstínů, 8 bitů 256 odstínů.`,`A <b>bit</b> has two values, 0 or 1. A pixel written with n bits can have 2ⁿ different values. For a greyscale picture the value is a shade of grey: 1 bit gives 2 shades, 3 bits 8 shades, 8 bits 256 shades.`),
- b:tx(`Každý další bit počet odstínů zdvojnásobí, ale pro oko přínos klesá. Při málo bitech vznikají viditelné pásy tam, kde má být plynulý přechod.`,`Every further bit doubles the number of shades, but the benefit to the eye falls. With few bits visible bands appear where a smooth gradient should be.`),
- eh:tx(`Od šedi k barvě`,`From grey to colour`),
- e:[tx(`<b>Barevná hloubka</b> je počet bitů na pixel. Barevný obraz má tři kanály; při 8 bitech na kanál je to 24 bitů a 2²⁴ = 16 777 216 barev.`,`<b>Colour depth</b> is the number of bits per pixel. A colour picture has three channels; at 8 bits per channel that is 24 bits and 2²⁴ = 16,777,216 colours.`),
-    tx(`<b>Paleta.</b> Některé obrazy mají jen omezenou paletu, třeba 256 barev, a pixel odkazuje na barvu číslem z palety, tedy 8 bitů na pixel.`,`<b>Palette.</b> Some pictures have a limited palette, for example 256 colours, and a pixel refers to a colour by a number from the palette, that is 8 bits per pixel.`)],
- c:[tx(`Posuňte posuvník z 8 bitů na 1 a sledujte, kdy se plynulý přechod rozpadne na pásy.`,`Move the slider from 8 bits to 1 and watch when the smooth gradient breaks into bands.`),
-    tx(`Zvolte 3 bity a přečtěte kódy pod paletou: kolik jich je?`,`Choose 3 bits and read the codes under the palette: how many are there?`),
-    tx(`Porovnejte 4 a 8 bitů a rozhodněte, zda rozdíl poznáte.`,`Compare 4 and 8 bits and decide whether you can see the difference.`)],
- d:tx(`n bitů dává 2ⁿ hodnot. Každý bit navíc počet zdvojnásobí.`,`n bits give 2ⁿ values. Every extra bit doubles the number.`)},
-{t:tx(`Plná barva: 8 a 10 bitů`,`Full colour: 8 and 10 bits`),
+{t:tx(`RGB kódování`,`RGB encoding`),
  a:tx(`U plné barvy nese pixel tři kódy: jeden pro <b>červenou</b>, jeden pro <b>zelenou</b> a jeden pro <b>modrou</b>. Při 8 bitech na kanál má každý kód 8 číslic a hodnoty 0 až 255, pixel má 3 · 8 = 24 bitů. Při 10 bitech jsou to hodnoty 0 až 1023 a pixel má 30 bitů.`,`In full colour a pixel carries three codes: one for <b>red</b>, one for <b>green</b> and one for <b>blue</b>. With 8 bits per channel every code has 8 digits and values 0 to 255, a pixel has 3 · 8 = 24 bits. With 10 bits the values are 0 to 1023 and a pixel has 30 bits.`),
  b:tx(`Každý bit navíc na kanál zdvojnásobí počet stupňů jasu. Z 256 stupňů je 1024, takže jsou jemnější přechody a méně viditelných pásů. Cenou je větší soubor: 30 bitů na pixel místo 24.`,`Every extra bit per channel doubles the number of brightness levels. 256 levels become 1,024, so gradients are smoother and show fewer bands. The price is a bigger file: 30 bits per pixel instead of 24.`),
  eh:tx(`Co se tu děje`,`What is going on`),
@@ -1109,7 +1044,7 @@ const H=[
  d:tx(`Plná barva jsou tři kódy po n bitech: 8 bitů dává 24 bitů na pixel, 10 bitů dává 30.`,`Full colour is three codes of n bits: 8 bits give 24 bits per pixel, 10 bits give 30.`)},
 {t:tx(`Formáty a rozlišení`,`Formats and resolution`),
  a:tx(`<b>Rozlišení</b> je počet pixelů na šířku a na výšku. Počet pixelů je šířka · výška, takže při dvojnásobku obou rozměrů je pixelů čtyřikrát víc. Standardní rozlišení jsou například HD 1280 × 720, Full HD 1920 × 1080 a 4K 3840 × 2160.`,`<b>Resolution</b> is the number of pixels across and down. The pixel count is width · height, so when both dimensions double there are four times as many pixels. Standard resolutions are for example HD 1280 × 720, Full HD 1920 × 1080 and 4K 3840 × 2160.`),
- b:tx(`Velikost obrázku bez komprese je pixely · bity na pixel ÷ 8. Full HD ve 24 bitech: 1920 · 1080 · 3 B = 6 220 800 B, asi 6,2 MB. Soubor na disku bývá menší, protože je komprimovaný (kapitola 7).`,`The size of a picture without compression is pixels · bits per pixel ÷ 8. Full HD at 24 bits: 1920 · 1080 · 3 B = 6,220,800 B, about 6.2 MB. A file on disk is usually smaller because it is compressed (chapter 7).`),
+ b:tx(`Velikost obrázku bez komprese je pixely · bity na pixel ÷ 8. Full HD ve 24 bitech: 1920 · 1080 · 3 B = 6 220 800 B, asi 6,2 MB. Soubor na disku bývá menší, protože je komprimovaný (kapitola 6).`,`The size of a picture without compression is pixels · bits per pixel ÷ 8. Full HD at 24 bits: 1920 · 1080 · 3 B = 6,220,800 B, about 6.2 MB. A file on disk is usually smaller because it is compressed (chapter 6).`),
  eh:tx(`Formáty souborů`,`File formats`),
  e:[tx(`<b>BMP</b> bývá bez komprese. <b>GIF</b> je bezeztrátový, má nejvýše 256 barev, jednoduchou průhlednost a animace. <b>PNG</b> je bezeztrátový s plnou barvou a plynulou průhledností. <b>JPEG</b> je ztrátový a hodí se na fotografie.`,`<b>BMP</b> is usually uncompressed. <b>GIF</b> is lossless, has at most 256 colours, simple transparency and animation. <b>PNG</b> is lossless with full colour and smooth transparency. <b>JPEG</b> is lossy and suits photographs.`),
     tx(`<b>Pravidlo výběru.</b> Fotografie: JPEG. Logo, schéma, snímek obrazovky: PNG. Jednoduchá animace: GIF. Archiv originálů: bezeztrátový formát.`,`<b>Rule of choice.</b> Photographs: JPEG. Logos, diagrams, screenshots: PNG. Simple animation: GIF. Archive of originals: a lossless format.`)],
@@ -1157,20 +1092,18 @@ PRE:[
  {t:tx('256 odstínů šedi','256 shades of grey'),d:tx('Kapitola 2: 8 bitů v odstínech šedi.','Chapter 2: 8 bits in greys.'),f:()=>{Object.assign(S,{bd2:8,pl2:'gray',cd2:false});go(1)}},
  {t:tx('Žlutá ze dvou světel','Yellow from two lights'),d:tx('Kapitola 3: červená a zelená naplno, modrá vypnutá.','Chapter 3: red and green at full, blue off.'),f:()=>{Object.assign(S,{r:255,g:255,b:0});go(2)}},
  {t:tx('Barva #FF972E','The colour #FF972E'),d:tx('Kapitola 3: oranžová, tři bajty FF, 97 a 2E.','Chapter 3: orange, three bytes FF, 97 and 2E.'),f:()=>{Object.assign(S,{r:255,g:151,b:46});go(2)}},
- {t:tx('Tři bity na pixel','Three bits per pixel'),d:tx('Kapitola 4: 3 bity, tedy osm odstínů s kódy 000 až 111.','Chapter 4: 3 bits, that is eight shades with the codes 000 to 111.'),f:()=>{S.b2=3;go(3)}},
- {t:tx('Plná barva, 10 bitů','Full colour, 10 bits'),d:tx('Kapitola 5: 10 bitů na kanál, lupa na největší zvětšení.','Chapter 5: 10 bits per channel, lens at the largest magnification.'),f:()=>{Object.assign(S,{bc5:10,z5:320});go(4)}},
- {t:tx('Zdvojnásobení rozlišení','Doubling the resolution'),d:tx('Kapitola 6, Rozlišení: 32 × 24 pixelů, další stupeň je 64 × 48.','Chapter 6, Resolution: 32 × 24 pixels, the next step is 64 × 48.'),f:()=>{Object.assign(S,{m4:'res',rs:32});go(5)}},
- {t:tx('Full HD bez komprese','Full HD without compression'),d:tx('Kapitola 6, Standardní rozlišení: Full HD, 24 bitů.','Chapter 6, Standard resolutions: Full HD, 24 bits.'),f:()=>{Object.assign(S,{m4:'std',sz4:'fhd',bd:24});go(5)}},
- {t:tx('Formát pro logo','Format for a logo'),d:tx('Kapitola 6, Formáty souborů: logo s průhledným pozadím.','Chapter 6, File formats: a logo with a transparent background.'),f:()=>{Object.assign(S,{m4:'fmt',ct4:'logo'});go(5)}},
- {t:tx('Ztrátová a bezeztrátová komprese','Lossy and lossless compression'),d:tx('Kapitola 7: bezeztrátová komprese, pak přepnout na ztrátovou.','Chapter 7: lossless compression, then switch to lossy.'),f:()=>{S.ls5='lossless';go(6)}}],
+ {t:tx('RGB kódování, 10 bitů','RGB encoding, 10 bits'),d:tx('Kapitola 4: 10 bitů na kanál, lupa na největší zvětšení.','Chapter 4: 10 bits per channel, lens at the largest magnification.'),f:()=>{Object.assign(S,{bc5:10,z5:320});go(3)}},
+ {t:tx('Zdvojnásobení rozlišení','Doubling the resolution'),d:tx('Kapitola 5, Rozlišení: 32 × 24 pixelů, další stupeň je 64 × 48.','Chapter 5, Resolution: 32 × 24 pixels, the next step is 64 × 48.'),f:()=>{Object.assign(S,{m4:'res',rs:32});go(4)}},
+ {t:tx('Full HD bez komprese','Full HD without compression'),d:tx('Kapitola 5, Standardní rozlišení: Full HD, 24 bitů.','Chapter 5, Standard resolutions: Full HD, 24 bits.'),f:()=>{Object.assign(S,{m4:'std',sz4:'fhd',bd:24});go(4)}},
+ {t:tx('Formát pro logo','Format for a logo'),d:tx('Kapitola 5, Formáty souborů: logo s průhledným pozadím.','Chapter 5, File formats: a logo with a transparent background.'),f:()=>{Object.assign(S,{m4:'fmt',ct4:'logo'});go(4)}},
+ {t:tx('Ztrátová a bezeztrátová komprese','Lossy and lossless compression'),d:tx('Kapitola 6: bezeztrátová komprese, pak přepnout na ztrátovou.','Chapter 6: lossless compression, then switch to lossy.'),f:()=>{S.ls5='lossless';go(5)}}],
 PLAN:[
  [tx('Co je to pixel','What a pixel is'),'5 min',tx('Kap. 1, předvolba pixelu pod lupou.','Ch. 1, the pixel under the lens preset.')],
  [tx('Paleta a bitová hloubka','Palette and bit depth'),'8 min',tx('Kap. 2, předvolby jednoho bitu, 16 barev a 256 odstínů šedi.','Ch. 2, the one bit, 16 colours and 256 greys presets.')],
  [tx('Mixér RGB barev','RGB colour mixer'),'8 min',tx('Kap. 3, předvolby žluté a oranžové #FF972E.','Ch. 3, the yellow and orange #FF972E presets.')],
- [tx('Barevná hloubka','Colour depth'),'7 min',tx('Kap. 4, předvolba tří bitů.','Ch. 4, the three bits preset.')],
- [tx('Plná barva 8 a 10 bitů','Full colour 8 and 10 bits'),'5 min',tx('Kap. 5, předvolba deseti bitů s lupou.','Ch. 5, the ten bits preset with the lens.')],
- [tx('Formáty a rozlišení','Formats and resolution'),'10 min',tx('Kap. 6, předvolby zdvojnásobení, Full HD a loga.','Ch. 6, the doubling, Full HD and logo presets.')],
- [tx('Princip komprese','Compression principle'),'5 min',tx('Kap. 7, bezeztrátová, pak ztrátová.','Ch. 7, lossless, then lossy.')]],
+ [tx('RGB kódování','RGB encoding'),'5 min',tx('Kap. 4, předvolba deseti bitů s lupou.','Ch. 4, the ten bits preset with the lens.')],
+ [tx('Formáty a rozlišení','Formats and resolution'),'10 min',tx('Kap. 5, předvolby zdvojnásobení, Full HD a loga.','Ch. 5, the doubling, Full HD and logo presets.')],
+ [tx('Princip komprese','Compression principle'),'5 min',tx('Kap. 6, bezeztrátová, pak ztrátová.','Ch. 6, lossless, then lossy.')]],
 NOTES:[tx('Pořadí kapitol vychází jedna z druhé: pixel nese barvu, barva se zapisuje bity, bity určují velikost obrazu a komprese velikost zmenšuje.','The order of the chapters builds on itself: a pixel carries a colour, a colour is written in bits, bits determine the size of a picture and compression reduces the size.'),
  tx('Velikosti a počty se počítají přesně podle vzorců, které najdete v nápovědě (tlačítko ?).','Sizes and counts are calculated exactly by the formulas, which you can find in the help (the ? button).'),
  tx('Ukázka ztrátové komprese je ilustrace, aplikace nevysvětluje, jak komprese uvnitř funguje.','The lossy compression demo is an illustration, the app does not explain how compression works inside.'),
@@ -1179,7 +1112,6 @@ F:[
  [[tx('Počet pixelů','Pixel count'),tx('šířka · výška','width · height')],[tx('Příklad','Example'),'1280 · 960 = 1 228 800']],
  [[tx('Barev v paletě','Colours in the palette'),tx('2ⁿ (n = počet bitů)','2ⁿ (n = number of bits)')],[tx('Příklad','Example'),tx('1 bit → 2, 2 bity → 4, 4 bity → 16, 8 bitů → 256','1 bit → 2, 2 bits → 4, 4 bits → 16, 8 bits → 256')],[tx('Data pixelů','Pixel data'),tx('B = šířka · výška · n ÷ 8','B = width · height · n ÷ 8')],[tx('Příklad','Example'),'1280 · 960 · 1 ÷ 8 = 153 600 B']],
  [[tx('RGB','RGB'),tx('každý kanál 0 až 255','each channel 0 to 255')],[tx('Dvojice XY','Pair XY'),'16 · X + Y'],[tx('Příklad','Example'),'2E = 16 · 2 + 14 = 46'],[tx('Barva','Colour'),tx('#RRGGBB = 3 bajty','#RRGGBB = 3 bytes')]],
- [[tx('Počet hodnot','Number of values'),tx('2ⁿ (n = počet bitů)','2ⁿ (n = number of bits)')],[tx('Barevně','In colour'),'3 · 8 = 24 bitů → 2²⁴ = 16 777 216']],
  [[tx('Bity na pixel','Bits per pixel'),tx('3 · n (n = bitů na kanál)','3 · n (n = bits per channel)')],[tx('Hodnoty kanálu','Channel values'),tx('0 až 2ⁿ − 1: 0 až 255 (8 bitů), 0 až 1023 (10 bitů)','0 to 2ⁿ − 1: 0 to 255 (8 bits), 0 to 1023 (10 bits)')],[tx('Příklad','Example'),tx('3 · 10 = 30 bitů → 2³⁰ = 1 073 741 824 barev','3 · 10 = 30 bits → 2³⁰ = 1,073,741,824 colours')]],
  [[tx('Velikost','Size'),tx('B = šířka · výška · bity ÷ 8','B = width · height · bits ÷ 8')],[tx('Full HD, 24 bitů','Full HD, 24 bits'),'1920 · 1080 · 24 ÷ 8 = 6 220 800 B']],
  [[tx('Dva druhy komprese','Two kinds of compression'),tx('bezeztrátová: po rozbalení přesně originál; ztrátová: část údajů pryč','lossless: exactly the original after unpacking; lossy: part of the data gone')],[tx('Pravidlo výběru','Rule of choice'),tx('fotografie JPEG, grafika PNG, animace GIF','photographs JPEG, graphics PNG, animation GIF')]]],
@@ -1189,27 +1121,25 @@ GL:[
  [tx('Paleta','Palette'),tx('Tabulka barev. Pixel nese jen číslo řádku v tabulce.','A table of colours. A pixel carries just the number of a row in the table.'),[1]],
  [tx('RGB','RGB'),tx('Míchání červeného, zeleného a modrého světla, používá ho displej.','Mixing red, green and blue light, used by displays.'),[2]],
  [tx('Šestnáctková soustava','Hexadecimal system'),tx('Číslice 0–9 a A–F. Dvě číslice jsou jeden bajt.','Digits 0–9 and A–F. Two digits are one byte.'),[2]],
- [tx('Bit a bajt','Bit and byte'),tx('Bit je 0 nebo 1. Bajt je 8 bitů, tedy číslo 0 až 255.','A bit is 0 or 1. A byte is 8 bits, a number 0 to 255.'),[1,2,3]],
- [tx('Barevná hloubka','Colour depth'),tx('Počet bitů na pixel. 8 bitů dává 256 hodnot, 24 bitů přes 16 milionů barev.','The number of bits per pixel. 8 bits give 256 values, 24 bits over 16 million colours.'),[3]],
- [tx('Rozlišení','Resolution'),tx('Počet pixelů na šířku a na výšku.','The number of pixels across and down.'),[5]],
- [tx('Megapixel (Mpx)','Megapixel (Mpx)'),tx('Milion pixelů; 1920 × 1080 je asi 2,1 Mpx.','A million pixels; 1920 × 1080 is about 2.1 Mpx.'),[5]],
- [tx('PNG, GIF, JPEG, BMP','PNG, GIF, JPEG, BMP'),tx('Nejčastější formáty bitmap, každý se hodí na jiný obsah.','The most common bitmap formats, each suits different content.'),[5,6]],
- [tx('Komprese','Compression'),tx('Zmenšení datového zápisu obrazu.','Shrinking the data record of a picture.'),[6]],
- [tx('Bezeztrátová a ztrátová komprese','Lossless and lossy compression'),tx('Bezeztrátová obraz obnoví přesně, ztrátová něco nevratně zahodí.','Lossless restores the picture exactly, lossy irreversibly discards something.'),[4]]],
+ [tx('Bit a bajt','Bit and byte'),tx('Bit je 0 nebo 1. Bajt je 8 bitů, tedy číslo 0 až 255.','A bit is 0 or 1. A byte is 8 bits, a number 0 to 255.'),[1,2]],
+ [tx('Barevná hloubka','Colour depth'),tx('Počet bitů na pixel. 8 bitů dává 256 hodnot, 24 bitů přes 16 milionů barev.','The number of bits per pixel. 8 bits give 256 values, 24 bits over 16 million colours.'),[1,3]],
+ [tx('Rozlišení','Resolution'),tx('Počet pixelů na šířku a na výšku.','The number of pixels across and down.'),[4]],
+ [tx('Megapixel (Mpx)','Megapixel (Mpx)'),tx('Milion pixelů; 1920 × 1080 je asi 2,1 Mpx.','A million pixels; 1920 × 1080 is about 2.1 Mpx.'),[4]],
+ [tx('PNG, GIF, JPEG, BMP','PNG, GIF, JPEG, BMP'),tx('Nejčastější formáty bitmap, každý se hodí na jiný obsah.','The most common bitmap formats, each suits different content.'),[4,5]],
+ [tx('Komprese','Compression'),tx('Zmenšení datového zápisu obrazu.','Shrinking the data record of a picture.'),[5]],
+ [tx('Bezeztrátová a ztrátová komprese','Lossless and lossy compression'),tx('Bezeztrátová obraz obnoví přesně, ztrátová něco nevratně zahodí.','Lossless restores the picture exactly, lossy irreversibly discards something.'),[5]]],
 SRC:[
  [],
  [],
  [A('https://www.w3.org/Graphics/Color/sRGB.html','W3C: A Standard Default Color Space for the Internet, sRGB'),A('https://www.w3.org/TR/css-color-4/','W3C: CSS Color Module Level 4, hexadecimální zápis')],
- [],
  [],
  [PNG3,A('https://www.w3.org/Graphics/GIF/spec-gif89a.txt','GIF89a Specification')],
  []],
 D:{
  c1:()=>tx('Obrázek 1280 × 960 pixelů, lupa a zvětšená mřížka pixelů s čísly barev.','A 1280 × 960 pixel picture, the lens and the enlarged pixel grid with colour numbers.'),
  cp:()=>tx(`Obrázek ${bitW(S.bd2,false)} na pixel, paleta ${1<<S.bd2} ${S.pl2==='gray'?'odstínů šedi':'barev'}.`,`A picture with ${bitW(S.bd2,true)} per pixel, a palette of ${1<<S.bd2} ${S.pl2==='gray'?'greys':'colours'}.`),
- cq:()=>tx(`Plná barva, ${S.bc5} bitů na kanál, lupa s kódy RGB pixelů.`,`Full colour, ${S.bc5} bits per channel, a lens with the RGB codes of pixels.`),
+ cq:()=>tx(`RGB kódování, ${S.bc5} bitů na kanál, lupa s kódy RGB pixelů.`,`RGB encoding, ${S.bc5} bits per channel, a lens with the RGB codes of pixels.`),
  c2:()=>tx(`Míchání světla RGB (${S.r}, ${S.g}, ${S.b}), barva #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`,`Mixing RGB light (${S.r}, ${S.g}, ${S.b}), the colour #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`),
- c3:()=>tx(`Šedotónový obraz, původní a ${S.b2} bitů na pixel.`,`Greyscale picture, the original and ${S.b2} bits per pixel.`),
  c4:()=>S.m4==='res'?tx(`Obrázek ${S.rs} × ${S.rs*3/4} pixelů.`,`A picture of ${S.rs} × ${S.rs*3/4} pixels.`):S.m4==='std'?tx('Velikost bez komprese podle standardního rozlišení.','Size without compression by standard resolution.'):tx('Srovnání formátů BMP, GIF, PNG a JPEG.','Comparison of the formats BMP, GIF, PNG and JPEG.'),
  c5:()=>tx('Obrázek před kompresí a po rozbalení, ztrátová a bezeztrátová komprese.','A picture before compression and after unpacking, lossy and lossless compression.')}};
 
