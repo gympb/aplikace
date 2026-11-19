@@ -909,6 +909,7 @@ const AR=[
  {id:'239',n:'2,39:1',r:2.39,l:['2,39:1 kino','2.39:1 cinema'],u:['Kino: širokoúhlý anamorfní formát (CinemaScope, Panavision) u mnoha celovečerních filmů. Na televizi 16:9 se doplní černé pruhy nahoře a dole.','Cinema: the widescreen anamorphic format (CinemaScope, Panavision) of many feature films. On a 16:9 television black bars are added at the top and bottom.']},
  {id:'143',n:'1,43:1',r:1.43,l:['1,43:1 IMAX 70 mm','1.43:1 IMAX 70 mm'],u:['IMAX na 70mm film: téměř čtvercový, velmi vysoký obraz pro obří plátna. Na televizi 16:9 by se doplnily svislé černé pruhy po stranách.','IMAX on 70 mm film: an almost square, very tall picture for giant screens. On a 16:9 television black bars would be added at the sides.']},
  {id:'190',n:'1,90:1',r:1.9,l:['1,90:1 IMAX digital','1.90:1 IMAX digital'],u:['Digitální IMAX: obraz o něco širší než 16:9, v kině vyšší než kinofilmový 2,39:1.','Digital IMAX: a picture a little wider than 16:9, taller in the cinema than the 2.39:1 film format.']}];
+AR.sort((a,b)=>(b.c?1:0)-(a.c?1:0)||(a.c?0:a.r-b.r));
 const vis6=()=>AR.filter(a=>S.as6==='all'||(S.as6==='extra'?!a.c:a.c));
 const arOf=id=>AR.find(a=>a.id===String(id))||AR[0];
 const arRect=r=>r>W1/H1?{sx:0,sy:(H1-W1/r)/2,sw:W1,sh:W1/r}:{sx:(W1-H1*r)/2,sy:0,sw:H1*r,sh:H1};
@@ -953,6 +954,8 @@ TABS.push({name:tx('Poměr stran','Aspect ratio'),side:'27rem',
   OUT.k6c=()=>{if(S.m6==='cmp')return nf(Math.round(arOf(S.ar6).r*1080))+' × 1080';const c=cv6();if(c.same)return '–';return S.fm6==='crop'?(c.wide?tx('po stranách','at the sides'):tx('nahoře a dole','top and bottom')):(c.wide?tx('nahoře a dole','top and bottom'):tx('po stranách','at the sides'))};
   OUT.k6cs=()=>S.m6==='cmp'?tx('šířka × výška','width × height'):tx('kde se obraz ztratí nebo přibudou pruhy','where the picture is lost or bars are added');
   OUT.h6=()=>tx('Vyplnit: obraz zaplní celý cíl a přebytek se ořízne. Vměstnat: celý obraz se vejde do cíle a zbytek zaplní černé pruhy.','Fill: the picture covers the whole target and the excess is cropped. Fit: the whole picture fits into the target and black bars fill the rest.');
+  const norm6=()=>{const V=vis6(),ok=id=>V.some(a=>a.id===String(id));if(!ok(S.ar6))S.ar6=V[0].id;if(!ok(S.sr6))S.sr6=V[0].id;if(!ok(S.tr6))S.tr6=(V[1]||V[0]).id};
+  ['tag6','u6','k6al','k6a','k6as','k6bl','k6b','k6bs','k6cl','k6c','k6cs','h6'].forEach(k=>{const g=OUT[k];OUT[k]=()=>{norm6();return g()}});
   ACT.own6=()=>{f.value='';f.click()};
   f.addEventListener('change',()=>{
    const file=f.files&&f.files[0];if(!file)return;
