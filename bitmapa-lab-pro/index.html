@@ -366,7 +366,7 @@ function boot(){
 </script>
 <script>
 /* ===== Bitmapa Lab Pro: společné části ===== */
-Object.assign(S,{m4:'res',m6:'cmp',ct4:'logo',ls5:'lossless',
+Object.assign(S,{m4:'std',m6:'cmp',ct4:'logo',ls5:'lossless',
  img1:'house',img2:'land',fm2:'dec',z2:40,lx2:700,ly2:520,img5:'land',bc5:8,ar6:'169',sr6:'169',tr6:'43',fm6:'crop',img6:'land',ch4:'rgb',gm4:false,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'col',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
  b2:3,r:255,g:151,b:46,
  rs:32,bd:24,sz4:'fhd'});
@@ -853,78 +853,43 @@ const bdN={8:['8 bitů (šedá)','8 bits (grey)'],24:['24 bitů (RGB)','24 bits 
 TABS.push({name:tx('Standardní rozlišení','Standard resolutions'),side:'27rem',
  build(){return `<div class="split"><div class="col">
   <div class="scope grow"><canvas id="c4"></canvas><div class="tag" data-o="tag4"></div></div>
-  <div class="kpis" data-mode="res">
-   <div class="card kpi"><span class="lbl">${tx('Rozlišení','Resolution')}</span><div class="big sm" data-o="k4a"></div><small>${tx('šířka × výška v pixelech','width × height in pixels')}</small></div>
-   <div class="card kpi"><span class="lbl">${tx('Počet pixelů','Pixel count')}</span><div class="big sm" data-o="k4b"></div><small>${tx('šířka · výška','width · height')}</small></div>
-   <div class="card kpi"><span class="lbl">${tx('Proti předchozímu stupni','Versus the previous step')}</span><div class="big sm" data-o="k4c"></div><small>${tx('při dvojnásobku šířky i výšky','when width and height double')}</small></div>
-  </div>
   <div class="kpis" data-mode="std">
    <div class="card kpi"><span class="lbl">${tx('Počet pixelů','Pixel count')}</span><div class="big sm" data-o="k4d"></div><small data-o="k4d2"></small></div>
    <div class="card kpi"><span class="lbl">${tx('Bitů na pixel','Bits per pixel')}</span><div class="big sm" data-o="k4e"></div><small>${tx('8 šedá, 24 barva, 32 barva s průhledností','8 grey, 24 colour, 32 colour with alpha')}</small></div>
    <div class="card kpi"><span class="lbl">${tx('Velikost bez komprese','Size without compression')}</span><div class="big sm" data-o="k4f"></div><small>${tx('pixely · bity ÷ 8','pixels · bits ÷ 8')}</small></div>
   </div>
-  <div class="tiles" data-mode="fmt">${Object.keys(CT4).map(k=>`<button class="tile${S.ct4===k?' on':''}" data-k="ct4" data-v="${k}"><span class="lbl">${tx('Ukládáme','We store')}</span><b>${tx(CT4[k].n[0],CT4[k].n[1])}</b><i>→ ${FMTS.find(f=>f.id===CT4[k].f).n}</i></button>`).join('')}</div></div>
+  </div>
   <div class="side card">
-   ${modeSw(5,[['res','Rozlišení','Resolution'],['std','Standardní rozlišení','Standard resolutions'],['fmt','Formáty souborů','File formats']])}
-   <div data-mode="res" class="ctl"><div class="hd"><span class="lbl">${tx('Šířka obrázku','Picture width')}</span></div><div class="chips g5">${[8,16,32,64,128].map(v=>`<button class="chip sm" data-k="rs" data-v="${v}">${v}</button>`).join('')}</div></div>
    <div data-mode="std" class="ctl"><div class="hd"><span class="lbl">${tx('Bitů na pixel','Bits per pixel')}</span></div><div class="chips g3">${[8,24,32].map(v=>`<button class="chip sm" data-k="bd" data-v="${v}">${v}</button>`).join('')}</div></div>
    <div data-mode="std" class="hint" data-o="h4"></div>
-   <div data-mode="fmt" class="callout" data-o="why4"></div>
-   <div data-mode="res">${note(tx('<b>Rozlišení</b> je počet pixelů na šířku a na výšku. Zdvojnásobení obou rozměrů znamená čtyřnásobek pixelů, ne dvojnásobek.','<b>Resolution</b> is the number of pixels across and down. Doubling both dimensions means four times the pixels, not twice.'))}</div>
-   <div data-mode="std">${note(tx('Velikost bez komprese je <b>pixely × bity na pixel ÷ 8</b>. Full HD ve 24 bitech zabere asi 6 MB.','Size without compression is <b>pixels × bits per pixel ÷ 8</b>. Full HD at 24 bits takes about 6 MB.'))}</div>
+   <div data-mode="std">${note(tx('Velikost bez komprese je <b>pixely × bity na pixel ÷ 8</b>. Full HD ve 24 bitech zabere asi 6 MB.','Size without compression is <b>pixels × bits per pixel ÷ 8</b>. Full HD at 24 bits takes about 6 MB.'))}${note(tx('Plocha každého obdélníku je úměrná počtu pixelů. 4K má čtyřikrát víc pixelů než Full HD a 8K dokonce 108krát víc než VGA.','The area of each rectangle is proportional to the pixel count. 4K has four times the pixels of Full HD and 8K has 108 times as many as VGA.'))}</div>
   </div></div>`},
  init(){
-  OUT.tag4=()=>S.m4==='res'?tx('stejný obrázek v různém rozlišení','the same picture at different resolutions'):S.m4==='std'?tx('standardní rozlišení a velikost bez komprese','standard resolutions and size without compression'):tx('bitmapové formáty a k čemu se hodí','bitmap formats and what they suit');
+  OUT.tag4=()=>tx('počet pixelů standardních rozlišení: plocha odpovídá počtu pixelů','pixel counts of standard resolutions: the area matches the pixel count');
   OUT.k4a=()=>`${S.rs} × ${S.rs*3/4}`;OUT.k4b=()=>nf(S.rs*S.rs*3/4);
   OUT.k4c=()=>S.rs>8?'× 4':'–';
   const cur=()=>RES.find(r=>r.id===S.sz4)||RES[1];
   OUT.k4d=()=>nf(cur().w*cur().h);OUT.k4d2=()=>`${cur().w} × ${cur().h} · ${nf(cur().w*cur().h/1e6,2)} Mpx`;
   OUT.k4e=()=>S.bd;OUT.k4f=()=>fB(cur().w*cur().h*S.bd/8);
-  OUT.why4=()=>`<b class="l">${tx(CT4[S.ct4].n[0],CT4[S.ct4].n[1])} → ${FMTS.find(f=>f.id===CT4[S.ct4].f).n}</b>${tx(CT4[S.ct4].why[0],CT4[S.ct4].why[1])}`;
-  OUT.h4=()=>tx('Klepnutím na řádek v grafu vyberete rozlišení.','Tap a row in the chart to choose the resolution.');
-  $('#c4').addEventListener('pointerdown',e=>{if(S.m4!=='std')return;const p=ptr(e,$('#c4'));for(const hit of HIT5){if(p.y>=hit.y&&p.y<=hit.y+hit.h){S.sz4=hit.id;refresh();break}}});
+  OUT.h4=()=>tx('Klepnutím na obdélník nebo na řádek vyberete rozlišení.','Tap a rectangle or a row to choose the resolution.');
+  $('#c4').addEventListener('pointerdown',e=>{const p=ptr(e,$('#c4'));const g=HIT5.g;if(!g)return;let id=null;if(p.x>=g.lx){for(const hit of HIT5){if(p.y>=hit.y&&p.y<=hit.y+hit.h){id=hit.id;break}}}else{for(let i=RES.length-1;i>=0;i--){const r=RES[i];if(p.x>=g.ox&&p.x<=g.ox+r.w*g.s&&p.y>=g.oy&&p.y<=g.oy+r.h*g.s){id=r.id;break}}}if(id){S.sz4=id;refresh()}});
  },
  render(){
   const cv=$('#c4');if(!cv)return;const {x,w,h,R}=setup(cv);const pad=R*1.6,top=R*2.6;
-  if(S.m4==='res'){
-   let iw=(w-pad*3)/2,ih=iw*.75;const maxH=h-top-R*2.6;if(ih>maxH){ih=maxH;iw=ih/.75}
-   const ox=(w-(iw*2+pad))/2,ox2=ox+iw+pad,oy=top+(h-top-R*2-ih)/2,rw=S.rs,rh=S.rs*3/4;
-   TH(x,tx('Původní, jemný obraz','Original, fine picture'),ox,oy-R*.9,R*.82,TXT);
-   TH(x,`${rw} × ${rh} = ${nf(rw*rh)} ${tx('pixelů','pixels')}`,ox2,oy-R*.9,R*.82,C.orange);
-   draw(x,scene(),ox,oy,iw,ih,true);draw(x,small(rw,rh).c,ox2,oy,iw,ih,false);
-   if(rw<=32){x.strokeStyle='rgba(23,20,15,.4)';x.lineWidth=1;x.beginPath();for(let i=0;i<=rw;i++){const px=ox2+i*iw/rw;x.moveTo(px,oy);x.lineTo(px,oy+ih)}for(let j=0;j<=rh;j++){const py=oy+j*ih/rh;x.moveTo(ox2,py);x.lineTo(ox2+iw,py)}x.stroke()}
-   x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(ox,oy,iw,ih);x.strokeStyle=C.orange;x.lineWidth=2;x.strokeRect(ox2,oy,iw,ih);
-  }else if(S.m4==='std'){
-   const cur=RES.find(r=>r.id===S.sz4)||RES[1],nameW=R*13.5,x0=nameW+pad,x1=w-pad-R*6,A=1.5e5,B=3e8,X=b=>lg(b,A,B,x0,x1);
-   const axisY=h-R*2.6,rowH=(axisY-top)/RES.length;HIT5=[];
-   const open=true;
-   if(open){[[1e6,'1 MB'],[1e7,'10 MB'],[1e8,'100 MB']].forEach(([b,l])=>{line(x,X(b),top-R*.4,X(b),axisY,GR2,1);T(x,l,X(b),axisY+R*1.1,R*.72,TXT,'center')});line(x,x0,axisY,x1,axisY,GR2,1.2)}
-   RES.forEach((r,i)=>{
-    const y=top+i*rowH,cy=y+rowH/2,sel=r.id===S.sz4,bytes=r.w*r.h*S.bd/8;HIT5.push({id:r.id,y,h:rowH});
-    if(sel){x.fillStyle='rgba(255,151,46,.13)';x.fillRect(R*.5,y+rowH*.05,w-R,rowH*.9)}
-    TH(x,r.n,pad,cy-R*1.4,R*1.05,sel?C.orange:C.cream);T(x,`${r.w} × ${r.h}`,pad,cy+R*.1,R*.88,TXT);T(x,`${nf(r.w*r.h)} px`,pad,cy+R*1.3,R*.88,sel?C.orange:TXT);
-    const bh=Math.min(rowH*.55,R*2.2);
-    if(open){const xb=X(bytes);x.fillStyle=sel?C.orange:C.blue;x.beginPath();x.roundRect(x0,cy-bh/2,Math.max(3,xb-x0),bh,bh*.28);x.fill();TH(x,fB(bytes),xb+R*.7,cy,R*.92,sel?C.orange:C.cream)}
-    else{x.strokeStyle='rgba(244,241,234,.25)';x.lineWidth=1.4;x.setLineDash([6,6]);x.strokeRect(x0,cy-bh/2,(x1-x0)*.5,bh);x.setLineDash([])}
-   });
-  }else{
-   const pad=R*1.8,cols=[.12,.17,.17,.2,.14,.2],heads=[tx('Formát','Format'),tx('Komprese','Compression'),tx('Barev','Colours'),tx('Průhlednost','Transparency'),tx('Animace','Animation'),tx('Hodí se na','Good for')];
-   const tw=w-pad*2,top2=R*3.6,hh=R*2.4,rowH=Math.min((h-top2-hh-pad)/4,R*8.5),best=CT4[S.ct4].f;
-   let cx=pad;const xs=cols.map(c=>{const v=cx;cx+=c*tw;return v});
-   heads.forEach((t,i)=>TH(x,t,xs[i]+R*.5,top2+hh/2,R*.9,TXT));
-   line(x,pad,top2+hh,pad+tw,top2+hh,GR2,1.2);
-   FMTS.forEach((f,r)=>{
-    const y=top2+hh+r*rowH,isB=f.id===best;
-    if(isB)rr(x,pad-R*.4,y+rowH*.06,tw+R*.8,rowH*.88,R*.6,'rgba(255,151,46,.2)',C.orange,2);
-    TH(x,f.n,xs[0]+R*.5,y+rowH/2,R*1.8,isB?C.orange:C.cream);
-    f.c.forEach((t,i)=>{
-     const maxW=cols[i+1]*tw-R;let lines=[''];x.font=`500 ${R*1.0}px "Atkinson Hyperlegible Next",sans-serif`;
-     t.split(' ').forEach(wd=>{const tr=(lines[lines.length-1]+' '+wd).trim();if(x.measureText(tr).width>maxW&&lines[lines.length-1])lines.push(wd);else lines[lines.length-1]=tr});
-     lines.forEach((ln,k)=>T(x,ln,xs[i+1]+R*.5,y+rowH/2+(k-(lines.length-1)/2)*R*1.25,R*1.0,C.cream,'left','Atkinson Hyperlegible Next',500));
-    });
-    if(r<3)line(x,pad,y+rowH,pad+tw,y+rowH,GR,1);
-   });
-  }
+  const cur=RES.find(r=>r.id===S.sz4)||RES[1],lx=w*.58,top2=R*3,availW=lx-pad*1.5,availH=h-top2-R*1.8,s=Math.min(availW/7680,availH/4320),ox=pad,oy=top2+(availH-4320*s)/2;
+  const cols={vga:'#7fa3d6',hd:'#6b9bd9',fhd:'#5a8fd6',qhd:'#4c82c9',uhd:'#3f74b8',8:'#33649f','8k':'#2c5a91'};
+  HIT5=[];HIT5.g={lx,ox,oy,s};
+  for(let i=RES.length-1;i>=0;i--){const r=RES[i],sel=r.id===cur.id;
+   x.fillStyle=sel?'rgba(255,151,46,.55)':cols[r.id];x.globalAlpha=sel?1:.82;x.fillRect(ox,oy,r.w*s,r.h*s);x.globalAlpha=1;
+   x.strokeStyle=sel?C.orange:'rgba(244,241,234,.55)';x.lineWidth=sel?3:1.2;x.strokeRect(ox,oy,r.w*s,r.h*s)}
+  RES.forEach(r=>{const sel=r.id===cur.id;const fs=R*.8;if(r.w*s>fs*3.2)TH(x,r.n,ox+r.w*s-R*.5,oy+r.h*s-R*.9,fs,sel?C.orange:'#fff','right')});
+  const axisY=h-R*1.6,rowH=(axisY-top2)/RES.length;
+  RES.forEach((r,i)=>{
+   const y=top2+i*rowH,cy=y+rowH/2,sel=r.id===cur.id,bytes=r.w*r.h*S.bd/8;HIT5.push({id:r.id,y,h:rowH});
+   if(sel){x.fillStyle='rgba(255,151,46,.13)';x.fillRect(lx-R*.5,y+rowH*.05,w-lx-R*.5,rowH*.9)}
+   x.fillStyle=cols[r.id];x.fillRect(lx+R*.2,cy-R*.8,R*1.6,R*1.6);
+   TH(x,r.n,lx+R*2.6,cy-R*1.3,R*1.05,sel?C.orange:C.cream);T(x,`${r.w} × ${r.h}`,lx+R*2.6,cy+R*.05,R*.88,TXT);T(x,`${nf(r.w*r.h)} px`,lx+R*2.6,cy+R*1.25,R*.88,sel?C.orange:TXT);
+   TH(x,fB(bytes),w-pad,cy,R*.95,sel?C.orange:C.cream,'right')});
   renderModes();
  }});
 
@@ -1156,14 +1121,11 @@ const H=[
  d:tx(`Plná barva jsou tři kódy po n bitech: 8 bitů dává 24 bitů na pixel, 10 bitů dává 30.`,`Full colour is three codes of n bits: 8 bits give 24 bits per pixel, 10 bits give 30.`)},
 {t:tx(`Standardní rozlišení`,`Standard resolutions`),
  a:tx(`<b>Rozlišení</b> je počet pixelů na šířku a na výšku. Počet pixelů je šířka · výška, takže při dvojnásobku obou rozměrů je pixelů čtyřikrát víc. Standardní rozlišení jsou například VGA 640 × 480, HD Ready 1280 × 720, Full HD 1920 × 1080, QHD 2560 × 1440, 4K 3840 × 2160 a 8K 7680 × 4320.`,`<b>Resolution</b> is the number of pixels across and down. The pixel count is width · height, so when both dimensions double there are four times as many pixels. Standard resolutions are for example VGA 640 × 480, HD Ready 1280 × 720, Full HD 1920 × 1080, QHD 2560 × 1440, 4K 3840 × 2160 and 8K 7680 × 4320.`),
- b:tx(`Velikost obrázku bez komprese je pixely · bity na pixel ÷ 8. Full HD ve 24 bitech: 1920 · 1080 · 3 B = 6 220 800 B, asi 6,2 MB. Soubor na disku bývá menší, protože je komprimovaný (kapitola 7).`,`The size of a picture without compression is pixels · bits per pixel ÷ 8. Full HD at 24 bits: 1920 · 1080 · 3 B = 6,220,800 B, about 6.2 MB. A file on disk is usually smaller because it is compressed (chapter 7).`),
- eh:tx(`Formáty souborů`,`File formats`),
- e:[tx(`<b>BMP</b> bývá bez komprese. <b>GIF</b> je bezeztrátový, má nejvýše 256 barev, jednoduchou průhlednost a animace. <b>PNG</b> je bezeztrátový s plnou barvou a plynulou průhledností. <b>JPEG</b> je ztrátový a hodí se na fotografie.`,`<b>BMP</b> is usually uncompressed. <b>GIF</b> is lossless, has at most 256 colours, simple transparency and animation. <b>PNG</b> is lossless with full colour and smooth transparency. <b>JPEG</b> is lossy and suits photographs.`),
-    tx(`<b>Pravidlo výběru.</b> Fotografie: JPEG. Logo, schéma, snímek obrazovky: PNG. Jednoduchá animace: GIF. Archiv originálů: bezeztrátový formát.`,`<b>Rule of choice.</b> Photographs: JPEG. Logos, diagrams, screenshots: PNG. Simple animation: GIF. Archive of originals: a lossless format.`)],
- c:[tx(`V režimu Rozlišení přepínejte šířku a sledujte, jak se obraz skládá z čtverečků.`,`In the Resolution mode switch the width and watch the picture build from squares.`),
-    tx(`Ve standardních rozlišeních vyberte Full HD a 24 bitů a přečtěte velikost.`,`In the standard resolutions choose Full HD and 24 bits and read the size.`),
-    tx(`Ve formátech klepněte na čtyři druhy obsahu a řekněte, proč by jiný formát nevyhovoval.`,`In the formats tap the four kinds of content and say why another format would not suit.`)],
- d:tx(`Pixely = šířka · výška. Velikost bez komprese = pixely · bity ÷ 8. Formát volte podle obsahu.`,`Pixels = width · height. Size without compression = pixels · bits ÷ 8. Choose the format by content.`)},
+ b:tx(`Obdélníky jsou vnořené do společného rohu a jejich plocha je úměrná počtu pixelů. Velikost obrázku bez komprese je pixely · bity na pixel ÷ 8. Full HD ve 24 bitech: 1920 · 1080 · 3 B = 6 220 800 B, asi 6,2 MB. Soubor na disku bývá menší, protože je komprimovaný (kapitola 7).`,`The rectangles are nested in a common corner and their area is proportional to the pixel count. The size of a picture without compression is pixels · bits per pixel ÷ 8. Full HD at 24 bits: 1920 · 1080 · 3 B = 6,220,800 B, about 6.2 MB. A file on disk is usually smaller because it is compressed (chapter 7).`),
+ c:[tx(`Klepněte na Full HD a 24 bitů a přečtěte velikost bez komprese.`,`Tap Full HD and 24 bits and read the size without compression.`),
+    tx(`Kolikrát větší plochu má obdélník 4K než Full HD? Ověřte to počtem pixelů.`,`How many times larger is the 4K rectangle than Full HD? Check it with the pixel counts.`),
+    tx(`Přepněte bity na pixel a sledujte, jak se mění velikost u všech standardů.`,`Switch the bits per pixel and watch the size change for all standards.`)],
+ d:tx(`Pixely = šířka · výška. Velikost bez komprese = pixely · bity ÷ 8.`,`Pixels = width · height. Size without compression = pixels · bits ÷ 8.`)},
 {t:tx(`Poměr stran`,`Aspect ratio`),
  a:tx(`<b>Poměr stran</b> je šířka děleno výškou. Obrazovka 16:9 je o 78 % širší než vysoká, čtverec 1:1 je stejně široký jako vysoký. Poměr nezávisí na počtu pixelů: Full HD a 4K mají stejný poměr 16:9.`,`The <b>aspect ratio</b> is width divided by height. A 16:9 screen is 78 % wider than tall, a 1:1 square is as wide as tall. The ratio does not depend on the number of pixels: Full HD and 4K both have 16:9.`),
  b:tx(`Když má obrázek jiný poměr než obrazovka, nejde ho zobrazit celý a zároveň bez pruhů. Buď se přebytek <b>ořízne</b> (obraz zaplní celou obrazovku), nebo se obraz zmenší a zbylé místo vyplní <b>černé pruhy</b>.`,`When a picture has a different ratio from the screen it cannot be shown whole and without bars at the same time. Either the excess is <b>cropped</b> (the picture fills the whole screen) or the picture is shrunk and the remaining space is filled with <b>black bars</b>.`),
@@ -1216,9 +1178,7 @@ PRE:[
  {t:tx('Žlutá ze dvou světel','Yellow from two lights'),d:tx('Kapitola 3: červená a zelená naplno, modrá vypnutá.','Chapter 3: red and green at full, blue off.'),f:()=>{Object.assign(S,{r:255,g:255,b:0});go(2)}},
  {t:tx('Barva #FF972E','The colour #FF972E'),d:tx('Kapitola 3: oranžová, tři bajty FF, 97 a 2E.','Chapter 3: orange, three bytes FF, 97 and 2E.'),f:()=>{Object.assign(S,{r:255,g:151,b:46});go(2)}},
  {t:tx('RGB kódování, 10 bitů','RGB encoding, 10 bits'),d:tx('Kapitola 4: 10 bitů na kanál, lupa na největší zvětšení.','Chapter 4: 10 bits per channel, lens at the largest magnification.'),f:()=>{Object.assign(S,{bc5:10,z5:320});go(3)}},
- {t:tx('Zdvojnásobení rozlišení','Doubling the resolution'),d:tx('Kapitola 5, Rozlišení: 32 × 24 pixelů, další stupeň je 64 × 48.','Chapter 5, Resolution: 32 × 24 pixels, the next step is 64 × 48.'),f:()=>{Object.assign(S,{m4:'res',rs:32});go(4)}},
  {t:tx('Full HD bez komprese','Full HD without compression'),d:tx('Kapitola 5, Standardní rozlišení: Full HD, 24 bitů.','Chapter 5, Standard resolutions: Full HD, 24 bits.'),f:()=>{Object.assign(S,{m4:'std',sz4:'fhd',bd:24});go(4)}},
- {t:tx('Formát pro logo','Format for a logo'),d:tx('Kapitola 5, Formáty souborů: logo s průhledným pozadím.','Chapter 5, File formats: a logo with a transparent background.'),f:()=>{Object.assign(S,{m4:'fmt',ct4:'logo'});go(4)}},
  {t:tx('16:9 na 4:3, ořez','16:9 to 4:3, cropping'),d:tx('Kapitola 6: zdroj 16:9, cíl 4:3, vyplnit s ořezem.','Chapter 6: source 16:9, target 4:3, fill with cropping.'),f:()=>{Object.assign(S,{m6:'conv',sr6:'169',tr6:'43',fm6:'crop'});go(5)}},
  {t:tx('Kinový formát na televizi','Cinema format on television'),d:tx('Kapitola 6: zdroj 2,39:1, cíl 16:9, černé pruhy.','Chapter 6: source 2.39:1, target 16:9, black bars.'),f:()=>{Object.assign(S,{m6:'conv',sr6:'239',tr6:'169',fm6:'bars'});go(5)}},
  {t:tx('Ztrátová a bezeztrátová komprese','Lossy and lossless compression'),d:tx('Kapitola 7: bezeztrátová komprese, pak přepnout na ztrátovou.','Chapter 7: lossless compression, then switch to lossy.'),f:()=>{S.ls5='lossless';go(6)}}],
@@ -1252,7 +1212,6 @@ GL:[
  [tx('Barevná hloubka','Colour depth'),tx('Počet bitů na pixel. 8 bitů dává 256 hodnot, 24 bitů přes 16 milionů barev.','The number of bits per pixel. 8 bits give 256 values, 24 bits over 16 million colours.'),[1,3]],
  [tx('Rozlišení','Resolution'),tx('Počet pixelů na šířku a na výšku.','The number of pixels across and down.'),[4]],
  [tx('Megapixel (Mpx)','Megapixel (Mpx)'),tx('Milion pixelů; 1920 × 1080 je asi 2,1 Mpx.','A million pixels; 1920 × 1080 is about 2.1 Mpx.'),[4]],
- [tx('PNG, GIF, JPEG, BMP','PNG, GIF, JPEG, BMP'),tx('Nejčastější formáty bitmap, každý se hodí na jiný obsah.','The most common bitmap formats, each suits different content.'),[4,6]],
  [tx('Poměr stran','Aspect ratio'),tx('Šířka děleno výškou obrázku nebo obrazovky, například 16:9.','The width divided by the height of a picture or screen, for example 16:9.'),[5]],
  [tx('Komprese','Compression'),tx('Zmenšení datového zápisu obrazu.','Shrinking the data record of a picture.'),[6]],
  [tx('Bezeztrátová a ztrátová komprese','Lossless and lossy compression'),tx('Bezeztrátová obraz obnoví přesně, ztrátová něco nevratně zahodí.','Lossless restores the picture exactly, lossy irreversibly discards something.'),[6]]],
@@ -1270,7 +1229,7 @@ D:{
  cq:()=>tx(`RGB kódování, ${S.bc5} bitů na kanál, lupa s kódy RGB pixelů.`,`RGB encoding, ${S.bc5} bits per channel, a lens with the RGB codes of pixels.`),
  cr:()=>S.m6==='cmp'?tx('Sedm poměrů stran vedle sebe se stejnou výškou.','Seven aspect ratios side by side at the same height.'):tx(`Převod ze zdroje ${arOf(S.sr6).n} na cíl ${arOf(S.tr6).n}, ořez nebo černé pruhy.`,`Converting from the source ${arOf(S.sr6).n} to the target ${arOf(S.tr6).n}, cropping or black bars.`),
  c2:()=>tx(`Míchání světla RGB (${S.r}, ${S.g}, ${S.b}), barva #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`,`Mixing RGB light (${S.r}, ${S.g}, ${S.b}), the colour #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`),
- c4:()=>S.m4==='res'?tx(`Obrázek ${S.rs} × ${S.rs*3/4} pixelů.`,`A picture of ${S.rs} × ${S.rs*3/4} pixels.`):S.m4==='std'?tx('Velikost bez komprese podle standardního rozlišení.','Size without compression by standard resolution.'):tx('Srovnání formátů BMP, GIF, PNG a JPEG.','Comparison of the formats BMP, GIF, PNG and JPEG.'),
+ c4:()=>tx('Velikost bez komprese podle standardního rozlišení.','Size without compression by standard resolution.'),
  c5:()=>tx('Obrázek před kompresí a po rozbalení, ztrátová a bezeztrátová komprese.','A picture before compression and after unpacking, lossy and lossless compression.')}};
 
 </script>
