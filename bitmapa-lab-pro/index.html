@@ -553,20 +553,21 @@ function medianCut(d,n){
  while(pal.length<n)pal.push(pal[pal.length-1].slice());
  return pal.sort((p,q)=>lum(...p)-lum(...q));
 }
-function palImg(id,bits,gray){
- const key=[id,LAND1?1:0,OWNV,bits,gray?1:0].join();if(PQ[key])return PQ[key];
+function palImg(id,bits,mode){
+ const gray=mode==='gray',web=mode==='web';
+ const key=[id,LAND1?1:0,OWNV,bits,mode].join();if(PQ[key])return PQ[key];
  const L=1<<bits,W=640,H=480,c0=cvx(W,H),g0=c0.getContext('2d',{willReadFrequently:true});g0.imageSmoothingQuality='high';g0.drawImage(img1(id).c,0,0,W,H);
  const d=g0.getImageData(0,0,W,H).data;
  if(gray)for(let i=0;i<W*H;i++){const v=Math.round(lum(d[i*4],d[i*4+1],d[i*4+2]));d[i*4]=d[i*4+1]=d[i*4+2]=v}
- let pal;if(gray){pal=[];for(let i=0;i<L;i++){const v=Math.round(i*255/(L-1));pal.push([v,v,v])}}else pal=medianCut(d,L);
+ let pal,n=L;if(web){pal=[];for(let r=0;r<6;r++)for(let g2=0;g2<6;g2++)for(let b2=0;b2<6;b2++)pal.push([r*51,g2*51,b2*51]);n=216}else if(gray){pal=[];for(let i=0;i<L;i++){const v=Math.round(i*255/(L-1));pal.push([v,v,v])}}else pal=medianCut(d,L);
  const memo=new Int16Array(32768).fill(-1);
- const idx=(r,g,b)=>{const k=(r>>3)<<10|(g>>3)<<5|b>>3;if(memo[k]>=0)return memo[k];let bi=0,bd=1e9;for(let i=0;i<L;i++){const p=pal[i],e=(p[0]-r)**2+(p[1]-g)**2+(p[2]-b)**2;if(e<bd){bd=e;bi=i}}memo[k]=bi;return bi};
+ const idx=(r,g,b)=>{const k=(r>>3)<<10|(g>>3)<<5|b>>3;if(memo[k]>=0)return memo[k];let bi=0,bd=1e9;for(let i=0;i<n;i++){const p=pal[i],e=(p[0]-r)**2+(p[1]-g)**2+(p[2]-b)**2;if(e<bd){bd=e;bi=i}}memo[k]=bi;return bi};
  const c=cvx(W,H),g=c.getContext('2d'),o=g.createImageData(W,H);
  for(let i=0;i<W*H;i++){const p=pal[idx(d[i*4],d[i*4+1],d[i*4+2])];o.data[i*4]=p[0];o.data[i*4+1]=p[1];o.data[i*4+2]=p[2];o.data[i*4+3]=255}
- g.putImageData(o,0,0);return PQ[key]={c,pal,idx};
+ g.putImageData(o,0,0);return PQ[key]={c,pal,idx,n};
 }
-function codeGrid(id,bits,gray){
- const [cw,ch]=CG[bits],pq=palImg(id,bits,gray),t=cvx(cw,ch),g=t.getContext('2d',{willReadFrequently:true});g.imageSmoothingQuality='high';g.drawImage(img1(id).c,0,0,cw,ch);
+function codeGrid(id,bits,mode){
+ const gray=mode==='gray',[cw,ch]=CG[bits],pq=palImg(id,bits,mode),t=cvx(cw,ch),g=t.getContext('2d',{willReadFrequently:true});g.imageSmoothingQuality='high';g.drawImage(img1(id).c,0,0,cw,ch);
  const d=g.getImageData(0,0,cw,ch).data,out=[];
  for(let i=0;i<cw*ch;i++){let r=d[i*4],gg=d[i*4+1],b=d[i*4+2];if(gray)r=gg=b=Math.round(lum(r,gg,b));out.push(pq.idx(r,gg,b))}
  return{cw,ch,out,pal:pq.pal};
@@ -577,7 +578,7 @@ TABS.push({name:tx('Paleta a bity','Palette and bits'),side:'27rem',
   <div class="scope grow"><canvas id="cp"></canvas><div class="tag">${tx('pixel nese jen číslo barvy z palety','a pixel carries just the number of a palette colour')}</div></div>
   <div class="kpis">
    <div class="card kpi"><span class="lbl">${tx('Bitů na pixel','Bits per pixel')}</span><div class="big sm" data-o="kpa"></div><small>${tx('délka kódu jednoho pixelu','length of the code of one pixel')}</small></div>
-   <div class="card kpi"><span class="lbl">${tx('Barev v paletě','Colours in the palette')}</span><div class="big sm" data-o="kpb"></div><small>${tx('2 na počet bitů','2 to the number of bits')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Barev v paletě','Colours in the palette')}</span><div class="big sm" data-o="kpb"></div><small data-o="kpb2"></small></div>
    <div class="card kpi"><span class="lbl">${tx('Data pixelů','Pixel data')}</span><div class="big sm" data-o="kpc"></div><small data-o="kpd"></small></div>
   </div></div>
   <div class="side card">
@@ -585,21 +586,24 @@ TABS.push({name:tx('Paleta a bity','Palette and bits'),side:'27rem',
     <div class="chips g2">${['house','land','test','own'].map(k=>`<button class="chip sm" data-k="img2" data-v="${k}"${k==='own'?' data-act="own2"':''}>${tx(IMGN[k][0],IMGN[k][1])}</button>`).join('')}</div>
     <input type="file" id="f2" accept="image/*" hidden></div>
    <div class="ctl"><div class="hd"><span class="lbl">${tx('Bitová hloubka','Bit depth')}</span><span class="val" data-o="v_bd2"></span></div>
-    <div class="chips g4">${[1,2,4,8].map(v=>`<button class="chip sm" data-k="bd2" data-v="${v}">${bitW(v,LANG==='en')}</button>`).join('')}</div></div>
+    <div class="chips g4">${[1,2,4,8].map(v=>`<button class="chip sm" data-k="bd2" data-v="${v}" data-act="bd2">${bitW(v,LANG==='en')}</button>`).join('')}</div></div>
    <div class="ctl"><div class="hd"><span class="lbl">${tx('Paleta','Palette')}</span></div>
-    <div class="chips g2"><button class="chip sm" data-k="pl2" data-v="col">${tx('Barvy','Colours')}</button><button class="chip sm" data-k="pl2" data-v="gray">${tx('Odstíny šedi','Greys')}</button></div>
+    <div class="chips g3"><button class="chip sm" data-k="pl2" data-v="col">${tx('Barvy','Colours')}</button><button class="chip sm" data-k="pl2" data-v="gray">${tx('Odstíny šedi','Greys')}</button><button class="chip sm" data-k="pl2" data-v="web" data-act="web2">${tx('Paleta GIF','GIF palette')}</button></div>
     <div class="chips" style="display:grid;grid-template-columns:1fr"><button class="chip sm tg" data-act="tg1" data-v="cd2" aria-pressed="true">${tx('Kódy pixelů (nuly a jedničky)','Pixel codes (zeros and ones)')}</button></div></div>
    <div class="hint" data-o="h2"></div>
    ${note(tx('<b>Paleta</b> je tabulka barev. Pixel si pamatuje jen <b>číslo</b> řádku v tabulce, a to zapsané n bity. Čím víc bitů, tím víc barev se do palety vejde: 1 bit dává 2 barvy, 8 bitů 256.','A <b>palette</b> is a table of colours. A pixel remembers only the <b>number</b> of a row in the table, written in n bits. The more bits, the more colours fit into the palette: 1 bit gives 2 colours, 8 bits 256.'))}
   </div></div>`},
  init(){
   const f=$('#f2');
-  OUT.v_bd2=()=>{const L=1<<S.bd2,g=S.pl2==='gray';return `${nf(L)} ${g?(L<5?tx('odstíny','shades'):tx('odstínů','shades')):(L<5?tx('barvy','colours'):tx('barev','colours'))}`};
+  OUT.v_bd2=()=>{const L=S.pl2==='web'?216:1<<S.bd2,g=S.pl2==='gray';return `${nf(L)} ${g?(L<5?tx('odstíny','shades'):tx('odstínů','shades')):(L<5?tx('barvy','colours'):tx('barev','colours'))}`};
   OUT.kpa=()=>`${S.bd2} <u>${tx('bit','bit')}</u>`;
-  OUT.kpb=()=>nf(1<<S.bd2);
+  OUT.kpb2=()=>S.pl2==='web'?tx('z 256 možných míst (2⁸)','of 256 possible slots (2⁸)'):tx('2 na počet bitů','2 to the number of bits');
+  OUT.kpb=()=>nf(S.pl2==='web'?216:1<<S.bd2);
   OUT.kpc=()=>`${nf(W1*H1*S.bd2/8)} <u>B</u>`;
-  OUT.kpd=()=>S.pl2==='gray'?tx(`${nf(W1)} · ${nf(H1)} · ${S.bd2} ÷ 8`,`${nf(W1)} · ${nf(H1)} · ${S.bd2} ÷ 8`):tx(`+ paleta ${nf((1<<S.bd2)*3)} B`,`+ palette ${nf((1<<S.bd2)*3)} B`);
-  OUT.h2=()=>S.cd2?tx(`Vpravo je zmenšený obrázek ${CG[S.bd2][0]} × ${CG[S.bd2][1]} pixelů. Každý čtvereček je jeden pixel a nese svůj kód. Tlačítkem Kódy pixelů se vrátíte k obrázku.`,`On the right is a reduced picture of ${CG[S.bd2][0]} × ${CG[S.bd2][1]} pixels. Every square is one pixel and carries its code. The Pixel codes button switches back to the picture.`):tx('Vpravo je obrázek jen s barvami z palety. Bez rozptylu, každý pixel dostane nejbližší barvu z palety.','On the right is the picture with only the palette colours. Without dithering, every pixel gets the nearest palette colour.');
+  OUT.kpd=()=>S.pl2==='web'?tx(`+ paleta ${nf(216*3)} B`,`+ palette ${nf(216*3)} B`):S.pl2==='gray'?tx(`${nf(W1)} · ${nf(H1)} · ${S.bd2} ÷ 8`,`${nf(W1)} · ${nf(H1)} · ${S.bd2} ÷ 8`):tx(`+ paleta ${nf((1<<S.bd2)*3)} B`,`+ palette ${nf((1<<S.bd2)*3)} B`);
+  OUT.h2=()=>S.pl2==='web'?tx('Paleta GIF: pevných 216 barev, stejných pro každý obrázek. Dříve se používala pro GIF a web na displejích s 256 barvami. Barvy nejsou vybrané podle obrázku, proto je výsledek hrubý. Zbylých 40 míst z 256 zůstává nepoužito.','GIF palette: a fixed 216 colours, the same for every picture. It used to be common for GIF and the web on displays with 256 colours. The colours are not chosen from the picture, so the result is coarse. The remaining 40 of the 256 slots stay unused.'):S.cd2?tx(`Vpravo je zmenšený obrázek ${CG[S.bd2][0]} × ${CG[S.bd2][1]} pixelů. Každý čtvereček je jeden pixel a nese svůj kód. Tlačítkem Kódy pixelů se vrátíte k obrázku.`,`On the right is a reduced picture of ${CG[S.bd2][0]} × ${CG[S.bd2][1]} pixels. Every square is one pixel and carries its code. The Pixel codes button switches back to the picture.`):tx('Vpravo je obrázek jen s barvami z palety. Bez rozptylu, každý pixel dostane nejbližší barvu z palety.','On the right is the picture with only the palette colours. Without dithering, every pixel gets the nearest palette colour.');
+  ACT.web2=()=>{S.pl2='web';S.bd2=8;refresh()};
+  ACT.bd2=v=>{S.bd2=+v;if(S.pl2==='web'&&S.bd2!==8)S.pl2='col';refresh()};
   ACT.own2=()=>{f.value='';f.click()};
   f.addEventListener('change',()=>{
    const file=f.files&&f.files[0];if(!file)return;
@@ -616,15 +620,15 @@ TABS.push({name:tx('Paleta a bity','Palette and bits'),side:'27rem',
  render(){
   const cv=$('#cp');if(!cv)return;const {x,w,h,R}=setup(cv);
   $$('.tg').forEach(b=>{const o=!!S[b.dataset.v];b.classList.toggle('on',o);b.setAttribute('aria-pressed',o)});
-  const bits=S.bd2,L=1<<bits,gray=S.pl2==='gray',pad=R*1.6,gap=R*3.4,top=R*3.8,bot=R*6.6;
+  const bits=S.bd2,L=1<<bits,gray=S.pl2==='gray',web=S.pl2==='web',nC=web?216:L,pad=R*1.6,gap=R*3.4,top=R*3.8,bot=R*6.6;
   const colw=(w-pad*2-gap)/2;let pw=Math.min(colw,(h-top-bot)/.75);const ph=pw*.75;
   const ax=pad+(colw-pw)/2,mx=w-pad-colw+(colw-pw)/2,ay=top+Math.max(0,(h-top-bot-ph)/2),my=ay;
-  const pq=palImg(S.img2==='own'&&!OWN1?'house':S.img2,bits,gray),id=S.img2==='own'&&!OWN1?'house':S.img2;
+  const pq=palImg(S.img2==='own'&&!OWN1?'house':S.img2,bits,S.pl2),id=S.img2==='own'&&!OWN1?'house':S.img2;
   TH(x,tx('Původní obrázek','Original picture'),ax,ay-R*.9,R*.82,TXT);
-  TH(x,bitW(bits,LANG==='en')+' · '+nf(L)+' '+(gray?tx(L<5?'odstíny':'odstínů','shades'):tx(L<5?'barvy':'barev','colours')),mx,ay-R*.9,R*.82,C.orange);
+  TH(x,bitW(bits,LANG==='en')+' · '+nf(nC)+' '+(gray?tx(L<5?'odstíny':'odstínů','shades'):tx(L<5?'barvy':'barev','colours'))+(web?tx(' (paleta GIF)',' (GIF palette)'):''),mx,ay-R*.9,R*.82,C.orange);
   draw(x,img1(id).c,ax,ay,pw,ph,true);
   if(S.cd2){
-   const cg=codeGrid(id,bits,gray),cs=pw/cg.cw;
+   const cg=codeGrid(id,bits,S.pl2),cs=pw/cg.cw;
    for(let j=0;j<cg.ch;j++)for(let i=0;i<cg.cw;i++){const k=cg.out[j*cg.cw+i],p=cg.pal[k];x.fillStyle=rgbS(p[0],p[1],p[2]);x.fillRect(mx+i*cs,my+j*cs,cs+.5,cs+.5);
     const s=k.toString(2).padStart(bits,'0'),fs=Math.min(cs*.5,cs*.92/((bits*.62+.1)*PZ));T(x,s,mx+(i+.5)*cs,my+(j+.5)*cs,fs,fgOn(p[0],p[1],p[2]),'center')}
    x.strokeStyle='rgba(23,20,15,.35)';x.lineWidth=1;x.beginPath();for(let i=0;i<=cg.cw;i++){x.moveTo(mx+i*cs,my);x.lineTo(mx+i*cs,my+ph)}for(let j=0;j<=cg.ch;j++){x.moveTo(mx,my+j*cs);x.lineTo(mx+pw,my+j*cs)}x.stroke();
@@ -634,10 +638,10 @@ TABS.push({name:tx('Paleta a bity','Palette and bits'),side:'27rem',
   {const gr=x.createLinearGradient(ax,0,ax+pw,0);for(let i=0;i<=12;i++)gr.addColorStop(i/12,`hsl(${i*30},85%,55%)`);x.fillStyle=gr;x.fillRect(ax,sy,pw,sh)}
   T(x,tx('až 16 777 216 barev','up to 16,777,216 colours'),ax,sy+sh+R*1.1,R*.72,TXT);
   const cw=pw/L;
-  for(let i=0;i<L;i++){const p=pq.pal[i];x.fillStyle=rgbS(p[0],p[1],p[2]);x.fillRect(mx+i*cw,sy,Math.ceil(cw)+(L>64?1:0),sh)}
+  for(let i=0;i<pq.n;i++){const p=pq.pal[i];x.fillStyle=rgbS(p[0],p[1],p[2]);x.fillRect(mx+i*cw,sy,Math.ceil(cw)+(L>64?1:0),sh)}
   if(L<=16){x.strokeStyle='rgba(23,20,15,.5)';x.lineWidth=1;for(let i=1;i<L;i++){x.beginPath();x.moveTo(mx+i*cw,sy);x.lineTo(mx+i*cw,sy+sh);x.stroke()}
    const fs=Math.min(R*.72,cw*.92/((bits*.62+.1)*PZ));for(let i=0;i<L;i++)T(x,i.toString(2).padStart(bits,'0'),mx+(i+.5)*cw,sy+sh+R*1.1,fs,TXT,'center')}
-  else T(x,tx(`paleta ${nf(L)} barev, kódy ${'0'.repeat(bits)} až ${'1'.repeat(bits)}`,`palette of ${nf(L)} colours, codes ${'0'.repeat(bits)} to ${'1'.repeat(bits)}`),mx,sy+sh+R*1.1,R*.72,TXT);
+  else T(x,web?tx(`216 barev, kódy 00000000 až 11010111`,`216 colours, codes 00000000 to 11010111`):tx(`paleta ${nf(L)} barev, kódy ${'0'.repeat(bits)} až ${'1'.repeat(bits)}`,`palette of ${nf(L)} colours, codes ${'0'.repeat(bits)} to ${'1'.repeat(bits)}`),mx,sy+sh+R*1.1,R*.72,TXT);
   x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(mx,sy,pw,sh);x.strokeRect(ax,sy,pw,sh);
   renderModes();
  }});
@@ -1017,8 +1021,10 @@ const H=[
  eh:tx(`Co se tu děje`,`What is going on`),
  e:[tx(`<b>Paleta barev.</b> Barvy palety jsou vybrané podle obrázku. Aplikace je hledá tak, aby co nejlépe zastoupily barvy původního obrazu. Každý pixel pak dostane nejbližší barvu z palety.`,`<b>Colour palette.</b> The palette colours are chosen from the picture. The app looks for them so that they represent the colours of the original as well as possible. Every pixel then gets the nearest colour from the palette.`),
     tx(`<b>Odstíny šedi.</b> Při stejné bitové hloubce jsou barvy palety jen šedé a rovnoměrně rozložené od černé k bílé.`,`<b>Greys.</b> At the same bit depth the palette colours are only grey and evenly spread from black to white.`),
+    tx(`<b>Paleta GIF.</b> Formát GIF má nejvýše 256 barev a každý pixel nese číslo barvy z palety. Častá byla pevná webová paleta o 216 barvách, stejná pro každý obrázek. Barvy neodpovídají obrázku, proto je výsledek hrubý.`,`<b>GIF palette.</b> The GIF format has at most 256 colours and every pixel carries the number of a palette colour. A common choice was the fixed web palette of 216 colours, the same for every picture. The colours do not match the picture, so the result is coarse.`),
     tx(`<b>Velikost dat.</b> Data pixelů zabírají šířka · výška · n ÷ 8 bajtů. Paleta navíc potřebuje 3 bajty na každou barvu.`,`<b>Size of the data.</b> The pixel data take width · height · n ÷ 8 bytes. The palette needs 3 more bytes for every colour.`)],
- c:[tx(`Při jednom bitu přečtěte nuly a jedničky vpravo a najděte, kterým barvám odpovídají.`,`At one bit read the zeros and ones on the right and find which colours they stand for.`),
+ c:[tx(`Zvolte Paletu GIF a porovnejte ji s Barvami při 8 bitech. Která vypadá věrněji a proč?`,`Choose the GIF palette and compare it with Colours at 8 bits. Which looks more faithful and why?`),
+    tx(`Při jednom bitu přečtěte nuly a jedničky vpravo a najděte, kterým barvám odpovídají.`,`At one bit read the zeros and ones on the right and find which colours they stand for.`),
     tx(`Přepněte na 2, 4 a 8 bitů a sledujte, jak se zlepšuje obraz a kolik barev v paletě přibývá.`,`Switch to 2, 4 and 8 bits and watch the picture improve and the palette grow.`),
     tx(`Porovnejte stejnou hloubku v barvách a v odstínech šedi. Kde je rozdíl nejvíc vidět?`,`Compare the same depth in colours and in greys. Where is the difference most visible?`)],
  d:tx(`Pixel nese číslo barvy z palety. n bitů dává paletu až 2ⁿ barev.`,`A pixel carries the number of a palette colour. n bits give a palette of up to 2ⁿ colours.`)},
