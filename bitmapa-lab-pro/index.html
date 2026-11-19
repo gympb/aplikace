@@ -366,11 +366,11 @@ function boot(){
 </script>
 <script>
 /* ===== Bitmapa Lab Pro: společné části ===== */
-Object.assign(S,{m4:'std',m6:'cmp',as6:'common',ct4:'logo',ls5:'lossless',
+Object.assign(S,{m4:'std',m6:'cmp',m7:'two',as8:'common',ct8:'foto',rl7:'logo',im7:'land',q7:30,z7:1,as6:'common',ct4:'logo',ls5:'lossless',
  img1:'house',img2:'land',fm2:'dec',z2:40,lx2:700,ly2:520,img5:'land',bc5:8,ar6:'169',sr6:'169',tr6:'43',fm6:'crop',img6:'land',ch4:'rgb',gm4:false,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'col',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
  b2:3,r:255,g:151,b:46,
  rs:32,bd:24,sz4:'fhd'});
-const MK={5:'m4',6:'m6'};
+const MK={5:'m4',6:'m6',7:'m7'};
 const modeSw=(n,items)=>`<div class="seg modes${items.length===3?' m3':''}">${items.map(([id,cs,en])=>`<button class="chip" data-k="${MK[n]}" data-v="${id}"><span>${tx(cs,en)}</span></button>`).join('')}</div>`;
 const note=h=>`<div class="callout">${h}</div>`;
 const fB=B=>B>=1e9?nf(B/1e9,2)+' GB':B>=1e6?nf(B/1e6,B>=1e8?0:B>=1e7?1:2)+' MB':B>=1e3?nf(B/1e3,B>=1e5?0:1)+' kB':nf(B)+' B';
@@ -694,7 +694,7 @@ TABS.push({name:tx('Mixér RGB','RGB mixer'),side:'27rem',
   <div class="scope grow"><canvas id="c2"></canvas><div class="tag">${tx('světlo se sčítá: tři čísla 0 až 255','light adds up: three numbers 0 to 255')}</div></div>
   <div class="kpis">
    <div class="card kpi"><span class="lbl" data-o="k2l"></span><div class="big sm" data-o="k2a"></div><small data-o="k2s"></small></div>
-   <div class="card kpi"><span class="lbl">${tx('Počet barev','Number of colours')}</span><div class="big sm">16 777 216</div><small>${tx('256 · 256 · 256 = 2²⁴','256 · 256 · 256 = 2²⁴')}</small></div>
+   <div class="card kpi" style="box-shadow:inset 0 0 0 3px #FF972E"><span class="lbl" style="color:#FF972E">${tx('Počet barev, které lze namíchat','Number of colours that can be mixed')}</span><div class="big">16 777 216</div><small><b>256³ = (2⁸)³ = 2²⁴</b> · ${tx('tři kanály po 256 hodnotách','three channels of 256 values')}</small></div>
    <div class="card kpi"><span class="lbl">${tx('Velikost jedné barvy','Size of one colour')}</span><div class="big sm">3 <u>${tx('bajty','bytes')}</u></div><small>${tx('3 kanály · 8 bitů = 24 bitů','3 channels · 8 bits = 24 bits')}</small></div>
   </div></div>
   <div class="side card fill">
@@ -1004,8 +1004,7 @@ TABS.push({name:tx('Poměr stran','Aspect ratio'),side:'27rem',
   renderModes();
  }});
 
-/* ===== kapitola 5 ===== */
-/* ---------- 5 Princip komprese ---------- */
+/* ===== kapitola 7: Princip komprese ===== */
 const LOSSY={};
 function lossyImg(){
  if(LOSSY.c)return LOSSY;
@@ -1013,42 +1012,181 @@ function lossyImg(){
  for(let i=0;i<640*480;i++){for(let k=0;k<3;k++){const v=im.d[i*4+k],q=Math.min(255,Math.round(v/48)*48);o.data[i*4+k]=q}o.data[i*4+3]=255;if(o.data[i*4]===im.d[i*4]&&o.data[i*4+1]===im.d[i*4+1]&&o.data[i*4+2]===im.d[i*4+2])same++}
  g.putImageData(o,0,0);LOSSY.c=c;LOSSY.same=same/(640*480);return LOSSY;
 }
+const RLEC=['#2f6fc4','#ffffff','#ff972e','#4f9a4a','#6b8fb0','#ffd23f'];
+const hx=c=>{const n=parseInt(c.slice(1),16);return[n>>16,(n>>8)&255,n&255]};
+const rleRow=l=>{const a=[];l.forEach(([c,n])=>{for(let i=0;i<n;i++)a.push(hx(RLEC[c]))});return a};
+const RLEX=[
+ {id:'logo',n:['Logo','Logo'],px:rleRow([[0,14],[1,6],[2,10],[1,6],[0,12]])},
+ {id:'house',n:['Domek (řádek obrázku)','House (a row of the picture)'],px:rleRow([[0,10],[1,3],[0,6],[1,4],[0,7],[4,5],[0,4],[3,9]])},
+ {id:'photo',n:['Fotografie (šum)','Photograph (noise)'],px:Array.from({length:48},(_,i)=>[(120+i*37+(i*i*13)%90)%256,(60+i*53+(i*7)%120)%256,(200+i*29+(i*i*5)%70)%256])}];
+const rleRuns=px=>{const r=[];px.forEach(p=>{const l=r[r.length-1];if(l&&l.c[0]===p[0]&&l.c[1]===p[1]&&l.c[2]===p[2])l.n++;else r.push({c:p,n:1})});return r};
+const JQ={},JD={},PNGS={};
+const J7=[{id:'house',f:[.64,.66]},{id:'land',f:[.5,.55]},{id:'test',f:[.5,.5]}];
+const jf=id=>J7.find(j=>j.id===id)||J7[0];
+function jpgOf(id,q){
+ const k=id+'|'+q;if(JQ[k])return JQ[k];
+ const src=img1(id).c;
+ if(!PNGS[id])PNGS[id]=Math.round(src.toDataURL('image/png').length*3/4);
+ const url=src.toDataURL('image/jpeg',q/100);const r={bytes:Math.round(url.length*3/4),c:null};JQ[k]=r;
+ const im=new Image();im.onload=()=>{const c=cvx(W1,H1);c.getContext('2d').drawImage(im,0,0);r.c=c;if(typeof refresh==='function')refresh()};im.src=url;
+ return r;
+}
 TABS.push({name:tx('Princip komprese','Compression principle'),side:'27rem',
  build(){return `<div class="split"><div class="col">
-  <div class="scope grow"><canvas id="c5"></canvas><div class="tag">${tx('komprese: co se po rozbalení změní','compression: what changes after unpacking')}</div></div>
-  <div class="kpis">
+  <div class="scope grow"><canvas id="c5"></canvas><div class="tag" data-o="tag7"></div></div>
+  <div class="kpis" data-mode="two">
    <div class="card kpi"><span class="lbl">${tx('Po rozbalení','After unpacking')}</span><div class="big sm" data-o="k5a"></div><small data-o="k5a2"></small></div>
    <div class="card kpi"><span class="lbl">${tx('Návrat k originálu','Return to the original')}</span><div class="big sm" data-o="k5b"></div><small>${tx('lze obnovit původní pixely?','can the original pixels be restored?')}</small></div>
    <div class="card kpi"><span class="lbl">${tx('Typické formáty','Typical formats')}</span><div class="big sm" data-o="k5c"></div><small>${tx('podle druhu komprese','by kind of compression')}</small></div>
-  </div></div>
+  </div>
+  <div class="kpis" data-mode="rle">
+   <div class="card kpi"><span class="lbl">${tx('Bez komprese','Without compression')}</span><div class="big sm" data-o="k7a"></div><small data-o="k7a2"></small></div>
+   <div class="card kpi"><span class="lbl">${tx('Po zápisu opakování','Run-length coded')}</span><div class="big sm" data-o="k7b"></div><small data-o="k7b2"></small></div>
+   <div class="card kpi"><span class="lbl">${tx('Výsledek','Result')}</span><div class="big sm" data-o="k7c"></div><small data-o="k7c2"></small></div>
+  </div>
+  <div class="kpis" data-mode="jpg">
+   <div class="card kpi"><span class="lbl">${tx('Bezeztrátově (PNG)','Lossless (PNG)')}</span><div class="big sm" data-o="k7d"></div><small>${tx('skutečná velikost souboru','actual file size')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Ztrátově (JPEG)','Lossy (JPEG)')}</span><div class="big sm" data-o="k7e"></div><small data-o="k7e2"></small></div>
+   <div class="card kpi"><span class="lbl">${tx('Úspora','Saving')}</span><div class="big sm" data-o="k7f"></div><small>${tx('kolikrát menší než PNG','how many times smaller than PNG')}</small></div>
+  </div>
+  </div>
   <div class="side card">
-   <div class="ctl"><div class="hd"><span class="lbl">${tx('Druh komprese','Kind of compression')}</span></div><div class="chips g2"><button class="chip sm" data-k="ls5" data-v="lossless">${tx('Bezeztrátová','Lossless')}</button><button class="chip sm" data-k="ls5" data-v="lossy">${tx('Ztrátová','Lossy')}</button></div></div>
-   <div class="callout" data-o="why5"></div>
-   <div class="hint">${tx('Pravá část je ilustrace: ztrátová komprese skutečně zahazuje údaje, jak přesně, tu nevysvětlujeme.','The right part is an illustration: lossy compression really discards data, how exactly is not explained here.')}</div>
+   ${modeSw(7,[['two','Dva druhy','Two kinds'],['rle','Opakování','Repeats'],['jpg','JPEG','JPEG']])}
+   <div data-mode="two" class="ctl"><div class="hd"><span class="lbl">${tx('Druh komprese','Kind of compression')}</span></div><div class="chips g2"><button class="chip sm" data-k="ls5" data-v="lossless">${tx('Bezeztrátová','Lossless')}</button><button class="chip sm" data-k="ls5" data-v="lossy">${tx('Ztrátová','Lossy')}</button></div></div>
+   <div data-mode="rle" class="ctl"><div class="hd"><span class="lbl">${tx('Řádek pixelů','Row of pixels')}</span></div><div class="chips g3">${RLEX.map(e=>`<button class="chip sm" data-k="rl7" data-v="${e.id}">${tx(e.n[0].split(' (')[0],e.n[1].split(' (')[0])}</button>`).join('')}</div></div>
+   <div data-mode="jpg" class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div><div class="chips g2">${J7.map(j=>`<button class="chip sm" data-k="im7" data-v="${j.id}">${tx(IMGN[j.id][0],IMGN[j.id][1])}</button>`).join('')}</div></div>
+   <div data-mode="jpg" class="ctl"><div class="hd"><span class="lbl">${tx('Kvalita JPEG','JPEG quality')}</span><span class="val" data-o="v_q7"></span></div><input type="range" data-k="q7" min="1" max="100" step="1"></div>
+   <div data-mode="jpg" class="ctl"><div class="hd"><span class="lbl">${tx('Zvětšení','Magnification')}</span></div><div class="chips g3"><button class="chip sm" data-k="z7" data-v="1">1×</button><button class="chip sm" data-k="z7" data-v="4">4×</button><button class="chip sm" data-k="z7" data-v="10">10×</button></div></div>
+   <div class="callout" data-o="why7"></div>
+   <div class="hint" data-o="hint7"></div>
   </div></div>`},
  init(){
   const ly=()=>S.ls5==='lossy';
+  const rx=()=>RLEX.find(e=>e.id===S.rl7)||RLEX[0];
+  OUT.tag7=()=>S.m7==='two'?tx('komprese: co se po rozbalení změní','compression: what changes after unpacking'):S.m7==='rle'?tx('bezeztrátově: opakující se pixely se zapíšou jako počet a barva','lossless: repeating pixels are written as a count and a colour'):tx('ztrátově: skutečný JPEG při zvolené kvalitě','lossy: a real JPEG at the chosen quality');
   OUT.k5a=()=>ly()?tx('jiný','different'):tx('stejný','the same');
   OUT.k5a2=()=>ly()?tx('některé údaje jsou nevratně pryč','some data is gone for good'):tx('každý pixel souhlasí s originálem','every pixel matches the original');
   OUT.k5b=()=>ly()?tx('ne','no'):tx('ano','yes');
   OUT.k5c=()=>ly()?'JPEG':'PNG, GIF';
-  OUT.why5=()=>ly()?`<b class="l">${tx('Ztrátová komprese','Lossy compression')}</b>${tx('Část údajů se nevratně zahodí, hlavně jemné detaily, které oko téměř nepozná. Soubor je výrazně menší, ale původní pixely už nejdou vrátit. Hodí se na fotografie.','Part of the data is irreversibly discarded, mostly fine detail the eye barely notices. The file is much smaller, but the original pixels cannot be restored. It suits photographs.')}`:`<b class="l">${tx('Bezeztrátová komprese','Lossless compression')}</b>${tx('Stejné údaje se zapíšou úsporněji, třeba když se opakují. Po rozbalení je každý pixel stejný jako v originálu. Hodí se na grafiku, text a archiv originálů.','The same data is written more economically, for example when it repeats. After unpacking every pixel equals the original. It suits graphics, text and archives of originals.')}`;
+  OUT.k7a=()=>fB(rx().px.length*3);OUT.k7a2=()=>`${rx().px.length} ${tx('pixelů','pixels')} · 3 B`;
+  OUT.k7b=()=>fB(rleRuns(rx().px).length*4);OUT.k7b2=()=>`${rleRuns(rx().px).length} ${tx('úseků','runs')} · 4 B`;
+  OUT.k7c=()=>{const a=rx().px.length*3,b=rleRuns(rx().px).length*4;return b<a?tx('menší o ','smaller by ')+nf((1-b/a)*100,0)+' %':tx('větší o ','larger by ')+nf((b/a-1)*100,0)+' %'};
+  OUT.k7c2=()=>rleRuns(rx().px).length*4<rx().px.length*3?tx('opakování se vyplatilo','the repeats paid off'):tx('bez opakování se zápis zhorší','without repeats the coding gets worse');
+  OUT.v_q7=()=>String(S.q7);
+  OUT.k7d=()=>{jpgOf(S.im7,S.q7);return fB(PNGS[S.im7])};
+  OUT.k7e=()=>fB(jpgOf(S.im7,S.q7).bytes);OUT.k7e2=()=>tx('kvalita ','quality ')+S.q7;
+  OUT.k7f=()=>{const j=jpgOf(S.im7,S.q7);return '× '+nf(PNGS[S.im7]/j.bytes,PNGS[S.im7]/j.bytes<10?1:0)};
+  OUT.why7=()=>{
+   if(S.m7==='two')return ly()?`<b class="l">${tx('Ztrátová komprese','Lossy compression')}</b>${tx('Část údajů se nevratně zahodí, hlavně jemné detaily, které oko téměř nepozná. Soubor je výrazně menší, ale původní pixely už nejdou vrátit. Hodí se na fotografie.','Part of the data is irreversibly discarded, mostly fine detail the eye barely notices. The file is much smaller, but the original pixels cannot be restored. It suits photographs.')}`:`<b class="l">${tx('Bezeztrátová komprese','Lossless compression')}</b>${tx('Stejné údaje se zapíšou úsporněji, třeba když se opakují. Po rozbalení je každý pixel stejný jako v originálu. Hodí se na grafiku, text a archiv originálů.','The same data is written more economically, for example when it repeats. After unpacking every pixel equals the original. It suits graphics, text and archives of originals.')}`;
+   if(S.m7==='rle')return `<b class="l">${tx('Zápis opakování (RLE)','Run-length encoding (RLE)')}</b>${tx('Místo desetkrát stejné barvy se zapíše „10× modrá“. Z takového zápisu se dá vrátit každý pixel, proto je to bezeztrátové. Vyplatí se u ploch jedné barvy, u šumu naopak zápis nafoukne.','Instead of the same colour ten times we write “10× blue”. Every pixel can be restored from such a record, so it is lossless. It pays off on flat areas and on noise it inflates the record.')}`;
+   if(S.m7==='jpg')return `<b class="l">${tx('JPEG zahazuje detail','JPEG discards detail')}</b>${tx('Obraz se rozdělí na malé čtverce a zahodí se jemné změny, kterých si oko všimne nejméně. Čím nižší kvalita, tím menší soubor, ale tím víc se objeví kostičky a šmouhy kolem hran. Přibližte si obraz.','The picture is split into small squares and the finest changes the eye notices least are discarded. The lower the quality, the smaller the file, but the more blocks and smears appear around edges. Zoom in.')}`;
+   return '';};
+  OUT.hint7=()=>S.m7==='two'?tx('Pravá část je ilustrace: ztrátová komprese skutečně zahazuje údaje, jak přesně, ukazuje režim JPEG.','The right part is an illustration: lossy compression really discards data, the JPEG mode shows how.'):S.m7==='rle'?tx('Tato jednoduchá metoda je základ složitějších, které používá například GIF a PNG.','This simple method is the basis of more complex ones, used for example by GIF and PNG.'):tx('Velikosti jsou skutečné. Prohlížeč tento JPEG právě vytvořil.','The sizes are real. The browser has just created this JPEG.');
  },
  render(){
   const cv=$('#c5');if(!cv)return;const {x,w,h,R}=setup(cv);const pad=R*1.8;
-  const ly=S.ls5==='lossy';
-  let iw=(w-pad*2-R*14)/2,ih=iw*.75;const maxH=h-R*11;if(ih>maxH){ih=maxH;iw=ih/.75}
-  const gap=(w-pad*2-iw*2)/2,x1=pad,xm=pad+iw+gap/2-R*3.2,x2=w-pad-iw,y0=R*5.2+(h-R*5.2-R*3-ih)/2;
-  TH(x,tx('Původní obrázek','Original picture'),x1,y0-R*1.2,R*.9,TXT);
-  draw(x,small(640,480).c,x1,y0,iw,ih,true);x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(x1,y0,iw,ih);
-  TH(x,tx('Soubor','File'),xm+R*3.2,y0+ih/2-R*4.6,R*.9,TXT,'center');
-  const fw=R*(ly?4.2:6.4),fh=R*5;rr(x,xm+R*3.2-fw/2,y0+ih/2-fh/2,fw,fh,R*.6,ly?C.blue:C.analog);
-  T(x,tx('menší','smaller'),xm+R*3.2,y0+ih/2,R*.9,'#17140F','center','Montserrat',700);
-  TH(x,'→',x1+iw+gap*.12,y0+ih/2,R*1.8,C.orange,'center');TH(x,'→',x2-gap*.12,y0+ih/2,R*1.8,C.orange,'center');
-  TH(x,tx('Po rozbalení','After unpacking'),x2,y0-R*1.2,R*.9,C.orange);
-  draw(x,ly?lossyImg().c:small(640,480).c,x2,y0,iw,ih,true);x.strokeStyle=C.orange;x.lineWidth=2;x.strokeRect(x2,y0,iw,ih);
-  TH(x,ly?tx('ilustrace: některé údaje jsou nevratně pryč','illustration: some data is gone for good'):tx('každý pixel je stejný','every pixel is the same'),x2+iw/2,y0+ih+R*1.7,R*.9,ly?C.bad:C.good,'center');
+  if(S.m7==='two'){
+   const ly=S.ls5==='lossy';
+   let iw=(w-pad*2-R*14)/2,ih=iw*.75;const maxH=h-R*11;if(ih>maxH){ih=maxH;iw=ih/.75}
+   const gap=(w-pad*2-iw*2)/2,x1=pad,xm=pad+iw+gap/2-R*3.2,x2=w-pad-iw,y0=R*5.2+(h-R*5.2-R*3-ih)/2;
+   TH(x,tx('Původní obrázek','Original picture'),x1,y0-R*1.2,R*.9,TXT);
+   draw(x,small(640,480).c,x1,y0,iw,ih,true);x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(x1,y0,iw,ih);
+   TH(x,tx('Soubor','File'),xm+R*3.2,y0+ih/2-R*4.6,R*.9,TXT,'center');
+   const fw=R*(ly?4.2:6.4),fh=R*5;rr(x,xm+R*3.2-fw/2,y0+ih/2-fh/2,fw,fh,R*.6,ly?C.blue:C.analog);
+   T(x,tx('menší','smaller'),xm+R*3.2,y0+ih/2,R*.9,'#17140F','center','Montserrat',700);
+   TH(x,'→',x1+iw+gap*.12,y0+ih/2,R*1.8,C.orange,'center');TH(x,'→',x2-gap*.12,y0+ih/2,R*1.8,C.orange,'center');
+   TH(x,tx('Po rozbalení','After unpacking'),x2,y0-R*1.2,R*.9,C.orange);
+   draw(x,ly?lossyImg().c:small(640,480).c,x2,y0,iw,ih,true);x.strokeStyle=C.orange;x.lineWidth=2;x.strokeRect(x2,y0,iw,ih);
+   TH(x,ly?tx('ilustrace: některé údaje jsou nevratně pryč','illustration: some data is gone for good'):tx('každý pixel je stejný','every pixel is the same'),x2+iw/2,y0+ih+R*1.7,R*.9,ly?C.bad:C.good,'center');
+  }else if(S.m7==='rle'){
+   const e=RLEX.find(q=>q.id===S.rl7)||RLEX[0],px=e.px,N=px.length,runs=rleRuns(px),cw=(w-pad*2)/N,ch=R*3.4;
+   let y=R*4.4;
+   TH(x,tx('Řádek pixelů: ','Row of pixels: ')+tx(e.n[0],e.n[1])+' · '+N+' '+tx('pixelů','pixels'),pad,y,R*.9,TXT);y+=R*1.6;
+   px.forEach((p,i)=>{x.fillStyle=rgbS(...p);x.fillRect(pad+i*cw,y,cw,ch)});x.strokeStyle='rgba(23,20,15,.35)';x.lineWidth=1;px.forEach((p,i)=>{x.strokeRect(pad+i*cw,y,cw,ch)});
+   T(x,tx('každý pixel zvlášť: ','every pixel on its own: ')+N+' × 3 B = '+N*3+' B',pad,y+ch+R*1.6,R*.9,TXT);
+   y+=ch+R*5;
+   TH(x,tx('Totéž po zápisu opakování: ','The same run-length coded: ')+runs.length+' '+tx('úseků','runs'),pad,y,R*.9,C.orange);y+=R*1.6;
+   let cx=pad;runs.forEach(r=>{const bw=r.n*cw;x.fillStyle=rgbS(...r.c);x.fillRect(cx,y,bw,ch);x.strokeStyle=C.orange;x.lineWidth=2;x.strokeRect(cx,y,bw,ch);
+    if(bw>R*2.4)TH(x,r.n+'×',cx+bw/2,y+ch/2,Math.min(R*1.3,bw*.34),fgOn(...r.c),'center');cx+=bw});
+   T(x,runs.length+' × (1 B '+tx('počet','count')+' + 3 B '+tx('barva','colour')+') = '+runs.length*4+' B',pad,y+ch+R*1.6,R*.9,C.orange);
+   y+=ch+R*4.6;const mx=Math.max(N*3,runs.length*4),bwm=w-pad*2-R*6;
+   x.fillStyle=C.blue;x.fillRect(pad,y,bwm*N*3/mx,R*1.5);x.fillStyle=C.orange;x.fillRect(pad,y+R*2.2,bwm*runs.length*4/mx,R*1.5);
+   TH(x,N*3+' B',pad+bwm*N*3/mx+R*.6,y+R*.75,R*.9,C.cream);TH(x,runs.length*4+' B',pad+bwm*runs.length*4/mx+R*.6,y+R*2.95,R*.9,C.orange);
+  }else if(S.m7==='jpg'){
+   const id=S.im7,jr=jpgOf(id,S.q7),f=jf(id).f,z=S.z7||1,base=img1(id).c;
+   const sw=W1/z,sh=H1/z,sx=clamp(f[0]*W1-sw/2,0,W1-sw),sy=clamp(f[1]*H1-sh/2,0,H1-sh);
+   let iw=(w-pad*3)/2,ih=iw*.75;const maxH=h-R*8;if(ih>maxH){ih=maxH;iw=ih/.75}
+   const ox=(w-(iw*2+pad))/2,ox2=ox+iw+pad,oy=R*4.2+(h-R*4.2-R*3-ih)/2;
+   TH(x,tx('Původní obrázek','Original picture'),ox,oy-R*1.1,R*.9,TXT);TH(x,tx('JPEG, kvalita ','JPEG, quality ')+S.q7,ox2,oy-R*1.1,R*.9,C.orange);
+   x.imageSmoothingEnabled=z<4;x.drawImage(base,sx,sy,sw,sh,ox,oy,iw,ih);
+   if(jr.c){x.drawImage(jr.c,sx,sy,sw,sh,ox2,oy,iw,ih)}else{x.fillStyle='rgba(244,241,234,.08)';x.fillRect(ox2,oy,iw,ih)}
+   x.imageSmoothingEnabled=true;x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(ox,oy,iw,ih);x.strokeStyle=C.orange;x.lineWidth=2;x.strokeRect(ox2,oy,iw,ih);
+  }
   renderModes();
+ }});
+
+/* ===== kapitola 8: Formáty souborů ===== */
+const FM8=[
+ {id:'jpg',ext:'.jpg  .jpeg',n:'JPEG',c:1,col:['16,7 mil.','16.7 million'],cm:'ly',cmT:['ztrátová','lossy'],tr:0,trT:['ne','no'],use:['fotografie','photographs'],s:{foto:3,logo:1,text:1,anim:0,archiv:1}},
+ {id:'png',ext:'.png',n:'PNG',c:1,col:['16,7 mil. i víc','16.7 million or more'],cm:'ll',cmT:['bezeztrátová','lossless'],tr:2,trT:['ano, plynulá','yes, smooth'],use:['grafika, text, logo','graphics, text, logos'],s:{foto:1,logo:3,text:3,anim:0,archiv:2}},
+ {id:'gif',ext:'.gif',n:'GIF',c:1,col:['nejvýš 256','at most 256'],cm:'ll',cmT:['bezeztrátová','lossless'],tr:1,trT:['ano, jen zapnuto nebo vypnuto','yes, only on or off'],use:['jednoduché animace','simple animations'],s:{foto:0,logo:1,text:1,anim:2,archiv:0}},
+ {id:'bmp',ext:'.bmp',n:'BMP',c:1,col:['2 až 16,7 mil.','2 to 16.7 million'],cm:'no',cmT:['obvykle žádná','usually none'],tr:0,trT:['obvykle ne','usually no'],use:['nekomprimovaná data, dnes málo','uncompressed data, rare today'],s:{foto:0,logo:0,text:0,anim:0,archiv:1}},
+ {id:'webp',ext:'.webp',n:'WebP',c:1,col:['16,7 mil.','16.7 million'],cm:'bo',cmT:['ztrátová i bezeztrátová','lossy and lossless'],tr:2,trT:['ano, plynulá','yes, smooth'],use:['web: fotografie, grafika i animace','web: photos, graphics and animation'],s:{foto:3,logo:3,text:3,anim:2,archiv:1}},
+ {id:'tif',ext:'.tif  .tiff',n:'TIFF',c:0,col:['až 16 bitů na kanál','up to 16 bits per channel'],cm:'nl',cmT:['žádná nebo bezeztrátová','none or lossless'],tr:2,trT:['ano','yes'],use:['skenování, tisk, archiv','scanning, print, archive'],s:{foto:2,logo:1,text:1,anim:0,archiv:3}},
+ {id:'heic',ext:'.heic  .heif',n:'HEIC',c:0,col:['16,7 mil. i víc (10 bitů)','16.7 million or more (10 bits)'],cm:'ly',cmT:['ztrátová','lossy'],tr:2,trT:['ano','yes'],use:['fotografie z iPhonu','iPhone photos'],s:{foto:3,logo:0,text:0,anim:0,archiv:1}},
+ {id:'avif',ext:'.avif',n:'AVIF',c:0,col:['16,7 mil. i víc (10 a 12 bitů)','16.7 million or more (10 and 12 bits)'],cm:'bo',cmT:['ztrátová i bezeztrátová','lossy and lossless'],tr:2,trT:['ano, plynulá','yes, smooth'],use:['moderní web, malé soubory','modern web, small files'],s:{foto:3,logo:2,text:2,anim:2,archiv:1}},
+ {id:'raw',ext:'.dng  .cr2  .nef',n:'RAW',c:0,col:['12 až 14 bitů na kanál','12 to 14 bits per channel'],cm:'nl',cmT:['žádná nebo bezeztrátová','none or lossless'],tr:0,trT:['ne','no'],use:['surová data z fotoaparátu','raw data from a camera'],s:{foto:2,logo:0,text:0,anim:0,archiv:3}},
+ {id:'ico',ext:'.ico',n:'ICO',c:0,col:['až 16,7 mil.','up to 16.7 million'],cm:'ll',cmT:['bezeztrátová','lossless'],tr:2,trT:['ano, plynulá','yes, smooth'],use:['ikony programů a webů','program and website icons'],s:{foto:0,logo:1,text:0,anim:0,archiv:0}},
+ {id:'psd',ext:'.psd',n:'PSD',c:0,col:['8, 16 nebo 32 bitů na kanál','8, 16 or 32 bits per channel'],cm:'ll',cmT:['bezeztrátová','lossless'],tr:2,trT:['ano','yes'],use:['pracovní soubor s vrstvami (Photoshop)','working file with layers (Photoshop)'],s:{foto:1,logo:1,text:0,anim:0,archiv:2}}];
+const CT8={foto:{n:['Fotografie','Photograph'],why:['Plynulé přechody a miliony barev. Ztrátová komprese zahodí jemné detaily, které oko nepozná, a soubor je několikrát menší. Novější WebP, HEIC a AVIF to umějí ještě úsporněji.','Smooth gradients and millions of colours. Lossy compression drops fine detail the eye cannot notice, and the file is several times smaller. The newer WebP, HEIC and AVIF do it even more economically.']},
+ logo:{n:['Logo a schéma','Logo or diagram'],why:['Ostré hrany a plné barvy. Bezeztrátový PNG zachová hrany přesně a umí plynulou průhlednost. JPEG by kolem hran dělal šum.','Sharp edges and flat colours. Lossless PNG keeps edges exact and handles smooth transparency. JPEG would add noise around edges.']},
+ text:{n:['Snímek obrazovky s textem','Screenshot with text'],why:['Ostré písmo musí zůstat přesné. Bezeztrátový formát ho zachová, ztrátový by kolem písmen vytvořil mžitky.','Sharp letters must stay exact. A lossless format keeps them, a lossy one would add speckles around letters.']},
+ anim:{n:['Jednoduchá animace','Simple animation'],why:['GIF zvládne animaci všude, ale má jen 256 barev. WebP a AVIF mají víc barev a menší soubory, jenže je starší programy nepřečtou.','GIF does animation everywhere, but has only 256 colours. WebP and AVIF have more colours and smaller files, but older programs cannot read them.']},
+ archiv:{n:['Archiv originálů, tisk','Archive of originals, print'],why:['Nic se nesmí ztratit. Volí se formáty bez komprese nebo s bezeztrátovou kompresí a s větší bitovou hloubkou, která nechává prostor pro pozdější úpravy.','Nothing may be lost. Formats without compression or with lossless compression and a greater bit depth are chosen, which leave room for later editing.']}};
+const vis8=()=>FM8.filter(f=>S.as8==='all'||(S.as8==='extra'?!f.c:f.c));
+TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
+ build(){return `<div class="split"><div class="col">
+  <div class="scope grow"><canvas id="c8"></canvas><div class="tag" data-o="tag8"></div></div>
+  <div class="kpis">
+   <div class="card kpi"><span class="lbl">${tx('Nejvhodnější','Most suitable')}</span><div class="big sm" data-o="k8a"></div><small data-o="k8a2"></small></div>
+   <div class="card kpi"><span class="lbl">${tx('Ztrátově umí','Can compress lossy')}</span><div class="big sm" data-o="k8b"></div><small>${tx('formátů v zobrazené tabulce','formats in the shown table')}</small></div>
+   <div class="card kpi"><span class="lbl">${tx('Průhlednost umí','Can do transparency')}</span><div class="big sm" data-o="k8c"></div><small>${tx('formátů v zobrazené tabulce','formats in the shown table')}</small></div>
+  </div></div>
+  <div class="side card">
+   <div class="ctl"><div class="chips g3">${[['common','Běžné','Common'],['extra','Zajímavé','Curious'],['all','Všechny','All']].map(v=>`<button class="chip sm" data-k="as8" data-v="${v[0]}">${tx(v[1],v[2])}</button>`).join('')}</div><div class="hint" data-o="hs8"></div></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Co ukládáme','What we store')}</span></div><div class="chips g2" style="grid-template-columns:1fr">${Object.keys(CT8).map(k=>`<button class="chip sm" data-k="ct8" data-v="${k}">${tx(CT8[k].n[0],CT8[k].n[1])}</button>`).join('')}</div></div>
+   <div class="callout" data-o="why8"></div>
+   <div class="hint">${tx('Tečky ukazují vhodnost formátu pro vybraný obsah. Podbarvený řádek je nejlepší volba.','The dots show how well a format suits the chosen content. The highlighted row is the best choice.')}</div>
+  </div></div>`},
+ init(){
+  const best=()=>{const V=vis8(),m=Math.max(...V.map(f=>f.s[S.ct8]));return{m,L:V.filter(f=>f.s[S.ct8]===m)}};
+  OUT.tag8=()=>tx('srovnání formátů podle přípon a vhodnosti','comparison of formats by extension and suitability');
+  OUT.hs8=()=>S.as8==='common'?tx('Běžné formáty, které potkáte nejčastěji.','Common formats you meet most often.'):S.as8==='extra'?tx('Zajímavosti. Jejich znalost se nepožaduje.','Curiosities. Knowing them is not required.'):tx('Běžné formáty i zajímavosti. Znalost zajímavostí se nepožaduje.','Common formats and curiosities. Knowing the curiosities is not required.');
+  OUT.k8a=()=>best().L.map(f=>f.n).join(', ');OUT.k8a2=()=>tx(CT8[S.ct8].n[0],CT8[S.ct8].n[1]);
+  OUT.k8b=()=>{const V=vis8();return V.filter(f=>f.cm==='ly'||f.cm==='bo').length+' '+tx('z','of')+' '+V.length};
+  OUT.k8c=()=>{const V=vis8();return V.filter(f=>f.tr>0).length+' '+tx('z','of')+' '+V.length};
+  OUT.why8=()=>`<b class="l">${tx(CT8[S.ct8].n[0],CT8[S.ct8].n[1])}</b>${tx(CT8[S.ct8].why[0],CT8[S.ct8].why[1])}`;
+ },
+ render(){
+  const cv=$('#c8');if(!cv)return;const {x,w,h,R}=setup(cv);const V=vis8(),pd=R*1.6;
+  const cols=[.16,.2,.19,.15,.2,.1],heads=[tx('Formát a přípona','Format and extension'),tx('Barev','Colours'),tx('Komprese','Compression'),tx('Průhlednost','Transparency'),tx('Hodí se na','Good for'),tx('Vhodnost','Suitability')];
+  const tw=w-pd*2,top2=R*3.2,hh=R*2.2,rowH=Math.min((h-top2-hh-R*1.2)/V.length,R*7.5),m=Math.max(...V.map(f=>f.s[S.ct8]));
+  let cx=pd;const xs=cols.map(c=>{const v=cx;cx+=c*tw;return v});
+  heads.forEach((t,i)=>TH(x,t,xs[i]+R*.5,top2+hh/2,R*.85,TXT));
+  line(x,pd,top2+hh,pd+tw,top2+hh,GR2,1.2);
+  const fs=R*.92,cc={ly:C.orange,ll:C.good,bo:C.cream,no:TXT,nl:C.good};
+  V.forEach((f,r)=>{
+   const y=top2+hh+r*rowH,sc=f.s[S.ct8],isB=sc===m&&m>0;
+   if(isB)rr(x,pd-R*.4,y+rowH*.05,tw+R*.8,rowH*.9,R*.5,'rgba(255,151,46,.2)',C.orange,2);
+   TH(x,f.n,xs[0]+R*.5,y+rowH/2-R*.55,R*1.35,isB?C.orange:C.cream);T(x,f.ext,xs[0]+R*.5,y+rowH/2+R*.95,R*.75,TXT);
+   [[f.col,C.cream,1],[f.cmT,cc[f.cm],2],[f.trT,f.tr?C.cream:TXT,3],[f.use,C.cream,4]].forEach(([t,colr,i])=>{
+    const maxW=cols[i]*tw-R;let lines=[''];x.font=`500 ${fs}px "Atkinson Hyperlegible Next",sans-serif`;
+    tx(t[0],t[1]).split(' ').forEach(wd=>{const tr=(lines[lines.length-1]+' '+wd).trim();if(x.measureText(tr).width>maxW&&lines[lines.length-1])lines.push(wd);else lines[lines.length-1]=tr});
+    lines.forEach((ln,k)=>T(x,ln,xs[i]+R*.5,y+rowH/2+(k-(lines.length-1)/2)*R*1.15,fs,colr,'left','Atkinson Hyperlegible Next',500));
+   });
+   for(let k=0;k<3;k++){x.beginPath();x.arc(xs[5]+R*1.1+k*R*1.8,y+rowH/2,R*.6,0,TAU);if(k<sc){x.fillStyle=isB?C.orange:C.cream;x.fill()}else{x.strokeStyle=GR2;x.lineWidth=1.5;x.stroke()}}
+   if(r<V.length-1)line(x,pd,y+rowH,pd+tw,y+rowH,GR,1);
+  });
  }});
 
 /* obrázek zůstává stejný při přepnutí mezi kapitolou 1 a 2 */
@@ -1145,12 +1283,24 @@ const H=[
  d:tx(`Různý poměr stran se řeší ořezem, nebo černými pruhy.`,`A different aspect ratio is solved by cropping or by black bars.`)},
 {t:tx(`Princip komprese`,`Compression principle`),
  a:tx(`Komprese zmenšuje datový zápis obrazu. <b>Bezeztrátová</b> komprese po rozbalení obnoví obraz přesně, pixel po pixelu. <b>Ztrátová</b> komprese část údajů nevratně zahodí a po rozbalení je obraz jen podobný originálu.`,`Compression shrinks the data record of a picture. <b>Lossless</b> compression restores the picture exactly after unpacking, pixel by pixel. <b>Lossy</b> compression irreversibly discards part of the data and after unpacking the picture is only similar to the original.`),
- b:tx(`Ztrátová komprese soubor zmenší víc, ale zahozené údaje už nejdou vrátit, proto se hodí tam, kde drobné rozdíly oko nepozná (fotografie). Na ostré hrany, text a grafiku se používá bezeztrátová.`,`Lossy compression shrinks the file more, but discarded data cannot be brought back, so it suits places where the eye cannot see small differences (photographs). Lossless compression is used for sharp edges, text and graphics.`),
+ b:tx(`Nejjednodušší bezeztrátový trik je zápis opakování: místo deseti stejných pixelů se zapíše „10× modrá“. U ploch jedné barvy to ušetří hodně, u šumu zápis naopak zvětší. Ztrátová komprese JPEG zahodí jemné změny, kterých si oko všímá nejméně, a soubor je několikrát menší. Čím nižší kvalita, tím víc se objeví kostičky a šmouhy.`,`The simplest lossless trick is run-length coding: instead of ten identical pixels we write “10× blue”. On flat areas it saves a lot, on noise it enlarges the record. Lossy JPEG compression discards the fine changes the eye notices least and the file is several times smaller. The lower the quality, the more blocks and smears appear.`),
  eh:tx(`Co aplikace nevysvětluje`,`What the app does not explain`),
- e:[tx(`<b>Jak komprese uvnitř funguje</b> tato aplikace nevysvětluje, soustředí se na princip a na výběr formátu.`,`<b>How compression works inside</b> is not explained in this app, it focuses on the principle and on choosing a format.`)],
- c:[tx(`Přepněte mezi bezeztrátovou a ztrátovou kompresí a porovnejte obrázek po rozbalení.`,`Switch between lossless and lossy compression and compare the picture after unpacking.`),
-    tx(`Všimněte si, že u ztrátové komprese už původní pixely nelze obnovit.`,`Notice that with lossy compression the original pixels cannot be restored.`)],
- d:tx(`Bezeztrátová obnoví obraz přesně, ztrátová ne. Ztrátová je menší, ale nevratná.`,`Lossless restores the picture exactly, lossy does not. Lossy is smaller but irreversible.`)}];
+ e:[tx(`<b>Jak přesně JPEG počítá</b> aplikace nevysvětluje. Ukazuje výsledek: skutečnou velikost souboru a vzhled obrazu při zvolené kvalitě.`,`<b>How exactly JPEG calculates</b> is not explained. The app shows the result: the real file size and the look of the picture at the chosen quality.`),
+    tx(`<b>Velikost PNG a JPEG</b> je skutečná, vytvořil ji právě váš prohlížeč z ukázkového obrázku.`,`<b>The PNG and JPEG sizes</b> are real, your browser has just created them from the sample picture.`)],
+ c:[tx(`V režimu Dva druhy přepněte mezi bezeztrátovou a ztrátovou kompresí a porovnejte obraz po rozbalení.`,`In the Two kinds mode switch between lossless and lossy compression and compare the picture after unpacking.`),
+    tx(`V režimu Opakování porovnejte logo a fotografii. Který řádek se zapíše úsporně a který ne?`,`In the Repeats mode compare the logo and the photograph. Which row is written economically and which is not?`),
+    tx(`V režimu JPEG snižujte kvalitu a přibližte obraz na 10×. Kdy poprvé vidíte kostičky? Kolikrát je soubor menší než PNG?`,`In the JPEG mode lower the quality and zoom to 10×. When do you first see the blocks? How many times is the file smaller than PNG?`)],
+ d:tx(`Bezeztrátová obnoví obraz přesně, ztrátová ne. Ztrátová je menší, ale nevratná.`,`Lossless restores the picture exactly, lossy does not. Lossy is smaller but irreversible.`)},
+{t:tx(`Formáty souborů`,`File formats`),
+ a:tx(`Formát souboru určuje, jak se pixely zapíšou na disk. Liší se <b>počtem barev</b>, tím, jestli je soubor <b>komprimovaný</b> (a zda ztrátově, nebo bezeztrátově), a tím, jestli umí <b>průhlednost</b>. Přípona v názvu (.jpg, .png) napovídá, o který formát jde.`,`A file format determines how pixels are written to disk. Formats differ in the <b>number of colours</b>, in whether the file is <b>compressed</b> (and whether lossy or lossless), and in whether they support <b>transparency</b>. The extension in the name (.jpg, .png) tells which format it is.`),
+ b:tx(`Formát se volí podle obsahu. Fotografie: JPEG nebo novější WebP, HEIC a AVIF. Logo, schéma a snímek obrazovky: PNG. Jednoduchá animace: GIF. Archiv originálů a tisk: TIFF nebo RAW. Při výběru Běžné se zobrazí formáty, které je dobré znát, Zajímavé jsou doplněk bez nároku na znalost.`,`The format is chosen by content. Photographs: JPEG or the newer WebP, HEIC and AVIF. Logos, diagrams and screenshots: PNG. Simple animation: GIF. Archive of originals and print: TIFF or RAW. The Common choice shows the formats worth knowing, the Curious ones are an extra with no requirement to know them.`),
+ eh:tx(`Co si všimnout`,`What to notice`),
+ e:[tx(`<b>Průhlednost.</b> JPEG ji neumí. GIF má jen zapnuto nebo vypnuto, PNG a novější formáty mají plynulou.`,`<b>Transparency.</b> JPEG cannot do it. GIF has only on or off, PNG and the newer formats have smooth transparency.`),
+    tx(`<b>Barvy.</b> GIF má nejvýš 256 barev, proto se na fotografie nehodí. Formáty s 10 a víc bity na kanál mají miliardy odstínů.`,`<b>Colours.</b> GIF has at most 256 colours, so it does not suit photographs. Formats with 10 or more bits per channel have billions of shades.`)],
+ c:[tx(`Vyberte Fotografie a pak Logo. Které formáty se podbarví?`,`Choose Photograph and then Logo. Which formats are highlighted?`),
+    tx(`Najděte formát, který neumí průhlednost, a formát, který má jen 256 barev.`,`Find a format that cannot do transparency and a format that has only 256 colours.`),
+    tx(`Přepněte na Zajímavé. Který formát se hodí pro archiv originálů?`,`Switch to Curious. Which format suits an archive of originals?`)],
+ d:tx(`Formát volte podle obsahu: fotografie ztrátově (JPEG), grafika bezeztrátově (PNG), archiv bez ztráty (TIFF, RAW).`,`Choose the format by content: photographs lossy (JPEG), graphics lossless (PNG), an archive without loss (TIFF, RAW).`)}];
 let open=false;
 function render(){
  const h=H[S.tab]||H[0];
@@ -1175,7 +1325,7 @@ window.blpHelpInit=function(){
 <script>
 const A=(u,t)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`;
 const PNG3=A('https://www.w3.org/TR/png-3/','W3C: Portable Network Graphics (PNG) Specification, Third Edition');
-window.LXC={ns:'blp',num:true,min:tx('asi 50 minut','about 50 minutes'),
+window.LXC={ns:'blp',num:true,min:tx('asi 60 minut','about 60 minutes'),
 PRE:[
  {t:tx('Pixel pod lupou','A pixel under the lens'),d:tx('Kapitola 1: největší zvětšení lupy a zapnutá čísla RGB: vidět jsou čísla každého pixelu.','Chapter 1: the largest lens magnification with the RGB numbers on: the numbers of every pixel are visible.'),f:()=>{Object.assign(S,{img1:'house',zm:320,grid1:true,nums1:true,lx:798,ly:550,sp:[800,552]});go(0)}},
  {t:tx('Jeden bit na pixel','One bit per pixel'),d:tx('Kapitola 2: 1 bit, vpravo nuly a jedničky.','Chapter 2: 1 bit, zeros and ones on the right.'),f:()=>{Object.assign(S,{bd2:1,pl2:'col',cd2:true});go(1)}},
@@ -1186,7 +1336,9 @@ PRE:[
  {t:tx('RGB kódování, 10 bitů','RGB encoding, 10 bits'),d:tx('Kapitola 4: 10 bitů na kanál, lupa na největší zvětšení.','Chapter 4: 10 bits per channel, lens at the largest magnification.'),f:()=>{Object.assign(S,{bc5:10,z5:320});go(3)}},
  {t:tx('16:9 na 4:3, ořez','16:9 to 4:3, cropping'),d:tx('Kapitola 6: zdroj 16:9, cíl 4:3, vyplnit s ořezem.','Chapter 6: source 16:9, target 4:3, fill with cropping.'),f:()=>{Object.assign(S,{m6:'conv',sr6:'169',tr6:'43',fm6:'crop'});go(5)}},
  {t:tx('Kinový formát na televizi','Cinema format on television'),d:tx('Kapitola 6: zdroj 2,39:1, cíl 16:9, černé pruhy.','Chapter 6: source 2.39:1, target 16:9, black bars.'),f:()=>{Object.assign(S,{m6:'conv',as6:'all',sr6:'239',tr6:'169',fm6:'bars'});go(5)}},
- {t:tx('Ztrátová a bezeztrátová komprese','Lossy and lossless compression'),d:tx('Kapitola 7: bezeztrátová komprese, pak přepnout na ztrátovou.','Chapter 7: lossless compression, then switch to lossy.'),f:()=>{S.ls5='lossless';go(6)}}],
+ {t:tx('Ztrátová a bezeztrátová komprese','Lossy and lossless compression'),d:tx('Kapitola 7: bezeztrátová komprese, pak přepnout na ztrátovou.','Chapter 7: lossless compression, then switch to lossy.'),f:()=>{S.ls5='lossless';go(6)}},
+ {t:tx('Formát pro fotografii','Format for a photograph'),d:tx('Kapitola 8: vybrat Fotografie, běžné formáty.','Chapter 8: choose Photograph, common formats.'),f:()=>{Object.assign(S,{as8:'common',ct8:'foto'});go(7)}},
+ {t:tx('Formát pro logo','Format for a logo'),d:tx('Kapitola 8: vybrat Logo, běžné formáty.','Chapter 8: choose Logo, common formats.'),f:()=>{Object.assign(S,{as8:'common',ct8:'logo'});go(7)}}],
 PLAN:[
  [tx('Co je to pixel','What a pixel is'),'5 min',tx('Kap. 1, předvolba pixelu pod lupou.','Ch. 1, the pixel under the lens preset.')],
  [tx('Paleta a bitová hloubka','Palette and bit depth'),'8 min',tx('Kap. 2, předvolby jednoho bitu, 16 barev a 256 odstínů šedi.','Ch. 2, the one bit, 16 colours and 256 greys presets.')],
@@ -1194,7 +1346,8 @@ PLAN:[
  [tx('RGB kódování','RGB encoding'),'5 min',tx('Kap. 4, předvolba deseti bitů s lupou.','Ch. 4, the ten bits preset with the lens.')],
  [tx('Standardní rozlišení','Standard resolutions'),'10 min',tx('Kap. 5, předvolby zdvojnásobení, Full HD a loga.','Ch. 5, the doubling, Full HD and logo presets.')],
  [tx('Poměr stran','Aspect ratio'),'5 min',tx('Kap. 6, předvolby převodu 16:9 na 4:3 a kinového formátu.','Ch. 6, the 16:9 to 4:3 and cinema format presets.')],
- [tx('Princip komprese','Compression principle'),'5 min',tx('Kap. 7, bezeztrátová, pak ztrátová.','Ch. 7, lossless, then lossy.')]],
+ [tx('Princip komprese','Compression principle'),'7 min',tx('Kap. 7, bezeztrátová, pak ztrátová.','Ch. 7, lossless, then lossy.')],
+ [tx('Formáty souborů','File formats'),'7 min',tx('Kap. 8, předvolby Fotografie a Logo.','Ch. 8, the Photograph and Logo presets.')]],
 NOTES:[tx('Pořadí kapitol vychází jedna z druhé: pixel nese barvu, barva se zapisuje bity, bity určují velikost obrazu a komprese velikost zmenšuje.','The order of the chapters builds on itself: a pixel carries a colour, a colour is written in bits, bits determine the size of a picture and compression reduces the size.'),
  tx('Velikosti a počty se počítají přesně podle vzorců, které najdete v nápovědě (tlačítko ?).','Sizes and counts are calculated exactly by the formulas, which you can find in the help (the ? button).'),
  tx('Ukázka ztrátové komprese je ilustrace, aplikace nevysvětluje, jak komprese uvnitř funguje.','The lossy compression demo is an illustration, the app does not explain how compression works inside.'),
@@ -1219,15 +1372,19 @@ GL:[
  [tx('Megapixel (Mpx)','Megapixel (Mpx)'),tx('Milion pixelů; 1920 × 1080 je asi 2,1 Mpx.','A million pixels; 1920 × 1080 is about 2.1 Mpx.'),[4]],
  [tx('Poměr stran','Aspect ratio'),tx('Šířka děleno výškou obrázku nebo obrazovky, například 16:9.','The width divided by the height of a picture or screen, for example 16:9.'),[5]],
  [tx('Komprese','Compression'),tx('Zmenšení datového zápisu obrazu.','Shrinking the data record of a picture.'),[6]],
+ [tx('Přípona souboru','File extension'),tx('Koncovka názvu (.jpg, .png), podle které poznáme formát.','The ending of the name (.jpg, .png) by which we recognise the format.'),[7]],
+ [tx('Průhlednost (alfa)','Transparency (alpha)'),tx('Pixel může být zčásti nebo úplně průhledný. Umí to PNG, ne JPEG.','A pixel can be partly or fully transparent. PNG can do it, JPEG cannot.'),[7]],
+ [tx('Zápis opakování (RLE)','Run-length encoding (RLE)'),tx('Bezeztrátová komprese: „10× modrá“ místo deseti stejných pixelů.','Lossless compression: “10× blue” instead of ten identical pixels.'),[6]],
  [tx('Bezeztrátová a ztrátová komprese','Lossless and lossy compression'),tx('Bezeztrátová obraz obnoví přesně, ztrátová něco nevratně zahodí.','Lossless restores the picture exactly, lossy irreversibly discards something.'),[6]]],
 SRC:[
  [],
  [],
  [A('https://www.w3.org/Graphics/Color/sRGB.html','W3C: A Standard Default Color Space for the Internet, sRGB'),A('https://www.w3.org/TR/css-color-4/','W3C: CSS Color Module Level 4, hexadecimální zápis')],
  [],
- [PNG3,A('https://www.w3.org/Graphics/GIF/spec-gif89a.txt','GIF89a Specification')],
  [],
- []],
+ [],
+ [],
+ [PNG3,A('https://www.w3.org/Graphics/GIF/spec-gif89a.txt','GIF89a Specification')]],
 D:{
  c1:()=>tx('Obrázek 1280 × 960 pixelů, lupa a zvětšená mřížka pixelů s čísly barev.','A 1280 × 960 pixel picture, the lens and the enlarged pixel grid with colour numbers.'),
  cp:()=>tx(`Obrázek ${bitW(S.bd2,false)} na pixel, paleta ${1<<S.bd2} ${S.pl2==='gray'?'odstínů šedi':'barev'}.`,`A picture with ${bitW(S.bd2,true)} per pixel, a palette of ${1<<S.bd2} ${S.pl2==='gray'?'greys':'colours'}.`),
@@ -1235,6 +1392,7 @@ D:{
  cr:()=>S.m6==='cmp'?tx('Sedm poměrů stran vedle sebe se stejnou výškou.','Seven aspect ratios side by side at the same height.'):tx(`Převod ze zdroje ${arOf(S.sr6).n} na cíl ${arOf(S.tr6).n}, ořez nebo černé pruhy.`,`Converting from the source ${arOf(S.sr6).n} to the target ${arOf(S.tr6).n}, cropping or black bars.`),
  c2:()=>tx(`Míchání světla RGB (${S.r}, ${S.g}, ${S.b}), barva #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`,`Mixing RGB light (${S.r}, ${S.g}, ${S.b}), the colour #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`),
  c4:()=>tx('Standardní rozlišení jako vnořené obdélníky podle počtu pixelů.','Standard resolutions as nested rectangles by pixel count.'),
+ c8:()=>tx('Srovnání formátů souborů: počet barev, komprese, průhlednost a vhodnost.','A comparison of file formats: number of colours, compression, transparency and suitability.'),
  c5:()=>tx('Obrázek před kompresí a po rozbalení, ztrátová a bezeztrátová komprese.','A picture before compression and after unpacking, lossy and lossless compression.')}};
 
 </script>
