@@ -350,7 +350,7 @@ function boot(){
 <script>
 /* ===== Bitmapa Lab Pro: společné části ===== */
 Object.assign(S,{m4:'res',ct4:'logo',ls5:'lossless',
- z1:8,grid1:true,lx:22,ly:16,sc:[4,3],
+ img1:'house',zm:1,grid1:true,lx:0,ly:0,sp:[200,138],
  b2:3,r:255,g:151,b:46,
  rs:32,bd:24,sz4:'fhd'});
 const MK={4:'m4'};
@@ -370,9 +370,9 @@ const SW=128,SH=96;
 let SRCI=null;const SMALL={};
 const cvx=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 function pol(g,col,pts){g.fillStyle=col;g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();g.fill()}
-function scene(){
- if(SRCI)return SRCI;
- const c=cvx(SW,SH),g=c.getContext('2d');
+function paintHouse(g,k){
+ g.save();g.scale(k,k);
+
  const sky=g.createLinearGradient(0,0,0,SH*.72);sky.addColorStop(0,'#2f6fc4');sky.addColorStop(1,'#cfe6f3');g.fillStyle=sky;g.fillRect(0,0,SW,SH);
  g.fillStyle='#ffd23f';g.beginPath();g.arc(100,20,9,0,TAU);g.fill();
  g.fillStyle='rgba(255,255,255,.9)';[[24,18,8],[31,16,10],[39,19,7],[70,30,6],[76,28,8],[83,31,5]].forEach(a=>{g.beginPath();g.arc(a[0],a[1],a[2],0,TAU);g.fill()});
@@ -382,7 +382,45 @@ function scene(){
  g.fillStyle='#e8d9b0';g.fillRect(70,60,22,16);pol(g,'#b8442f',[[67,60],[81,48],[95,60]]);
  g.fillStyle='#5a3b22';g.fillRect(78,67,7,9);g.fillStyle='#9fd0ea';g.fillRect(87,64,4,4);
  g.fillStyle='#5a3b22';g.fillRect(31,66,4,14);g.fillStyle='#2f6b2c';g.beginPath();g.arc(33,62,10,0,TAU);g.fill();g.fillStyle='#3f8a3a';g.beginPath();g.arc(30,59,6,0,TAU);g.fill();
+ g.restore();
+}
+function scene(){
+ if(SRCI)return SRCI;
+ const c=cvx(SW,SH),g=c.getContext('2d');paintHouse(g,1);
  SRCI=c;return c;
+}
+
+function paintLand(g,k){
+ g.save();g.scale(k,k);
+ const sky=g.createLinearGradient(0,0,0,52);sky.addColorStop(0,'#1d2b5a');sky.addColorStop(.55,'#b84d6c');sky.addColorStop(1,'#ffb35a');g.fillStyle=sky;g.fillRect(0,0,128,52);
+ g.fillStyle='rgba(255,205,170,.45)';[[30,22,22,1.6],[92,16,26,1.4],[70,34,30,1.2],[14,38,18,1.1]].forEach(([x,y,w,h])=>{g.beginPath();g.ellipse(x,y,w,h,0,0,TAU);g.fill()});
+ g.fillStyle='#ffe39a';g.beginPath();g.arc(64,50,11,0,TAU);g.fill();
+ pol(g,'#3b2f58',[[0,52],[0,40],[14,30],[26,42],[44,26],[62,44],[80,34],[98,46],[114,28],[128,40],[128,52]]);
+ pol(g,'#241d3f',[[0,52],[0,46],[20,40],[40,48],[70,42],[100,50],[128,44],[128,52]]);
+ const lake=g.createLinearGradient(0,52,0,96);lake.addColorStop(0,'#d07a5e');lake.addColorStop(1,'#1c2347');g.fillStyle=lake;g.fillRect(0,52,128,44);
+ for(let i=0;i<14;i++){g.fillStyle=`rgba(255,227,154,${.75-i*.04})`;const w=14-i*.8;g.beginPath();g.ellipse(64,54+i*2.6,Math.max(w,1.5),.9,0,0,TAU);g.fill()}
+ g.strokeStyle='rgba(255,255,255,.16)';g.lineWidth=.5;for(let i=0;i<9;i++){const y=58+i*4.2;g.beginPath();g.moveTo(8+(i*13)%30,y);g.lineTo(34+(i*13)%30,y);g.moveTo(80+(i*7)%20,y+1.5);g.lineTo(108+(i*7)%20,y+1.5);g.stroke()}
+ pol(g,'#10142a',[[24,70],[40,70],[37,74],[27,74]]);g.fillStyle='#10142a';g.fillRect(31.6,56,.8,14);
+ pol(g,'#f1e6d4',[[32.6,56],[32.6,69],[40,69]]);pol(g,'#d8c3a6',[[31.4,58],[31.4,69],[26,69]]);
+ [[106,86],[114,80],[121,88]].forEach(([x,y])=>{g.fillStyle='#10142a';g.fillRect(x-.7,y,1.4,9);for(let t=0;t<4;t++)pol(g,'#10142a',[[x,y-14+t*5],[x-7+t*.8,y-6+t*5+3],[x+7-t*.8,y-6+t*5+3]])});
+ g.restore();
+}
+function paintTest(g,k){
+ g.save();g.scale(k,k);
+ g.fillStyle='#7a7a7a';g.fillRect(0,0,128,96);
+ const bars=['#ffffff','#ffeb00','#00e5ff','#00c800','#e600e6','#e60000','#0000e6'];
+ bars.forEach((c,i)=>{g.fillStyle=c;g.fillRect(i*128/7,0,128/7+.3,40)});
+ const ramp=g.createLinearGradient(0,0,128,0);ramp.addColorStop(0,'#000');ramp.addColorStop(1,'#fff');g.fillStyle=ramp;g.fillRect(0,40,128,11);
+ for(let i=0;i<8;i++){const v=Math.round(i/7*255);g.fillStyle=`rgb(${v},${v},${v})`;g.fillRect(i*16,51,16,8)}
+ g.fillStyle='#1a1a1a';g.fillRect(0,59,128,37);
+ g.fillStyle='#fff';for(let i=0;i<24;i+=2)g.fillRect(6+i,64,1,26);
+ g.fillStyle='#fff';for(let i=0;i<24;i+=4)g.fillRect(36+i,64,2,26);
+ for(let r=0;r<6;r++)for(let c=0;c<6;c++){g.fillStyle=(r+c)%2?'#fff':'#000';g.fillRect(98+c*4,66+r*4,4,4)}
+ g.strokeStyle='rgba(255,255,255,.4)';g.lineWidth=.35;for(let i=0;i<=128;i+=16){g.beginPath();g.moveTo(i,0);g.lineTo(i,96);g.stroke()}for(let j=0;j<=96;j+=16){g.beginPath();g.moveTo(0,j);g.lineTo(128,j);g.stroke()}
+ g.strokeStyle='#fff';g.lineWidth=1.1;g.beginPath();g.arc(64,48,34,0,TAU);g.stroke();g.lineWidth=.6;g.beginPath();g.arc(64,48,16,0,TAU);g.stroke();
+ g.beginPath();g.moveTo(0,0);g.lineTo(128,96);g.moveTo(128,0);g.lineTo(0,96);g.stroke();
+ g.strokeStyle='#000';g.lineWidth=.5;g.beginPath();g.moveTo(64,0);g.lineTo(64,96);g.moveTo(0,48);g.lineTo(128,48);g.stroke();
+ g.restore();
 }
 function small(w,h){
  const k=w+'x'+h;if(SMALL[k])return SMALL[k];
@@ -394,7 +432,24 @@ function rr(x,px,py,w,h,r,fill,stroke,lw){x.beginPath();x.roundRect(px,py,w,h,r)
 
 /* ===== kapitoly 1 až 3 ===== */
 /* ---------- 1 Pixel ---------- */
-let G1=null;
+const W1=320,H1=240,IMGN={house:['Domek','House'],land:['Krajina','Landscape'],test:['Zkušební obrazec','Test pattern'],own:['Vlastní soubor…','Own file…']};
+const IM1={};let OWN1=null,G1=null;
+function img1(id){
+ if(id==='own'&&!OWN1)id='house';
+ if(IM1[id])return IM1[id];
+ const c=cvx(W1,H1),g=c.getContext('2d',{willReadFrequently:true});
+ if(id==='own')g.drawImage(OWN1,0,0);else if(id==='land')paintLand(g,W1/128);else if(id==='test')paintTest(g,W1/128);else paintHouse(g,W1/128);
+ return IM1[id]={c,d:g.getImageData(0,0,W1,H1).data};
+}
+const zmCols=()=>clamp(Math.round(W1/S.zm/4)*4,4,W1);
+function setZoom(z,fx,fy){
+ const cols0=zmCols(),rows0=cols0*3/4;fx=fx==null?.5:fx;fy=fy==null?.5:fy;
+ const ux=S.lx+fx*cols0,uy=S.ly+fy*rows0;
+ S.zm=clamp(z,1,80);const c=zmCols(),r=c*3/4;
+ S.lx=Math.round(ux-fx*c);S.ly=Math.round(uy-fy*r);clampLens();
+}
+function clampLens(){const c=zmCols(),r=c*3/4;S.lx=clamp(S.lx,0,W1-c);S.ly=clamp(S.ly,0,H1-r)}
+MAPS.zm=v=>Math.round(Math.pow(80,v/100)*100)/100;IMAP.zm=z=>Math.round(Math.log(z)/Math.log(80)*100);
 TABS.push({name:tx('Pixel','Pixel'),side:'27rem',
  build(){return `<div class="split"><div class="col">
   <div class="scope grow"><canvas id="c1"></canvas><div class="tag">${tx('obrázek jako mřížka čísel','a picture as a grid of numbers')}</div></div>
@@ -404,42 +459,75 @@ TABS.push({name:tx('Pixel','Pixel'),side:'27rem',
    <div class="card kpi"><span class="lbl">${tx('Jeho barva','Its colour')}</span><div class="big sm" data-o="k1c"></div><small>${tx('červená, zelená, modrá','red, green, blue')}</small></div>
   </div></div>
   <div class="side card">
-   <div class="ctl"><div class="hd"><span class="lbl">${tx('Šířka lupy','Lens width')}</span></div><div class="chips g3">${[16,8,4].map(v=>`<button class="chip" data-k="z1" data-v="${v}">${v} px</button>`).join('')}</div></div>
-   <div class="chips g2"><button class="chip" data-k="grid1" data-v="true">${tx('Mřížka','Grid')}</button><button class="chip" data-k="grid1" data-v="false">${tx('Bez mřížky','No grid')}</button></div>
-   <div class="hint">${tx('Tažením po obrázku posunete lupu, klepnutím do zvětšeniny vyberete pixel.','Drag over the picture to move the lens, tap the zoom to select a pixel.')}</div>
-   ${note(tx('<b>Pixel</b> je nejmenší bod obrazu. Obrázek je mřížka pixelů a každý pixel nese jednu barvu zapsanou třemi čísly.','A <b>pixel</b> is the smallest dot of a picture. A picture is a grid of pixels and each pixel carries one colour written as three numbers.'))}
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div>
+    <div class="chips g2">${['house','land','test','own'].map(k=>`<button class="chip sm" data-k="img1" data-v="${k}"${k==='own'?' data-act="own1"':''}>${tx(IMGN[k][0],IMGN[k][1])}</button>`).join('')}</div>
+    <input type="file" id="f1" accept="image/*" hidden></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Zvětšení lupy','Lens magnification')}</span><span class="val" data-o="v_zm"></span></div>
+    <input type="range" data-k="zm" data-map="zm" min="0" max="100" step="1">
+    <div class="chips g4">${[1,4,16,64].map(v=>`<button class="chip sm" data-k="zm" data-v="${v}">${v}×</button>`).join('')}</div></div>
+   <div class="chips g2"><button class="chip sm" data-k="grid1" data-v="true">${tx('Mřížka','Grid')}</button><button class="chip sm" data-k="grid1" data-v="false">${tx('Bez mřížky','No grid')}</button></div>
+   <div class="hint" data-o="h1"></div>
+   ${note(tx('<b>Pixel</b> je nejmenší bod obrazu. Obrázek je mřížka pixelů a každý pixel nese jednu barvu zapsanou třemi čísly. V původním obrázku jsou pixely tak malé, že je oko nerozliší.','A <b>pixel</b> is the smallest dot of a picture. A picture is a grid of pixels and each pixel carries one colour written as three numbers. In the original picture the pixels are so small that the eye cannot tell them apart.'))}
   </div></div>`},
  init(){
-  OUT.k1a=()=>`64 × 48 <u>= ${nf(3072)} px</u>`;
-  OUT.k1b=()=>`${S.lx+S.sc[0]}, ${S.ly+S.sc[1]}`;
-  OUT.k1c=()=>{const d=small(64,48).d,i=((S.ly+S.sc[1])*64+S.lx+S.sc[0])*4;return `<i class="sw" style="background:${rgbS(d[i],d[i+1],d[i+2])}"></i>${d[i]} · ${d[i+1]} · ${d[i+2]}`};
-  const cv=$('#c1');
-  drag(cv,p=>{if(!G1)return;const g=G1;
-   if(p.x>=g.mx&&p.x<=g.mx+g.mw&&p.y>=g.my&&p.y<=g.my+g.mh){S.sc=[clamp(Math.floor((p.x-g.mx)/g.cs),0,g.cols-1),clamp(Math.floor((p.y-g.my)/g.cs),0,g.rows-1)];refresh();return}
-   if(p.x<g.mx-g.gap*.3){S.lx=clamp(Math.round((p.x-g.ax)/g.aw*64-g.cols/2),0,64-g.cols);S.ly=clamp(Math.round((p.y-g.ay)/g.ah*48-g.rows/2),0,48-g.rows);refresh()}
+  OUT.k1a=()=>`${W1} × ${H1} <u>= ${nf(W1*H1)} px</u>`;
+  OUT.k1b=()=>`${S.sp[0]}, ${S.sp[1]}`;
+  OUT.k1c=()=>{const d=img1(S.img1).d,i=(S.sp[1]*W1+S.sp[0])*4;return `<i class="sw" style="background:${rgbS(d[i],d[i+1],d[i+2])}"></i>${d[i]} · ${d[i+1]} · ${d[i+2]}`};
+  OUT.v_zm=()=>'× '+nf(W1/zmCols(),W1/zmCols()<10?1:0);
+  OUT.h1=()=>S.img1==='own'?tx('Vlastní obrázek se ořízne na poměr 4 : 3 a zmenší na 320 × 240 pixelů. Zůstává jen v tomto okně.','Your own picture is cropped to 4 : 3 and reduced to 320 × 240 pixels. It stays in this window only.'):tx('Přibližujte kolečkem myši nad pravým detailem nebo posuvníkem. Tažením posunete lupu, klepnutím vyberete pixel.','Zoom with the mouse wheel over the right detail or with the slider. Drag to move the lens, tap to select a pixel.');
+  const cv=$('#c1'),f=$('#f1');
+  ACT.own1=()=>{f.value='';f.click()};
+  f.addEventListener('change',()=>{
+   const file=f.files&&f.files[0];if(!file)return;
+   const im=new Image(),u=URL.createObjectURL(file);
+   im.onload=()=>{
+    const c=cvx(W1,H1),g=c.getContext('2d'),k=Math.max(W1/im.naturalWidth,H1/im.naturalHeight),sw=W1/k,sh=H1/k;
+    g.imageSmoothingQuality='high';g.drawImage(im,(im.naturalWidth-sw)/2,(im.naturalHeight-sh)/2,sw,sh,0,0,W1,H1);
+    URL.revokeObjectURL(u);OWN1=c;delete IM1.own;S.img1='own';S.lx=0;S.ly=0;S.zm=1;S.sp=[W1>>1,H1>>1];refresh();
+   };
+   im.onerror=()=>{URL.revokeObjectURL(u);S.img1='house';refresh()};
+   im.src=u;
   });
+  let mode=null,sx=0,sy=0,l0=null,moved=false;
+  const toPix=(p)=>{const g=G1;return[clamp(Math.floor(S.lx+(p.x-g.mx)/g.cs),0,W1-1),clamp(Math.floor(S.ly+(p.y-g.my)/g.cs),0,H1-1)]};
+  const inDet=p=>G1&&p.x>=G1.mx&&p.x<=G1.mx+G1.mw&&p.y>=G1.my&&p.y<=G1.my+G1.mh;
+  const inOrig=p=>G1&&p.x>=G1.ax&&p.x<=G1.ax+G1.aw&&p.y>=G1.ay&&p.y<=G1.ay+G1.ah;
+  const lensTo=p=>{const g=G1,c=zmCols(),r=c*3/4;S.lx=Math.round((p.x-g.ax)/g.aw*W1-c/2);S.ly=Math.round((p.y-g.ay)/g.ah*H1-r/2);clampLens()};
+  cv.addEventListener('pointerdown',e=>{if(!G1)return;const p=ptr(e,cv);
+   if(inOrig(p)){mode='orig';cv.setPointerCapture(e.pointerId);lensTo(p);refresh()}
+   else if(inDet(p)){mode='det';cv.setPointerCapture(e.pointerId);sx=p.x;sy=p.y;l0=[S.lx,S.ly];moved=false}});
+  cv.addEventListener('pointermove',e=>{if(!mode)return;const p=ptr(e,cv);
+   if(mode==='orig'){lensTo(p);refresh()}
+   else{if(Math.hypot(p.x-sx,p.y-sy)>4)moved=true;if(moved){S.lx=Math.round(l0[0]-(p.x-sx)/G1.cs);S.ly=Math.round(l0[1]-(p.y-sy)/G1.cs);clampLens();refresh()}}});
+  const up=e=>{if(mode==='det'&&!moved){const p=ptr(e,cv);if(inDet(p)){S.sp=toPix(p);refresh()}}mode=null};
+  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',()=>{mode=null});
+  cv.addEventListener('wheel',e=>{if(!G1)return;const p=ptr(e,cv);if(!inDet(p)&&!inOrig(p))return;e.preventDefault();
+   const fx=inDet(p)?(p.x-G1.mx)/G1.mw:.5,fy=inDet(p)?(p.y-G1.my)/G1.mh:.5;
+   setZoom(S.zm*(e.deltaY<0?1.18:1/1.18),fx,fy);refresh()},{passive:false});
  },
  render(){
-  const cv=$('#c1');if(!cv)return;const {x,w,h,R}=setup(cv);const im=small(64,48),cols=S.z1,rows=cols*3/4;
-  S.lx=clamp(S.lx,0,64-cols);S.ly=clamp(S.ly,0,48-rows);S.sc=[clamp(S.sc[0],0,cols-1),clamp(S.sc[1],0,rows-1)];
+  const cv=$('#c1');if(!cv)return;const {x,w,h,R}=setup(cv);const im=img1(S.img1),cols=zmCols(),rows=cols*3/4;
+  clampLens();
   const pad=R*1.6,gap=R*3.4,top=R*3.6;
-  let mh=Math.min(h-pad-top-R*.8,(w-pad*2-gap)*.6*.75),mw=mh/.75;
-  let lw=Math.min(w-pad*2-gap-mw,mw*.72),lh=lw*.75;
-  const ax=pad,ay=top+(h-top-pad-lh)/2,mx=w-pad-mw,my=top+(h-top-pad-mh)/2,cs=mw/cols;
-  G1={ax,ay,aw:lw,ah:lh,mx,my,mw,mh,cs,cols,rows,gap};
-  TH(x,tx('Celý obrázek','Whole picture'),ax,top-R*.9,R*.8,TXT);TH(x,tx(`Lupa: ${cols} × ${rows} pixelů`,`Lens: ${cols} × ${rows} pixels`),mx,top-R*.9,R*.8,TXT);
-  draw(x,im.c,ax,ay,lw,lh,false);x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(ax,ay,lw,lh);
-  const rx=ax+S.lx/64*lw,ry=ay+S.ly/48*lh,rw=cols/64*lw,rh=rows/48*lh;
-  line(x,rx+rw,ry,mx,my,'rgba(255,151,46,.55)',1.2,[5,5]);line(x,rx+rw,ry+rh,mx,my+mh,'rgba(255,151,46,.55)',1.2,[5,5]);
-  x.strokeStyle=C.orange;x.lineWidth=2.5;x.strokeRect(rx,ry,rw,rh);
-  draw(x,(()=>{const t=cvx(cols,rows);t.getContext('2d').drawImage(im.c,S.lx,S.ly,cols,rows,0,0,cols,rows);return t})(),mx,my,mw,mh,false);
+  let pw=Math.min((w-pad*2-gap)/2,(h-top-pad)/.75);const ph=pw*.75;
+  const ax=pad+((w-pad*2-gap)/2-pw)/2,ay=top+(h-top-pad-ph)/2,mx=w-pad-((w-pad*2-gap)/2)+((w-pad*2-gap)/2-pw)/2,my=ay,cs=pw/cols;
+  G1={ax,ay,aw:pw,ah:ph,mx,my,mw:pw,mh:ph,cs,cols,rows,gap};
+  TH(x,tx(`Původní obrázek ${W1} × ${H1}`,`Original picture ${W1} × ${H1}`),ax,top-R*.9,R*.8,TXT);
+  TH(x,tx(`Lupa: ${cols} × ${rows} pixelů`,`Lens: ${cols} × ${rows} pixels`),mx,top-R*.9,R*.8,TXT);
+  draw(x,im.c,ax,ay,pw,ph,true);x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(ax,ay,pw,ph);
+  const rx=ax+S.lx/W1*pw,ry=ay+S.ly/H1*ph,rw=cols/W1*pw,rh=rows/H1*ph;
+  if(cols<W1){line(x,rx+rw,ry,mx,my,'rgba(255,151,46,.55)',1.2,[5,5]);line(x,rx+rw,ry+rh,mx,my+ph,'rgba(255,151,46,.55)',1.2,[5,5])}
+  x.strokeStyle=C.orange;x.lineWidth=2.5;x.strokeRect(rx,ry,Math.max(rw,2),Math.max(rh,2));
+  const t=cvx(cols,rows);t.getContext('2d').drawImage(im.c,S.lx,S.ly,cols,rows,0,0,cols,rows);
+  draw(x,t,mx,my,pw,ph,cs<3);
   const d=im.d;
   if(cols<=8){const fs=Math.min(cs*.19,R*(cols<=4?1.25:.82));
-   for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){const k=((S.ly+j)*64+S.lx+i)*4,r=d[k],g=d[k+1],b=d[k+2],fc=fgOn(r,g,b),cx=mx+(i+.5)*cs,cy=my+(j+.5)*cs;
+   for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){const k=((S.ly+j)*W1+S.lx+i)*4,r=d[k],g=d[k+1],b=d[k+2],fc=fgOn(r,g,b),cx=mx+(i+.5)*cs,cy=my+(j+.5)*cs;
     T(x,String(r),cx,cy-fs*1.15,fs,fc,'center');T(x,String(g),cx,cy,fs,fc,'center');T(x,String(b),cx,cy+fs*1.15,fs,fc,'center')}}
-  if(S.grid1&&cs>=R*1.1){x.strokeStyle='rgba(23,20,15,.55)';x.lineWidth=1;x.beginPath();for(let i=0;i<=cols;i++){x.moveTo(mx+i*cs,my);x.lineTo(mx+i*cs,my+mh)}for(let j=0;j<=rows;j++){x.moveTo(mx,my+j*cs);x.lineTo(mx+mw,my+j*cs)}x.stroke()}
-  x.strokeStyle=C.cream;x.lineWidth=3.5;x.strokeRect(mx+S.sc[0]*cs,my+S.sc[1]*cs,cs,cs);x.strokeStyle=C.orange;x.lineWidth=1.8;x.strokeRect(mx+S.sc[0]*cs+2,my+S.sc[1]*cs+2,cs-4,cs-4);
-  x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(mx,my,mw,mh);
+  if(S.grid1&&cs>=R*1.1){x.strokeStyle='rgba(23,20,15,.55)';x.lineWidth=1;x.beginPath();for(let i=0;i<=cols;i++){x.moveTo(mx+i*cs,my);x.lineTo(mx+i*cs,my+ph)}for(let j=0;j<=rows;j++){x.moveTo(mx,my+j*cs);x.lineTo(mx+pw,my+j*cs)}x.stroke()}
+  const si=S.sp[0]-S.lx,sj=S.sp[1]-S.ly;
+  if(si>=0&&si<cols&&sj>=0&&sj<rows&&cs>=4){x.strokeStyle=C.cream;x.lineWidth=3.5;x.strokeRect(mx+si*cs,my+sj*cs,cs,cs);x.strokeStyle=C.orange;x.lineWidth=1.8;x.strokeRect(mx+si*cs+2,my+sj*cs+2,cs-4,cs-4)}
+  x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(mx,my,pw,ph);
   renderModes();
  }});
 
@@ -707,14 +795,14 @@ TABS.push({name:tx('Princip komprese','Compression principle'),side:'27rem',
 (function(){
 const H=[
 {t:tx(`Pixel`,`Pixel`),
- a:tx(`Bitmapový (rastrový) obrázek je pravidelná <b>mřížka pixelů</b>. Pixel je nejmenší bod obrazu a nese jedinou barvu zapsanou čísly. Obrázek 64 × 48 pixelů má 64 · 48 = 3 072 pixelů.`,`A bitmap (raster) picture is a regular <b>grid of pixels</b>. A pixel is the smallest dot of a picture and carries a single colour written as numbers. A picture of 64 × 48 pixels has 64 · 48 = 3,072 pixels.`),
- b:tx(`Když obrázek přiblížíte, nový detail nevznikne: uvidíte jen čtverečky. Hladký vzhled při přiblížení vytváří až prohlížeč tím, že dopočítává barvy mezi pixely.`,`When you zoom a picture, no new detail appears: you just see squares. A smooth look when zoomed is made by the viewer, which calculates colours between pixels.`),
+ a:tx(`Bitmapový (rastrový) obrázek je pravidelná <b>mřížka pixelů</b>. Pixel je nejmenší bod obrazu a nese jedinou barvu zapsanou čísly. Obrázek 320 × 240 pixelů má 320 · 240 = 76 800 pixelů.`,`A bitmap (raster) picture is a regular <b>grid of pixels</b>. A pixel is the smallest dot of a picture and carries a single colour written as numbers. A picture of 320 × 240 pixels has 320 · 240 = 76,800 pixels.`),
+ b:tx(`Původní obrázek vypadá ostře, protože pixely jsou drobné. Když ho lupou přiblížíte, nový detail nevznikne: uvidíte jen čtverečky. Hladký vzhled při přiblížení vytváří až prohlížeč tím, že dopočítává barvy mezi pixely.`,`The original picture looks sharp because the pixels are tiny. When you zoom in with the lens, no new detail appears: you just see squares. A smooth look when zoomed is made by the viewer, which calculates colours between pixels.`),
  eh:tx(`Co se tu děje`,`What is going on`),
  e:[tx(`<b>Souřadnice.</b> Pixel se určuje sloupcem a řádkem. V počítačové grafice se obvykle počítá od nuly a od levého horního rohu, takže první pixel má souřadnice 0, 0.`,`<b>Coordinates.</b> A pixel is identified by a column and a row. In computer graphics counting usually starts from zero and from the top left corner, so the first pixel has the coordinates 0, 0.`),
     tx(`<b>Barva jako čísla.</b> Každý pixel obsahuje tři čísla 0 až 255 (červená, zelená, modrá). Podrobněji v kapitole 2.`,`<b>Colour as numbers.</b> Every pixel holds three numbers 0 to 255 (red, green, blue). More in chapter 2.`)],
- c:[tx(`Posunujte lupu po obrázku a všimněte si, že každý čtvereček má jednu barvu.`,`Move the lens over the picture and notice that every square has one colour.`),
-    tx(`Zúžte lupu na 4 pixely a přečtěte čísla uvnitř pixelů.`,`Narrow the lens to 4 pixels and read the numbers inside the pixels.`),
-    tx(`Vyberte pixel na hraně střechy a porovnejte jeho čísla se sousedem.`,`Select a pixel on the edge of the roof and compare its numbers with its neighbour.`)],
+ c:[tx(`Přibližujte lupu kolečkem myši nebo posuvníkem, dokud se neobjeví jednotlivé čtverečky, a všimněte si, že každý má jednu barvu.`,`Zoom the lens with the mouse wheel or the slider until single squares appear, and notice that each has one colour.`),
+    tx(`Při největším zvětšení přečtěte čísla uvnitř pixelů.`,`At the largest magnification read the numbers inside the pixels.`),
+    tx(`Vyberte pixel na hraně střechy (nebo na hraně zkušebního obrazce) a porovnejte jeho čísla se sousedem.`,`Select a pixel on the edge of the roof (or of the test pattern) and compare its numbers with its neighbour.`)],
  d:tx(`Bitmapa je mřížka čtverečků a každý má jednu barvu zapsanou čísly.`,`A bitmap is a grid of squares and each has one colour written as numbers.`)},
 {t:tx(`Mixér RGB`,`RGB mixer`),
  a:tx(`Displej míchá každou barvu ze tří světel: <b>červeného, zeleného a modrého (RGB)</b>. Každé má sílu 0 až 255, tedy jeden bajt. Světla se sčítají, proto se tomu říká aditivní míchání.`,`A display mixes every colour from three lights: <b>red, green and blue (RGB)</b>. Each has a strength of 0 to 255, that is one byte. Lights add up, which is why it is called additive mixing.`),
@@ -781,7 +869,7 @@ const A=(u,t)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a
 const PNG3=A('https://www.w3.org/TR/png-3/','W3C: Portable Network Graphics (PNG) Specification, Third Edition');
 window.LXC={ns:'blp',num:true,min:tx('asi 35 minut','about 35 minutes'),
 PRE:[
- {t:tx('Pixel pod lupou','A pixel under the lens'),d:tx('Kapitola 1: lupa 4 pixely, uvnitř jsou vidět čísla každého pixelu.','Chapter 1: a 4 pixel lens, the numbers of every pixel are visible.'),f:()=>{Object.assign(S,{z1:4,grid1:true,lx:22,ly:16,sc:[1,1]});go(0)}},
+ {t:tx('Pixel pod lupou','A pixel under the lens'),d:tx('Kapitola 1: největší zvětšení lupy, uvnitř jsou vidět čísla každého pixelu.','Chapter 1: the largest lens magnification, the numbers of every pixel are visible.'),f:()=>{Object.assign(S,{img1:'house',zm:80,grid1:true,lx:198,ly:136,sp:[200,138]});go(0)}},
  {t:tx('Žlutá ze dvou světel','Yellow from two lights'),d:tx('Kapitola 2: červená a zelená naplno, modrá vypnutá.','Chapter 2: red and green at full, blue off.'),f:()=>{Object.assign(S,{r:255,g:255,b:0});go(1)}},
  {t:tx('Barva #FF972E','The colour #FF972E'),d:tx('Kapitola 2: oranžová, tři bajty FF, 97 a 2E.','Chapter 2: orange, three bytes FF, 97 and 2E.'),f:()=>{Object.assign(S,{r:255,g:151,b:46});go(1)}},
  {t:tx('Tři bity na pixel','Three bits per pixel'),d:tx('Kapitola 3: 3 bity, tedy osm odstínů s kódy 000 až 111.','Chapter 3: 3 bits, that is eight shades with the codes 000 to 111.'),f:()=>{S.b2=3;go(2)}},
@@ -800,7 +888,7 @@ NOTES:[tx('Pořadí kapitol vychází jedna z druhé: pixel nese barvu, barva se
  tx('Ukázka ztrátové komprese je ilustrace, aplikace nevysvětluje, jak komprese uvnitř funguje.','The lossy compression demo is an illustration, the app does not explain how compression works inside.'),
  tx('Aplikace nic neukládá o žácích, nic neodesílá a nevyžaduje přihlášení.','The app stores nothing about pupils, sends nothing and needs no login.')],
 F:[
- [[tx('Počet pixelů','Pixel count'),tx('šířka · výška','width · height')],[tx('Příklad','Example'),'64 · 48 = 3 072']],
+ [[tx('Počet pixelů','Pixel count'),tx('šířka · výška','width · height')],[tx('Příklad','Example'),'320 · 240 = 76 800']],
  [[tx('RGB','RGB'),tx('každý kanál 0 až 255','each channel 0 to 255')],[tx('Dvojice XY','Pair XY'),'16 · X + Y'],[tx('Příklad','Example'),'2E = 16 · 2 + 14 = 46'],[tx('Barva','Colour'),tx('#RRGGBB = 3 bajty','#RRGGBB = 3 bytes')]],
  [[tx('Počet hodnot','Number of values'),tx('2ⁿ (n = počet bitů)','2ⁿ (n = number of bits)')],[tx('Barevně','In colour'),'3 · 8 = 24 bitů → 2²⁴ = 16 777 216']],
  [[tx('Velikost','Size'),tx('B = šířka · výška · bity ÷ 8','B = width · height · bits ÷ 8')],[tx('Full HD, 24 bitů','Full HD, 24 bits'),'1920 · 1080 · 24 ÷ 8 = 6 220 800 B']],
@@ -824,7 +912,7 @@ SRC:[
  [PNG3,A('https://www.w3.org/Graphics/GIF/spec-gif89a.txt','GIF89a Specification')],
  []],
 D:{
- c1:()=>tx('Obrázek 64 × 48 pixelů, lupa a zvětšená mřížka pixelů s čísly barev.','A 64 × 48 pixel picture, the lens and the enlarged pixel grid with colour numbers.'),
+ c1:()=>tx('Obrázek 320 × 240 pixelů, lupa a zvětšená mřížka pixelů s čísly barev.','A 320 × 240 pixel picture, the lens and the enlarged pixel grid with colour numbers.'),
  c2:()=>tx(`Míchání světla RGB (${S.r}, ${S.g}, ${S.b}), barva #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`,`Mixing RGB light (${S.r}, ${S.g}, ${S.b}), the colour #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`),
  c3:()=>tx(`Šedotónový obraz, původní a ${S.b2} bitů na pixel.`,`Greyscale picture, the original and ${S.b2} bits per pixel.`),
  c4:()=>S.m4==='res'?tx(`Obrázek ${S.rs} × ${S.rs*3/4} pixelů.`,`A picture of ${S.rs} × ${S.rs*3/4} pixels.`):S.m4==='std'?tx('Velikost bez komprese podle standardního rozlišení.','Size without compression by standard resolution.'):tx('Srovnání formátů BMP, GIF, PNG a JPEG.','Comparison of the formats BMP, GIF, PNG and JPEG.'),
