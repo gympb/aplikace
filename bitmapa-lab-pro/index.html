@@ -367,7 +367,7 @@ function boot(){
 <script>
 /* ===== Bitmapa Lab Pro: společné části ===== */
 Object.assign(S,{m4:'res',ct4:'logo',ls5:'lossless',
- img1:'house',img2:'land',fm2:'dec',z2:40,lx2:700,ly2:520,img5:'land',bc5:8,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'col',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
+ img1:'house',img2:'land',fm2:'dec',z2:40,lx2:700,ly2:520,img5:'land',bc5:8,k4r:true,k4g:true,k4b:true,gm4:false,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'col',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
  b2:3,r:255,g:151,b:46,
  rs:32,bd:24,sz4:'fhd'});
 const MK={5:'m4'};
@@ -759,6 +759,9 @@ TABS.push({name:tx('RGB kódování','RGB encoding'),side:'27rem',
    <div class="ctl"><div class="hd"><span class="lbl">${tx('Zvětšení lupy','Lens magnification')}</span><span class="val" data-o="v_z5"></span></div>
     <input type="range" data-k="z5" data-map="zm" min="0" max="100" step="1">
     <div class="chips g4">${[1,8,64,320].map(v=>`<button class="chip sm" data-k="z5" data-v="${v}">${v}×</button>`).join('')}</div></div>
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Barevné kanály v lupě','Colour channels in the lens')}</span></div>
+    <div class="chips g3"><button class="chip sm tg" data-act="tg1" data-v="k4r" aria-pressed="true">${tx('R červená','R red')}</button><button class="chip sm tg" data-act="tg1" data-v="k4g" aria-pressed="true">${tx('G zelená','G green')}</button><button class="chip sm tg" data-act="tg1" data-v="k4b" aria-pressed="true">${tx('B modrá','B blue')}</button></div>
+    <div class="chips" style="display:grid;grid-template-columns:1fr"><button class="chip sm tg" data-act="tg1" data-v="gm4" aria-pressed="false">${tx('Jako odstíny šedi','As shades of grey')}</button></div></div>
    <div class="hint" data-o="h5"></div>
    ${note(tx('<b>Plná barva</b> zapisuje každý pixel třemi kódy, jedním pro červenou, zelenou a modrou. Při 8 bitech na kanál má každý kód 8 číslic a hodnoty 0 až 255, při 10 bitech 10 číslic a hodnoty 0 až 1023.','<b>Full colour</b> writes every pixel with three codes, one each for red, green and blue. With 8 bits per channel every code has 8 digits and values 0 to 255, with 10 bits 10 digits and values 0 to 1023.'))}
   </div></div>`},
@@ -771,7 +774,7 @@ TABS.push({name:tx('RGB kódování','RGB encoding'),side:'27rem',
   OUT.kqc=()=>{const d=img1(S.img5).d,i=(S.sp5[1]*W1+S.sp5[0])*4,b=S.bc5;return ['R','G','B'].map((n,k)=>{const v=v5(d[i+k],b);return `<div class="cd"><b>${n}</b> ${String(v).padStart(4,' ').replace(/ /g,'&nbsp;')} = ${v.toString(2).padStart(b,'0')}</div>`}).join('')};
   OUT.kqd=()=>`${nf(W1*H1*3*S.bc5/8)} <u>B</u>`;
   OUT.kqe=()=>`${nf(W1*H1)} · ${3*S.bc5} ÷ 8`;
-  OUT.h5=()=>S.bc5===10?tx('Zdrojový obrázek i displej mají 8 bitů, desetibitové hodnoty jsou z nich přepočtené (v · 1023 ÷ 255). Skutečný desetibitový snímek by měl jemnější odstupňování. Přibližujte lupu kolečkem myši.','The source picture and the display have 8 bits, the ten-bit values are converted from them (v · 1023 ÷ 255). A real ten-bit picture would have finer steps. Zoom the lens with the mouse wheel.'):tx('Přibližujte lupu kolečkem myši nad pravým detailem nebo posuvníkem. Od většího zvětšení se v pixelech ukážou kódy. Klepnutím vyberete pixel.','Zoom the lens with the mouse wheel over the right detail or with the slider. From a larger magnification the codes appear in the pixels. Tap to select a pixel.');
+  OUT.h5=()=>(!(S.k4r&&S.k4g&&S.k4b)||S.gm4?tx('Lupa ukazuje jen vybrané kanály. Barevně zůstávají vybrané kanály a ostatní jsou vypnuté, jako odstíny šedi se zobrazí jeden kanál, nebo průměr více kanálů. ','The lens shows only the chosen channels. In colour the chosen channels stay and the others are switched off; as shades of grey a single channel or the average of several channels is shown. '):'')+(S.bc5===10?tx('Zdrojový obrázek i displej mají 8 bitů, desetibitové hodnoty jsou z nich přepočtené (v · 1023 ÷ 255). Skutečný desetibitový snímek by měl jemnější odstupňování. Přibližujte lupu kolečkem myši.','The source picture and the display have 8 bits, the ten-bit values are converted from them (v · 1023 ÷ 255). A real ten-bit picture would have finer steps. Zoom the lens with the mouse wheel.'):tx('Přibližujte lupu kolečkem myši nad pravým detailem nebo posuvníkem. Od většího zvětšení se v pixelech ukážou kódy. Klepnutím vyberete pixel.','Zoom the lens with the mouse wheel over the right detail or with the slider. From a larger magnification the codes appear in the pixels. Tap to select a pixel.'));
   ACT.own5=()=>{f.value='';f.click()};
   f.addEventListener('change',()=>{
    const file=f.files&&f.files[0];if(!file)return;
@@ -804,22 +807,26 @@ TABS.push({name:tx('RGB kódování','RGB encoding'),side:'27rem',
  render(){
   const cv=$('#cq');if(!cv)return;const {x,w,h,R}=setup(cv);const id=S.img5==='own'&&!OWN1?'house':S.img5,im=img1(id),cols=zc5(),rows=cols*3/4,b=S.bc5;
   clamp5();
+  $$('.tg').forEach(b=>{const o=!!S[b.dataset.v];b.classList.toggle('on',o);b.setAttribute('aria-pressed',o)});
   const pad=R*1.6,gap=R*3.4,top=R*3.6;
   const pw=Math.min((w-pad*2-gap)/2,(h-top-pad)/.75),ph=pw*.75;
   const ax=pad+((w-pad*2-gap)/2-pw)/2,ay=top+(h-top-pad-ph)/2,mx=w-pad-((w-pad*2-gap)/2)+((w-pad*2-gap)/2-pw)/2,my=ay,cs=pw/cols;
   G5={ax,ay,aw:pw,ah:ph,mx,my,mw:pw,mh:ph,cs};
   TH(x,tx('Původní obrázek','Original picture'),ax,top-R*.9,R*.8,TXT);
-  TH(x,tx(`Lupa: ${cols} × ${rows} pixelů · ${b} bitů na kanál`,`Lens: ${cols} × ${rows} pixels · ${b} bits per channel`),mx,top-R*.9,R*.8,C.orange);
+  TH(x,tx(`Lupa: ${cols} × ${rows} pixelů · ${b} bitů na kanál`,`Lens: ${cols} × ${rows} pixels · ${b} bits per channel`)+((S.k4r&&S.k4g&&S.k4b&&!S.gm4)?'':' · '+['R','G','B'].filter((n,q)=>[S.k4r,S.k4g,S.k4b][q]).join('+')+(S.gm4?tx(' šedě',' grey'):'')),mx,top-R*.9,R*.8,C.orange);
   draw(x,im.c,ax,ay,pw,ph,true);x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(ax,ay,pw,ph);
   const rx=ax+S.lx5/W1*pw,ry=ay+S.ly5/H1*ph,rw=cols/W1*pw,rh=rows/H1*ph;
   if(cols<W1){line(x,rx+rw,ry,mx,my,'rgba(255,151,46,.55)',1.2,[5,5]);line(x,rx+rw,ry+rh,mx,my+ph,'rgba(255,151,46,.55)',1.2,[5,5])}
   x.strokeStyle=C.orange;x.lineWidth=2.5;x.strokeRect(rx,ry,Math.max(rw,2),Math.max(rh,2));
-  const t=cvx(cols,rows);t.getContext('2d').drawImage(im.c,S.lx5,S.ly5,cols,rows,0,0,cols,rows);
+  const act=[S.k4r,S.k4g,S.k4b],nAct=act.filter(Boolean).length,proc=!(nAct===3&&!S.gm4);
+  const t=cvx(cols,rows),tg=t.getContext('2d',{willReadFrequently:true});tg.drawImage(im.c,S.lx5,S.ly5,cols,rows,0,0,cols,rows);
+  if(proc){const dd=tg.getImageData(0,0,cols,rows),q=dd.data;for(let k=0;k<q.length;k+=4){const r=act[0]?q[k]:0,g2=act[1]?q[k+1]:0,b2=act[2]?q[k+2]:0;if(S.gm4){const v=nAct?Math.round(((act[0]?q[k]:0)+(act[1]?q[k+1]:0)+(act[2]?q[k+2]:0))/nAct):0;q[k]=q[k+1]=q[k+2]=v}else{q[k]=r;q[k+1]=g2;q[k+2]=b2}}tg.putImageData(dd,0,0)}
   draw(x,t,mx,my,pw,ph,cs<3);
   const d=im.d;
-  if(cols<=8){const fs=Math.min(cs*.2,cs*.92/((b*.6+.1)*PZ));
-   for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){const k=((S.ly5+j)*W1+S.lx5+i)*4,r=d[k],g=d[k+1],bb=d[k+2],fc=fgOn(r,g,bb),cx=mx+(i+.5)*cs,cy=my+(j+.5)*cs;
-    [r,g,bb].forEach((v,n)=>T(x,v5(v,b).toString(2).padStart(b,'0'),cx,cy+(n-1)*fs*1.35,fs,fc,'center'))}}
+  if(cols<=8&&nAct){const fs=Math.min(cs*.2,cs*.92/((b*.6+.1)*PZ));
+   for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){const k=((S.ly5+j)*W1+S.lx5+i)*4,v3=[d[k],d[k+1],d[k+2]],sh=S.gm4?Math.round(v3.reduce((a2,v,n)=>a2+(act[n]?v:0),0)/nAct):null,
+     fc=S.gm4?fgOn(sh,sh,sh):fgOn(act[0]?v3[0]:0,act[1]?v3[1]:0,act[2]?v3[2]:0),cx=mx+(i+.5)*cs,cy=my+(j+.5)*cs,L=v3.map((v,n)=>act[n]?['R','G','B'][n]+' '+v5(v,b).toString(2).padStart(b,'0'):null).filter(Boolean);
+    L.forEach((tx2,n)=>T(x,tx2.slice(2),cx,cy+(n-(L.length-1)/2)*fs*1.35,fs,fc,'center'))}}
   if(cs>=R*1.1){x.strokeStyle='rgba(23,20,15,.55)';x.lineWidth=1;x.beginPath();for(let i=0;i<=cols;i++){x.moveTo(mx+i*cs,my);x.lineTo(mx+i*cs,my+ph)}for(let j=0;j<=rows;j++){x.moveTo(mx,my+j*cs);x.lineTo(mx+pw,my+j*cs)}x.stroke()}
   if(cols>8)T(x,tx(`Kódy RGB se ukážou od zvětšení × ${nf(W1/8)}`,`RGB codes appear from magnification × ${nf(W1/8)}`),mx+pw/2,my+ph+R*1.3,R*.8,C.orange,'center');
   const si=S.sp5[0]-S.lx5,sj=S.sp5[1]-S.ly5;
