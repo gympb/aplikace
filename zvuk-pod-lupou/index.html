@@ -284,7 +284,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
   <p>Jak se zvuk z mikrofonu změní na čísla, jak se uloží do souboru a jak se z čísel stane zase zvuk. Vyber si stupeň. Základy a Standardní znalosti mají cíle, úlohy s nápovědami, opakování a test. Extra je nepovinné čtení s nástroji, rozdělené do tří skupin:</p>
   <div class="levels">
     <button class="lv l1" data-go="z"><b>Základy</b><span>Jak se zvuk zapíše pomocí PCM, jak spočítat velikost takto zapsaných dat a datový tok.</span></button>
-    <button class="lv l4" data-go="s"><b>Standardní znalosti</b><span>Základy a k nim zvuk jako vlnění (frekvence), vzorkování a Nyquistův–Shannonův teorém, D/A převodník, bezeztrátová a ztrátová komprese.</span></button>
+    <button class="lv l4" data-go="s"><b>Standardní znalosti</b><span>Navazuje na Základy a nic z nich neopakuje: zvuk jako vlnění (frekvence), Nyquistův–Shannonův teorém a aliasing, D/A převodník, bezeztrátová a ztrátová komprese.</span></button>
     <button class="lv lp" data-go="x"><small>nepovinné</small><b>Extra<span class="plus" title="Obsah nad rámec úrovně Standardní znalosti">PLUS</span></b><span>Kvantizační šum, maskování, MP3 krok za krokem, gramodesky, vintage hi-fi, magnetofony, ozvučování koncertů a moderní studio, Hi-Fi a Hi-Res, SACD a DSD, srovnání formátů, prostorový zvuk pro doma i pro kino. Bez povinných úloh.</span></button>
     <div class="toolcol">
       <button class="lv tool" data-go="v"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 7h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8.5 11.5h1.5M12 11.5h1.5M15.5 11.5h0M8.5 15h1.5M12 15h1.5M15.5 15h0" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><small>pro všechny stupně</small><b>Výpočty</b><span>Velikost, datový tok, kapacita, stahování, alias</span></button>
@@ -300,11 +300,12 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
 <div class="course" data-course="s">
   <div class="course-head">
     <ul class="goals" data-lv="z"><li>říct u každého kroku cesty zvuku, jestli je signál analogový, nebo digitální,</li><li>vysvětlit kódování zvuku pomocí PCM: vzorkování, kvantování a zápis čísla dvojkově,</li><li>určit počet úrovní z bitové hloubky, zaokrouhlit hodnotu na úroveň a zapsat ji dvojkově,</li><li>spočítat datový tok a velikost takto kódovaných (nekomprimovaných) dat.</li></ul>
-    <ul class="goals" data-lv="s"><li>popsat cestu zvuku od mikrofonu k reproduktoru a u každého kroku říct, jestli je signál analogový, nebo digitální,</li><li>určit frekvenci a periodu tónu a vysvětlit, co určuje výšku a hlasitost,</li><li>vysvětlit digitalizaci spojitého signálu: vzorkování (Nyquistův–Shannonův teorém), kvantování a zápis čísla,</li><li>spočítat datový tok a velikost nekomprimovaného zvuku (PCM),</li><li>vysvětlit, co dělá D/A převodník a proč se výstup vyhlazuje,</li><li>porovnat principy bezeztrátové a ztrátové komprese zvuku.</li></ul>
+    <ul class="goals" data-lv="s"><li>určit frekvenci a periodu tónu a vysvětlit, co určuje výšku a hlasitost,</li><li>vysvětlit, proč musí být vzorkovací frekvence větší než dvojnásobek nejvyšší frekvence v signálu, a co je aliasing (Nyquistův–Shannonův teorém),</li><li>vysvětlit, co dělá D/A převodník a proč se jeho výstup vyhlazuje,</li><li>porovnat principy bezeztrátové a ztrátové komprese zvuku.</li></ul>
+    <p class="muted" data-lv="s" style="margin:.4rem 0 0">Standard navazuje na <b>Základy</b> a jejich obsah neopakuje: počítá s tím, že už víš, co je vzorkování, kvantování a PCM, a umíš spočítat datový tok. Pokud ne, začni v <button type="button" class="chip" data-go="z">Základech</button>.</p>
     <ol class="prog" aria-label="Kapitoly"></ol>
   </div>
 
-  <article class="ch" data-lv="z s" data-title="Záhada z mikrofonu">
+  <article class="ch" data-lv="z" data-title="Záhada z mikrofonu">
     <div><span class="eyebrow" data-ey></span><h2>Záhada ze záznamníku</h2></div>
     <p>Na telefonu nahraješ minutu hlasu. Soubor má několik set kilobajtů. Počítač umí uložit jen čísla, nuly a jedničky. Zvuk je přitom něco, co se chvěje ve vzduchu. Jak se do souboru vejde?</p>
     <div class="kq poll" data-ok="*">
@@ -318,7 +319,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     </div>
   </article>
 
-  <article class="ch" data-lv="z s" data-title="Cesta zvuku">
+  <article class="ch" data-lv="z" data-title="Cesta zvuku">
     <div><span class="eyebrow" data-ey></span><h2>Cesta zvuku: analog a digitál</h2></div>
     <p>Zvuk vzniká jako <b>změna tlaku vzduchu</b>: zhuštění a zředění se střídají. Mikrofon tuto změnu převede na <b>elektrický signál</b>, nejčastěji na <b>elektrické napětí</b> (podle typu mikrofonu to může být i proud). Signál se v čase plynule mění a v každém okamžiku má nějakou hodnotu. Takovému signálu se říká <b>analogový</b>. <b>Digitální</b> signál je naopak řada čísel.</p>
     <p>Mezi analogovým a digitálním světem stojí <b>převodníky</b>. A/D převodník dělá z napětí čísla, D/A převodník z čísel zase napětí. Klepni na kterýkoli krok cesty:</p>
@@ -370,7 +371,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="note">Digitální signál má i své slabiny: poškozený soubor nebo ztrátová komprese kvalitu snížit mohou. Ale prosté kopírování ne.</div>
   </article>
 
-  <article class="ch" data-lv="z s" data-title="A/D převodník">
+  <article class="ch" data-lv="z" data-title="A/D převodník">
     <div><span class="eyebrow" data-ey></span><h2>A/D převodník: vzorkování a kvantování</h2></div>
     <div class="kq poll" data-ok="*">
       <p class="q">Převodník měří napětí jen v pravidelných okamžicích a mezi nimi nic neví. Co se stane, když bude měřit málo často?</p>
@@ -424,7 +425,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div class="note">Proti aliasingu stojí před A/D převodníkem <b>antialiasingový filtr</b>, který vysoké frekvence odřízne dřív, než se začne vzorkovat.</div>
   </article>
 
-  <article class="ch" data-lv="z s" data-title="Soubor">
+  <article class="ch" data-lv="z" data-title="Soubor">
     <div><span class="eyebrow" data-ey></span><h2>Soubor: čísla zapsaná jako 0 a 1</h2></div>
     <p>Každý vzorek je po kvantování jedno celé číslo, číslo úrovně. V počítači se zapíše <b>dvojkově</b>, přesně na tolik bitů, kolik je bitová hloubka. Zvukový soubor je pak jen dlouhá řada takových čísel a před ní krátká hlavička s údaji, třeba se vzorkovací frekvencí.</p>
     <p>Dvojkový zápis už znáš: každý bit má váhu o polovinu menší než ten před ním. Například na čtyři bity jsou váhy 8, 4, 2, 1 a číslo 11 = 8 + 2 + 1 se zapíše <b class="mono">1011</b>.</p>
@@ -444,7 +445,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div data-chk="s4"></div>
   </article>
 
-  <article class="ch" data-lv="z s" data-title="Velikost a datový tok">
+  <article class="ch" data-lv="z" data-title="Velikost a datový tok">
     <div><span class="eyebrow" data-ey></span><h2>Velikost a datový tok</h2></div>
     <p>Kolik bitů vznikne za jednu sekundu? Za sekundu je <b>f</b> vzorků (f je vzorkovací frekvence), každý má <b>n</b> bitů a u stereo je kanálů <b>k</b> (mono 1, stereo 2). Tomu se říká <b>datový tok</b>:</p>
     <div class="formula">datový tok = f · n · k   [bit/s]<br>velikost = datový tok · t ÷ 8   [bajtů]</div>
@@ -519,7 +520,7 @@ dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-ap
     <div><span class="eyebrow" data-ey></span><h2>Test a přehled</h2></div>
     <p><span id="testN"></span> otázek bez nápověd. Test neznámkujeme, ukáže ti jen, co zopakovat.</p>
     <div id="testS"></div>
-    <div class="box tip"><span class="lbl">Co si odnášíš</span><ul class="check"><li>Zvuk je změna tlaku, mikrofon ji převede na elektrický signál, typicky napětí. Analogový signál je plynulý, digitální je řada čísel.</li><li>A/D převodník vzorkuje (měří v pravidelných okamžicích), kvantuje (zaokrouhluje na 2<sup>n</sup> úrovní) a zapíše číslo dvojkově.</li><li>Datový tok = f · n · k, velikost = datový tok · t ÷ 8.</li><li data-lv="s">Frekvence f = 1 / T. Vzorkovací frekvence musí být větší než dvojnásobek nejvyšší frekvence v signálu, jinak vznikne aliasing.</li><li data-lv="s">D/A převodník z čísel vyrobí napětí, filtr ho vyhladí, reproduktor z napětí vyrobí zvuk.</li><li data-lv="s">Bezeztrátová komprese data zmenší a dá se vrátit přesně, ztrátová trvale zahodí to, co ucho neslyší.</li></ul></div>
+    <div class="box tip"><span class="lbl">Co si odnášíš</span><ul class="check"><li data-lv="z">Zvuk je změna tlaku, mikrofon ji převede na elektrický signál, typicky napětí. Analogový signál je plynulý, digitální je řada čísel.</li><li data-lv="z">A/D převodník vzorkuje (měří v pravidelných okamžicích), kvantuje (zaokrouhluje na 2<sup>n</sup> úrovní) a zapíše číslo dvojkově.</li><li data-lv="z">Datový tok = f · n · k, velikost = datový tok · t ÷ 8.</li><li data-lv="s">Frekvence f = 1 / T. Vzorkovací frekvence musí být větší než dvojnásobek nejvyšší frekvence v signálu, jinak vznikne aliasing.</li><li data-lv="s">D/A převodník z čísel vyrobí napětí, filtr ho vyhladí, reproduktor z napětí vyrobí zvuk.</li><li data-lv="s">Bezeztrátová komprese data zmenší a dá se vrátit přesně, ztrátová trvale zahodí to, co ucho neslyší.</li></ul></div>
     <div id="ovS"></div>
   </article>
 
@@ -1659,7 +1660,7 @@ const SIGS=[
  ['data uložená v souboru zvukové nahrávky','digi','V souboru je řada čísel zapsaných dvojkově. To je digitální záznam.'],
  ['řada čísel mezi A/D a D/A převodníkem','digi','Mezi převodníky jsou čísla, tedy digitální signál.']
 ];
-SK['s-typ']={lv:'zs',title:'Analog × digitál',gen(){const s=pick(SIGS);
+SK['s-typ']={lv:'z',title:'Analog × digitál',gen(){const s=pick(SIGS);
   return {kind:'opts',q:`Je <b>${s[0]}</b> analogový, nebo digitální?`,opts:[{v:'analog',t:'Analogový (plynulý)'},{v:'digi',t:'Digitální (řada čísel)'}],right:s[1],rightText:`<b>${s[1]==='analog'?'analogový':'digitální'}</b>`,
     why:s[2],wrong:()=>s[1]==='analog'?'Za A/D převodníkem jsou čísla, ale před ním a za D/A převodníkem je signál plynulý, tedy analogový.':'Digitální je jen ta část cesty, kde jsou čísla: od A/D převodníku po D/A převodník.'};}};
 
@@ -1672,52 +1673,52 @@ SK['s-zarizeni']={lv:'s',title:'Co dělá které zařízení',gen(){const d=pick
     hints:['Vzpomeň si na cestu zvuku: tlak → napětí → čísla → napětí → tlak.','Převodník A/D vyrábí čísla, D/A z čísel vyrábí napětí. Mikrofon a reproduktor jsou analogové.',`Správně je ${d[1]}.`],
     why:d[2],wrong:()=>null};}};
 
-SK['s-urovne']={lv:'zs',title:'Počet úrovní z bitů',gen(){const n=[2,3,4,5,6,7,8][rnd(7)];
+SK['s-urovne']={lv:'z',title:'Počet úrovní z bitů',gen(){const n=[2,3,4,5,6,7,8][rnd(7)];
   return {kind:'num',q:`Bitová hloubka je <b>${n}</b> ${cz(n,'bit','bity','bitů')}. Kolik různých úrovní se dá zapsat?`,ph:'číslo',check:s=>normNum(s)===2**n,rightText:`<b>${2**n}</b>`,
     hints:['Jeden bit má 2 hodnoty, dva bity 4 kombinace (00, 01, 10, 11).','Každý další bit počet úrovní zdvojnásobí: 2 × 2 × … tolikrát, kolik je bitů.',`Správně je 2<sup>${n}</sup> = ${2**n}.`],
     why:`${n} bitů dává 2<sup>${n}</sup> = ${2**n} úrovní. CD má 16 bitů, tedy 65 536 úrovní.`,
     wrong:raw=>{const v=normNum(raw);if(v===2*n)return 'To je dvakrát počet bitů. Každý bit ale počet možností násobí dvěma, takže je to 2 × 2 × 2 …';if(v===n*n)return 'To je n × n. Správně se dvojka násobí n-krát: 2 × 2 × …';if(v===2**n-1)return 'To je nejvyšší číslo úrovně. Úrovní je o jednu víc, protože se počítá i nula.';return null;}};}};
 
-SK['s-bity-L']={lv:'zs',title:'Bity pro daný počet úrovní',gen(){const m=[2,3,4,5,6,7,8][rnd(7)],L=2**m;
+SK['s-bity-L']={lv:'z',title:'Bity pro daný počet úrovní',gen(){const m=[2,3,4,5,6,7,8][rnd(7)],L=2**m;
   return {kind:'num',q:`Kolik bitů potřebuje bitová hloubka, aby rozlišila <b>${L}</b> úrovní?`,ph:'počet bitů',check:s=>normNum(s)===m,rightText:`<b>${m}</b>`,
     hints:['Hledáš, kolikrát se musí vynásobit dvojka, aby vyšlo toto číslo.','Zkoušej: 2, 4, 8, 16, 32, 64, 128, 256 … a počítej kroky.',`Správně je ${m}, protože 2<sup>${m}</sup> = ${L}.`],
     why:`2<sup>${m}</sup> = ${L}, proto stačí ${m} ${cz(m,'bit','bity','bitů')}.`,
     wrong:raw=>{const v=normNum(raw);if(v===L)return 'To je počet úrovní. Ptáme se na počet bitů, tedy na to, kolikrát se dvojka násobí.';if(v===L/2)return 'To je poloviční počet úrovní. Počet bitů je mnohem menší: každý bit úrovně zdvojnásobí.';return null;}};}};
 
-SK['s-kvantuj']={lv:'zs',title:'Zaokrouhlení na úroveň',gen(){const n=pick([3,4]),N=2**n,base=rnd(N-1),fr=pick([1,2,3,4,6,7,8,9]),x=base+fr/10,ans=fr>5?base+1:base;
+SK['s-kvantuj']={lv:'z',title:'Zaokrouhlení na úroveň',gen(){const n=pick([3,4]),N=2**n,base=rnd(N-1),fr=pick([1,2,3,4,6,7,8,9]),x=base+fr/10,ans=fr>5?base+1:base;
   const xs=nf(x,1);
   return {kind:'num',q:`Převodník má ${n} bity, tedy ${N} úrovní očíslovaných 0 až ${N-1}. Naměřená hodnota je <b>${xs}</b>. Na kterou úroveň se zaokrouhlí?`,ph:'číslo úrovně',check:s=>normNum(s)===ans,rightText:`<b>${ans}</b>`,
     hints:['Převodník vybere úroveň, která je naměřené hodnotě nejblíž.',`Hodnota ${xs} leží mezi úrovněmi ${base} a ${base+1}.`,`Vzdálenost od ${base} je ${nf(x-base,1)}, od ${base+1} je ${nf(base+1-x,1)}. Správně je ${ans}.`],
     why:`Hodnota ${xs} je nejblíž úrovni ${ans}. Rozdíl mezi naměřenou a zaokrouhlenou hodnotou se ve zvuku projeví jako kvantizační šum.`,
     wrong:raw=>{const v=normNum(raw);if(v===base&&ans!==base)return 'To je zaokrouhlení dolů. Převodník ale vybírá nejbližší úroveň, ne tu nižší.';if(v===base+1&&ans!==base+1)return 'Tahle úroveň je dál. Porovnej vzdálenost od obou sousedních úrovní.';return null;}};}};
 
-SK['s-cislo-bin']={lv:'zs',title:'Číslo úrovně → dvojkově',gen(){const n=pick([3,4,5]),N=2**n,v=1+rnd(N-1),parts=[];for(let i=n-1;i>=0;i--)if(v&(1<<i))parts.push(2**i);
+SK['s-cislo-bin']={lv:'z',title:'Číslo úrovně → dvojkově',gen(){const n=pick([3,4,5]),N=2**n,v=1+rnd(N-1),parts=[];for(let i=n-1;i>=0;i--)if(v&(1<<i))parts.push(2**i);
   return {kind:'text',q:`Zapiš číslo úrovně <b>${v}</b> dvojkově na ${n} bity (přesně ${n} číslic).`,ph:`${n} číslic 0 a 1`,
     check:s=>{const b=normBin(s);return /^[01]+$/.test(b)&&b.length===n&&parseInt(b,2)===v;},rightText:`<b class="mono">${bin(v,n)}</b>`,
     hints:[`Váhy bitů zleva doprava jsou ${Array.from({length:n},(_,i)=>2**(n-1-i)).join(', ')}. Kde bit zapneš, váha se přičte.`,`Rozlož ${v} na váhy: ${v} = ${parts.join(' + ')}.`,`Zapni bity s vahami ${parts.join(', ')}. Správně je ${bin(v,n)}.`],
     why:`${v} = ${parts.join(' + ')}, tedy ${bin(v,n)}.`,
     wrong:raw=>{const b=normBin(raw);if(!/^[01]+$/.test(b))return 'Dvojkový zápis má jen číslice 0 a 1.';if(parseInt(b,2)===v&&b.length!==n)return `Hodnota sedí, ale vzorek se zapisuje přesně na ${n} bitů. Na začátek doplň nuly.`;if(b.length!==n)return `Zapiš přesně ${n} číslic.`;return null;}};}};
 
-SK['s-bin-cislo']={lv:'zs',title:'Dvojkově → číslo úrovně',gen(){const n=pick([3,4,5]),N=2**n,v=1+rnd(N-1),b=bin(v,n),parts=[];for(let i=n-1;i>=0;i--)if(v&(1<<i))parts.push(2**i);
+SK['s-bin-cislo']={lv:'z',title:'Dvojkově → číslo úrovně',gen(){const n=pick([3,4,5]),N=2**n,v=1+rnd(N-1),b=bin(v,n),parts=[];for(let i=n-1;i>=0;i--)if(v&(1<<i))parts.push(2**i);
   return {kind:'num',q:`Vzorek je v souboru zapsán jako <b class="mono">${b}</b>. Které číslo úrovně to je?`,ph:'číslo',check:s=>normNum(s)===v,rightText:`<b>${v}</b>`,
     hints:[`Váhy bitů zleva doprava jsou ${Array.from({length:n},(_,i)=>2**(n-1-i)).join(', ')}.`,`Sečti váhy tam, kde je jednička: ${parts.join(' + ')}.`,`Správně je ${v}.`],
     why:`${parts.join(' + ')} = ${v}.`,
     wrong:raw=>{const r=normNum(raw);if(r===parseInt(b.split('').reverse().join(''),2)&&r!==v)return 'Váhy se přiřazují zleva doprava: nejvyšší váha je u prvního bitu.';return null;}};}};
 
-SK['s-vzorky']={lv:'zs',title:'Počet vzorků',gen(){const f=pick(FSL),t=pick([2,3,5,10]);
+SK['s-vzorky']={lv:'z',title:'Počet vzorků',gen(){const f=pick(FSL),t=pick([2,3,5,10]);
   return {kind:'num',q:`Vzorkovací frekvence je <b>${nf(f,0)} Hz</b>. Kolik vzorků vznikne za <b>${t} s</b>?`,ph:'počet vzorků',check:s=>normNum(s)===f*t,rightText:`<b>${nf(f*t,0)}</b>`,
     hints:['Vzorkovací frekvence říká, kolik vzorků vznikne za jednu sekundu.',`Za 1 s je ${nf(f,0)} vzorků. Za ${t} s je ${t}× víc.`,`Správně je ${nf(f,0)} · ${t} = ${nf(f*t,0)}.`],
     why:`${nf(f,0)} vzorků za sekundu · ${t} s = ${nf(f*t,0)} vzorků.`,
     wrong:raw=>normNum(raw)===f?'To je počet vzorků za jednu sekundu. Ptáme se na delší dobu, vynásob ji.':null};}};
 
-SK['s-tok']={lv:'zs',title:'Datový tok',gen(){const f=pick([8000,16000,44100,48000]),n=pick([8,16,24]),k=pick([1,2]),ans=f*n*k/1000;
+SK['s-tok']={lv:'z',title:'Datový tok',gen(){const f=pick([8000,16000,44100,48000]),n=pick([8,16,24]),k=pick([1,2]),ans=f*n*k/1000;
   return {kind:'text',q:`Vzorkovací frekvence je <b>${nf(f,0)} Hz</b>, bitová hloubka <b>${n} bitů</b> a počet kanálů <b>${k}</b>. Jaký je datový tok v <b>kbit/s</b>?`,ph:'např. 128 nebo 705,6',
     check:s=>Math.abs(normDec(s)-ans)<0.05,rightText:`<b>${nf(ans,1)} kbit/s</b>`,
     hints:['Datový tok = vzorkovací frekvence · bitová hloubka · počet kanálů. Vyjde v bit/s.',`${nf(f,0)} · ${n} · ${k} = ${nf(f*n*k,0)} bit/s.`,`Na kbit/s převeď dělením tisícem. Správně je ${nf(ans,1)} kbit/s.`],
     why:`${nf(f,0)} · ${n} · ${k} = ${nf(f*n*k,0)} bit/s = ${nf(ans,1)} kbit/s.`,
     wrong:raw=>{const v=normDec(raw);if(Math.abs(v-f*n*k)<1)return 'To je datový tok v bit/s. Zadání chce kbit/s, tedy dělit tisícem.';if(Math.abs(v-f*n/1000)<0.05&&k>1)return 'Zapomněl jsi na počet kanálů. Stereo má dvakrát víc dat než mono.';if(Math.abs(v-f*n*k/8000)<0.05)return 'To je v kB/s. Ptáme se na kbit/s, osmkrát větší číslo.';return null;}};}};
 
-SK['s-velikost']={lv:'zs',title:'Velikost záznamu',gen(){const f=pick([8000,16000,44100,48000]),n=pick([8,16]),k=pick([1,2]),t=pick([10,30,60]),B=f*n*k*t/8,ans=B/1000;
+SK['s-velikost']={lv:'z',title:'Velikost záznamu',gen(){const f=pick([8000,16000,44100,48000]),n=pick([8,16]),k=pick([1,2]),t=pick([10,30,60]),B=f*n*k*t/8,ans=B/1000;
   return {kind:'text',q:`Vzorkovací frekvence je <b>${nf(f,0)} Hz</b>, bitová hloubka <b>${n} bitů</b>, počet kanálů <b>${k}</b> a záznam trvá <b>${t} s</b>. Kolik kB (1 kB = 1 000 B) zabere bez komprese?`,ph:'číslo v kB',
     check:s=>Math.abs(normDec(s)-ans)<0.5,rightText:`<b>${nf(ans,0)} kB</b>`,
     hints:[`Nejdřív datový tok v bit/s: ${nf(f,0)} · ${n} · ${k} = ${nf(f*n*k,0)}.`,`Vynásob délkou ${t} s a vyděl osmi (bity → bajty): ${nf(f*n*k*t,0)} ÷ 8 = ${nf(B,0)} B.`,`Na kB vyděl tisícem. Správně je ${nf(ans,0)} kB.`],
@@ -1734,7 +1735,7 @@ const POJ=[
  {q:'Který krok digitalizace zaokrouhluje naměřenou hodnotu?',opts:['Kvantování','Vzorkování','Rekonstrukční filtr'],right:0,why:'Vzorkování určuje, kdy se měří. Kvantování určuje, na jakou úroveň se výsledek zaokrouhlí.',wrong:'Vzorkování rozhoduje o času měření. Zaokrouhlení hodnoty je kvantování.'},
  {s:1,q:'Je výstup přehrávače digitálního zvuku schodovitý?',opts:['Ne, filtr za D/A převodníkem schody vyhladí','Ano, vždy, a proto digitální zvuk zní hrubě','Jen u stereo'],right:0,why:'D/A převodník vytvoří schody, rekonstrukční filtr je vyhladí. Při dostatečné vzorkovací frekvenci a bitové hloubce vznikne věrný průběh.',wrong:'Schody jsou jen mezistupeň. Filtr je vyhladí a při CD kvalitě je rozdíl oproti originálu velmi malý.'}
 ];
-SK['s-pojmy']={lv:'zs',title:'Pojmy digitalizace',gen(){const p=pick(POJ.filter(x=>!x.s));return {kind:'opts',q:p.q,opts:p.opts.map((t,i)=>({v:i,t:esc(t)})),right:p.right,rightText:`<b>${esc(p.opts[p.right])}</b>`,why:p.why,wrong:()=>p.wrong||null};}};
+SK['s-pojmy']={lv:'z',title:'Pojmy digitalizace',gen(){const p=pick(POJ.filter(x=>!x.s));return {kind:'opts',q:p.q,opts:p.opts.map((t,i)=>({v:i,t:esc(t)})),right:p.right,rightText:`<b>${esc(p.opts[p.right])}</b>`,why:p.why,wrong:()=>p.wrong||null};}};
 
 
 /* ---- nové dovednosti (Standardní znalosti) ---- */
@@ -2324,7 +2325,7 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS
 /* ---------- inicializace ---------- */
 const PLAN={
   z:['s-pojmy','s-typ','s-urovne','s-kvantuj','s-cislo-bin','s-tok','s-velikost'],
-  s:['s-pojmy','s-pojmy-s','s-typ','s-zarizeni','s-urovne','s-kvantuj','s-cislo-bin','s-tok','s-velikost','s-frekvence','s-nyquist','s-komprese']
+  s:['s-pojmy-s','s-zarizeni','s-frekvence','s-nyquist','s-komprese','s-frekvence','s-nyquist','s-pojmy-s']
 };
 function renderLevel(lv){
   const ps=$('#preS'); if(ps) pretest(ps,PRE_S,lv,'s');
