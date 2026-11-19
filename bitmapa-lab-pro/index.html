@@ -1174,7 +1174,7 @@ const CT8={foto:{n:['Fotografie','Photograph'],why:['Plynulé přechody a milion
  text:{n:['Snímek obrazovky s textem','Screenshot with text'],why:['Ostré písmo musí zůstat přesné. Bezeztrátový formát ho zachová, ztrátový by kolem písmen vytvořil mžitky.','Sharp letters must stay exact. A lossless format keeps them, a lossy one would add speckles around letters.']},
  anim:{n:['Jednoduchá animace','Simple animation'],why:['GIF zvládne animaci všude, ale má jen 256 barev. WebP a AVIF mají víc barev a menší soubory, jenže je starší programy nepřečtou.','GIF does animation everywhere, but has only 256 colours. WebP and AVIF have more colours and smaller files, but older programs cannot read them.']},
  archiv:{n:['Archiv originálů, tisk','Archive of originals, print'],why:['Nic se nesmí ztratit. Volí se formáty bez komprese nebo s bezeztrátovou kompresí a s větší bitovou hloubkou, která nechává prostor pro pozdější úpravy.','Nothing may be lost. Formats without compression or with lossless compression and a greater bit depth are chosen, which leave room for later editing.']}};
-const vis8=()=>FM8.filter(f=>S.as8==='all'||(S.as8==='extra'?!f.c:f.c));
+const vis8=()=>{let V=FM8.filter(f=>S.as8==='all'||(S.as8==='extra'?!f.c:f.c));if(S.ct8)V=V.filter(f=>f.s[S.ct8]>=2).sort((a,b)=>b.s[S.ct8]-a.s[S.ct8]);return V};
 let HIT8={};
 TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
  build(){return `<div class="split"><div class="col">
@@ -1206,11 +1206,11 @@ TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
   OUT.k8b=()=>{const V=vis8();return V.filter(f=>f.cm==='ly'||f.cm==='bo').length+' '+tx('z','of')+' '+V.length};
   OUT.k8c=()=>{const V=vis8();return V.filter(f=>f.tr>0).length+' '+tx('z','of')+' '+V.length};
   OUT.why8=()=>{
-   if(S.f8){const f=FM8.find(q=>q.id===S.f8),t=DET8[f.id];
+   if(S.f8&&vis8().some(q=>q.id===S.f8)){const f=FM8.find(q=>q.id===S.f8),t=DET8[f.id];
     return `<b class="l">${f.n} · ${f.ext.trim().replace(/ +/g,' ')}</b><b>${tx('Vlastnosti. ','Properties. ')}</b>${tx('Barev: ','Colours: ')}${tx(f.col[0],f.col[1])}. ${tx('Komprese: ','Compression: ')}${tx(f.cmT[0],f.cmT[1])}. ${tx('Průhlednost: ','Transparency: ')}${tx(f.trT[0],f.trT[1])}. ${tx('Hodí se na: ','Good for: ')}${tx(f.use[0],f.use[1])}.<br><b>${tx('Kódování. ','Coding. ')}</b>${tx(t.e[0],t.e[1])}<br><b>${tx('Historie. ','History. ')}</b>${tx(t.h[0],t.h[1])}`}
    if(!S.ct8)return `<b class="l">${tx('Všechny formáty','All formats')}</b>${tx('Není vybrán žádný obsah, tabulka ukazuje jen vlastnosti formátů. Klepněte na řádek a zobrazí se popis, kódování a historie formátu.','No content is chosen, the table shows only the properties of the formats. Tap a row to show the description, coding and history of the format.')}`;
    return `<b class="l">${tx(CT8[S.ct8].n[0],CT8[S.ct8].n[1])}</b>${tx(CT8[S.ct8].why[0],CT8[S.ct8].why[1])}`};
-  OUT.hint8=()=>!S.ct8?tx('Klepnutím na vybraný obsah ho vypnete. Bez vybraného obsahu se zobrazí všechny formáty bez hodnocení. Klepnutím na řádek zobrazíte popis, kódování a historii formátu.','Tap the chosen content to turn it off. Without chosen content all formats are shown without rating. Tap a row to show its description, coding and history.'):tx('Tečky ukazují vhodnost formátu pro vybraný obsah. Podbarvený řádek je nejlepší volba. Klepnutím na řádek zobrazíte popis, kódování a historii formátu.','The dots show how well a format suits the chosen content. The highlighted row is the best choice. Tap a row to show the description, coding and history of the format.');
+  OUT.hint8=()=>!S.ct8?tx('Klepnutím na vybraný obsah ho vypnete. Bez vybraného obsahu se zobrazí všechny formáty bez hodnocení. Klepnutím na řádek zobrazíte popis, kódování a historii formátu.','Tap the chosen content to turn it off. Without chosen content all formats are shown without rating. Tap a row to show its description, coding and history.'):tx('Tečky ukazují vhodnost formátu pro vybraný obsah. Zobrazují se jen vhodné formáty (aspoň dvě tečky), nejvhodnější jsou nahoře. Klepnutím na řádek zobrazíte popis, kódování a historii formátu.','The dots show how well a format suits the chosen content. Only suitable formats are shown (at least two dots), the most suitable on top. Tap a row to show the description, coding and history of the format.');
  },
  render(){
   const cv=$('#c8');if(!cv)return;const {x,w,h,R}=setup(cv);const V=vis8(),pd=R*1.6;
@@ -1222,7 +1222,7 @@ TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
   const kk=Math.min(1,Math.max(.74,rowH/(R*4.4))),fs=R*.92*kk,cc={ly:C.orange,ll:C.good,bo:C.cream,no:TXT,nl:C.good};
   x.save();x.beginPath();x.rect(0,top2+hh+1,w,h-top2-hh);x.clip();
   V.forEach((f,r)=>{
-   const y=top2+hh+r*rowH-(S.sc8||0),sc=S.ct8?f.s[S.ct8]:0,isB=!!S.ct8&&sc===m&&m>0;
+   const y=top2+hh+r*rowH-(S.sc8||0),sc=S.ct8?f.s[S.ct8]:0,isB=false;
    if(isB)rr(x,pd-R*.4,y+rowH*.05,tw+R*.8,rowH*.9,R*.5,'rgba(255,151,46,.2)',C.orange,2);
    if(S.f8===f.id)rr(x,pd-R*.4,y+rowH*.05,tw+R*.8,rowH*.9,R*.5,'rgba(244,241,234,.1)',C.cream,2.5);
    TH(x,f.n,xs[0]+R*.5,y+rowH*.33,Math.min(R*1.35*kk,rowH*.36),isB?C.orange:C.cream);T(x,f.ext,xs[0]+R*.5,y+rowH*.72,Math.min(R*.75*kk,rowH*.2),TXT);
