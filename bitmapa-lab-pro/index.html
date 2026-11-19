@@ -840,7 +840,7 @@ const CT4={foto:{n:['Fotografie','Photograph'],f:'jpg',why:['Plynulé přechody 
  anim:{n:['Jednoduchá animace','Simple animation'],f:'gif',why:['GIF umí animaci i bez dalších nástrojů, ale jen 256 barev. Na plynulé video se nehodí.','GIF does animation out of the box, but with only 256 colours. It is not suited to smooth video.']}};
 
 /* ---------- 4 Standardní formáty a rozlišení ---------- */
-const RES=[{id:'hd',n:'HD',w:1280,h:720},{id:'fhd',n:'Full HD',w:1920,h:1080},{id:'qhd',n:'QHD',w:2560,h:1440},{id:'uhd',n:'4K UHD',w:3840,h:2160},{id:'8k',n:'8K UHD',w:7680,h:4320}];
+const RES=[{id:'vga',n:'VGA',w:640,h:480},{id:'hd',n:'HD Ready',w:1280,h:720},{id:'fhd',n:'Full HD',w:1920,h:1080},{id:'qhd',n:'QHD (WQHD)',w:2560,h:1440},{id:'uhd',n:'4K UHD',w:3840,h:2160},{id:'8k',n:'8K UHD',w:7680,h:4320}];
 let HIT5=[];
 const bdN={8:['8 bitů (šedá)','8 bits (grey)'],24:['24 bitů (RGB)','24 bits (RGB)'],32:['32 bitů (RGB + průhlednost)','32 bits (RGB + alpha)']};
 TABS.push({name:tx('Formáty a rozlišení','Formats and resolution'),side:'27rem',
@@ -888,14 +888,14 @@ TABS.push({name:tx('Formáty a rozlišení','Formats and resolution'),side:'27re
    if(rw<=32){x.strokeStyle='rgba(23,20,15,.4)';x.lineWidth=1;x.beginPath();for(let i=0;i<=rw;i++){const px=ox2+i*iw/rw;x.moveTo(px,oy);x.lineTo(px,oy+ih)}for(let j=0;j<=rh;j++){const py=oy+j*ih/rh;x.moveTo(ox2,py);x.lineTo(ox2+iw,py)}x.stroke()}
    x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(ox,oy,iw,ih);x.strokeStyle=C.orange;x.lineWidth=2;x.strokeRect(ox2,oy,iw,ih);
   }else if(S.m4==='std'){
-   const cur=RES.find(r=>r.id===S.sz4)||RES[1],nameW=R*12.5,x0=nameW+pad,x1=w-pad-R*6,A=5e5,B=3e8,X=b=>lg(b,A,B,x0,x1);
+   const cur=RES.find(r=>r.id===S.sz4)||RES[1],nameW=R*13.5,x0=nameW+pad,x1=w-pad-R*6,A=1.5e5,B=3e8,X=b=>lg(b,A,B,x0,x1);
    const axisY=h-R*2.6,rowH=(axisY-top)/RES.length;HIT5=[];
    const open=true;
    if(open){[[1e6,'1 MB'],[1e7,'10 MB'],[1e8,'100 MB']].forEach(([b,l])=>{line(x,X(b),top-R*.4,X(b),axisY,GR2,1);T(x,l,X(b),axisY+R*1.1,R*.72,TXT,'center')});line(x,x0,axisY,x1,axisY,GR2,1.2)}
    RES.forEach((r,i)=>{
     const y=top+i*rowH,cy=y+rowH/2,sel=r.id===S.sz4,bytes=r.w*r.h*S.bd/8;HIT5.push({id:r.id,y,h:rowH});
     if(sel){x.fillStyle='rgba(255,151,46,.13)';x.fillRect(R*.5,y+rowH*.05,w-R,rowH*.9)}
-    TH(x,r.n,pad,cy-R*.45,R*.98,sel?C.orange:C.cream);T(x,`${r.w} × ${r.h} · ${nf(r.w*r.h/1e6,2)} Mpx`,pad,cy+R*.75,R*.66,TXT);
+    TH(x,r.n,pad,cy-R*1.4,R*1.05,sel?C.orange:C.cream);T(x,`${r.w} × ${r.h}`,pad,cy+R*.1,R*.88,TXT);T(x,`${nf(r.w*r.h)} px`,pad,cy+R*1.3,R*.88,sel?C.orange:TXT);
     const bh=Math.min(rowH*.55,R*2.2);
     if(open){const xb=X(bytes);x.fillStyle=sel?C.orange:C.blue;x.beginPath();x.roundRect(x0,cy-bh/2,Math.max(3,xb-x0),bh,bh*.28);x.fill();TH(x,fB(bytes),xb+R*.7,cy,R*.92,sel?C.orange:C.cream)}
     else{x.strokeStyle='rgba(244,241,234,.25)';x.lineWidth=1.4;x.setLineDash([6,6]);x.strokeRect(x0,cy-bh/2,(x1-x0)*.5,bh);x.setLineDash([])}
@@ -1043,7 +1043,7 @@ const H=[
     tx(`Vyberte pixel a porovnejte jeho velikost: 24 a 30 bitů.`,`Select a pixel and compare its size: 24 and 30 bits.`)],
  d:tx(`Plná barva jsou tři kódy po n bitech: 8 bitů dává 24 bitů na pixel, 10 bitů dává 30.`,`Full colour is three codes of n bits: 8 bits give 24 bits per pixel, 10 bits give 30.`)},
 {t:tx(`Formáty a rozlišení`,`Formats and resolution`),
- a:tx(`<b>Rozlišení</b> je počet pixelů na šířku a na výšku. Počet pixelů je šířka · výška, takže při dvojnásobku obou rozměrů je pixelů čtyřikrát víc. Standardní rozlišení jsou například HD 1280 × 720, Full HD 1920 × 1080 a 4K 3840 × 2160.`,`<b>Resolution</b> is the number of pixels across and down. The pixel count is width · height, so when both dimensions double there are four times as many pixels. Standard resolutions are for example HD 1280 × 720, Full HD 1920 × 1080 and 4K 3840 × 2160.`),
+ a:tx(`<b>Rozlišení</b> je počet pixelů na šířku a na výšku. Počet pixelů je šířka · výška, takže při dvojnásobku obou rozměrů je pixelů čtyřikrát víc. Standardní rozlišení jsou například VGA 640 × 480, HD Ready 1280 × 720, Full HD 1920 × 1080, QHD 2560 × 1440, 4K 3840 × 2160 a 8K 7680 × 4320.`,`<b>Resolution</b> is the number of pixels across and down. The pixel count is width · height, so when both dimensions double there are four times as many pixels. Standard resolutions are for example VGA 640 × 480, HD Ready 1280 × 720, Full HD 1920 × 1080, QHD 2560 × 1440, 4K 3840 × 2160 and 8K 7680 × 4320.`),
  b:tx(`Velikost obrázku bez komprese je pixely · bity na pixel ÷ 8. Full HD ve 24 bitech: 1920 · 1080 · 3 B = 6 220 800 B, asi 6,2 MB. Soubor na disku bývá menší, protože je komprimovaný (kapitola 6).`,`The size of a picture without compression is pixels · bits per pixel ÷ 8. Full HD at 24 bits: 1920 · 1080 · 3 B = 6,220,800 B, about 6.2 MB. A file on disk is usually smaller because it is compressed (chapter 6).`),
  eh:tx(`Formáty souborů`,`File formats`),
  e:[tx(`<b>BMP</b> bývá bez komprese. <b>GIF</b> je bezeztrátový, má nejvýše 256 barev, jednoduchou průhlednost a animace. <b>PNG</b> je bezeztrátový s plnou barvou a plynulou průhledností. <b>JPEG</b> je ztrátový a hodí se na fotografie.`,`<b>BMP</b> is usually uncompressed. <b>GIF</b> is lossless, has at most 256 colours, simple transparency and animation. <b>PNG</b> is lossless with full colour and smooth transparency. <b>JPEG</b> is lossy and suits photographs.`),
