@@ -366,7 +366,7 @@ function boot(){
 </script>
 <script>
 /* ===== Bitmapa Lab Pro: společné části ===== */
-Object.assign(S,{m4:'std',m6:'cmp',ct4:'logo',ls5:'lossless',
+Object.assign(S,{m4:'std',m6:'cmp',as6:'common',ct4:'logo',ls5:'lossless',
  img1:'house',img2:'land',fm2:'dec',z2:40,lx2:700,ly2:520,img5:'land',bc5:8,ar6:'169',sr6:'169',tr6:'43',fm6:'crop',img6:'land',ch4:'rgb',gm4:false,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'col',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
  b2:3,r:255,g:151,b:46,
  rs:32,bd:24,sz4:'fhd'});
@@ -895,13 +895,14 @@ TABS.push({name:tx('Standardní rozlišení','Standard resolutions'),side:'27rem
 
 /* ---------- 6 Poměr stran ---------- */
 const AR=[
- {id:'43',n:'4:3',r:4/3,l:['4:3','4:3'],u:['Starší televize se standardním rozlišením, monitory VGA a XGA, mnoho kompaktních fotoaparátů a tablety typu iPad.','Older standard-definition TVs, VGA and XGA monitors, many compact cameras and iPad-type tablets.']},
- {id:'32',n:'3:2',r:1.5,l:['3:2 (na výšku 2:3)','3:2 (portrait 2:3)'],u:['Políčko kinofilmu 35 mm, zrcadlovky a bezzrcadlovky, klasické fotografie 10 × 15 cm. Při fotografování na výšku je to 2:3.','The 35 mm film frame, SLR and mirrorless cameras, classic 10 × 15 cm prints. Shot upright it is 2:3.']},
- {id:'169',n:'16:9',r:16/9,l:['16:9','16:9'],u:['Televize HD a 4K, Full HD, YouTube, dnešní monitory a notebooky, video z mobilu.','HD and 4K television, Full HD, YouTube, today\'s monitors and laptops, phone video.']},
- {id:'11',n:'1:1',r:1,l:['1:1 čtverec','1:1 square'],u:['Čtverec: profilové obrázky a ikony, příspěvky na sociálních sítích, středoformátové fotoaparáty 6 × 6 cm.','Square: profile pictures and icons, social network posts, 6 × 6 cm medium-format cameras.']},
+ {id:'32',c:1,n:'3:2',r:1.5,l:['3:2 (na výšku 2:3)','3:2 (portrait 2:3)'],u:['Políčko kinofilmu 35 mm, zrcadlovky a bezzrcadlovky, klasické fotografie 10 × 15 cm. Při fotografování na výšku je to 2:3.','The 35 mm film frame, SLR and mirrorless cameras, classic 10 × 15 cm prints. Shot upright it is 2:3.']},
+ {id:'43',c:1,n:'4:3',r:4/3,l:['4:3','4:3'],u:['Starší televize se standardním rozlišením, monitory VGA a XGA, mnoho kompaktních fotoaparátů a tablety typu iPad.','Older standard-definition TVs, VGA and XGA monitors, many compact cameras and iPad-type tablets.']},
+ {id:'169',c:1,n:'16:9',r:16/9,l:['16:9','16:9'],u:['Televize HD a 4K, Full HD, YouTube, dnešní monitory a notebooky, video z mobilu.','HD and 4K television, Full HD, YouTube, today\'s monitors and laptops, phone video.']},
+ {id:'11',c:1,n:'1:1',r:1,l:['1:1 čtverec','1:1 square'],u:['Čtverec: profilové obrázky a ikony, příspěvky na sociálních sítích, středoformátové fotoaparáty 6 × 6 cm.','Square: profile pictures and icons, social network posts, 6 × 6 cm medium-format cameras.']},
  {id:'239',n:'2,39:1',r:2.39,l:['2,39:1 kino','2.39:1 cinema'],u:['Kino: širokoúhlý anamorfní formát (CinemaScope, Panavision) u mnoha celovečerních filmů. Na televizi 16:9 se doplní černé pruhy nahoře a dole.','Cinema: the widescreen anamorphic format (CinemaScope, Panavision) of many feature films. On a 16:9 television black bars are added at the top and bottom.']},
  {id:'143',n:'1,43:1',r:1.43,l:['1,43:1 IMAX 70 mm','1.43:1 IMAX 70 mm'],u:['IMAX na 70mm film: téměř čtvercový, velmi vysoký obraz pro obří plátna. Na televizi 16:9 by se doplnily svislé černé pruhy po stranách.','IMAX on 70 mm film: an almost square, very tall picture for giant screens. On a 16:9 television black bars would be added at the sides.']},
  {id:'190',n:'1,90:1',r:1.9,l:['1,90:1 IMAX digital','1.90:1 IMAX digital'],u:['Digitální IMAX: obraz o něco širší než 16:9, v kině vyšší než kinofilmový 2,39:1.','Digital IMAX: a picture a little wider than 16:9, taller in the cinema than the 2.39:1 film format.']}];
+const vis6=()=>AR.filter(a=>S.as6==='all'||(S.as6==='extra'?!a.c:a.c));
 const arOf=id=>AR.find(a=>a.id===String(id))||AR[0];
 const arRect=r=>r>W1/H1?{sx:0,sy:(H1-W1/r)/2,sw:W1,sh:W1/r}:{sx:(W1-H1*r)/2,sy:0,sw:H1*r,sh:H1};
 let HIT6=[];
@@ -915,6 +916,7 @@ TABS.push({name:tx('Poměr stran','Aspect ratio'),side:'27rem',
    <div class="card kpi"><span class="lbl" data-o="k6cl"></span><div class="big sm" data-o="k6c"></div><small data-o="k6cs"></small></div>
   </div></div>
   <div class="side card">
+   <div class="ctl"><div class="chips g3">${[['common','Běžné','Common'],['extra','Zajímavé','Curious'],['all','Všechny','All']].map(v=>`<button class="chip sm" data-k="as6" data-v="${v[0]}">${tx(v[1],v[2])}</button>`).join('')}</div><div class="hint" data-o="hs6"></div></div>
    ${modeSw(6,[['cmp','Srovnání','Comparison'],['conv','Převod','Conversion']])}
    <div class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div>
     <div class="chips g2">${['house','land','test','own'].map(k=>`<button class="chip sm" data-k="img6" data-v="${k}"${k==='own'?' data-act="own6"':''}>${tx(IMGN[k][0],IMGN[k][1])}</button>`).join('')}</div>
@@ -931,7 +933,8 @@ TABS.push({name:tx('Poměr stran','Aspect ratio'),side:'27rem',
   const f=$('#f6'),cv=$('#cr');
   const sel=()=>arOf(S.tr6);
   const cv6=()=>{const rs=arOf(S.sr6).r,rt=arOf(S.tr6).r,wide=rs>rt+1e-6,narrow=rs<rt-1e-6;return{rs,rt,wide,narrow,same:!wide&&!narrow,loss:wide?1-rt/rs:narrow?1-rs/rt:0}};
-  OUT.tag6=()=>S.m6==='cmp'?tx('sedm běžných poměrů stran','seven common aspect ratios'):tx('ořez a černé pruhy při převodu poměru stran','cropping and black bars when converting the aspect ratio');
+  OUT.hs6=()=>S.as6==='common'?tx('Běžné poměry stran, se kterými se potkáte denně.','Common aspect ratios you meet every day.'):S.as6==='extra'?tx('Zajímavosti: kino a IMAX. Jejich znalost se nepožaduje.','Curiosities: cinema and IMAX. Knowing them is not required.'):tx('Běžné poměry i zajímavosti. Znalost zajímavostí se nepožaduje.','Common ratios and curiosities. Knowing the curiosities is not required.');
+  OUT.tag6=()=>S.m6==='cmp'?(S.as6==='common'?tx('běžné poměry stran','common aspect ratios'):S.as6==='extra'?tx('zajímavé poměry stran','curious aspect ratios'):tx('všechny poměry stran','all aspect ratios')):tx('ořez a černé pruhy při převodu poměru stran','cropping and black bars when converting the aspect ratio');
   OUT.u6=()=>{const a=arOf(S.ar6);return `<b class="l">${tx(a.l[0],a.l[1])}</b>${tx(a.u[0],a.u[1])}`};
   OUT.k6al=()=>S.m6==='cmp'?tx('Poměr stran','Aspect ratio'):tx('Převod','Conversion');
   OUT.k6a=()=>S.m6==='cmp'?arOf(S.ar6).n:`${arOf(S.sr6).n} → ${arOf(S.tr6).n}`;
@@ -959,14 +962,16 @@ TABS.push({name:tx('Poměr stran','Aspect ratio'),side:'27rem',
  },
  render(){
   const cv=$('#cr');if(!cv)return;const {x,w,h,R}=setup(cv);const id=S.img6==='own'&&!OWN1?'house':S.img6,base=img1(id).c;
-  const pad=R*1.6;
+  const pad=R*1.6,V=vis6(),ok=id=>V.some(a=>a.id===String(id));
+  if(!ok(S.ar6))S.ar6=V[0].id;if(!ok(S.sr6))S.sr6=V[0].id;if(!ok(S.tr6))S.tr6=(V[1]||V[0]).id;
+  document.querySelectorAll('[data-k=sr6],[data-k=tr6]').forEach(b=>{b.style.display=ok(b.dataset.v)?'':'none'});
   if(S.m6==='cmp'){
-   const rows=[AR.slice(0,4),AR.slice(4)],gap=R*1.6,top=R*3,lab=R*3.2;
+   const rows=V.length<=4?[V]:[V.slice(0,4),V.slice(4)],gap=R*1.6,top=R*3,lab=R*3.2;
    const sums=rows.map(r=>r.reduce((a,b)=>a+b.r,0));
-   const rh=Math.min((h-top-R*1.5-2*lab)/2,...rows.map((r,i)=>(w-pad*2-gap*(r.length-1))/sums[i]));
+   const nr=rows.length,rh=Math.min((h-top-R*1.5-nr*lab)/nr,...rows.map((r,i)=>(w-pad*2-gap*(r.length-1))/sums[i]));
    HIT6=[];
    rows.forEach((row,ri)=>{
-    const tw=row.reduce((a,b)=>a+b.r*rh,0)+gap*(row.length-1);let cx=(w-tw)/2;const y=top+ri*(rh+lab);
+    const tw=row.reduce((a,b)=>a+b.r*rh,0)+gap*(row.length-1);let cx=(w-tw)/2;const y=top+(h-top-R*1.5-nr*(rh+lab))/2+ri*(rh+lab);
     row.forEach(a=>{
      const bw=a.r*rh,sel=a.id===S.ar6,rc=arRect(a.r);
      x.drawImage(base,rc.sx,rc.sy,rc.sw,rc.sh,cx,y,bw,rh);
@@ -1180,7 +1185,7 @@ PRE:[
  {t:tx('RGB kódování, 10 bitů','RGB encoding, 10 bits'),d:tx('Kapitola 4: 10 bitů na kanál, lupa na největší zvětšení.','Chapter 4: 10 bits per channel, lens at the largest magnification.'),f:()=>{Object.assign(S,{bc5:10,z5:320});go(3)}},
  {t:tx('Full HD bez komprese','Full HD without compression'),d:tx('Kapitola 5, Standardní rozlišení: Full HD, 24 bitů.','Chapter 5, Standard resolutions: Full HD, 24 bits.'),f:()=>{Object.assign(S,{m4:'std',sz4:'fhd',bd:24});go(4)}},
  {t:tx('16:9 na 4:3, ořez','16:9 to 4:3, cropping'),d:tx('Kapitola 6: zdroj 16:9, cíl 4:3, vyplnit s ořezem.','Chapter 6: source 16:9, target 4:3, fill with cropping.'),f:()=>{Object.assign(S,{m6:'conv',sr6:'169',tr6:'43',fm6:'crop'});go(5)}},
- {t:tx('Kinový formát na televizi','Cinema format on television'),d:tx('Kapitola 6: zdroj 2,39:1, cíl 16:9, černé pruhy.','Chapter 6: source 2.39:1, target 16:9, black bars.'),f:()=>{Object.assign(S,{m6:'conv',sr6:'239',tr6:'169',fm6:'bars'});go(5)}},
+ {t:tx('Kinový formát na televizi','Cinema format on television'),d:tx('Kapitola 6: zdroj 2,39:1, cíl 16:9, černé pruhy.','Chapter 6: source 2.39:1, target 16:9, black bars.'),f:()=>{Object.assign(S,{m6:'conv',as6:'all',sr6:'239',tr6:'169',fm6:'bars'});go(5)}},
  {t:tx('Ztrátová a bezeztrátová komprese','Lossy and lossless compression'),d:tx('Kapitola 7: bezeztrátová komprese, pak přepnout na ztrátovou.','Chapter 7: lossless compression, then switch to lossy.'),f:()=>{S.ls5='lossless';go(6)}}],
 PLAN:[
  [tx('Co je to pixel','What a pixel is'),'5 min',tx('Kap. 1, předvolba pixelu pod lupou.','Ch. 1, the pixel under the lens preset.')],
