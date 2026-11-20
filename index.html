@@ -146,6 +146,18 @@ a{color:inherit}
 .rd-x{position:absolute;right:10px;top:10px;font:700 24px/1 var(--f-display);background:var(--bg);border:2px solid var(--ink);width:44px;height:44px;cursor:pointer;color:var(--ink)}
 @media (max-width:640px){.rdlg{margin:auto auto 0;width:100vw;max-width:100vw;max-height:88vh;border-width:2px 0 0}.rdlg .rd-in{padding:22px 18px 24px}}
 .card h3 a{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
+/* karta „Čti mě!“ (návod k aplikacím předmětu): jiná barva než běžné karty, jen první ve složce předmětu */
+:root{--navod:#17695B;--navod-soft:#E8F2EF;--on-navod:#FFFFFF}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--navod:#5CC4B0;--navod-soft:#12302A;--on-navod:#0B1F1B}}
+:root[data-theme="dark"]{--navod:#5CC4B0;--navod-soft:#12302A;--on-navod:#0B1F1B}
+.card.navod,.card.navod:hover,.card.navod:focus-within{border:2px solid var(--navod)}
+.card.navod{background:var(--navod-soft)}
+.card.navod .card-art.has-img{border-bottom:2px solid var(--navod)}
+.card.navod .card-art small{background:var(--navod);color:var(--on-navod)}
+.card.navod .rada{color:var(--navod)}
+.card.navod h3{color:var(--navod)}
+.card.navod .tag.g{background:var(--navod);border-color:var(--navod);color:var(--on-navod)}
+.card.navod .card-foot{border-top-color:var(--navod)}
 .card h3 a::after{content:"";position:absolute;inset:0;z-index:1}
 .card h3 a:focus{outline:none}
 .card h3 a:focus-visible::after{outline:3px solid var(--ink);outline-offset:3px}
@@ -402,7 +414,9 @@ const ZAR={
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const datum=d=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');return m?`${+m[3]}. ${+m[2]}. ${m[1]}`:'';};
-let APPS=[], SUBJ=[], GRADES=[], RADY={}, SKRYTE=new Set();
+let APPS=[], SUBJ=[], GRADES=[], RADY={}, SKRYTE=new Set(), CTI=null;
+// aplikace „Čti mě!“ (návod) není běžná aplikace: do počtů, filtrů, Hromady ani hledání se nezapočítá a ukáže se jen první ve složce předmětu
+const CTI_SLUG='cti-me';
 // ročníky: pevné štítky PRI SEK TER KVA (nižší gymnázium), 1R–4R (vyšší gymnázium) a skupiny NG, VG, All
 const ROCNIKY=['PRI','SEK','TER','KVA','1R','2R','3R','4R'];
 const SKUPINY={NG:['PRI','SEK','TER','KVA'],VG:['1R','2R','3R','4R'],All:ROCNIKY};
@@ -490,12 +504,15 @@ function render(){
   const list=APPS.filter(a=>(!f.m||a.zarizeni==='mobil')&&(f.s==='Vše'||a.predmet.includes(f.s))&&(f.g==='Vše'||expand(a.rocnik).has(f.g))
     &&(!q||norm([a.nazev,a.popis,...(a.temata||[])].join(' ')).includes(q)));
   $('count').textContent=`Zobrazeno ${list.length} z ${APPS.length}`;
-  $('grid').innerHTML=list.length?list.map(a=>{
-    const url=a.odkaz||`${a.slug}/`, local=!a.odkaz, prep=a.stav==='priprava';
-    return `<article class="card ${prep?'':'ready'}">
+  // návod „Čti mě!“: první karta ve složce svého předmětu (ne při hledání, ne v Hromadě)
+  const showCti=CTI&&VIEW==='subj'&&f.s!=='Vše'&&!q&&CTI.predmet.includes(f.s);
+  const cards=showCti?[CTI,...list]:list;
+  $('grid').innerHTML=cards.length?cards.map(a=>{
+    const url=a.odkaz||`${a.slug}/`, local=!a.odkaz, prep=a.stav==='priprava', navod=a===CTI;
+    return `<article class="card ${prep?'':'ready'}${navod?' navod':''}">
       <div class="card-art${a.obrazek ? ' has-img' : ''}" aria-hidden="true">${a.obrazek ? `<img src="${esc(a.slug)}/${esc(a.obrazek)}" alt="" loading="lazy">` : esc(a.motiv||a.nazev)}<small>${esc(a.predmet.filter(s=>!SKRYTE.has(s)).join(' · '))}</small></div>
       <div class="card-body">
-        ${RADY[a.rada]?`<p class="rada"><button type="button" class="rada-btn" data-rada="${esc(a.rada)}" aria-haspopup="dialog" aria-label="Řada ${esc(RADY[a.rada].nazev)}: zobrazit popis">${esc(RADY[a.rada].nazev)} <i aria-hidden="true">i</i></button></p>`:''}
+        ${navod?'<p class="rada">Návod k aplikacím</p>':''}${RADY[a.rada]?`<p class="rada"><button type="button" class="rada-btn" data-rada="${esc(a.rada)}" aria-haspopup="dialog" aria-label="Řada ${esc(RADY[a.rada].nazev)}: zobrazit popis">${esc(RADY[a.rada].nazev)} <i aria-hidden="true">i</i></button></p>`:''}
         <h3><a href="${esc(url)}">${esc(a.nazev)}</a></h3>
         <p>${esc(a.popis)}</p>
         <div class="meta">${[...a.rocnik].sort((x,y)=>gOrder(x)-gOrder(y)).map(t=>`<span class="tag g" title="Ročník">${esc(t)}</span>`).join('')}${a.plus?'<span class="tag plus" title="Aplikace nebo její část může obsahovat učivo nad rámec přiřazených ročníků">PLUS</span>':''}${a.autor?`<span class="tag a" title="Autor">${esc(a.autor)}</span>`:''}${(a.zverejneno||a.aktualizace)?`<span class="tag d" title="Zveřejněno">${datum(a.zverejneno||a.aktualizace)}</span>`:''}${ZAR[a.zarizeni]||''}${PINNED.has(a.slug)?BOMBA:''}</div>
@@ -514,7 +531,8 @@ fetch('katalog.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(r.sta
   RADY=d.rady||{};
   // předměty vypnuté v agendě předmětů (pole „predmety“): složka ani filtr se nezobrazí, aplikace jen s vypnutými předměty také ne
   SKRYTE=new Set((d.predmety||[]).filter(p=>p&&p.zobrazit===false).map(p=>p.nazev));
-  APPS=seradit((d.aplikace||[]).filter(a=>a.stav!=='archiv'&&a.stav!=='skryta'&&a.predmet.some(s=>!SKRYTE.has(s))));
+  CTI=(d.aplikace||[]).find(a=>a.slug===CTI_SLUG&&a.stav==='nasazeno')||null;
+  APPS=seradit((d.aplikace||[]).filter(a=>a.slug!==CTI_SLUG&&a.stav!=='archiv'&&a.stav!=='skryta'&&a.predmet.some(s=>!SKRYTE.has(s))));
   SUBJ=['Vše',...[...new Set(APPS.flatMap(a=>a.predmet).filter(s=>!SKRYTE.has(s)))].sort((a,b)=>a.localeCompare(b,'cs'))];
   GRADES=[...ROCNIKY];
   const pl=(n,a,b,c)=>n===1?a:(n>=2&&n<=4?b:c);
