@@ -440,8 +440,8 @@ footer.ver{max-width:1280px;margin:0 auto;text-align:center;font-size:11.5px;col
   <div id="stBody"></div>
   <div class="card">
     <h2><small>Záloha</small>Data jsou uložená v tomto zařízení</h2>
-    <p class="lead">Když budete hrát i na jiném zařízení, zkopíruj zálohu a vlož ji tam.</p>
-    <div class="row"><button class="btn sm" id="expBtn">Zkopírovat zálohu</button><button class="btn sm" id="pasteBtn">Vložit zálohu</button><label class="btn sm" style="cursor:pointer">Nahrát ze souboru<input type="file" id="impFile" accept=".json,application/json" hidden></label><button class="btn sm" id="wipeBtn" style="color:var(--accent)">Smazat vše</button></div>
+    <p class="lead">Ulož zálohu do souboru, třeba na iCloud nebo Google Disk. Na jiném zařízení ji pak nahraj – hry se přidají ke statistikám, které tam už jsou, nic se nezdvojí.</p>
+    <div class="row"><button class="btn sm" id="expBtn">Uložit zálohu do souboru</button><label class="btn sm" style="cursor:pointer">Nahrát zálohu ze souboru<input type="file" id="impFile" hidden></label><button class="btn sm" id="wipeBtn" style="color:var(--accent)">Smazat vše</button></div>
   </div>
 </section>
 </main>
@@ -973,11 +973,16 @@ function openPlayer(p){const cols=stCols;
    (p.scores.length>1?'<div class="kick" style="margin-top:14px">Vývoj skóre (posledních '+Math.min(20,p.scores.length)+' her)</div>'+spark(p.scores):'')+
    '<div class="kick" style="margin-top:14px">Průměr na jedno políčko</div><table class="stab"><tbody>'+rowsH+'</tbody></table></div></div>');
   const ov=$('#ov');nbDom(ov);ov.onclick=e=>{if(e.target===ov||e.target.closest('#pkClose'))ov.remove()}}
-$('#expBtn').onclick=async()=>{const t=JSON.stringify(DATA);try{await navigator.clipboard.writeText(t);ask('Záloha je zkopírovaná. Vlož ji do poznámek nebo e-mailu a ulož jako soubor .json (nebo ji rovnou vlož tlačítkem Vložit zálohu).')}catch(e){ask('Kopírování se nepovedlo.')}};
-$('#pasteBtn').onclick=()=>{const o=document.createElement('div');o.className='ov';o.id='ov';o.innerHTML='<div class="modal"><h2>Vložit zálohu</h2><p class="lead">Vlož zkopírovaný text zálohy. Hry, které už tu jsou, se nezdvojí.</p><textarea id="pasteTa" style="width:100%;min-height:160px;font:14px/1.3 ui-monospace,monospace;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--stage);color:var(--ink)"></textarea><div class="row" style="margin-top:10px"><button class="btn grow" data-c>Zrušit</button><button class="btn primary grow" data-o>Nahrát</button></div></div>';document.body.appendChild(o);
-  o.onclick=e=>{if(e.target===o||e.target.closest('[data-c]'))o.remove();else if(e.target.closest('[data-o]')){const v=$('#pasteTa').value;o.remove();importText(v)}}};
-function importText(txt){try{const d=JSON.parse(txt);if(!d.games||!Array.isArray(d.games))throw 0;const ids=new Set(DATA.games.map(g=>g.id));let n=0;d.games.forEach(g=>{if(g&&g.id&&g.players&&!ids.has(g.id)){DATA.games.push(g);n++}});DATA.games.sort((a,b)=>a.date-b.date);save(KEY_DATA,DATA);renderStats();ask('Nahráno her: '+n)}catch(err){ask('Zálohu se nepodařilo načíst.')}}
-$('#impFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(!d.games||!Array.isArray(d.games))throw 0;const ids=new Set(DATA.games.map(g=>g.id));let n=0;d.games.forEach(g=>{if(g&&g.id&&g.players&&!ids.has(g.id)){DATA.games.push(g);n++}});DATA.games.sort((a,b)=>a.date-b.date);save(KEY_DATA,DATA);renderStats();ask('Nahráno her: '+n)}catch(err){ask('Soubor se nepodařilo načíst.')}};rd.readAsText(f);e.target.value=''};
+$('#expBtn').onclick=async()=>{
+  if(!DATA.games.length){ask('Zatím tu není žádná dohraná hra.');return}
+  const d=new Date(),nm='kostky-statistiky-'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'.json';
+  const txt=JSON.stringify({app:'kostky',ver:1,exported:Date.now(),games:DATA.games});
+  const file=new File([txt],nm,{type:'application/json'});
+  // na mobilu nabídka Sdílet (Uložit do Souborů / iCloud / Google Disk), jinak rovnou stažení souboru
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Kostky – statistiky'});return}catch(e){if(e&&e.name==='AbortError')return}}
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=nm;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}catch(e){ask('Soubor se nepodařilo uložit.')}};
+function importText(txt){try{const d=JSON.parse(txt);if(!d.games||!Array.isArray(d.games))throw 0;const ids=new Set(DATA.games.map(g=>g.id));let n=0,m=0;d.games.forEach(g=>{if(!g||!g.id||!Array.isArray(g.players))return;if(ids.has(g.id)){m++;return}DATA.games.push(g);ids.add(g.id);n++});DATA.games.sort((a,b)=>a.date-b.date);save(KEY_DATA,DATA);renderStats();ask(n?('Přidáno her: '+n+(m?' (dalších '+m+' už tu bylo)':'')+'.'):'Všechny hry ze zálohy už tu jsou.')}catch(err){ask('Tohle není záloha z Kostek, soubor se nepodařilo načíst.')}}
+$('#impFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>importText(rd.result);rd.readAsText(f);e.target.value=''};
 $('#wipeBtn').onclick=()=>ask('Opravdu smazat všechny statistiky a rekordy? Tohle nejde vrátit.','Smazat vše',()=>{DATA={games:[]};save(KEY_DATA,DATA);renderStats()});
 
 /* ===================== pravidla ===================== */
