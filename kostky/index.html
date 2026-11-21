@@ -685,9 +685,9 @@ function renderLeft(){const L=$('#left');const p=G.cur,pl=G.players[p];
   else hint=wr.length?nb('Konec hodů – zapiš výsledek.'):(dotCells(p).length?nb('Nic nejde zapsat – tečka, nebo škrt.'):nb('Nic nejde zapsat – musíš škrtnout.'));
   let html='<div class="tray"><div class="thead"><div class="who"><small>Hází</small>'+esc(pl.name)+'</div><div class="dots" aria-label="Hod '+t.throws+' ze 3">'+[1,2,3].map(k=>'<i class="'+(k<=t.throws?'on':'')+'"></i>').join('')+'</div></div>'+
     '<div class="dice" id="dice">'+t.dice.map((d,i)=>dieHTML(d,i,idle)).join('')+'</div>'+
-    '<div class="trayhint" id="thint">'+hint+(t.zr&&!idle&&ev&&[6,7,8,9].some(r=>ev[r])?'<span class="zr">z ruky</span>':'')+'</div>'+
+    '<div class="trayhint" id="thint">'+hint+(t.zr&&!idle&&!rolling&&ev&&[6,7,8,9].some(r=>ev[r])?'<span class="zr">z ruky</span>':'')+'</div>'+
     '<button class="btn primary rollbtn" id="rollBtn" '+(t.throws>=3||(!idle&&t.dice.every(d=>d.h))?'disabled':'')+'>'+(t.throws>=3?'Žádný další hod':(idle?'Hodit kostkami':(t.dice.some(d=>d.h)?'Hodit nepodrženými':'Hodit znovu všemi')))+'<small>'+(t.throws<3?(t.throws+1)+'. hod ze 3':'zapiš nebo škrtni')+'</small></button></div>';
-  if(idle)html+=needToggle(p);
+  if(idle||rolling)html+=needToggle(p);
   else{
     const list=wr.map(r=>({r,e:ev[r],q:quality(r,ev[r])})).sort((a,b)=>b.q-a.q);
     html+='<div class="card sug pop" id="sug"><h3>'+(list.length?'Co můžeš zapsat':'Nic nepadlo')+'<small>'+(list.length?'klepni a zapíše se':'')+'</small></h3><div class="sgl">';
@@ -712,7 +712,7 @@ function roll(){const t=G.turn;if(rolling||t.throws>=3)return;
   if(!t.throws)t.dice.forEach(d=>d.h=false);
   t.throws++;idx.forEach(i=>t.dice[i].v=1+Math.floor(Math.random()*6));
   t.zr=idx.length===5&&(G.zrRule==='all5'||t.throws===1);
-  t.ev=evaluate(t.dice.map(d=>d.v),t.zr);G.view=G.cur;renderSheet();renderStrip();
+  t.ev=evaluate(t.dice.map(d=>d.v),t.zr);rolling=true;G.view=G.cur;renderSheet();renderStrip();
   rolling=true;sndDice(idx.length);look('lookd');
   // animace
   renderLeft();const dice=[...$('#dice').querySelectorAll('.die')];
@@ -774,8 +774,8 @@ function switchView(d){const n=G.players.length;if(n<2)return;G.view=(G.view+d+n
 function renderSheet(){
   if(G.view==null||G.view>=G.players.length)G.view=G.cur;
   const p=G.view;const pl=G.players[p];const cols=G.cols;const n=G.players.length;
-  const ev=(G.mode==='dice'&&p===G.cur&&G.turn.throws)?G.turn.ev:null;
-  const sk=(G.mode==='dice'&&p===G.cur)?skrtRows(p):[];
+  const ev=(G.mode==='dice'&&p===G.cur&&G.turn.throws&&!rolling)?G.turn.ev:null;
+  const sk=(G.mode==='dice'&&p===G.cur&&!rolling)?skrtRows(p):[];
   let best=-1,bq=-1;if(ev)for(let r=0;r<N_ROWS;r++)if(ev[r]&&freeIn(p,r).length){const q=quality(r,ev[r]);if(q>bq){bq=q;best=r}}
   let h=(p!==G.cur?'<div class="vback"><span>'+nb('Prohlížíš tabulku: '+esc(pl.name)+(G.mode==='live'?' (můžeš opravit)':''))+'</span><button class="btn sm" id="vCur">Zpět na hráče na tahu</button></div>':'')+
     '<div class="shead"><div class="vnav">'+(n>1?'<button class="btn ic" id="vPrev" aria-label="Předchozí hráč"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M11 4L6 9l5 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>':'')+'<h2 class="pname'+(p===G.cur?' cur':'')+'" style="--c:'+PCOL[p]+'"><span class="av">'+esc(pl.name[0].toUpperCase())+'</span><span>'+(p===G.cur?'<small>na řadě</small>':'')+esc(pl.name)+'</span></h2>'+(n>1?'<button class="btn ic" id="vNext" aria-label="Další hráč"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M7 4l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>':'')+'</div>'+(showSc()?'<div class="tot">Skóre<b>'+scoreOf(pl)+'</b></div>':'')+'</div>';
