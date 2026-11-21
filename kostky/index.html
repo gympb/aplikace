@@ -701,7 +701,9 @@ function renderLeft(){const L=$('#left');const p=G.cur,pl=G.players[p];
   }
   L.innerHTML=html;bindNeed(L);
   $('#rollBtn').onclick=roll;
-  L.querySelectorAll('.die').forEach(b=>b.onclick=()=>{if(!t.throws||t.throws>=3||rolling)return;const d=t.dice[+b.dataset.i];d.h=!d.h;saveGame();renderLeft()});
+  L.querySelectorAll('.die').forEach(b=>b.onclick=()=>{if(!t.throws||t.throws>=3||rolling)return;const d=t.dice[+b.dataset.i];d.h=!d.h;saveGame();
+    b.classList.toggle('held',d.h);b.setAttribute('aria-pressed',d.h);
+    const rb=$('#rollBtn');rb.disabled=t.dice.every(x=>x.h);rb.firstChild.nodeValue=t.dice.some(x=>x.h)?'Hodit nepodrženými':'Hodit znovu všemi'});
   L.querySelectorAll('.sg[data-r]').forEach(b=>b.onclick=()=>{const r=+b.dataset.r;writeCell(p,r*G.cols+freeIn(p,r)[0])});
   L.querySelectorAll('.sg[data-dot]').forEach(b=>b.onclick=()=>doDot(p,+b.dataset.dot));
   L.querySelectorAll('.sg[data-x]').forEach(b=>b.onclick=()=>{const r=+b.dataset.x;writeCell(p,r*G.cols+freeIn(p,r)[0],true)});
