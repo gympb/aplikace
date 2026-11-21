@@ -35,7 +35,7 @@
 }
 :root[data-theme="dark"]{--sheetbg:#2A3039;--sheetln:#3A414C;--sheetdash:#4A525E;--bg:#14171C;--surface:#1E232B;--stage:#1A1E25;--ink:#EEF0F3;--muted:#9AA3AE;--line:#2E3540;--accent:#E5383F;--cloud:#6E98F0;color-scheme:dark}
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-html,body{margin:0;touch-action:manipulation}
+html,body{margin:0;touch-action:manipulation;overflow-x:clip}
 body{background:var(--bg);color:var(--ink);font:16px/1.45 var(--body);overflow-x:clip;-webkit-text-size-adjust:100%}
 button{font-family:inherit;touch-action:manipulation}
 [hidden]{display:none!important}
@@ -219,7 +219,8 @@ details.set summary{cursor:pointer;font-weight:700;color:var(--muted);font-size:
 .vnav .btn.ic{width:40px;min-height:40px}
 .vback{display:flex;align-items:center;justify-content:space-between;gap:8px;background:color-mix(in srgb,var(--cloud) 14%,var(--surface));border:1px solid var(--cloud);border-radius:12px;padding:6px 6px 6px 12px;margin:0 0 8px;font-size:14px;font-weight:600}
 .sheet.swl{animation:swl .25s ease}.sheet.swr{animation:swr .25s ease}
-@keyframes swl{from{transform:translateX(40px);opacity:.3}}@keyframes swr{from{transform:translateX(-40px);opacity:.3}}
+@keyframes swl{from{transform:translateX(24px);opacity:.25}}@keyframes swr{from{transform:translateX(-24px);opacity:.25}}
+.gwrap{overflow-x:clip}
 .swhint{text-align:center;font-size:12.5px;color:var(--muted);margin-top:8px}
 @media (min-width:760px){.swhint{display:none}}
 .need span{background:var(--stage);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13.5px;font-weight:600}
@@ -656,7 +657,7 @@ function renderGame(){$('.gwrap').classList.toggle('live',G.mode==='live');rende
 function ranks(){const sc=G.players.map(scoreOf);return sc.map(s=>1+sc.filter(x=>x>s).length)}
 function renderStrip(){const sc=G.players.map(scoreOf);const rk=ranks();
   $('#pstrip').innerHTML=G.players.map((p,i)=>'<button class="pch'+(i===G.cur?' cur':'')+(i===G.view&&i!==G.cur?' view':'')+'" data-i="'+i+'" style="--c:'+PCOL[i]+'"><span class="av">'+esc(p.name[0].toUpperCase())+'</span><span><small>'+(i===G.cur?'na řadě':(G.players.length>1&&showSc()?rk[i]+'. místo':'hráč '+(i+1)))+'</small>'+esc(p.name)+'</span>'+(showSc()?'<span class="sc">'+sc[i]+'</span>':'')+'</button>').join('');
-  $('#pstrip').querySelectorAll('.pch').forEach(b=>b.onclick=()=>{G.view=+b.dataset.i;renderGame()});
+  $('#pstrip').querySelectorAll('.pch').forEach(b=>b.onclick=()=>{G.view=+b.dataset.i;renderView()});
   const cur=$('#pstrip .cur'),st=$('#pstrip');if(cur){const l=cur.offsetLeft-st.offsetLeft,r=l+cur.offsetWidth;if(l<st.scrollLeft)st.scrollLeft=l-4;else if(r>st.scrollLeft+st.clientWidth)st.scrollLeft=r-st.clientWidth+4}}
 
 /* ---- levý panel ---- */
@@ -768,7 +769,8 @@ function leaderIdx(){const sc=G.players.map(scoreOf);const m=Math.max(...sc);if(
 $('#undoBtn').onclick=()=>{const u=undoStack.pop();if(!u)return;const up=G.players[u.p];up.turns=Math.max(0,up.turns-1);if(u.dot){up.dotAt[u.idx]--;if(!up.dotAt[u.idx])delete up.dotAt[u.idx]}else up.cells[u.idx]=null;G.turn=u.turn;G.cur=u.cur;G.view=G.mode==='live'?u.p:G.cur;lastWritten=null;saveGame();renderGame();toast('Zápis vrácen')};
 
 /* ---- tabulka ---- */
-function switchView(d){const n=G.players.length;if(n<2)return;G.view=(G.view+d+n)%n;renderGame();const S=$('#sheet');S.classList.remove('swl','swr');void S.offsetWidth;S.classList.add(d>0?'swl':'swr')}
+function renderView(){renderStrip();renderSheet()}
+function switchView(d){const n=G.players.length;if(n<2)return;G.view=(G.view+d+n)%n;renderView();const S=$('#sheet');S.classList.remove('swl','swr');void S.offsetWidth;S.classList.add(d>0?'swl':'swr')}
 (function(){let x0=null,y0=0,t0=0;const S=document.getElementById('sheet');
   S.addEventListener('touchstart',e=>{if(e.touches.length!==1){x0=null;return}x0=e.touches[0].clientX;y0=e.touches[0].clientY;t0=Date.now()},{passive:true});
   S.addEventListener('touchend',e=>{if(x0==null||!G)return;const t=e.changedTouches[0];const dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
@@ -795,7 +797,7 @@ function renderSheet(){
   h+='</tbody></table>';
   if(n>1)h+='<div class="swhint">'+nb('Tažením doleva a doprava přepínáš mezi hráči')+'</div>';
   const S=$('#sheet');S.innerHTML=h;
-  const vp=$('#vPrev'),vn=$('#vNext'),vc=$('#vCur');if(vp)vp.onclick=()=>switchView(-1);if(vn)vn.onclick=()=>switchView(1);if(vc)vc.onclick=()=>{G.view=G.cur;renderGame()};
+  const vp=$('#vPrev'),vn=$('#vNext'),vc=$('#vCur');if(vp)vp.onclick=()=>switchView(-1);if(vn)vn.onclick=()=>switchView(1);if(vc)vc.onclick=()=>{G.view=G.cur;renderView()};
   S.querySelectorAll('.c.g').forEach(b=>b.onclick=()=>writeCell(p,+b.dataset.i));
   S.querySelectorAll('.c.gx').forEach(b=>b.onclick=()=>writeCell(p,+b.dataset.i,true));
   if(G.mode==='live')S.querySelectorAll('.c.ed').forEach(b=>b.onclick=()=>openPicker(p,+b.dataset.i));
