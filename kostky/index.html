@@ -333,6 +333,13 @@ table.sc tfoot td{font-size:15px;color:var(--muted)}
 .award b{display:block;font-size:17px}
 .award span{color:#C9CED6;font-size:14px}
 .resl{position:fixed;bottom:0;width:150px;z-index:1;pointer-events:none}
+.rbub{position:fixed;bottom:200px;max-width:240px;background:#fff;color:#1F2329;border-radius:16px;padding:10px 14px;font-size:17px;font-weight:600;line-height:1.3;box-shadow:0 8px 24px #0008;z-index:80;opacity:0;transform:translateY(8px) scale(.95);transition:opacity .3s,transform .3s}
+.rbub b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.rbub.on{opacity:1;transform:none}
+.rbub.a{left:150px}.rbub.b{right:150px}
+.rbub.a::after{content:'';position:absolute;left:-8px;bottom:18px;border:9px solid transparent;border-right-color:#fff;border-left:0}
+.rbub.b::after{content:'';position:absolute;right:-8px;bottom:18px;border:9px solid transparent;border-left-color:#fff;border-right:0}
+@media (max-width:800px){.rbub{left:50%!important;right:auto!important;top:14px;bottom:auto;transform:translate(-50%,-8px);width:max-content;max-width:calc(100% - 32px)}.rbub.on{transform:translate(-50%,0)}.rbub::after{display:none}}
 .resl.l{left:0}.resl.r{right:0}
 .res .resl.lady{position:fixed;top:auto;bottom:0;width:170px;overflow:visible;cursor:default}
 .resl .lb{position:relative;top:0;left:auto;right:auto}
@@ -457,6 +464,8 @@ footer.ver{max-width:1280px;margin:0 auto;text-align:center;font-size:11.5px;col
    predhodem – občas před hodem               dzolik – padla šanta
    kurvy    – nejde zapsat nic jiného než 2× čtyřka    ctyrky – padají čtyřky
    tecka    – hráč dělá tečku                 tap    – klepnutí na postavu (náhodně cokoli z jejích hlášek)
+   start    – začátek hry                     skrt   – škrt (ne v posledním tahu hráče)
+   konec    – vyhlášení, {jmeno} = vítěz v 5. pádě; konec2 – vítězů je víc
    ===================================================================== */
 const HLASKY = {
   marcela: {
@@ -467,6 +476,10 @@ const HLASKY = {
     bohatyr:   ['Ty jsi bohatýr!'],
     predhodem: ['Teď jim vypálí rybník.'],
     wow:       ['No nepovídej.'],
+    start:     ['Zahrajeme si kostky?'],
+    skrt:      ['Příště to klapne!'],
+    konec:     ['Jsi machr, {jmeno}!'],
+    konec2:    ['Jste machři, {jmeno}!'],
   },
   marta: {
     dzolik:    ['Máš tam džolika.'],
@@ -475,8 +488,32 @@ const HLASKY = {
     wow:       ['No neříkej!'],
     predhodem: ['Tfuj! Tfuj! Pro štěstí!'],
     tecka:     ['Tečka mravenečka'],
+    start:     ['Zahrajeme si kostky?'],
+    skrt:      ['Příště to klapne!'],
+    konec:     ['Jsi machr, {jmeno}!'],
+    konec2:    ['Jste machři, {jmeno}!'],
   }
 };
+
+/* ===================== 5. pád (oslovení) ===================== */
+const FEM_CONS=['ester','miriam','ruth','karin','dagmar','ingrid','carmen','noemi','beatrix','ráchel','rachel','abigail','nikol','ivet','michel','mirjam'];
+function vok1(w){if(!w)return w;const lw=w.toLowerCase();const up=w===w.toUpperCase()&&w.length>1;const fix=x=>up?x.toUpperCase():x;
+  if(FEM_CONS.includes(lw))return w;
+  if(/[aá]$/.test(lw)&&lw.endsWith('a'))return w.slice(0,-1)+fix('o');      // Ema → Emo, Honza → Honzo
+  if(/[eěéiíyýouů]$/.test(lw))return w;                                      // Marie, Jiří, Hugo
+  if(/něk$/.test(lw))return w.slice(0,-3)+fix('ňku');                        // Zdeněk → Zdeňku
+  if(/děk$/.test(lw))return w.slice(0,-3)+fix('ďku');
+  if(/těk$/.test(lw))return w.slice(0,-3)+fix('ťku');
+  if(/[^aeiouyáéíóúůý]ek$/.test(lw))return w.slice(0,-2)+fix('ku');          // Marek → Marku
+  if(/ec$/.test(lw))return w.slice(0,-2)+fix('če');                          // Lubec → Lubče
+  if(/(k|h|g|ch)$/.test(lw))return w+fix('u');                               // Dominik → Dominiku
+  if(/[^aeiouyáéíóúůý]r$/.test(lw))return w.slice(0,-1)+fix('ře');           // Petr → Petře
+  if(/[^aeiouyáéíóúůý]el$/.test(lw)&&lw.length>3&&/^(pavel|karel|havel|hynek)$/.test(lw))return w.slice(0,-2)+fix('le'); // Pavel → Pavle
+  if(/[šžčřcjďťňsxz]$/.test(lw))return w+fix('i');                           // Tomáš → Tomáši, Matěj → Matěji
+  return w+fix('e');                                                          // Jan → Jane, Adam → Adame
+}
+function vok(name){const p=String(name).trim().split(/\s+/);p[0]=vok1(p[0]);return p.join(' ')}
+const joinA=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' a '+a[a.length-1];
 
 /* ===================== konstanty ===================== */
 const ROWS=[
@@ -630,7 +667,7 @@ $('#startBtn').onclick=()=>{
   G={v:1,mode:setup.mode,cols:setup.cols,zrRule:document.querySelector('input[name=zr]:checked').value,vol:$('#volSk').checked,showScore:$('#showSc').checked,
      players:names.map(n=>({name:n,cells:Array(N_ROWS*setup.cols).fill(null),turns:0,dotAt:{}})),cur:0,view:0,started:Date.now(),
      turn:newTurn(),leader:null};
-  undoStack=[];saveGame();ac();showGame();say('start');setTimeout(()=>banner(G.players[0].name),300);
+  undoStack=[];saveGame();ac();showGame();say('start');setTimeout(()=>{if(G)banner(G.players[0].name)},300);
 };
 function newTurn(){return {dice:[1,2,3,4,5].map(()=>({v:0,h:false})),throws:0,zr:false,ev:null}}
 
@@ -746,7 +783,8 @@ function writeCell(p,idx,skrt,manual){
   if(cell.x)sndSkrt();else sndWrite();
   const advance=(G.mode==='dice')||(p===G.cur);
   if(advance){
-    if(!cell.x&&r===7&&cell.v<=23)say(cell.v<=20&&Math.random()<.5?'nizko':'berejo',null,'a');
+    if(cell.x&&pl.turns<totalTurns())say('skrt');
+    else if(!cell.x&&r===7&&cell.v<=23)say(cell.v<=20&&Math.random()<.5?'nizko':'berejo',null,'a');
     else if(!cell.x&&r===8&&cell.v<=20)say('nizko',null,'a');
     G.cur=nextPlayer();G.turn=newTurn();G.view=G.cur;
   }
@@ -897,7 +935,11 @@ function finish(){
   html+='<div class="row" style="justify-content:center;margin-top:18px"><button class="btn primary" id="rAgain">Hrát znovu</button><button class="btn" id="rStats">Statistiky</button><button class="btn" id="rHome">Domů</button></div></div></div>';
   G=null;undoStack=[];saveGame();
   document.body.insertAdjacentHTML('beforeend',html);nbDom($('#res'));
-  sndFanfare();confetti();say('konec',{jmeno:top.name});
+  sndFanfare();confetti();
+  {const ws=sorted.filter(p=>p.rank===1).map(p=>vok(p.name));const who=Math.random()<.5?'a':'b';const L=LAD[who];
+   const arr=(HLASKY[L.key]||{})[ws.length>1?'konec2':'konec'];
+   if(arr&&arr.length){const txt=pick(arr).replace('{jmeno}',joinA(ws));const bb=document.createElement('div');bb.className='rbub '+who;bb.innerHTML='<b>'+L.name+'</b>'+esc(nb(txt));
+     $('#res').appendChild(bb);setTimeout(()=>bb.classList.add('on'),1600)}}
   const close=()=>{const r=$('#res');if(r)r.remove();stopConf()};
   $('#rAgain').onclick=()=>{close();setup.names=sortedNamesForAgain(players);showHome();$('#startBtn').scrollIntoView({block:'center'})};
   $('#rStats').onclick=()=>{close();statsFrom='home';stCols=game.cols;showStats()};
