@@ -449,41 +449,32 @@ footer.ver{max-width:1280px;margin:0 auto;text-align:center;font-size:11.5px;col
 
 <script>
 /* =====================================================================
-   HLÁŠKY – sem stačí dopsat nebo přepsat texty.
-   {jmeno} = kdo je na řadě / kdo vyhrál, {body} = body.
+   HLÁŠKY Marcely a Marty. Text lze kdykoli přepsat; klíč určuje situaci:
+   rukavice – 3 stejná čísla v 1. hodu        psenka – podrží 2 stejné kostky v 1./2. hodu
+   berejo   – kamarádi za 23 a méně           nizko  – nízký zápis u kamarádů nebo čín (20 a méně)
+   bohatyr  – regál, kamarádi nebo číny z ruky za víc než 40
+   wow      – regál nebo cokoli z ruky (Marcela a Marta se střídají)
+   predhodem – občas před hodem               dzolik – padla šanta
+   kurvy    – nejde zapsat nic jiného než 2× čtyřka    ctyrky – padají čtyřky
+   tecka    – hráč dělá tečku                 tap    – klepnutí na postavu (náhodně cokoli z jejích hlášek)
    ===================================================================== */
 const HLASKY = {
   marcela: {
-    tap:      ['Tak co, kdo dneska vyhraje?','Já bych to brala na regály.','Šanta je holt šanta.'],
-    start:    ['Kostky jsou připravené, můžeme!','Hodně štěstí všem!'],
-    turn:     ['{jmeno}, jsi na řadě.','Do toho, {jmeno}!','{jmeno}, ukaž, co umíš.'],
-    regal:    ['Regály! To se nevidí každý den!','No páni, pět stejných!'],
-    regal1:   ['Regál jedniček! Sto padesát!','Jedničky! To je poklad!'],
-    zruky:    ['Z ruky! To je paráda!','Z ruky, to se cení dvakrát!'],
-    rada:     ['Řada jak z učebnice.','Postupka! Hezky.'],
-    santa:    ['Šanta! Ta se hodí.','Šanta padla, využij ji.'],
-    nic:      ['Hm, nic moc. Ještě jednou?','To chce hodit znovu.'],
-    skrt:     ['Škrt bolí, ale přežiješ.','Nevadí, příště to vyjde.'],
-    tecka:    ['Jen tečka, políčko ti zůstává.','Tečka. Příště to tam padne!'],
-    dobre:    ['To je pěkný zápis!','Hezky, {body} bodů!'],
-    vedeni:   ['{jmeno} se dostává do vedení!'],
-    konec:    ['Gratuluju, {jmeno}!','{jmeno} je šampion!'],
+    rukavice:  ['Toť rukavice hozená!'],
+    psenka:    ['Z toho ti pšenka nepokvete.'],
+    berejo:    ['To bereš jo?'],
+    nizko:     ['Ať ví kam patří!'],
+    bohatyr:   ['Ty jsi bohatýr!'],
+    predhodem: ['Teď jim vypálí rybník.'],
+    wow:       ['No nepovídej.'],
   },
   marta: {
-    tap:      ['Já jsem tu jen na hlášky.','Kamarádi, nebo číny?','Hlavně ať padá šanta.'],
-    start:    ['Kdo prohraje, vaří kafe.','Ať to padá!'],
-    turn:     ['Teď ty, {jmeno}.','{jmeno}, hoď to tam!'],
-    regal:    ['Regál! Tleskám!','Tohle si zapiš velkým písmem.'],
-    regal1:   ['Jedničky! Tomu nevěřím!'],
-    zruky:    ['Z ruky, žádné dohazování!','Tak tohle bylo z ruky!'],
-    rada:     ['Postupka, krásně to jde po sobě.'],
-    santa:    ['Šantička, ta zachrání leccos.'],
-    nic:      ['Kostky dnes stávkují?','Zkus to ještě.'],
-    skrt:     ['Křížek. To se stává i nejlepším.','Škrt? To se zapomene.'],
-    tecka:    ['Tečka, a jede se dál.','Tečku si pamatuju!'],
-    dobre:    ['Šikovně!','To se počítá!'],
-    vedeni:   ['Nové vedení: {jmeno}!'],
-    konec:    ['Vítězi patří pohár!','Bravo, {jmeno}!'],
+    dzolik:    ['Máš tam džolika.'],
+    kurvy:     ['To jsou ku*vy!'],
+    ctyrky:    ['Já těm čtyřkám nevěřím.'],
+    wow:       ['No neříkej!'],
+    predhodem: ['Tfuj! Tfuj! Pro štěstí!'],
+    tecka:     ['Tečka mravenečka'],
   }
 };
 
@@ -544,14 +535,14 @@ function anim(w,c,ms){const L=LAD[w].el;L.classList.remove(c);void L.offsetWidth
 function look(c){['a','b'].forEach(w=>{const L=LAD[w].el;L.classList.remove('lookc','lookd','lookup');if(c)L.classList.add(c)})}
 function say(ev,vars,who){
   if(!who){who=lastSpeaker==='a'?'b':'a'}
-  const L=LAD[who];let arr=(HLASKY[L.key]||{})[ev];
+  const L=LAD[who];let arr=ev==='tap'?Object.values(HLASKY[L.key]||{}).flat():(HLASKY[L.key]||{})[ev];
   if(!arr||!arr.length){const o=who==='a'?'b':'a';arr=(HLASKY[LAD[o].key]||{})[ev];if(!arr||!arr.length)return;who=o}
   lastSpeaker=who;const W=LAD[who];
   let s=pick(arr).replace(/\{(\w+)\}/g,(m,k)=>vars&&vars[k]!=null?vars[k]:'');
   W.bub.innerHTML='<b>'+W.name+'</b>'+esc(nb(s));W.bub.classList.add('on');
   clearTimeout(W.t);W.t=setTimeout(()=>W.bub.classList.remove('on'),3400);
   const other=who==='a'?'b':'a';LAD[other].bub.classList.remove('on');
-  anim(who,ev==='skrt'||ev==='nic'?'shake':ev==='tap'?'tilt':'hop',1200);
+  anim(who,ev==='kurvy'||ev==='psenka'?'shake':ev==='tap'||ev==='berejo'||ev==='nizko'?'tilt':'hop',1200);
 }
 ['a','b'].forEach(w=>{const L=LAD[w].el;const f=()=>{say('tap',null,w);anim(w,'roll',1400)};L.addEventListener('click',f);L.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}})});
 (function blinker(){['a','b'].forEach(w=>{setTimeout(()=>{LAD[w].el.classList.add('blink');setTimeout(()=>LAD[w].el.classList.remove('blink'),140)},Math.random()*900)});setTimeout(blinker,2600+Math.random()*2600)})();
@@ -704,6 +695,7 @@ function renderLeft(){const L=$('#left');const p=G.cur,pl=G.players[p];
   $('#rollBtn').onclick=roll;
   L.querySelectorAll('.die').forEach(b=>b.onclick=()=>{if(!t.throws||t.throws>=3||rolling)return;const d=t.dice[+b.dataset.i];d.h=!d.h;saveGame();
     b.classList.toggle('held',d.h);b.setAttribute('aria-pressed',d.h);
+    const hd=t.dice.filter(x=>x.h);if(d.h&&t.throws<=2&&!t.psenka&&hd.length===2&&hd[0].v===hd[1].v){t.psenka=true;say('psenka',null,'a')}
     const rb=$('#rollBtn');rb.disabled=t.dice.every(x=>x.h);rb.firstChild.nodeValue=t.dice.some(x=>x.h)?'Hodit nepodrženými':'Hodit znovu všemi'});
   L.querySelectorAll('.sg[data-r]').forEach(b=>b.onclick=()=>{const r=+b.dataset.r;writeCell(p,r*G.cols+freeIn(p,r)[0])});
   L.querySelectorAll('.sg[data-dot]').forEach(b=>b.onclick=()=>doDot(p,+b.dataset.dot));
@@ -715,7 +707,7 @@ function roll(){const t=G.turn;if(rolling||t.throws>=3)return;
   if(!t.throws)t.dice.forEach(d=>d.h=false);
   t.throws++;idx.forEach(i=>t.dice[i].v=1+Math.floor(Math.random()*6));
   t.zr=idx.length===5&&(G.zrRule==='all5'||t.throws===1);
-  t.ev=evaluate(t.dice.map(d=>d.v),t.zr);rolling=true;G.view=G.cur;renderSheet();renderStrip();
+  t.rolled=idx;t.ev=evaluate(t.dice.map(d=>d.v),t.zr);rolling=true;G.view=G.cur;renderSheet();renderStrip();
   rolling=true;sndDice(idx.length);look('lookd');
   // animace
   renderLeft();const dice=[...$('#dice').querySelectorAll('.die')];
@@ -727,11 +719,18 @@ function roll(){const t=G.turn;if(rolling||t.throws>=3)return;
 }
 function reactRoll(){const t=G.turn,ev=t.ev,p=G.cur;const wr=writable(p,ev);
   const vals=t.dice.map(d=>d.v);const same=vals.every(v=>v===vals[0])||(vals[0]===1&&vals.slice(1).every(v=>v===vals[1]));
-  if(ev[9]&&same){sndBig();say(ev[9].v>=150?'regal1':'regal');anim('a','hop');anim('b','hop');return}
-  if(t.zr&&(wr.includes(6)||wr.includes(7)||wr.includes(8))){say('zruky');return}
-  if(ev[6]&&wr.includes(6)){say('rada');return}
-  if(!wr.length){say(t.throws>=3?'skrt':'nic');return}
-  if(vals[0]===1&&Math.random()<.5){say('santa');return}
+  const regal=!!(ev[9]&&same);
+  const bigZr=[7,8,9].some(r=>ev[r]&&ev[r].zr&&ev[r].v>40);
+  const anyZr=t.zr&&[6,7,8,9].some(r=>ev[r]);
+  if(regal)sndBig();
+  if(bigZr&&Math.random()<.5){say('bohatyr',null,'a');anim('b','hop');return}
+  if(regal||anyZr){say('wow');if(regal){anim('a','hop');anim('b','hop')}return}
+  if(wr.length===1&&wr[0]===3&&ev[3].v===8){say('kurvy',null,'b');return}
+  const cnt=[0,0,0,0,0,0,0];vals.forEach(v=>cnt[v]++);
+  if(t.throws===1&&cnt.some((c,k)=>k&&c>=3&&c<5)){say('rukavice',null,'a');return}
+  if(vals[0]===1&&Math.random()<.7){say('dzolik',null,'b');return}
+  const fours=(t.rolled||[0,1,2,3,4]).filter(i=>vals[i]===4).length;
+  if(fours>=2&&Math.random()<.6){say('ctyrky',null,'b');return}
 }
 
 /* ---- zápis ---- */
@@ -747,7 +746,8 @@ function writeCell(p,idx,skrt,manual){
   if(cell.x)sndSkrt();else sndWrite();
   const advance=(G.mode==='dice')||(p===G.cur);
   if(advance){
-    if(cell.x)say('skrt');else if(r===9||(cell.v>=40&&r>=6))say('dobre',{body:cell.v});
+    if(!cell.x&&r===7&&cell.v<=23)say(cell.v<=20&&Math.random()<.5?'nizko':'berejo',null,'a');
+    else if(!cell.x&&r===8&&cell.v<=20)say('nizko',null,'a');
     G.cur=nextPlayer();G.turn=newTurn();G.view=G.cur;
   }
   const nl=leaderIdx();if(showSc()&&G.players.length>1&&nl!=null&&nl!==prevLeader&&Math.random()<.6)setTimeout(()=>say('vedeni',{jmeno:G.players[nl].name}),900);
@@ -859,7 +859,7 @@ function toast(msg){const o=$('.toast');if(o)o.remove();clearTimeout(toastT);
   document.body.insertAdjacentHTML('beforeend','<div class="toast" role="status"><span>'+esc(nb(msg))+'</span>'+(undoStack.length?'<button class="btn sm" id="tUndo">Vrátit</button>':'')+'</div>');
   const u=$('#tUndo');if(u)u.onclick=()=>{$('#undoBtn').click()};toastT=setTimeout(()=>{const t=$('.toast');if(t)t.remove()},4500)}
 function banner(name){const b=document.createElement('div');b.className='banner';b.innerHTML='<div><small>Na řadě</small><b>'+esc(name)+'</b></div>';document.body.appendChild(b);setTimeout(()=>b.remove(),1600);
-  if(Math.random()<.45)setTimeout(()=>say('turn',{jmeno:name}),500)}
+  if(G&&G.mode==='dice'&&Math.random()<.3)setTimeout(()=>say('predhodem'),900)}
 function sndIcon(){$('#sndBtn').innerHTML=pref.snd?'<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 8h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M15 7.5a5 5 0 010 7M17.5 5a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>':'<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 8h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M15 8l5 6M20 8l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';$('#sndBtn').setAttribute('aria-label',pref.snd?'Vypnout zvuk':'Zapnout zvuk')}
 $('#sndBtn').onclick=()=>{pref.snd=!pref.snd;const p=load(KEY_PREF,{});p.snd=pref.snd;save(KEY_PREF,p);sndIcon();if(pref.snd)sndWrite()};
 let wake=null;async function requestWake(){try{if('wakeLock' in navigator&&!wake){wake=await navigator.wakeLock.request('screen');wake.addEventListener('release',()=>wake=null)}}catch(e){}}
