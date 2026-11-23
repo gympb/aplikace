@@ -369,6 +369,8 @@ Object.assign(S,{m4:'std',m6:'cmp',m7:'two',as8:'common',ct8:'',f8:'',rl7:'logo'
  img1:'house',img2:'house',fm2:'dec',z2:1,lx2:0,ly2:0,img5:'land',bc5:8,ar6:'169',sr6:'169',tr6:'43',fm6:'crop',img6:'land',ch4:'rgb',gm4:false,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'gray',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
  b2:3,r:0,g:0,b:0,
  rs:32,bd:24,sz4:'fhd'});
+const ORD=[0,4,5,1,2,3,6,7];/* nové pořadí kapitol: pozice → původní číslo (0) */
+const INV=[0,3,4,5,1,2,6,7];
 const MK={5:'m4',6:'m6',7:'m7'};
 const modeSw=(n,items)=>`<div class="seg modes${items.length===3?' m3':''}">${items.map(([id,cs,en])=>`<button class="chip" data-k="${MK[n]}" data-v="${id}"><span>${tx(cs,en)}</span></button>`).join('')}</div>`;
 const note=h=>`<div class="callout">${h}</div>`;
@@ -378,7 +380,7 @@ const fgOn=(r,g,b)=>lum(r,g,b)>140?'#17140F':'#F4F1EA';
 const hx2=v=>(v<16?'0':'')+v.toString(16).toUpperCase();
 const rgbS=(r,g,b)=>`rgb(${r},${g},${b})`;
 function renderModes(){
- $$('[data-mode]').forEach(el=>{const t=el.closest('.tab');const n=t?+t.dataset.t+1:0;const mk=MK[n];el.hidden=!!mk&&S[mk]!==el.dataset.mode});
+ $$('[data-mode]').forEach(el=>{const t=el.closest('.tab');const n=t?ORD[+t.dataset.t]+1:0;const mk=MK[n];el.hidden=!!mk&&S[mk]!==el.dataset.mode});
 }
 
 /* ---------- ukázkový obrázek ---------- */
@@ -1239,8 +1241,11 @@ TABS.push({name:tx('Formáty souborů','File formats'),side:'27rem',
   if(mx>0){const ty=top2+hh+R*.4,th=h-ty-R*.6,bh=Math.max(R*2,th*th/(th+mx));rr(x,w-R*.9,ty+(th-bh)*(S.sc8/mx),R*.35,bh,R*.17,'rgba(244,241,234,.35)',null,0)}
  }});
 
+/* pořadí kapitol */
+TABS.splice(0,TABS.length,...ORD.map(k=>TABS[k]));
+
 /* obrázek zůstává stejný při přepínání mezi kapitolami 1, 2, 4 a 6 (včetně vlastního souboru) */
-{const PK={0:'img1',1:'img2',3:'img5',5:'img6'};let LG=-1;
+{const PK={0:'img1',3:'img2',5:'img5',2:'img6'};let LG=-1;
  TABS.forEach((t,i)=>{const o=t.enter;t.enter=function(){o&&o.call(t);if(PK[i]){if(LG>=0&&LG!==i)S[PK[i]]=S[PK[LG]];LG=i}}})}
 
 </script>
@@ -1274,7 +1279,7 @@ const H=[
  b:tx(`Původní obrázek vypadá ostře, protože pixely jsou drobné. Když ho lupou přiblížíte, nový detail nevznikne: uvidíte jen čtverečky. Hladký vzhled při přiblížení vytváří až prohlížeč tím, že dopočítává barvy mezi pixely.`,`The original picture looks sharp because the pixels are tiny. When you zoom in with the lens, no new detail appears: you just see squares. A smooth look when zoomed is made by the viewer, which calculates colours between pixels.`),
  eh:tx(`Co se tu děje`,`What is going on`),
  e:[tx(`<b>Souřadnice.</b> Pixel se určuje sloupcem a řádkem. V počítačové grafice se obvykle počítá od nuly a od levého horního rohu, takže první pixel má souřadnice 0, 0.`,`<b>Coordinates.</b> A pixel is identified by a column and a row. In computer graphics counting usually starts from zero and from the top left corner, so the first pixel has the coordinates 0, 0.`),
-    tx(`<b>Barva jako čísla.</b> Každý pixel obsahuje tři čísla 0 až 255 (červená, zelená, modrá). Podrobněji v kapitole 3.`,`<b>Colour as numbers.</b> Every pixel holds three numbers 0 to 255 (red, green, blue). More in chapter 3.`)],
+    tx(`<b>Barva jako čísla.</b> Každý pixel obsahuje tři čísla 0 až 255 (červená, zelená, modrá). Podrobněji v kapitole 5.`,`<b>Colour as numbers.</b> Every pixel holds three numbers 0 to 255 (red, green, blue). More in chapter 5.`)],
  c:[tx(`Přibližujte lupu kolečkem myši nebo posuvníkem, dokud se neobjeví jednotlivé čtverečky, a všimněte si, že každý má jednu barvu.`,`Zoom the lens with the mouse wheel or the slider until single squares appear, and notice that each has one colour.`),
     tx(`Zapněte hodnoty RGB a při největším zvětšení je přečtěte uvnitř pixelů.`,`Switch the RGB values on and at the largest magnification read them inside the pixels.`),
     tx(`Vyberte pixel na hraně střechy (nebo na hraně zkušebního obrazce) a porovnejte jeho čísla se sousedem.`,`Select a pixel on the edge of the roof (or of the test pattern) and compare its numbers with its neighbour.`)],
@@ -1352,6 +1357,8 @@ const H=[
     tx(`Najděte formát, který neumí průhlednost, a formát, který má jen 256 barev.`,`Find a format that cannot do transparency and a format that has only 256 colours.`),
     tx(`Přepněte na Zajímavé. Který formát se hodí pro archiv originálů?`,`Switch to Curious. Which format suits an archive of originals?`)],
  d:tx(`Formát volte podle obsahu: fotografie ztrátově (JPEG), grafika bezeztrátově (PNG), archiv bez ztráty (TIFF, RAW).`,`Choose the format by content: photographs lossy (JPEG), graphics lossless (PNG), an archive without loss (TIFF, RAW).`)}];
+
+H.splice(0,H.length,...ORD.map(k=>H[k]));
 let open=false;
 function render(){
  const h=H[S.tab]||H[0];
@@ -1379,27 +1386,27 @@ const PNG3=A('https://www.w3.org/TR/png-3/','W3C: Portable Network Graphics (PNG
 window.LXC={ns:'blp',num:true,min:tx('asi 60 minut','about 60 minutes'),
 PRE:[
  {t:tx('Pixel pod lupou','A pixel under the lens'),d:tx('Kapitola 1: největší zvětšení lupy a zapnuté hodnoty RGB: vidět jsou čísla každého pixelu.','Chapter 1: the largest lens magnification with the RGB values on: the numbers of every pixel are visible.'),f:()=>{Object.assign(S,{img1:'house',zm:320,grid1:true,nums1:true,lx:798,ly:550,sp:[800,552]});go(0)}},
- {t:tx('Jeden bit na pixel','One bit per pixel'),d:tx('Kapitola 2: 1 bit, vpravo nuly a jedničky.','Chapter 2: 1 bit, zeros and ones on the right.'),f:()=>{Object.assign(S,{bd2:1,pl2:'col',cd2:true});go(1)}},
- {t:tx('Paleta 16 barev','A palette of 16 colours'),d:tx('Kapitola 2: 4 bity, obrázek jen s 16 barvami.','Chapter 2: 4 bits, a picture with only 16 colours.'),f:()=>{Object.assign(S,{bd2:4,pl2:'col',cd2:false});go(1)}},
- {t:tx('256 odstínů šedi','256 shades of grey'),d:tx('Kapitola 2: 8 bitů v odstínech šedi.','Chapter 2: 8 bits in greys.'),f:()=>{Object.assign(S,{bd2:8,pl2:'gray',cd2:false});go(1)}},
- {t:tx('Žlutá ze dvou světel','Yellow from two lights'),d:tx('Kapitola 3: červená a zelená naplno, modrá vypnutá.','Chapter 3: red and green at full, blue off.'),f:()=>{Object.assign(S,{r:255,g:255,b:0});go(2)}},
- {t:tx('Barva #FF972E','The colour #FF972E'),d:tx('Kapitola 3: oranžová, tři bajty FF, 97 a 2E.','Chapter 3: orange, three bytes FF, 97 and 2E.'),f:()=>{Object.assign(S,{r:255,g:151,b:46});go(2)}},
- {t:tx('RGB kódování, 10 bitů','RGB encoding, 10 bits'),d:tx('Kapitola 4: 10 bitů na kanál, lupa na největší zvětšení.','Chapter 4: 10 bits per channel, lens at the largest magnification.'),f:()=>{Object.assign(S,{bc5:10,z5:320});go(3)}},
- {t:tx('16:9 na 4:3, ořez','16:9 to 4:3, cropping'),d:tx('Kapitola 6: zdroj 16:9, cíl 4:3, vyplnit s ořezem.','Chapter 6: source 16:9, target 4:3, fill with cropping.'),f:()=>{Object.assign(S,{m6:'conv',sr6:'169',tr6:'43',fm6:'crop'});go(5)}},
- {t:tx('Kinový formát na televizi','Cinema format on television'),d:tx('Kapitola 6: zdroj 2,39:1, cíl 16:9, černé pruhy.','Chapter 6: source 2.39:1, target 16:9, black bars.'),f:()=>{Object.assign(S,{m6:'conv',as6:'all',sr6:'239',tr6:'169',fm6:'bars'});go(5)}},
+ {t:tx('16:9 na 4:3, ořez','16:9 to 4:3, cropping'),d:tx('Kapitola 3: zdroj 16:9, cíl 4:3, vyplnit s ořezem.','Chapter 3: source 16:9, target 4:3, fill with cropping.'),f:()=>{Object.assign(S,{m6:'conv',sr6:'169',tr6:'43',fm6:'crop'});go(2)}},
+ {t:tx('Kinový formát na televizi','Cinema format on television'),d:tx('Kapitola 3: zdroj 2,39:1, cíl 16:9, černé pruhy.','Chapter 3: source 2.39:1, target 16:9, black bars.'),f:()=>{Object.assign(S,{m6:'conv',as6:'all',sr6:'239',tr6:'169',fm6:'bars'});go(2)}},
+ {t:tx('Jeden bit na pixel','One bit per pixel'),d:tx('Kapitola 4: 1 bit, vpravo nuly a jedničky.','Chapter 4: 1 bit, zeros and ones on the right.'),f:()=>{Object.assign(S,{bd2:1,pl2:'col',cd2:true});go(3)}},
+ {t:tx('Paleta 16 barev','A palette of 16 colours'),d:tx('Kapitola 4: 4 bity, obrázek jen s 16 barvami.','Chapter 4: 4 bits, a picture with only 16 colours.'),f:()=>{Object.assign(S,{bd2:4,pl2:'col',cd2:false});go(3)}},
+ {t:tx('256 odstínů šedi','256 shades of grey'),d:tx('Kapitola 4: 8 bitů v odstínech šedi.','Chapter 4: 8 bits in greys.'),f:()=>{Object.assign(S,{bd2:8,pl2:'gray',cd2:false});go(3)}},
+ {t:tx('Žlutá ze dvou světel','Yellow from two lights'),d:tx('Kapitola 5: červená a zelená naplno, modrá vypnutá.','Chapter 5: red and green at full, blue off.'),f:()=>{Object.assign(S,{r:255,g:255,b:0});go(4)}},
+ {t:tx('Barva #FF972E','The colour #FF972E'),d:tx('Kapitola 5: oranžová, tři bajty FF, 97 a 2E.','Chapter 5: orange, three bytes FF, 97 and 2E.'),f:()=>{Object.assign(S,{r:255,g:151,b:46});go(4)}},
+ {t:tx('RGB kódování, 10 bitů','RGB encoding, 10 bits'),d:tx('Kapitola 6: 10 bitů na kanál, lupa na největší zvětšení.','Chapter 6: 10 bits per channel, lens at the largest magnification.'),f:()=>{Object.assign(S,{bc5:10,z5:320});go(5)}},
  {t:tx('Ztrátová a bezeztrátová komprese','Lossy and lossless compression'),d:tx('Kapitola 7: bezeztrátová komprese, pak přepnout na ztrátovou.','Chapter 7: lossless compression, then switch to lossy.'),f:()=>{S.ls5='lossless';go(6)}},
  {t:tx('Formát pro fotografii','Format for a photograph'),d:tx('Kapitola 8: vybrat Fotografie, běžné formáty.','Chapter 8: choose Photograph, common formats.'),f:()=>{Object.assign(S,{as8:'common',ct8:'foto'});go(7)}},
  {t:tx('Formát pro logo','Format for a logo'),d:tx('Kapitola 8: vybrat Logo, běžné formáty.','Chapter 8: choose Logo, common formats.'),f:()=>{Object.assign(S,{as8:'common',ct8:'logo'});go(7)}}],
 PLAN:[
  [tx('Co je to pixel','What a pixel is'),'5 min',tx('Kap. 1, předvolba pixelu pod lupou.','Ch. 1, the pixel under the lens preset.')],
- [tx('Paleta a bitová hloubka','Palette and bit depth'),'8 min',tx('Kap. 2, předvolby jednoho bitu, 16 barev a 256 odstínů šedi.','Ch. 2, the one bit, 16 colours and 256 greys presets.')],
- [tx('Mixér RGB barev','RGB colour mixer'),'8 min',tx('Kap. 3, předvolby žluté a oranžové #FF972E.','Ch. 3, the yellow and orange #FF972E presets.')],
- [tx('RGB kódování','RGB encoding'),'5 min',tx('Kap. 4, předvolba deseti bitů s lupou.','Ch. 4, the ten bits preset with the lens.')],
- [tx('Standardní rozlišení','Standard resolutions'),'10 min',tx('Kap. 5, předvolby zdvojnásobení, Full HD a loga.','Ch. 5, the doubling, Full HD and logo presets.')],
- [tx('Poměr stran','Aspect ratio'),'5 min',tx('Kap. 6, předvolby převodu 16:9 na 4:3 a kinového formátu.','Ch. 6, the 16:9 to 4:3 and cinema format presets.')],
+ [tx('Paleta a bitová hloubka','Palette and bit depth'),'8 min',tx('Kap. 4, předvolby jednoho bitu, 16 barev a 256 odstínů šedi.','Ch. 4, the one bit, 16 colours and 256 greys presets.')],
+ [tx('Mixér RGB barev','RGB colour mixer'),'8 min',tx('Kap. 5, předvolby žluté a oranžové #FF972E.','Ch. 5, the yellow and orange #FF972E presets.')],
+ [tx('RGB kódování','RGB encoding'),'5 min',tx('Kap. 6, předvolba deseti bitů s lupou.','Ch. 6, the ten bits preset with the lens.')],
+ [tx('Standardní rozlišení','Standard resolutions'),'10 min',tx('Kap. 2, předvolby zdvojnásobení, Full HD a loga.','Ch. 2, the doubling, Full HD and logo presets.')],
+ [tx('Poměr stran','Aspect ratio'),'5 min',tx('Kap. 3, předvolby převodu 16:9 na 4:3 a kinového formátu.','Ch. 3, the 16:9 to 4:3 and cinema format presets.')],
  [tx('Princip komprese','Compression principle'),'7 min',tx('Kap. 7, bezeztrátová, pak ztrátová.','Ch. 7, lossless, then lossy.')],
  [tx('Formáty souborů','File formats'),'7 min',tx('Kap. 8, předvolby Fotografie a Logo.','Ch. 8, the Photograph and Logo presets.')]],
-NOTES:[tx('Pořadí kapitol vychází jedna z druhé: pixel nese barvu, barva se zapisuje bity, bity určují velikost obrazu a komprese velikost zmenšuje.','The order of the chapters builds on itself: a pixel carries a colour, a colour is written in bits, bits determine the size of a picture and compression reduces the size.'),
+NOTES:[tx('Pořadí kapitol: pixel, rozlišení a poměr stran obrazu, pak paleta a bity, barva v RGB a nakonec komprese a formáty souborů.','The order of the chapters: the pixel, resolution and aspect ratio, then palette and bits, colour in RGB and finally compression and file formats.'),
  tx('Velikosti a počty se počítají přesně podle vzorců, které najdete v nápovědě (tlačítko ?).','Sizes and counts are calculated exactly by the formulas, which you can find in the help (the ? button).'),
  tx('Ukázka ztrátové komprese je ilustrace, aplikace nevysvětluje, jak komprese uvnitř funguje.','The lossy compression demo is an illustration, the app does not explain how compression works inside.'),
  tx('Aplikace nic neukládá o žácích, nic neodesílá a nevyžaduje přihlášení.','The app stores nothing about pupils, sends nothing and needs no login.')],
@@ -1445,6 +1452,8 @@ D:{
  c4:()=>tx('Standardní rozlišení jako vnořené obdélníky podle počtu pixelů.','Standard resolutions as nested rectangles by pixel count.'),
  c8:()=>tx('Srovnání formátů souborů: počet barev, komprese, průhlednost a vhodnost.','A comparison of file formats: number of colours, compression, transparency and suitability.'),
  c5:()=>tx('Obrázek před kompresí a po rozbalení, ztrátová a bezeztrátová komprese.','A picture before compression and after unpacking, lossy and lossless compression.')}};
+
+{const X=window.LXC;X.PLAN=ORD.map(k=>X.PLAN[k]);X.F=ORD.map(k=>X.F[k]).filter(Boolean);X.SRC=ORD.map(k=>X.SRC[k]).filter(Boolean);X.GL.forEach(g=>{if(g[2])g[2]=g[2].map(i=>INV[i])})}
 
 </script>
 <script>
