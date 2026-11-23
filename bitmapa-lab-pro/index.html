@@ -473,7 +473,7 @@ TABS.push({name:tx('Pixel','Pixel'),side:'27rem',
   <div class="kpis">
    <div class="card kpi"><span class="lbl">${tx('Celý obrázek','Whole picture')}</span><div class="big sm" data-o="k1a"></div><small>${tx('šířka × výška v pixelech','width × height in pixels')}</small></div>
    <div class="card kpi"><span class="lbl">${tx('Vybraný pixel','Selected pixel')}</span><div class="big sm" data-o="k1b"></div><small>${tx('sloupec, řádek (od nuly)','column, row (from zero)')}</small></div>
-   <div class="card kpi" id="kc1"><span class="lbl">${tx('Jeho barva','Its colour')}</span><div class="big sm" data-o="k1c"></div><small>${tx('červená, zelená, modrá','red, green, blue')}</small></div>
+   <div class="card kpi" id="kc1" style="justify-content:center"></div>
   </div></div>
   <div class="side card fill">
    <div class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div>
@@ -527,7 +527,8 @@ TABS.push({name:tx('Pixel','Pixel'),side:'27rem',
   const cv=$('#c1');if(!cv)return;const {x,w,h,R}=setup(cv);const im=img1(S.img1),cols=zmCols(),rows=cols*3/4;
   clampLens();
   $$('.tg').forEach(b=>{const o=!!S[b.dataset.v];b.classList.toggle('on',o);b.setAttribute('aria-pressed',o)});
-  {const k=$('#kc1');if(k)k.style.visibility=S.nums1?'visible':'hidden'}
+  {const k=$('#kc1');if(k){const dd=img1(S.img1).d,i=(S.sp[1]*W1+S.sp[0])*4,r=dd[i],g=dd[i+1],bb=dd[i+2],fc=fgOn(r,g,bb);k.style.background=rgbS(r,g,bb);k.style.color=fc;k.style.boxShadow='inset 0 0 0 1px rgba(128,128,128,.35)';
+   k.innerHTML=S.nums1?`<span class="lbl" style="color:${fc};opacity:.85">${tx('Hodnoty RGB','RGB values')}</span><div class="big sm" style="color:${fc}">${r} · ${g} · ${bb}</div><small style="color:${fc};opacity:.85">${tx('červená, zelená, modrá','red, green, blue')}</small>`:''}}
   const pad=R*1.6,gap=R*3.4,top=R*3.6;
   let pw=Math.min((w-pad*2-gap)/2,(h-top-pad)/.75);const ph=pw*.75;
   const ax=pad+((w-pad*2-gap)/2-pw)/2,ay=top+(h-top-pad-ph)/2,mx=w-pad-((w-pad*2-gap)/2)+((w-pad*2-gap)/2-pw)/2,my=ay,cs=pw/cols;
