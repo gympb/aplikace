@@ -190,6 +190,10 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 .ctl.dual{display:grid;grid-template-columns:1fr 1.5fr;gap:.8rem}.ctl.dual .chip.sm{padding-left:.2rem;padding-right:.2rem}
 .ctl.dual>div{display:flex;flex-direction:column;justify-content:space-between}
 .scope .why2{font-size:calc(.72rem*var(--z));padding:.5rem .7rem;bottom:.6rem;right:.8rem;width:min(40%,26rem)}
+.mm5{position:relative;height:clamp(8rem,22vh,14rem);background:#000;border-radius:.9rem;overflow:hidden}.mm5 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.side:has(.mm5){display:flex;flex-direction:column}
+.ctl:has(.mm5){flex:1;display:flex;flex-direction:column;min-height:6.5rem}
+.ctl:has(.mm5) .mm5{flex:1;height:auto;min-height:5rem;max-height:15rem}
 
 </style>
 <meta property="og:type" content="website">
@@ -765,13 +769,27 @@ function setZoom5(z,fx,fy){
  S.lx5=Math.round(ux-fx*c);S.ly5=Math.round(uy-fy*r);clamp5();
 }
 const v5=(v,b)=>b===10?Math.round(v*1023/255):v;
+function mix5(){
+ const cv=$('#cm5');if(!cv)return;const {x,w,h,R}=setup(cv);const d=img1(S.img5==='own'&&!OWN1?'house':S.img5).d,i=(S.sp5[1]*W1+S.sp5[0])*4,b=S.bc5;
+ const c8=[d[i],d[i+1],d[i+2]],v=c8.map(q=>v5(q,b));
+ x.fillStyle='#000';x.fillRect(0,0,w,h);
+ const rad=Math.min(w*.2,h*.36),cx=w/2,cy=h*.5+rad*.05;
+ const pts=[[cx,cy-rad*.55],[cx-rad*.62,cy+rad*.5],[cx+rad*.62,cy+rad*.5]];
+ x.globalCompositeOperation='lighter';
+ [[c8[0],0,0],[0,c8[1],0],[0,0,c8[2]]].forEach((c,k)=>{x.fillStyle=rgbS(c[0],c[1],c[2]);x.beginPath();x.arc(pts[k][0],pts[k][1],rad,0,TAU);x.fill()});
+ x.globalCompositeOperation='source-over';
+ const tl=(t,px,py,al)=>T(x,t,px,py,R*.95,C.cream,al,'Atkinson Hyperlegible Mono',700);
+ tl('R '+v[0],pts[0][0]+rad*1.15,pts[0][1]-rad*.2,'left');
+ tl('G '+v[1],pts[1][0]-rad*1.15,pts[1][1]+rad*.45,'right');
+ tl('B '+v[2],pts[2][0]+rad*1.15,pts[2][1]+rad*.45,'left');
+}
 TABS.push({name:tx('RGB kódování','RGB encoding'),side:'27rem',
  build(){return `<div class="split"><div class="col">
   <div class="scope grow"><canvas id="cq"></canvas><div class="tag">${tx('každý pixel nese tři kódy: červený, zelený a modrý','every pixel carries three codes: red, green and blue')}</div></div>
   <div class="kpis">
    <div class="card kpi"><span class="lbl">${tx('Bitů na pixel','Bits per pixel')}</span><div class="big sm" data-o="kqa"></div><small data-o="kqb"></small></div>
    <div class="card kpi"><span class="lbl">${tx('Vybraný pixel','Selected pixel')}</span><div data-o="kqc"></div></div>
-   <div class="card kpi"><span class="lbl">${tx('Celý obrázek 1280 × 960','Whole picture 1280 × 960')}</span><div class="big sm" data-o="kqd"></div><small data-o="kqe"></small></div>
+   <div class="card kpi" id="kc5" style="justify-content:center"></div>
   </div></div>
   <div class="side card">
    <div class="ctl"><div class="hd"><span class="lbl">${tx('Obrázek','Picture')}</span></div>
@@ -786,7 +804,7 @@ TABS.push({name:tx('RGB kódování','RGB encoding'),side:'27rem',
     <div class="chips g4" role="radiogroup" aria-label="${tx('Barevné kanály','Colour channels')}">${[['rgb','RGB','RGB'],['r','R','R'],['g','G','G'],['b','B','B'],['rg','R+G','R+G'],['rb','R+B','R+B'],['gb','G+B','G+B']].map(c=>`<button class="chip sm" role="radio" data-k="ch4" data-v="${c[0]}">${tx(c[1],c[2])}</button>`).join('')}</div>
     <div class="chips" style="display:grid;grid-template-columns:1fr"><button class="chip sm tg" data-act="tg1" data-v="gm4" aria-pressed="false">${tx('Jako odstíny šedi','As shades of grey')}</button></div></div>
    <div class="hint" data-o="h5"></div>
-   ${note(tx('<b>Plná barva</b> zapisuje každý pixel třemi kódy, jedním pro červenou, zelenou a modrou. Při 8 bitech na kanál má každý kód 8 číslic a hodnoty 0 až 255, při 10 bitech 10 číslic a hodnoty 0 až 1023.','<b>Full colour</b> writes every pixel with three codes, one each for red, green and blue. With 8 bits per channel every code has 8 digits and values 0 to 255, with 10 bits 10 digits and values 0 to 1023.'))}
+   <div class="ctl"><div class="hd"><span class="lbl">${tx('Barva vybraného pixelu','Colour of the selected pixel')}</span></div><div class="mm5"><canvas id="cm5"></canvas></div></div>
   </div></div>`},
  init(){
   const cv=$('#cq'),f=$('#f5');
@@ -855,6 +873,8 @@ TABS.push({name:tx('RGB kódování','RGB encoding'),side:'27rem',
   const si=S.sp5[0]-S.lx5,sj=S.sp5[1]-S.ly5;
   if(si>=0&&si<cols&&sj>=0&&sj<rows){const q=Math.max(cs,R*1.5),qx=mx+(si+.5)*cs-q/2,qy=my+(sj+.5)*cs-q/2;x.strokeStyle=C.cream;x.lineWidth=3.5;x.strokeRect(qx,qy,q,q);x.strokeStyle=C.orange;x.lineWidth=1.8;if(q>=8)x.strokeRect(qx+2,qy+2,q-4,q-4)}
   x.strokeStyle=GR2;x.lineWidth=1;x.strokeRect(mx,my,pw,ph);
+  mix5();
+  {const k=$('#kc5');if(k){const dd=img1(S.img5==='own'&&!OWN1?'house':S.img5).d,i=(S.sp5[1]*W1+S.sp5[0])*4;k.style.background=rgbS(dd[i],dd[i+1],dd[i+2]);k.style.boxShadow='inset 0 0 0 1px rgba(128,128,128,.35)'}}
   renderModes();
  }});
 
