@@ -184,6 +184,13 @@ html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-hei
 .side.fill input[type=range]{height:2.4rem}
 .side.fill .note{margin-top:auto}
 
+.chip[hidden]{display:none!important}
+.why2{font-size:calc(.8rem*var(--z))}.why2:empty{display:none}
+.scope{position:relative}.why2{position:absolute;right:1rem;bottom:1rem;width:min(37%,26rem);z-index:2}
+.ctl.dual{display:grid;grid-template-columns:1fr 1.5fr;gap:.8rem}.ctl.dual .chip.sm{padding-left:.2rem;padding-right:.2rem}
+.ctl.dual>div{display:flex;flex-direction:column;justify-content:space-between}
+.scope .why2{font-size:calc(.72rem*var(--z));padding:.5rem .7rem;bottom:.6rem;right:.8rem;width:min(40%,26rem)}
+
 </style>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="gymplikace">
@@ -367,7 +374,7 @@ function boot(){
 /* ===== Bitmapa Lab Pro: společné části ===== */
 Object.assign(S,{m4:'std',m6:'cmp',m7:'two',as8:'common',ct8:'',f8:'',rl7:'logo',im7:'land',q7:30,z7:1,as6:'common',ct4:'logo',ls5:'lossless',
  img1:'house',img2:'house',fm2:'dec',z2:1,lx2:0,ly2:0,img5:'land',bc5:8,ar6:'169',sr6:'169',tr6:'43',fm6:'crop',img6:'land',ch4:'rgb',gm4:false,z5:1,lx5:0,ly5:0,sp5:[800,552],bd2:1,pl2:'gray',cd2:true,zm:1,grid1:true,nums1:false,lx:0,ly:0,sp:[800,552],
- b2:3,r:0,g:0,b:0,
+ b2:3,r:0,g:0,b:0,d2:8,
  rs:32,bd:24,sz4:'fhd'});
 const ORD=[0,4,5,1,2,3,6,7];/* nové pořadí kapitol: pozice → původní číslo (0) */
 const INV=[0,3,4,5,1,2,6,7];
@@ -688,46 +695,60 @@ TABS.push({name:tx('Paleta a bity','Palette and bits'),side:'27rem',
 const RGBP={red:[255,0,0],green:[0,255,0],blue:[0,0,255],yellow:[255,255,0],cyan:[0,255,255],magenta:[255,0,255],white:[255,255,255],black:[0,0,0],orange:[255,151,46]};
 const RGBN={red:['červená','red'],green:['zelená','green'],blue:['modrá','blue'],yellow:['žlutá','yellow'],cyan:['azurová','cyan'],magenta:['purpurová','magenta'],white:['bílá','white'],black:['černá','black'],orange:['oranžová','orange']};
 const FMN={dec:['desítkově','decimal'],bin:['dvojkově','binary'],hex:['šestnáctkově','hexadecimal']};
-const fch=v=>S.fm2==='bin'?v.toString(2).padStart(8,'0'):S.fm2==='hex'?hx2(v):String(v);
+const dmx=()=>S.d2===10?1023:255,dd=v=>S.d2===10?(v<<2)|(v>>6):v,q8=v=>S.d2===10?Math.round(v*255/1023):v;
+const fch=v=>S.fm2==='bin'?v.toString(2).padStart(S.d2===10?10:8,'0'):S.fm2==='hex'?hx2(v):String(v);
 const fcol=(r,g,b,sep)=>S.fm2==='hex'?'#'+hx2(r)+hx2(g)+hx2(b):[r,g,b].map(fch).join(sep||(S.fm2==='bin'?' ':', '));
+function mxMax(){['r','g','b'].forEach(k=>{const el=$('input[data-k='+k+']');if(el&&+el.max!==dmx()){el.max=dmx();el.value=S[k];el.style.setProperty('--p',(S[k]/dmx()*100)+'%')}})}
 const slider=(k,lbl,max)=>`<div class="ctl"><div class="hd"><span class="lbl">${lbl}</span><span class="val" data-o="v_${k}"></span></div><input type="range" data-k="${k}" min="0" max="${max}" step="1"></div>`;
 TABS.push({name:tx('Mixér RGB','RGB mixer'),side:'27rem',
  build(){return `<div class="split"><div class="col">
-  <div class="scope grow"><canvas id="c2"></canvas><div class="tag">${tx('světlo se sčítá: tři čísla 0 až 255','light adds up: three numbers 0 to 255')}</div></div>
+  <div class="scope grow"><canvas id="c2"></canvas><div class="tag" data-o="tg2"></div><div class="callout why2" data-o="why2"></div></div>
   <div class="kpis">
    <div class="card kpi"><span class="lbl" data-o="k2l"></span><div class="big sm" data-o="k2a"></div><small data-o="k2s"></small></div>
-   <div class="card kpi" style="box-shadow:inset 0 0 0 3px #FF972E"><span class="lbl" style="color:#FF972E">${tx('Počet barev, které lze namíchat','Number of colours that can be mixed')}</span><div class="big">16 777 216</div><small><b>256³ = (2⁸)³ = 2²⁴</b> · ${tx('tři kanály po 256 hodnotách','three channels of 256 values')}</small></div>
-   <div class="card kpi"><span class="lbl">${tx('Velikost jedné barvy','Size of one colour')}</span><div class="big sm">3 <u>${tx('bajty','bytes')}</u></div><small>${tx('3 kanály · 8 bitů = 24 bitů','3 channels · 8 bits = 24 bits')}</small></div>
+   <div class="card kpi" style="box-shadow:inset 0 0 0 3px #FF972E"><span class="lbl" style="color:#FF972E">${tx('Počet barev, které lze namíchat','Number of colours that can be mixed')}</span><div class="big" data-o="nc2"></div><small data-o="nc2s"></small></div>
+   <div class="card kpi"><span class="lbl">${tx('Velikost jedné barvy','Size of one colour')}</span><div class="big sm" data-o="sz2"></div><small data-o="sz2s"></small></div>
   </div></div>
   <div class="side card fill">
-   <div class="ctl"><div class="hd"><span class="lbl">${tx('Zápis kódu','Code notation')}</span></div>
-    <div class="chips g3"><button class="chip sm" data-k="fm2" data-v="dec">DEC</button><button class="chip sm" data-k="fm2" data-v="bin">BIN</button><button class="chip sm" data-k="fm2" data-v="hex">HEX</button></div></div>
+   <div class="ctl dual"><div><div class="hd"><span class="lbl">${tx('Bitů na kanál','Bits per channel')}</span></div>
+    <div class="chips g2"><button class="chip sm" data-act="d2" data-v="8" data-o="d2a">8</button><button class="chip sm" data-act="d2" data-v="10" data-o="d2b">10</button></div></div>
+    <div><div class="hd"><span class="lbl">${tx('Zápis kódu','Code notation')}</span></div>
+    <div class="chips g3"><button class="chip sm" data-k="fm2" data-v="dec">DEC</button><button class="chip sm" data-k="fm2" data-v="bin">BIN</button><button class="chip sm" data-k="fm2" data-v="hex" data-o="hexb">HEX</button></div></div></div>
    <div class="ctls">${slider('r',tx('R · červená','R · red'),255)}${slider('g',tx('G · zelená','G · green'),255)}${slider('b',tx('B · modrá','B · blue'),255)}</div>
    <div class="ctl"><div class="hd"><span class="lbl">${tx('Barvy','Colours')}</span></div>
     <div class="plist">${Object.keys(RGBP).map(k=>`<button class="chip sm" data-act="pre2" data-v="${k}"><i class="sw" style="background:${rgbS(...RGBP[k])}"></i>${tx(RGBN[k][0],RGBN[k][1])}</button><span class="pc" data-o="pc_${k}"></span>`).join('')}</div></div>
   </div></div>`},
  init(){
   ['r','g','b'].forEach((k,n)=>{OUT['v_'+k]=()=>fch(S[k]);});
-  Object.keys(RGBP).forEach(k=>OUT['pc_'+k]=()=>fcol(...RGBP[k]));
+  Object.keys(RGBP).forEach(k=>OUT['pc_'+k]=()=>fcol(...RGBP[k].map(dd)));
+  OUT.tg2=()=>tx('světlo se sčítá: tři čísla 0 až '+dmx(),'light adds up: three numbers 0 to '+dmx());
+  OUT.nc2=()=>S.d2===10?'1 073 741 824':'16 777 216';
+  OUT.nc2s=()=>S.d2===10?`<b>1024³ = (2¹⁰)³ = 2³⁰</b> · ${tx('tři kanály po 1024 hodnotách','three channels of 1,024 values')}`:`<b>256³ = (2⁸)³ = 2²⁴</b> · ${tx('tři kanály po 256 hodnotách','three channels of 256 values')}`;
+  OUT.sz2=()=>S.d2===10?`30 <u>${tx('bitů','bits')}</u>`:`3 <u>${tx('bajty','bytes')}</u>`;
+  OUT.sz2s=()=>S.d2===10?tx('3 kanály · 10 bitů = 30 bitů','3 channels · 10 bits = 30 bits'):tx('3 kanály · 8 bitů = 24 bitů','3 channels · 8 bits = 24 bits');
+  OUT.d2a=()=>{const b=$('[data-o=d2a]');if(b)b.classList.toggle('on',S.d2===8);return '8'};
+  OUT.d2b=()=>{const b=$('[data-o=d2b]');if(b)b.classList.toggle('on',S.d2===10);return '10'};
+  OUT.hexb=()=>{const b=$('[data-o=hexb]');if(b)b.hidden=S.d2===10;return 'HEX'};
+  OUT.why2=()=>S.d2===10?tx(`<b>Proč 10 bitů:</b> 1024 stupňů jasu místo 256, tedy plynulé přechody bez pruhů. <b>Kde:</b> HDR video (HDR10, Dolby Vision), UHD Blu-ray, 10bitové monitory a televize, profesionální kamery. Web a JPEG mají 8 bitů.`,`<b>Why 10 bits:</b> 1,024 brightness levels instead of 256, so smooth gradients without bands. <b>Where:</b> HDR video (HDR10, Dolby Vision), UHD Blu-ray, 10-bit monitors and televisions, professional cameras. The web and JPEG use 8 bits.`):'';
+  ACT.d2=v=>{v=+v;if(v===S.d2)return;const f=v===10?(w=>(w<<2)|(w>>6)):(w=>w>>2);['r','g','b'].forEach(k=>S[k]=f(S[k]));S.d2=v;if(v===10&&S.fm2==='hex')S.fm2='dec';mxMax();refresh()};
   OUT.k2l=()=>tx(FMN[S.fm2][0][0].toUpperCase()+FMN[S.fm2][0].slice(1),FMN[S.fm2][1][0].toUpperCase()+FMN[S.fm2][1].slice(1));
   OUT.k2a=()=>S.fm2==='bin'?`<span class="bn">${fcol(S.r,S.g,S.b)}</span>`:S.fm2==='dec'?`${S.r} · ${S.g} · ${S.b}`:fcol(S.r,S.g,S.b);
-  OUT.k2s=()=>S.fm2==='bin'?tx('8 bitů na kanál: červená, zelená, modrá','8 bits per channel: red, green, blue'):S.fm2==='hex'?tx('dvě číslice na kanál','two digits per channel'):tx('červená, zelená, modrá','red, green, blue');
-  ACT.pre2=v=>{const a=RGBP[v];S.r=a[0];S.g=a[1];S.b=a[2];refresh()};
+  OUT.k2s=()=>S.fm2==='bin'?tx(S.d2+' bitů na kanál: červená, zelená, modrá',S.d2+' bits per channel: red, green, blue'):S.fm2==='hex'?tx('dvě číslice na kanál','two digits per channel'):tx('červená, zelená, modrá','red, green, blue');
+  ACT.pre2=v=>{const a=RGBP[v].map(dd);S.r=a[0];S.g=a[1];S.b=a[2];refresh()};
  },
  render(){
-  const cv=$('#c2');if(!cv)return;const {x,w,h,R}=setup(cv);const pad=R*1.6,wl=w*.6,top0=R*1.8;
+  const cv=$('#c2');if(!cv)return;mxMax();const {x,w,h,R}=setup(cv);const pad=R*1.6,wl=w*.6,top0=R*1.8;
   x.fillStyle='#000';x.fillRect(0,0,w,h);
   const rad=Math.min(wl*.25,(h-top0-R*5.5)*.3),cx=wl/2,cy=top0+(h-top0-R*2.5)/2-rad*.05;
   const pts=[[cx,cy-rad*.62],[cx-rad*.72,cy+rad*.55],[cx+rad*.72,cy+rad*.55]];
   const lab=(t,i,col)=>TH(x,t,pts[i][0],i?pts[i][1]+rad+R*1.2:pts[i][1]-rad-R*1,R*.95,col,'center');
   x.globalCompositeOperation='lighter';
-  [[S.r,0,0],[0,S.g,0],[0,0,S.b]].forEach((c,i)=>{x.fillStyle=rgbS(c[0],c[1],c[2]);x.beginPath();x.arc(pts[i][0],pts[i][1],rad,0,TAU);x.fill()});
+  [[S.r,0,0],[0,S.g,0],[0,0,S.b]].forEach((c,i)=>{x.fillStyle=rgbS(q8(c[0]),q8(c[1]),q8(c[2]));x.beginPath();x.arc(pts[i][0],pts[i][1],rad,0,TAU);x.fill()});
   x.globalCompositeOperation='source-over';
   lab('R '+fch(S.r),0,C.cream);lab('G '+fch(S.g),1,C.cream);lab('B '+fch(S.b),2,C.cream);
   const sx=wl+pad*.8,sw=w-sx-pad,sh=Math.min(h*.5,sw*.9),sy=h/2-sh/2-R*1.2;
   TH(x,tx('Výsledná barva','Resulting colour'),sx,sy-R*1.1,R*.8,TXT);
-  rr(x,sx,sy,sw,sh,R*1.2,rgbS(S.r,S.g,S.b),GR2,1.2);
-  const fc=fgOn(S.r,S.g,S.b);
+  rr(x,sx,sy,sw,sh,R*1.2,rgbS(q8(S.r),q8(S.g),q8(S.b)),GR2,1.2);
+  const fc=fgOn(q8(S.r),q8(S.g),q8(S.b));
   if(S.fm2==='bin'){[['R',S.r],['G',S.g],['B',S.b]].forEach((p,i)=>T(x,p[0]+' '+fch(p[1]),sx+sw/2,sy+sh/2+(i-1)*R*2.1,R*1.35,fc,'center','Atkinson Hyperlegible Mono',700))}
   else T(x,fcol(S.r,S.g,S.b,S.fm2==='dec'?' · ':null),sx+sw/2,sy+sh/2,R*(S.fm2==='hex'?2.1:1.5),fc,'center','Atkinson Hyperlegible Mono',700);
   TH(x,tx('RGB · '+FMN[S.fm2][0],'RGB · '+FMN[S.fm2][1]),sx+sw/2,sy+sh+R*1.5,R*.95,C.cream,'center');
@@ -1303,7 +1324,8 @@ const H=[
  eh:tx(`Zápis barvy`,`Writing a colour`),
  e:[tx(`<b>Desítkově.</b> Tři čísla 0 až 255, například (255, 151, 46).`,`<b>In decimal.</b> Three numbers 0 to 255, for example (255, 151, 46).`),
     tx(`<b>Šestnáctkově.</b> Číslice 0–9 a A–F. Dvě číslice zapíšou jeden bajt (00 až FF), takže barva je #RRGGBB. Například 2E = 16 · 2 + 14 = 46.`,`<b>In hexadecimal.</b> Digits 0–9 and A–F. Two digits write one byte (00 to FF), so a colour is #RRGGBB. For example 2E = 16 · 2 + 14 = 46.`),
-    tx(`<b>Velikost.</b> Tři kanály po 8 bitech jsou 24 bitů, tedy 3 bajty a 2²⁴ = 16 777 216 možných barev.`,`<b>Size.</b> Three channels of 8 bits are 24 bits, that is 3 bytes and 2²⁴ = 16,777,216 possible colours.`)],
+    tx(`<b>Velikost.</b> Tři kanály po 8 bitech jsou 24 bitů, tedy 3 bajty a 2²⁴ = 16 777 216 možných barev.`,`<b>Size.</b> Three channels of 8 bits are 24 bits, that is 3 bytes and 2²⁴ = 16,777,216 possible colours.`),
+    tx(`<b>10 bitů na kanál.</b> Přepínač 8 / 10 bitů změní rozsah na 0 až 1023 a barev je 2³⁰ = 1 073 741 824. Pixel má 30 bitů. Důvod: 8 bitů dává jen 256 stupňů jasu a na plynulých přechodech (obloha, stíny) se objeví viditelné pruhy; 10 bitů je čtyřikrát jemnější. Používá se u HDR videa (HDR10, Dolby Vision), UHD Blu-ray, 10bitových monitorů a televizí a v profesionálním natáčení a barevných korekcích. Běžný web a JPEG zůstávají u 8 bitů. Šestnáctkový zápis #RRGGBB je jen pro 8 bitů.`,`<b>10 bits per channel.</b> The 8 / 10 bits switch changes the range to 0 to 1023 and the number of colours to 2³⁰ = 1,073,741,824. A pixel has 30 bits. Reason: 8 bits give only 256 brightness levels and smooth gradients (sky, shadows) show visible bands; 10 bits are four times finer. It is used in HDR video (HDR10, Dolby Vision), UHD Blu-ray, 10-bit monitors and televisions and in professional filming and colour grading. The ordinary web and JPEG stay at 8 bits. The hexadecimal #RRGGBB notation is for 8 bits only.`)],
  c:[tx(`Zvolte žlutou a všimněte si, že obsahuje červenou i zelenou naplno.`,`Choose yellow and notice that it contains red and green at full strength.`),
     tx(`Zapněte všechna tři světla naplno: vznikne bílá. Pak vše vypněte.`,`Turn all three lights on at full: white appears. Then turn everything off.`),
     tx(`Posuňte jen jeden posuvník a sledujte, jak se změní jedna dvojice šestnáctkových číslic.`,`Move just one slider and watch how one pair of hexadecimal digits changes.`)],
@@ -1391,8 +1413,8 @@ PRE:[
  {t:tx('Jeden bit na pixel','One bit per pixel'),d:tx('Kapitola 4: 1 bit, vpravo nuly a jedničky.','Chapter 4: 1 bit, zeros and ones on the right.'),f:()=>{Object.assign(S,{bd2:1,pl2:'col',cd2:true});go(3)}},
  {t:tx('Paleta 16 barev','A palette of 16 colours'),d:tx('Kapitola 4: 4 bity, obrázek jen s 16 barvami.','Chapter 4: 4 bits, a picture with only 16 colours.'),f:()=>{Object.assign(S,{bd2:4,pl2:'col',cd2:false});go(3)}},
  {t:tx('256 odstínů šedi','256 shades of grey'),d:tx('Kapitola 4: 8 bitů v odstínech šedi.','Chapter 4: 8 bits in greys.'),f:()=>{Object.assign(S,{bd2:8,pl2:'gray',cd2:false});go(3)}},
- {t:tx('Žlutá ze dvou světel','Yellow from two lights'),d:tx('Kapitola 5: červená a zelená naplno, modrá vypnutá.','Chapter 5: red and green at full, blue off.'),f:()=>{Object.assign(S,{r:255,g:255,b:0});go(4)}},
- {t:tx('Barva #FF972E','The colour #FF972E'),d:tx('Kapitola 5: oranžová, tři bajty FF, 97 a 2E.','Chapter 5: orange, three bytes FF, 97 and 2E.'),f:()=>{Object.assign(S,{r:255,g:151,b:46});go(4)}},
+ {t:tx('Žlutá ze dvou světel','Yellow from two lights'),d:tx('Kapitola 5: červená a zelená naplno, modrá vypnutá.','Chapter 5: red and green at full, blue off.'),f:()=>{Object.assign(S,{d2:8,r:255,g:255,b:0});go(4)}},
+ {t:tx('Barva #FF972E','The colour #FF972E'),d:tx('Kapitola 5: oranžová, tři bajty FF, 97 a 2E.','Chapter 5: orange, three bytes FF, 97 and 2E.'),f:()=>{Object.assign(S,{d2:8,r:255,g:151,b:46});go(4)}},
  {t:tx('RGB kódování, 10 bitů','RGB encoding, 10 bits'),d:tx('Kapitola 6: 10 bitů na kanál, lupa na největší zvětšení.','Chapter 6: 10 bits per channel, lens at the largest magnification.'),f:()=>{Object.assign(S,{bc5:10,z5:320});go(5)}},
  {t:tx('Ztrátová a bezeztrátová komprese','Lossy and lossless compression'),d:tx('Kapitola 7: bezeztrátová komprese, pak přepnout na ztrátovou.','Chapter 7: lossless compression, then switch to lossy.'),f:()=>{S.ls5='lossless';go(6)}},
  {t:tx('Formát pro fotografii','Format for a photograph'),d:tx('Kapitola 8: vybrat Fotografie, běžné formáty.','Chapter 8: choose Photograph, common formats.'),f:()=>{Object.assign(S,{as8:'common',ct8:'foto'});go(7)}},
@@ -1448,7 +1470,7 @@ D:{
  cp:()=>tx(`Obrázek ${bitW(S.bd2,false)} na pixel, paleta ${1<<S.bd2} ${S.pl2==='gray'?'odstínů šedi':'barev'}.`,`A picture with ${bitW(S.bd2,true)} per pixel, a palette of ${1<<S.bd2} ${S.pl2==='gray'?'greys':'colours'}.`),
  cq:()=>tx(`RGB kódování, ${S.bc5} bitů na kanál, lupa s kódy RGB pixelů.`,`RGB encoding, ${S.bc5} bits per channel, a lens with the RGB codes of pixels.`),
  cr:()=>S.m6==='cmp'?tx('Poměry stran vedle sebe se stejnou výškou.','Aspect ratios side by side at the same height.'):tx(`Převod ze zdroje ${arOf(S.sr6).n} na cíl ${arOf(S.tr6).n}, ořez nebo černé pruhy.`,`Converting from the source ${arOf(S.sr6).n} to the target ${arOf(S.tr6).n}, cropping or black bars.`),
- c2:()=>tx(`Míchání světla RGB (${S.r}, ${S.g}, ${S.b}), barva #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`,`Mixing RGB light (${S.r}, ${S.g}, ${S.b}), the colour #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`),
+ c2:()=>S.d2===10?tx(`Míchání světla RGB, 10 bitů na kanál (${S.r}, ${S.g}, ${S.b}).`,`Mixing RGB light, 10 bits per channel (${S.r}, ${S.g}, ${S.b}).`):tx(`Míchání světla RGB (${S.r}, ${S.g}, ${S.b}), barva #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`,`Mixing RGB light (${S.r}, ${S.g}, ${S.b}), the colour #${hx2(S.r)}${hx2(S.g)}${hx2(S.b)}.`),
  c4:()=>tx('Standardní rozlišení jako vnořené obdélníky podle počtu pixelů.','Standard resolutions as nested rectangles by pixel count.'),
  c8:()=>tx('Srovnání formátů souborů: počet barev, komprese, průhlednost a vhodnost.','A comparison of file formats: number of colours, compression, transparency and suitability.'),
  c5:()=>tx('Obrázek před kompresí a po rozbalení, ztrátová a bezeztrátová komprese.','A picture before compression and after unpacking, lossy and lossless compression.')}};
