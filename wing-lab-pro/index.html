@@ -849,9 +849,17 @@ anim(dt){if(S.m5==='stall'&&S.ramp5){S.al5=Math.min(22,S.al5+dt*1.4);if(S.al5>=2
   [[-.5,'#FF972E'],[.5,'#4DA3FF']].forEach((a,i)=>{const px=X(a[0]),py=Y(0);x.beginPath();x.strokeStyle=a[1];x.lineWidth=3;x.setLineDash([6,5]);x.arc(px,py,sc*.2,0,TAU);x.stroke();x.setLineDash([]);
    const ph=i?-1:1,an=-T6*2*ph;arrow(x,px+Math.cos(an)*sc*.2,py+Math.sin(an)*sc*.2,px+Math.cos(an+ph*.55)*sc*.2,py+Math.sin(an+ph*.55)*sc*.2,a[1],3,R*.7)});
   /* křídlo a konce */
-  const wy=Y(1.15);x.beginPath();x.strokeStyle='#F4F1EA';x.lineWidth=R*.55;x.moveTo(X(-.637),wy);x.lineTo(X(.637),wy);x.stroke();
+  const wy=Y(1.15);
+  /* silueta letadla zezadu: trup, svislá ocasní plocha, vodorovná ocasní plocha, křídlo, motory */
+  x.save();x.fillStyle='#F4F1EA';x.strokeStyle='rgba(20,18,16,.9)';x.lineWidth=1.5;
+  x.beginPath();x.moveTo(X(-.05),wy-sc*.06);x.lineTo(X(-.025),wy-sc*.52);x.lineTo(X(.025),wy-sc*.52);x.lineTo(X(.05),wy-sc*.06);x.closePath();x.fill();x.stroke();
+  x.beginPath();x.rect(X(-.24),wy-sc*.5,sc*.48,R*.32);x.fill();x.stroke();
+  x.beginPath();x.ellipse(X(0),wy+sc*.05,sc*.085,sc*.14,0,0,TAU);x.fill();x.stroke();
+  [-.2,.2].forEach(e=>{x.beginPath();x.ellipse(X(e),wy+sc*.07,sc*.036,sc*.036,0,0,TAU);x.fillStyle='#CFC8B8';x.fill();x.stroke()});
+  x.restore();
+  x.beginPath();x.strokeStyle='#F4F1EA';x.lineWidth=R*.55;x.moveTo(X(-.637),wy);x.lineTo(X(.637),wy);x.stroke();
   [-1,1].forEach(s=>line(x,X(s*.637),wy,X(s*.5),Y(.2),'rgba(244,241,234,.5)',1.6,[5,5]));
-  T(x,tx('křídlo (letadlo se vzdaluje od nás)','wing (the aircraft moves away from us)'),cx,wy-R*1.3,R*.8,'rgba(244,241,234,.85)','center');
+  T(x,tx('křídlo (letadlo se vzdaluje od nás)','wing (the aircraft moves away from us)'),cx,wy-sc*.52-R*1.5,R*.8,'rgba(244,241,234,.85)','center');
   arrow(x,X(0),Y(.42),X(0),Y(-.55),TL6,4,R*1);TH(x,tx('klesá','sinks'),X(0)+R*.9,Y(-.2),R*.9,TL6);
   arrow(x,X(-1.55),Y(-.5),X(-1.55),Y(.35),'#FF972E',3,R*.9);arrow(x,X(1.55),Y(-.5),X(1.55),Y(.35),'#FF972E',3,R*.9);TH(x,tx('stoupá','rises'),X(1.55)+R*.9,Y(-.1),R*.9,'#FF972E');TH(x,tx('stoupá','rises'),X(-1.55)-R*.9,Y(-.1),R*.9,'#FF972E','right');
   arrow(x,X(0),Y(-1.0),X(0),Y(-1.35),'rgba(244,241,234,.9)',3,R*.9);T(x,tx('celý pár víc a víc klesá','the whole pair keeps sinking'),X(0)+R*.9,Y(-1.2),R*.8,'rgba(244,241,234,.85)');
