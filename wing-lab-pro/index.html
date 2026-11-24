@@ -290,7 +290,7 @@ const S={tab:0,run:!RM,
  fld:'both',pr:[{x:-.2,y:1.25},{x:-.2,y:-1.25}],
  f3:'both',
  expl:'bern',
- m5:'start',al5:18,
+ m5:'start',al5:6,ramp5:false,
  pre:'mid',m:1000,b:11,V6:50};
 function set(k,v){S[k]=v;HOOK[k]&&HOOK[k](v);refresh()}
 let _rq=0;
@@ -692,7 +692,14 @@ const ctrl5=()=>chips('m5',[['start',tx('Rozběh z klidu','Start from rest')],['
 /* ===== 5 Víry za křídlem (PLUS) ===== */
 {
  const V5={b:[],tr:[],t:0,k:0,Gb:0,lost:0};let W5=null;
- const SIG=.34;
+ const SIG=.34,AS=15;
+ const ST={tc:0,prev:false},CLC={k:'',a:[]};
+ const clI=a=>{const k=S.th+'|'+S.cm;if(CLC.k!==k){CLC.k=k;CLC.a=[];for(let i=-2;i<=26;i++)CLC.a.push(wing(i,S.th,S.cm).CL)}const x=clamp(a,-2,26)+2,i=Math.min(27,Math.floor(x)),f=x-i;return CLC.a[i]*(1-f)+CLC.a[i+1]*f};
+ const clR=a=>a<=AS?clI(a):clI(AS)*(1-.5*(1-Math.exp(-(a-AS)/2.4)));
+ const xsepF=a=>a<AS-4?1:a<AS?1-.1*(a-(AS-4))/4:.9-.6*clamp((a-AS)/6,0,1);
+ const phase5=()=>S.al5>AS?2:S.al5>AS-3?1:0;
+ function sepPt(w,xs){const s=w.getSf();let bi=0,bd=9;for(let i=0;i<s.n;i++){if(!s.UP[i])continue;const d=Math.abs(s.S[i]-xs);if(d<bd){bd=d;bi=i}}return{x:s.X[bi],y:s.Y[bi],nx:s.NX[bi],ny:s.NY[bi],i:bi}}
+ function upd5(){const st=S.m5==='stall'&&S.al5>AS;if(st&&!ST.prev)ST.tc=performance.now();if(!st)ST.tc=0;ST.prev=st}
  const getW5=()=>{if(S.m5==='start')return curW();const k=S.al5+'|'+S.th+'|'+S.cm;if(!W5||W5.key!==k){W5=wing(S.al5,S.th,S.cm);W5.key=k}return W5};
  const reset5=()=>{V5.b=[];V5.tr=[];V5.t=0;V5.k=0;V5.Gb=0;V5.lost=0};
  let _u=0,_v=0;
@@ -700,21 +707,65 @@ const ctrl5=()=>chips('m5',[['start',tx('Rozběh z klidu','Start from rest')],['
   let u=1,v=0;const b=V5.b;
   for(let j=0;j<b.length;j++){const q=b[j];if(q===self)continue;const dx=px-q.x,dy=py-q.y,k=q.g/(TAU*(dx*dx+dy*dy+SIG*SIG));u+=k*dy;v-=k*dx}
   if(S.m5==='start'&&V5.Gb){const qx=w.LE[0]+.25*(w.TE[0]-w.LE[0]),qy=w.LE[1]+.25*(w.TE[1]-w.LE[1]),dx=px-qx,dy=py-qy,k=V5.Gb/(TAU*(dx*dx+dy*dy+.09));u+=k*dy;v-=k*dx}
+  if(S.m5==='stall'){const o=w.vel(px,py);if(!o.inside){u+=o.u-1;v+=o.v}}
   _u=u;_v=v;
  }
  function step5(dtm,xmax){
   const w=getW5(),TE=w.TE,LE=w.LE;let ex=TE[0]+.1,ey=TE[1]-.04;
   if(S.m5==='start'){const Gi=w.G,tau=1.6,g0=Gi*(1-Math.exp(-V5.t/tau)),g1=Gi*(1-Math.exp(-(V5.t+dtm)/tau));V5.Gb=g1;if(Math.abs(g1-g0)>1e-6)V5.b.push({x:ex,y:ey,g:-(g1-g0)})}
-  else{V5.Gb=0;const gain=clamp((S.al5-12)/7,0,1.3),px=LE[0]+.3*(TE[0]-LE[0]),py=LE[1]+.3*(TE[1]-LE[1])+.5;
-   if(gain>0){V5.b.push({x:px,y:py,g:.9*gain*dtm*(.6+.8*Math.random())});if(V5.k%3===0)V5.b.push({x:ex,y:ey,g:-.9*gain*dtm*3*(.6+.8*Math.random())})}ex=px;ey=py}
+  else{V5.Gb=0;const gain=clamp((S.al5-AS)/4,0,1.3),sp=sepPt(w,xsepF(S.al5)),px=sp.x+sp.nx*.1,py=sp.y+sp.ny*.1;
+   if(gain>0){const sf=w.getSf(),xs=xsepF(S.al5);for(let c=0;c<2;c++){const f=xs+(1-xs)*Math.random(),sq=sepPt(w,f),off=.12+Math.random()*.3*(1-xs+.3);V5.b.push({x:sq.x+sq.nx*off,y:sq.y+sq.ny*off,g:(Math.random()<.78?1:-.7)*.9*gain*dtm*(.6+.8*Math.random())})}if(V5.k%3===0)V5.b.push({x:ex,y:ey,g:-.5*gain*dtm*(.6+.8*Math.random())})}}
   const n=V5.b.length,U=new Float32Array(n),Vv=new Float32Array(n);
   for(let i=0;i<n;i++){vel5(V5.b[i].x,V5.b[i].y,w,V5.b[i]);U[i]=_u;Vv[i]=_v}
   for(let i=0;i<n;i++){V5.b[i].x+=U[i]*dtm;V5.b[i].y+=Vv[i]*dtm}
-  for(let i=0;i<2;i++)V5.tr.push({x:ex+Math.random()*.06,y:ey+(Math.random()-.5)*.1,a:0});
+  if(S.m5==='stall'){const x0=LG.c5?LG.c5.xmin:-5;for(let i=0;i<3;i++)V5.tr.push({x:x0,y:(Math.random()-.5)*3.6,a:0})}
+  else for(let i=0;i<2;i++)V5.tr.push({x:ex+Math.random()*.06,y:ey+(Math.random()-.5)*.1,a:0});
   V5.tr.forEach(q=>{vel5(q.x,q.y,w,null);q.x+=_u*dtm;q.y+=_v*dtm;q.a++});
-  V5.b=V5.b.filter(q=>{if(q.x>xmax+1.5||Math.abs(q.y)>12){V5.lost+=q.g;return false}return true});
-  V5.tr=V5.tr.filter(q=>q.x<xmax+1.5&&Math.abs(q.y)<12);if(V5.tr.length>900)V5.tr.splice(0,V5.tr.length-900);
+  V5.b=V5.b.filter(q=>{if(q.x>xmax+1.5||Math.abs(q.y)>12){V5.lost+=q.g;return false}return true});if(V5.b.length>150&&S.m5==='stall')V5.b.splice(0,V5.b.length-150);
+  V5.tr=V5.tr.filter(q=>q.x<xmax+1.5&&Math.abs(q.y)<12&&!(S.m5==='stall'&&w.vel(q.x,q.y).inside));if(V5.tr.length>1500)V5.tr.splice(0,V5.tr.length-1500);
   V5.t+=dtm;V5.k++;
+ }
+
+ function deadW(g,w){
+  const xs=xsepF(S.al5);if(xs>.985)return;const x=g.x,R=g.R,s0=w.getSf(),sp=sepPt(w,xs),ch=w.chord||2,TE=w.TE;
+  const xe=TE[0]+1.7*ch*.6,ye=TE[1]+.12,hb=(.1+(1-xs)*.5)*ch,pts=[[sp.x,sp.y]];
+  for(let i=1;i<=24;i++){const t=i/24;pts.push([sp.x+(xe-sp.x)*t,sp.y+(ye-sp.y)*t+hb*Math.sin(Math.PI*t)*(1-.35*t)])}
+  for(let j=0;j<=sp.i;j++)pts.push([s0.X[j],s0.Y[j]]);
+  x.save();x.beginPath();pts.forEach((q,i)=>i?x.lineTo(g.X(q[0]),g.Y(q[1])):x.moveTo(g.X(q[0]),g.Y(q[1])));x.closePath();
+  x.fillStyle='rgba(30,22,16,.93)';x.fill();x.fillStyle='rgba(255,106,77,.13)';x.fill();
+  x.beginPath();for(let i=0;i<=24;i++){const q=pts[i];i?x.lineTo(g.X(q[0]),g.Y(q[1])):x.moveTo(g.X(q[0]),g.Y(q[1]))}
+  x.strokeStyle='#FF6A4D';x.lineWidth=2;x.setLineDash([8,6]);x.stroke();x.setLineDash([]);x.restore();
+  const px=g.X(sp.x),py=g.Y(sp.y);x.beginPath();x.fillStyle='#FF4D4D';x.arc(px,py,R*.55,0,TAU);x.fill();x.lineWidth=2;x.strokeStyle='#fff';x.stroke();
+  TH(x,tx('bod odtržení','separation point'),px-R*.4,py-R*2.4,R*.85,'#FF8A73','center');
+  const m=pts[12];TH(x,tx('odtržený proud, víry','separated flow, vortices'),g.X(m[0]),g.Y(m[1])-R*1.6,R*.8,'#FF8A73','center');
+ }
+ function over5(g,w){
+  const x=g.x,R=g.R,a=S.al5,ph=phase5(),now=performance.now(),fl=ST.tc?clamp(1-(now-ST.tc)/1300,0,1):0;
+  /* šipky vztlaku: skutečný a ideální */
+  const bx=g.X(g.xmin+1.6),by=g.Y(-1.5),cr=clR(a),ci=clI(a),k=g.sc*.8;
+  if(ci-cr>.02){x.save();x.setLineDash([6,5]);x.strokeStyle='rgba(244,241,234,.55)';x.lineWidth=2;x.beginPath();x.moveTo(bx+R*2.2,by);x.lineTo(bx+R*2.2,by-ci*k);x.stroke();x.restore();TH(x,tx('ideální model','ideal model'),bx+R*2.7,by-R*.8,R*.75,'rgba(244,241,234,.85)','left')}
+  arrow(x,bx,by,bx,by-Math.max(cr,.05)*k,'#FFFFFF',4,R*1.1);TH(x,tx('vztlak (skutečný)','lift (real)'),bx,by+R*1.5,R*.85,'#FFFFFF','center');
+  /* stavový pruh */
+  const col=['#2EC4B6','#FFB02E','#FF4D4D'][ph],txt=[tx('proud přiléhá, vztlak roste','flow attached, lift grows'),tx('blíží se kritický úhel','critical angle approaching'),tx('PŘETAŽENÍ: proud se odtrhl, vztlak klesá','STALL: flow separated, lift drops')][ph];
+  const sh=ph===2?Math.sin(now/55)*R*.18*fl:0,bw=R*(ph===2?24:17),bh=R*2.2,bx0=g.w*.5-bw/2-g.w*.14+sh,by0=g.h-R*4.2;
+  x.save();x.fillStyle=ph===2?`rgba(255,77,77,${.82+.15*Math.sin(now/180)})`:'rgba(24,21,18,.85)';x.strokeStyle=col;x.lineWidth=2.4;x.beginPath();x.roundRect?x.roundRect(bx0,by0,bw,bh,R*.5):x.rect(bx0,by0,bw,bh);x.fill();x.stroke();x.restore();
+  TH(x,txt,bx0+bw/2,by0+bh/2,R*.95,ph===2?'#fff':col,'center');
+  if(fl>0){x.save();x.fillStyle=`rgba(255,50,30,${.3*fl})`;x.fillRect(0,0,g.w,g.h);x.strokeStyle=`rgba(255,70,50,${.9*fl})`;x.lineWidth=R*.9;x.strokeRect(0,0,g.w,g.h);x.restore();
+   TH(x,tx('PŘETAŽENÍ!','STALL!'),g.w*.5-g.w*.14,g.h*.3,R*(3+1.4*fl),`rgba(255,255,255,${Math.min(1,fl*1.6)})`,'center')}
+  /* graf C_L(α) */
+  const cw=g.w*.36,ch2=g.h*.36,cx0=g.w-cw-R*1.2,cy0=R*5.2,l=cx0+R*3.4,r=cx0+cw-R*1,t=cy0+R*3.2,b=cy0+ch2-R*2.6,X=v=>l+(v/24)*(r-l),Y=v=>b-(v/2.8)*(b-t);
+  x.save();x.fillStyle='rgba(20,18,16,.82)';x.strokeStyle='rgba(244,241,234,.25)';x.lineWidth=1.5;x.beginPath();x.roundRect?x.roundRect(cx0,cy0,cw,ch2,R*.6):x.rect(cx0,cy0,cw,ch2);x.fill();x.stroke();x.restore();
+  TH(x,tx('Vztlak podle sklonu','Lift versus angle'),cx0+R,cy0+R*1.1,R*.85,'rgba(244,241,234,.9)','left');
+  x.strokeStyle='rgba(244,241,234,.5)';x.lineWidth=1.4;x.beginPath();x.moveTo(l,t);x.lineTo(l,b);x.lineTo(r,b);x.stroke();
+  [0,1,2].forEach(v=>T(x,String(v),l-R*.5,Y(v),R*.7,'rgba(244,241,234,.7)','right'));[0,10,20].forEach(v=>T(x,String(v),X(v),b+R*.9,R*.7,'rgba(244,241,234,.7)','center'));
+  T(x,'α (°)',r,b+R*1.9,R*.72,'rgba(244,241,234,.7)','right');T(x,'C_L',l+R*.4,t-R*.2,R*.72,'rgba(244,241,234,.7)','left');
+  x.save();x.setLineDash([4,5]);x.strokeStyle='rgba(244,241,234,.55)';x.lineWidth=1.6;x.beginPath();for(let v=0;v<=24;v+=1){const px=X(v),py=Y(Math.min(clI(v),2.8));v?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();x.restore();
+  x.strokeStyle='rgba(46,196,182,.35)';x.lineWidth=2.4;x.beginPath();for(let v=0;v<=24;v+=.5){const px=X(v),py=Y(Math.min(clR(v),2.8));v?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
+  x.strokeStyle=ph===2?'#FF4D4D':'#2EC4B6';x.lineWidth=3.2;x.beginPath();for(let v=0;v<=a+.01;v+=.5){const px=X(v),py=Y(Math.min(clR(v),2.8));v?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
+  x.save();x.setLineDash([3,4]);x.strokeStyle='rgba(255,106,77,.8)';x.lineWidth=1.5;x.beginPath();x.moveTo(X(AS),t);x.lineTo(X(AS),b);x.stroke();x.restore();
+  T(x,tx('kritický úhel','critical angle'),X(AS)-R*.3,t+R*.3,R*.7,'#FF8A73','right');
+  const mx=X(a),my=Y(Math.min(cr,2.8));x.beginPath();x.fillStyle=ph===2?'#FF4D4D':'#2EC4B6';x.arc(mx,my,R*(.55+(ph===2?.25*Math.sin(now/150):0)),0,TAU);x.fill();x.lineWidth=2;x.strokeStyle='#fff';x.stroke();
+  T(x,tx('ideální model (čárkovaně)','ideal model (dashed)'),cx0+R,cy0+ch2-R*.6,R*.68,'rgba(244,241,234,.7)','left');
  }
  TABS.push({kap:'5',name:tx('Víry','Vortices'),side:'28rem',plus:true,
  build(){return `<div class="split"><div class="col">${scope('c5')}</div><aside class="side card">
@@ -722,18 +773,20 @@ const ctrl5=()=>chips('m5',[['start',tx('Rozběh z klidu','Start from rest')],['
   ${ctrl5()}
   <div class="row"><button class="btn" data-act="rst5">${tx('Spustit znovu','Run again')}</button></div>
   <div class="mx5" data-m="start">${sl('al',tx('Sklon křídla α','Angle of attack α'),-4,20,.5,'al')}</div>
-  <div class="mx5" data-m="stall">${sl('al5',tx('Sklon při přetažení','Angle at stall'),8,24,.5,'al5')}</div>
+  <div class="mx5" data-m="stall"><div class="row"><button class="btn" data-act="ramp5" data-o="rb5"></button></div>${sl('al5',tx('Sklon křídla α','Angle of attack α'),0,24,.5,'al5')}</div>
   <hr><div data-o="v5"></div>
   <div class="mx5" data-m="start">${call(tx('Co sledovat','What to watch'),tx('Když se křídlo rozjede, na odtokové hraně se utrhne víc vírů a stočí se do jednoho: rozběhový vír (modrý, proti směru hodin). Křídlo si „vezme“ stejně velký oběh opačným směrem (po směru hodin): to je jeho cirkulace Γ. Součet obou je nula.','When the wing starts, vortices break off at the trailing edge and roll into one: the starting vortex (blue, counter-clockwise). The wing takes an equal circulation in the opposite sense (clockwise): its circulation Γ. The sum of both is zero.'))}</div>
-  <div class="mx5" data-m="stall">${call(tx('Co sledovat','What to watch'),tx('Při velkém sklonu se proud odtrhne od horní strany. Za křídlem vzniká změť vírů a vztlak klesá. Je to schéma, ne výpočet: jen ukazuje, jak asi to vypadá.','At a large angle the flow separates from the upper side. A tangle of vortices forms behind the wing and lift drops. This is a sketch, not a calculation: it only shows roughly how it looks.'))}</div>
+  <div class="mx5" data-m="stall">${call(tx('Co sledovat','What to watch'),tx('Sklon se sám zvyšuje. Do kritického úhlu (zde asi 15°) proud přiléhá k horní straně a vztlak roste. Pak se proud odtrhne: nad křídlem vznikne oblast vírů, bod odtržení se posouvá k náběžné hraně a vztlak prudce klesne (graf vpravo nahoře). Letadlo pak „propadá“. Je to schéma, ne výpočet: kritický úhel i pokles závisí na profilu.','The angle rises by itself. Up to the critical angle (about 15° here) the flow follows the upper side and lift grows. Then the flow separates: a region of vortices forms above the wing, the separation point moves toward the leading edge and lift drops sharply (chart, top right). The aircraft then sinks. This is a sketch, not a calculation: the critical angle and the drop depend on the profile.'))}</div>
  </aside></div>`},
- init(){HOOK.m5=()=>reset5();HOOK.al5=()=>reset5();const old=HOOK.al;HOOK.al=v=>{old&&old(v);if(S.tab===4)reset5()};ACT.rst5=()=>{reset5();refresh()}},
- anim(dt){const n=clamp(Math.round(dt/.0166),1,3);for(let i=0;i<n;i++)step5(.045,LG.c5?LG.c5.xmax:12)},
+ init(){HOOK.m5=()=>{reset5();ST.tc=0;ST.prev=false;if(S.m5==='stall'){S.al5=6;S.ramp5=true}};HOOK.al5=()=>{S.ramp5=false;if(S.m5!=='stall')reset5()};ACT.ramp5=()=>{if(!S.ramp5&&S.al5>=22)S.al5=6;S.ramp5=!S.ramp5;refresh()};const old=HOOK.al;HOOK.al=v=>{old&&old(v);if(S.tab===4)reset5()};ACT.rst5=()=>{reset5();ST.tc=0;ST.prev=false;if(S.m5==='stall'){S.al5=6;S.ramp5=true}refresh()}},
+anim(dt){if(S.m5==='stall'&&S.ramp5){S.al5=Math.min(22,S.al5+dt*1.4);if(S.al5>=22)S.ramp5=false;sync()}
+  const n=clamp(Math.round(dt/.0166),1,3);for(let i=0;i<n;i++)step5(.045,LG.c5?LG.c5.xmax:12)},
  render(){
   const w=getW5(),g=mkView($('#c5'),3.6,0,8.6),x=g.x,R=g.R;
   $$('.mx5').forEach(e=>e.classList.toggle('on',e.dataset.m===S.m5));
   /* kouř a víry */
   V5.tr.forEach(q=>{x.fillStyle=`rgba(244,241,234,${Math.max(.12,.75-q.a/260)})`;x.fillRect(g.X(q.x)-1,g.Y(q.y)-1,2.2,2.2)});
+  upd5();if(S.m5==='stall')deadW(g,w);
   V5.b.forEach(q=>{const r=Math.max(R*.18,Math.sqrt(Math.abs(q.g))*g.sc*.5);x.beginPath();x.fillStyle=q.g<0?'rgba(77,163,255,.32)':'rgba(255,151,46,.32)';x.arc(g.X(q.x),g.Y(q.y),Math.min(r,R*2.4),0,TAU);x.fill()});
   drawWing(g,w);
   if(S.m5==='start'){
@@ -742,17 +795,19 @@ const ctrl5=()=>chips('m5',[['start',tx('Rozběh z klidu','Start from rest')],['
    TH(x,'Γ',g.X(0),g.Y(-1.55),R*1.3,'#FF972E','center');
    let sx=0,sy=0,sg=0;V5.b.forEach(q=>{if(q.g<0){const a2=-q.g;sx+=q.x*a2;sy+=q.y*a2;sg+=a2}});
    if(sg>.05&&V5.t>1.2){const px=g.X(sx/sg),py=g.Y(sy/sg);TH(x,tx('rozběhový vír','starting vortex'),px,py+R*3.4,R*.95,'#4DA3FF','center');arrow(x,px,py+R*2.7,px,py+R*1.2,'#4DA3FF',2,R*.6)}
-  }else TH(x,tx('odtržený proud: neuspořádané víry','separated flow: disordered vortices'),g.X(g.xmax)-R,g.Y(g.ymax)+R*4,R*.95,'#FF972E','right');
+  }else over5(g,w);
   arrow(x,g.X(g.xmin+.3),g.Y(g.ymax-.7),g.X(g.xmin+1.8),g.Y(g.ymax-.7),'#F4F1EA',2.5);T(x,'V∞',g.X(g.xmin+.3),g.Y(g.ymax-1.2),R*.85,'rgba(244,241,234,.85)');
   T(x,'●',R*1.4,g.h-R*1.4,R*.8,'#FF972E');T(x,tx('po směru hodin','clockwise'),R*2.4,g.h-R*1.4,R*.75,'rgba(244,241,234,.8)');
   T(x,'●',R*11.2,g.h-R*1.4,R*.8,'#4DA3FF');T(x,tx('proti směru hodin','counter-clockwise'),R*12.2,g.h-R*1.4,R*.75,'rgba(244,241,234,.8)');
-  SUBT(5,'<i></i>'+(S.m5==='start'?tx('Rozběhový vír a cirkulace','Starting vortex and circulation'):tx('Přetažení: odtržení proudu (schéma)','Stall: flow separation (sketch)')),S.m5==='start'?'α '+nf(S.al,1)+'°':'α '+nf(S.al5,1)+'°');
+  SUBT(5,'<i></i>'+(S.m5==='start'?tx('Rozběhový vír a cirkulace','Starting vortex and circulation'):tx('Přetažení: odtržení proudu a ztráta vztlaku (schéma)','Stall: flow separation and loss of lift (sketch)')),S.m5==='start'?'α '+nf(S.al,1)+'°':'α '+nf(S.al5,1)+'°');
  }});
  OUT.al5=()=>`<b>${nf(S.al5,1)}</b> °`;
  OUT.v5=()=>{const w=getW5(),k=S.V*CREAL/w.chord;
   if(S.m5==='start'){let sum=V5.lost;V5.b.forEach(q=>sum+=q.g);const Gr=V5.Gb*k,Gs=sum*k;
    return rd([[tx('Čas od rozjezdu','Time since the start'),nf(V5.t*CREAL/w.chord/S.V,3)+' s'],[tx('Cirkulace křídla Γ','Wing circulation Γ'),nfs(Gr,1)+' m²/s'],[tx('Z konečné hodnoty','Of the final value'),nf(w.G?V5.Gb/w.G*100:0)+' %'],[tx('Rozběhový vír (součet vírů)','Starting vortex (sum of vortices)'),nfs(Gs,1)+' m²/s'],[tx('Součet obou','Sum of both'),nfs(Gr+Gs,1)+' m²/s']])}
-  return rd([[tx('Sklon','Angle'),nf(S.al5,1)+' °'],[tx('Ideální model by dal C_L','The ideal model would give C_L'),nf(w.CL,2)],[tx('Skutečné křídlo','A real wing'),tx('vztlak klesá a kolísá','lift drops and fluctuates')]])};
+  const a=S.al5,ci=clI(a),cr=clR(a),xs=xsepF(a);
+  return rd([[tx('Sklon α','Angle α'),nf(a,1)+' °'],[tx('Stav','State'),[tx('proud přiléhá','attached'),tx('blízko kritického úhlu','near critical angle'),tx('PŘETAŽENO','STALLED')][phase5()]],[tx('Bod odtržení (x/c)','Separation point (x/c)'),xs>.985?'—':nf(xs,2)],[tx('C_L ideální model','C_L ideal model'),nf(ci,2)],[tx('C_L schématu skutečného křídla','C_L of the real-wing sketch'),nf(cr,2)],[tx('Ztráta vztlaku','Lift lost'),nf((1-cr/Math.max(ci,.01))*100)+' %']])};
+ OUT.rb5=()=>S.ramp5?tx('⏸ Zastavit zvyšování sklonu','⏸ Stop raising the angle'):tx('▶ Zvyšovat sklon','▶ Raise the angle');
 }
 
 /* ===== 6 Koncové víry (PLUS) ===== */
@@ -1049,7 +1104,7 @@ D:{
  c3:()=>tx('Mapa tlaku kolem křídla a šipky sání nad křídlem a přetlaku pod ním.','Pressure map around the wing and arrows of suction above and overpressure below.'),
  c3b:()=>tx('Graf součinitele tlaku podél tětivy: horní strana, spodní strana a plocha mezi nimi jako vztlak.','Graph of the pressure coefficient along the chord: upper side, lower side and the area between them as lift.'),
  c4:()=>({bern:tx('Vysvětlení tlakem a rychlostí se dvěma sondami.','Explanation by pressure and speed with two probes.'),newton:tx('Vysvětlení odklonem proudu: svislá složka rychlosti.','Explanation by deflected flow: the vertical velocity component.'),race:tx('Závod částic nad a pod křídlem.','Particle race above and below the wing.')})[S.expl],
- c5:()=>S.m5==='start'?tx('Rozběh křídla z klidu: rozběhový vír a cirkulace kolem křídla.','Start of the wing from rest: the starting vortex and circulation around the wing.'):tx('Schéma přetažení: odtržený proud a neuspořádané víry.','Sketch of the stall: separated flow and disordered vortices.'),
+ c5:()=>S.m5==='start'?tx('Rozběh křídla z klidu: rozběhový vír a cirkulace kolem křídla.','Start of the wing from rest: the starting vortex and circulation around the wing.'):tx('Přetažení: sklon se zvyšuje, nad kritickým úhlem se proud odtrhne a vztlak klesne; v rohu je graf vztlaku podle sklonu.','Stall: the angle rises; above the critical angle the flow separates and lift drops; a chart of lift versus angle is in the corner.'),
  c6:()=>tx(`Koncové víry za letadlem o hmotnosti ${nf(S.m)} kg: pohled shora a zezadu.`,`Wingtip vortices behind an aircraft of ${nf(S.m)} kg: view from above and from behind.`),
  c7:()=>({paper:tx('Pokus s papírem: rychlý vzduch nad papírem ho zvedne.','The paper experiment: fast air above the paper lifts it.'),hand:tx('Nakloněná dlaň ve větru odhání vzduch dolů.','A tilted hand in the wind pushes the air downward.'),wing:tx('Křídlo v proudu vzduchu: nahoře méně tlaku, dole víc.','A wing in the air stream: less pressure above, more below.')})[S.k7]}};
 
