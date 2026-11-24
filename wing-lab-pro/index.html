@@ -129,7 +129,7 @@ input[type=range]::-moz-range-thumb{width:1.7rem;height:1.7rem;border-radius:50%
 .chartbox{position:relative;height:13rem;padding:0;overflow:hidden}.chartbox canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .rd{display:grid;grid-template-columns:1fr auto;gap:.3rem .9rem;font:500 calc(.95rem*var(--z))/1.25 var(--f-mono)}
 .rd span{color:var(--ink2);font-family:var(--f-body)}.rd b{font-weight:600;text-align:right}
-.mx,.mx5,.mx7{display:none;flex-direction:column;gap:.7rem}.mx.on,.mx5.on,.mx7.on{display:flex}
+.mx,.mx5,.mx6,.mx7{display:none;flex-direction:column;gap:.7rem}.mx.on,.mx5.on,.mx6.on,.mx7.on{display:flex}.chips.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
 .kid{border-radius:.9rem;background:var(--bg);padding:.6rem .9rem;font-size:calc(.95rem*var(--z));line-height:1.4;color:var(--ink)}
 .kid b{display:block;font:700 calc(.62rem*var(--z))/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t);margin-bottom:.3rem}
 .chips.mini .chip{min-height:2.4rem}
@@ -290,7 +290,7 @@ const S={tab:0,run:!RM,
  fld:'both',pr:[{x:-.2,y:1.25},{x:-.2,y:-1.25}],
  f3:'both',
  expl:'bern',
- m5:'start',al5:6,ramp5:false,
+ m5:'start',al5:6,ramp5:false,v6m:'2d',d6:8,p6:false,
  pre:'mid',m:1000,b:11,V6:50};
 function set(k,v){S[k]=v;HOOK[k]&&HOOK[k](v);refresh()}
 let _rq=0;
@@ -817,40 +817,116 @@ anim(dt){if(S.m5==='stall'&&S.ramp5){S.al5=Math.min(22,S.al5+dt*1.4);if(S.al5>=2
  const PRES={small:[1000,11,50],mid:[70000,34,75],big:[350000,64,80]};
  MAPS.m=v=>Math.round(300*Math.pow(1500,v/100)/50)*50;IMAP.m=m=>100*Math.log(m/300)/Math.log(1500);
  const g6=()=>{const L=S.m*G9,G=4*L/(Math.PI*RHO*S.V6*S.b),b0=Math.PI*S.b/4;return{L,G,b0,U:G/(TAU*b0)}};
- const XM=2.3,YM=1.5;
+ const TMAX=40,XM=2.3,YM=1.5,TL6='#2EC4B6';let Cx6=.5;
+ /* stav stopy ve vzdálenosti d (s) za letadlem: stočení do vírů, klesání */
+ const wk=(d,q)=>{const r=1-Math.exp(-d/2.4);return{r,cx:.637-.137*r,sinkM:q.U*d}};
  function sp6(i,init){const x=(Math.random()*2-1)*XM,y=init?(Math.random()*2-1)*YM:-YM+.01;P6.x[i]=x;P6.y[i]=y;const h=P6.h[i];for(let k=0;k<L6;k++){h[2*k]=x;h[2*k+1]=y}}
- const vp=(px,py)=>{let u=0,v=0;[[-.5,1],[.5,-1]].forEach(a=>{const dx=px-a[0],dy=py,k=a[1]/(TAU*(dx*dx+dy*dy+.02));u+=k*dy;v-=k*dx});return[u,v+1/TAU]};
+ const vp=(px,py)=>{let u=0,v=0;[[-Cx6,1],[Cx6,-1]].forEach(a=>{const dx=px-a[0],dy=py,k=a[1]/(TAU*(dx*dx+dy*dy+.02));u+=k*dy;v-=k*dx});return[u,v+1/TAU]};
+ /* ---------- 3D ---------- */
+ const CAM={yaw:2.75,pit:.32,zoom:1};let T3=0,bound=false,drag=null;
+ const VIEWS={back:[0,.06],top:[0,1.45],side:[1.5708,.03],free:[2.75,.32]};
+ function bind3(cv){
+  if(bound)return;bound=true;
+  document.addEventListener('pointerdown',e=>{const c=$('#c6');if(!c||e.target!==c||S.v6m!=='3d')return;drag={x:e.clientX,y:e.clientY,yaw:CAM.yaw,pit:CAM.pit};try{c.setPointerCapture(e.pointerId)}catch(_){}c.style.cursor='grabbing'});
+  document.addEventListener('pointermove',e=>{if(!drag)return;CAM.yaw=drag.yaw+(e.clientX-drag.x)*.008;CAM.pit=clamp(drag.pit+(e.clientY-drag.y)*.008,-1.5,1.5);refresh()});
+  const up=()=>{drag=null;const c=$('#c6');if(c)c.style.cursor='grab'};document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up);
+  cv.addEventListener('wheel',e=>{if(S.v6m!=='3d')return;e.preventDefault();CAM.zoom=clamp(CAM.zoom*(e.deltaY>0?.92:1.08),.5,2.6);refresh()},{passive:false});
+ }
+ const LDIR=(()=>{const a=[.35,.85,-.4],m=Math.hypot(...a);return a.map(v=>v/m)})();
+ function r3d(g,q){
+  const x=g.x,R=g.R,w=g.w,h=g.h,half=S.b/2,Lw=14,zc=Math.max(1,(S.V6*TMAX/half)/Lw);
+  const sinkE=Math.min(q.U*TMAX/half,6),TG=[0,-sinkE*.4,-Lw*.4],dist=17/CAM.zoom,F=Math.min(w*1.5,h*2.1),cx0=w*.5,cy0=h*.52;
+  const cyw=Math.cos(CAM.yaw),syw=Math.sin(CAM.yaw),cp=Math.cos(CAM.pit),sp=Math.sin(CAM.pit);
+  const P=p=>{const X=p[0]-TG[0],Y=p[1]-TG[1],Z=p[2]-TG[2];const x1=X*cyw+Z*syw,z1=-X*syw+Z*cyw;const y2=Y*cp-z1*sp,z2=Y*sp+z1*cp;const zz=z2+dist,k=F/Math.max(zz,1);return[cx0+x1*k,cy0-y2*k,zz]};
+  const items=[];
+  const poly=(pts,col,alpha,stroke)=>{const pp=pts.map(P);let d=0;pp.forEach(a=>d+=a[2]);items.push({d:d/pp.length,t:0,pp,col,alpha:alpha==null?1:alpha,stroke})};
+  const quad=(a,b,c,d,col)=>{const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]];let n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];const m=Math.hypot(...n)||1;const l=Math.abs((n[0]*LDIR[0]+n[1]*LDIR[1]+n[2]*LDIR[2])/m),k=.38+.62*l;poly([a,b,c,d],`rgb(${col[0]*k|0},${col[1]*k|0},${col[2]*k|0})`,1,'rgba(20,18,16,.35)')};
+  const seg=(a,b,col,lw)=>{const pa=P(a),pb=P(b);items.push({d:(pa[2]+pb[2])/2,t:1,pa,pb,col,lw})};
+  const cream=[244,241,234],gray=[190,184,170];
+  /* letadlo */
+  const tube=(cx,cy,st,n,col)=>{const rings=st.map(a=>{const r=[];for(let i=0;i<n;i++){const t=i/n*TAU;r.push([cx+a[1]*Math.cos(t),cy+a[2]*Math.sin(t),a[0]])}return r});
+   for(let k=0;k<rings.length-1;k++)for(let i=0;i<n;i++){const i2=(i+1)%n;quad(rings[k][i],rings[k][i2],rings[k+1][i2],rings[k+1][i],col)}};
+  tube(0,0,[[1.5,.005,.005],[1.42,.05,.05],[1.2,.095,.1],[.8,.12,.125],[-.8,.12,.125],[-1.2,.09,.09],[-1.5,.03,.03]],12,cream);
+  [-1,1].forEach(s=>{
+   const a=[s*.1,0,.35],b=[s*.1,0,-.2],c=[s*1,.05,-.62],d=[s*1,.05,-.38];quad(a,b,c,d,cream);
+   quad([a[0],a[1]-.02,a[2]],[b[0],b[1]-.02,b[2]],[c[0],c[1]-.02,c[2]],[d[0],d[1]-.02,d[2]],gray);
+   quad([s*.04,.07,-1.15],[s*.04,.07,-1.4],[s*.42,.1,-1.46],[s*.42,.1,-1.3],cream);
+   tube(s*.38,-.09,[[.3,.05,.05],[.1,.07,.07],[-.1,.07,.07],[-.2,.045,.045]],10,gray);
+  });
+  quad([-.012,.1,-.95],[-.012,.1,-1.42],[-.012,.56,-1.48],[-.012,.5,-1.3],cream);quad([.012,.1,-.95],[.012,.1,-1.42],[.012,.56,-1.48],[.012,.5,-1.3],cream);
+  /* stopa: dva víry */
+  const dS=S.d6,cols=['255,151,46','77,163,255'],step=.25,nS=Math.round(TMAX/step);
+  const cen=t=>{const o=wk(t,q);return{cx:o.cx*q.b0/half,y:-Math.min(o.sinkM/half,8),z:-(S.V6*t/half)/zc,r:o.r}};
+  [-1,1].forEach((sg,vi)=>{
+   const phase=vi?1.2:0;let prev=null;
+   for(let k=0;k<=nS;k++){const t=k*step,c=cen(t),wp=[sg*c.cx,c.y,c.z];if(prev)seg(prev,wp,`rgba(${cols[vi]},${.55*(1-t/TMAX*.6)})`,R*.55);prev=wp}
+   [.12,.22,.34].forEach((rho0,ki)=>{let pv=null;for(let k=0;k<=nS;k++){const t=k*step,c=cen(t),rho=rho0*(.55+.45*(1-Math.exp(-t/5)))*(1+.5*(1-c.r)),th=-sg*(t*.95-T3*2.4)+ki*2.1+phase;
+     const wp=[sg*c.cx+rho*Math.cos(th),c.y+rho*Math.sin(th),c.z];if(pv)seg(pv,wp,`rgba(${cols[vi]},${.95*(1-t/TMAX*.7)})`,R*.2+1.2);pv=wp}})});
+  /* řez */
+  const cs=cen(dS),yc=cs.y,zs=cs.z,W=1.9,Hh=1.25;
+  poly([[-W,yc+Hh,zs],[W,yc+Hh,zs],[W,yc-Hh,zs],[-W,yc-Hh,zs]],'rgba(244,241,234,.09)',1,'rgba(244,241,234,.75)');
+  [-1,1].forEach((sg,vi)=>{const pts=[];for(let i=0;i<=24;i++){const a=i/24*TAU;pts.push([sg*cs.cx+.42*Math.cos(a),yc+.42*Math.sin(a),zs])}for(let i=0;i<24;i++)seg(pts[i],pts[i+1],`rgba(${cols[vi]},1)`,R*.3)});
+  items.sort((a,b)=>b.d-a.d);
+  x.lineJoin='round';x.lineCap='round';
+  items.forEach(it=>{if(it.t===0){x.beginPath();it.pp.forEach((a,i)=>i?x.lineTo(a[0],a[1]):x.moveTo(a[0],a[1]));x.closePath();x.fillStyle=it.col;x.fill();if(it.stroke){x.lineWidth=1;x.strokeStyle=it.stroke;x.stroke()}}
+   else{x.beginPath();x.moveTo(it.pa[0],it.pa[1]);x.lineTo(it.pb[0],it.pb[1]);x.strokeStyle=it.col;x.lineWidth=it.lw;x.stroke()}});
+  /* popisky */
+  const lb=P([W,yc-Hh,zs]);TH(x,tx(`řez: ${nf(dS,1)} s za letadlem (${nf(S.V6*dS)} m)`,`slice: ${nf(dS,1)} s behind the aircraft (${nf(S.V6*dS)} m)`),lb[0]+R*.6,lb[1]+R*.2,R*.9,'#F4F1EA','left');
+  const ap=P([0,.8,1.6]);TH(x,tx('letadlo','aircraft'),ap[0],ap[1]-R*.5,R*.9,'#F4F1EA','center');
+  const c8=cen(TMAX*.8),sk=P([c8.cx+.6,c8.y,c8.z]);TH(x,tx('víry klesají','vortices sink'),sk[0]+R*.4,sk[1],R*.85,TL6,'left');
+  T(x,tx('Táhni pro otočení, kolečkem přibližuj.','Drag to rotate, scroll to zoom.'),R*1.4,h-R*2.9,R*.78,'rgba(244,241,234,.75)');
+  T(x,tx(`Stopa je podélně zkrácena asi ${nf(zc)}×, aby se vešla.`,`The wake is shortened lengthwise about ${nf(zc)}× to fit.`),R*1.4,h-R*1.5,R*.78,'rgba(244,241,234,.6)');
+ }
  TABS.push({kap:'6',name:tx('Koncové víry','Tip vortices'),side:'28rem',plus:true,
  build(){return `<div class="split"><div class="col">${scope('c6')}</div><aside class="side card">
   <div class="lbl">PLUS · ${tx('nad rámec učiva','beyond the curriculum')}</div>
+  ${chips('v6m',[['2d',tx('Řez za letadlem','Slice behind')],['3d',tx('3D animace','3D animation')]],'g2')}
   <div class="chips g3">${[['small',tx('Malé','Small')],['mid',tx('Dopravní','Airliner')],['big',tx('Velké','Large')]].map(a=>`<button class="chip" data-act="pre6" data-v="${a[0]}" data-k="pre">${a[1]}</button>`).join('')}</div>
+  ${sl('d6',tx('Poloha řezu','Slice position'),0,TMAX,.5,'d6')}
+  <div class="row"><button class="btn" data-act="play6" data-o="pb6"></button></div>
+  <div class="mx6" data-m="3d"><div class="lbl">${tx('Pohled','View')}</div><div class="chips g4">${[['free',tx('Volný','Free')],['back',tx('Zezadu','Rear')],['top',tx('Shora','Top')],['side',tx('Z boku','Side')]].map(a=>`<button class="chip" data-act="view6" data-v="${a[0]}">${a[1]}</button>`).join('')}</div></div>
   ${sl('m',tx('Hmotnost','Mass'),0,100,1,'m6','m')}${sl('b',tx('Rozpětí křídel','Wingspan'),8,70,1,'b6')}${sl('V6',tx('Rychlost','Speed'),30,250,1,'v6s')}
   <hr><div data-o="v6"></div>
-  ${call(tx('Co sledovat','What to watch'),tx('Vzduch, který křídlo svisle vychýlilo, se na koncích křídel stáčí do dvou protiběžných vírů. Mezi nimi vzduch klesá, vně stoupá. Těžší letadlo má víry silnější, a proto se při vzletech a přistáních dodržují odstupy.','The air the wing deflects downward curls up at the wingtips into two counter-rotating vortices. Between them the air sinks, outside it rises. A heavier aircraft makes stronger vortices, which is why separations are kept at takeoff and landing.'))}
-  <div class="callout"><b class="l">${tx('Poznámka','Note')}</b>${tx('Čísla jsou orientační. Počítají se pro rovnoměrné rozložení vztlaku po rozpětí (eliptické křídlo). Hmotnosti, rozpětí a rychlosti předvoleb jsou zaokrouhlené, nejde o konkrétní letadla.','The numbers are indicative. They assume an even distribution of lift along the span (an elliptical wing). Masses, spans and speeds of the presets are rounded, they are not specific aircraft.')}</div>
+  ${call(tx('Co sledovat','What to watch'),tx('Posouvej řez od křídel dál za letadlo. U křídel jsou víry na koncích a ještě se stáčejí. Pak se stočí k sobě a klesají, přičemž mezi nimi vzduch klesá a vně stoupá. Těžší letadlo má víry silnější, a proto se při vzletech a přistáních dodržují odstupy.','Move the slice from the wings farther behind the aircraft. At the wings the vortices are at the tips and still rolling up. Then they curl toward each other and sink, with air sinking between them and rising outside. A heavier aircraft makes stronger vortices, which is why separations are kept at takeoff and landing.'))}
+  <div class="callout"><b class="l">${tx('Poznámka','Note')}</b>${tx('Čísla jsou orientační. Počítají se pro rovnoměrné rozložení vztlaku po rozpětí (eliptické křídlo). Stočení vírů a rychlost klesání jsou zjednodušené. Hmotnosti, rozpětí a rychlosti předvoleb jsou zaokrouhlené, nejde o konkrétní letadla.','The numbers are indicative. They assume an even distribution of lift along the span (an elliptical wing). The roll-up and the sinking rate are simplified. Masses, spans and speeds of the presets are rounded, they are not specific aircraft.')}</div>
  </aside></div>`},
- init(){HOOK.m=HOOK.b=HOOK.V6=()=>{S.pre=''};HOOK.pre=()=>{};ACT.pre6=v=>{const p=PRES[v];S.pre=v;S.m=p[0];S.b=p[1];S.V6=p[2];refresh()}},
+ init(){HOOK.m=HOOK.b=HOOK.V6=()=>{S.pre=''};HOOK.pre=()=>{};HOOK.d6=()=>{S.p6=false};
+  ACT.pre6=v=>{const p=PRES[v];S.pre=v;S.m=p[0];S.b=p[1];S.V6=p[2];refresh()};
+  ACT.play6=()=>{if(!S.p6&&S.d6>=TMAX-.1)S.d6=0;S.p6=!S.p6;refresh()};
+  ACT.view6=v=>{const a=VIEWS[v];CAM.yaw=a[0];CAM.pit=a[1];CAM.zoom=1;refresh()}},
  anim(dt){
-  T6+=dt;if(!ready){for(let i=0;i<N6;i++)sp6(i,true);ready=true}
-  const q=g6(),f=clamp(q.G/q.b0/13.8,.3,1)*.9,s=dt*5*f;
+  T6+=dt;T3+=dt;
+  if(S.p6){S.d6=Math.min(TMAX,S.d6+dt*3);if(S.d6>=TMAX)S.p6=false;sync()}
+  if(!ready){for(let i=0;i<N6;i++)sp6(i,true);ready=true}
+  if(S.v6m==='3d')return;
+  const q=g6();Cx6=wk(S.d6,q).cx;const f=clamp(q.G/q.b0/13.8,.3,1)*.9,s=dt*5*f;
   for(let i=0;i<N6;i++){const h=P6.h[i];for(let k=L6-1;k>0;k--){h[2*k]=h[2*k-2];h[2*k+1]=h[2*k-1]}h[0]=P6.x[i];h[1]=P6.y[i];
    let x=P6.x[i],y=P6.y[i],a=vp(x,y);const mx=x+a[0]*s/2,my=y+a[1]*s/2;a=vp(mx,my);x+=a[0]*s;y+=a[1]*s;
    if(Math.abs(x)>XM||y>YM||y<-YM-.05)sp6(i,false);else{P6.x[i]=x;P6.y[i]=y}}
  },
  render(){
   const cv=$('#c6'),g=setup(cv),x=g.x,R=g.R,w=g.w,h=g.h,q=g6();LG.c6=g;
+  $$('.mx6').forEach(e=>e.classList.toggle('on',e.dataset.m===S.v6m));
   if(!ready){for(let i=0;i<N6;i++)sp6(i,true);ready=true}
-  const f=clamp(q.G/q.b0/13.8,.15,1);
+  bind3(cv);
+  if(S.v6m==='3d'){cv.style.touchAction='none';cv.style.cursor=drag?'grabbing':'grab';r3d(g,q);
+   SUBT(6,'<i></i>'+tx('Koncové víry ve 3D','Wingtip vortices in 3D'),nf(S.m)+' kg · '+S.b+' m · '+S.V6+' m/s');return}
+  cv.style.touchAction='';cv.style.cursor='';
+  const W6=wk(S.d6,q);Cx6=W6.cx;const f=clamp(q.G/q.b0/13.8,.15,1);
   const splitX=w*.36;line(x,splitX,R*1.4,splitX,h-R*1.4,'rgba(244,241,234,.18)',1);
-  /* pohled zezadu */
-  const rw=w-splitX-R*1.6,sc=Math.min(rw/(2*XM),h*.9/(2*YM)),cx=splitX+(w-splitX)/2,cy=h*.54,X=v=>cx+v*sc,Y=v=>cy-v*sc;
+  /* pohled zezadu: křídlo nahoře, řez posunutý o poklesle vírů */
+  const rw=w-splitX-R*1.6,sc=Math.min(rw/(2*XM),h*.72/4.6),cx=splitX+(w-splitX)/2,top=h*.3,WY=1.4,X=v=>cx+v*sc,Y=v=>top+(WY-v)*sc;
+  const yc=WY-Math.min(W6.sinkM/q.b0,2.6),ycs=yc;
+  x.save();x.beginPath();x.rect(splitX+R*.4,R*5,w-splitX-R*.8,h-R*6);x.clip();
   x.strokeStyle='rgba(244,241,234,.7)';x.lineWidth=1.6*(PZ>1?1.3:1);x.lineCap='round';x.beginPath();
-  for(let i=0;i<N6;i++){const hh=P6.h[i];x.moveTo(X(P6.x[i]),Y(P6.y[i]));for(let k=0;k<L6;k++)x.lineTo(X(hh[2*k]),Y(hh[2*k+1]))}x.stroke();
-  [[-.5,'#FF972E'],[.5,'#4DA3FF']].forEach((a,i)=>{const px=X(a[0]),py=Y(0);x.beginPath();x.strokeStyle=a[1];x.lineWidth=3;x.setLineDash([6,5]);x.arc(px,py,sc*.2,0,TAU);x.stroke();x.setLineDash([]);
+  for(let i=0;i<N6;i++){const hh=P6.h[i];x.moveTo(X(P6.x[i]),Y(ycs+P6.y[i]));for(let k=0;k<L6;k++)x.lineTo(X(hh[2*k]),Y(ycs+hh[2*k+1]))}x.stroke();
+  x.restore();
+  /* dráha vírů od konců křídel k řezu */
+  [-1,1].forEach((sg,i)=>{x.beginPath();x.strokeStyle=i?'rgba(77,163,255,.7)':'rgba(255,151,46,.7)';x.lineWidth=2;x.setLineDash([3,5]);for(let k=0;k<=30;k++){const dd=S.d6*k/30,o=wk(dd,q),py=Y(WY-Math.min(o.sinkM/q.b0,2.6)),px=X(sg*o.cx);k?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();x.setLineDash([])});
+  [[-Cx6,'#FF972E'],[Cx6,'#4DA3FF']].forEach((a,i)=>{const px=X(a[0]),py=Y(ycs);x.beginPath();x.strokeStyle=a[1];x.lineWidth=3;x.setLineDash([6,5]);x.arc(px,py,sc*.2,0,TAU);x.stroke();x.setLineDash([]);
    const ph=i?-1:1,an=-T6*2*ph;arrow(x,px+Math.cos(an)*sc*.2,py+Math.sin(an)*sc*.2,px+Math.cos(an+ph*.55)*sc*.2,py+Math.sin(an+ph*.55)*sc*.2,a[1],3,R*.7)});
-  /* křídlo a konce */
-  const wy=Y(1.15);
-  /* silueta letadla zezadu: trup, svislá ocasní plocha, vodorovná ocasní plocha, křídlo, motory */
+  /* křídlo, silueta letadla */
+  const wy=Y(WY);
   x.save();x.fillStyle='#F4F1EA';x.strokeStyle='rgba(20,18,16,.9)';x.lineWidth=1.5;
   x.beginPath();x.moveTo(X(-.05),wy-sc*.06);x.lineTo(X(-.025),wy-sc*.52);x.lineTo(X(.025),wy-sc*.52);x.lineTo(X(.05),wy-sc*.06);x.closePath();x.fill();x.stroke();
   x.beginPath();x.rect(X(-.24),wy-sc*.5,sc*.48,R*.32);x.fill();x.stroke();
@@ -858,25 +934,28 @@ anim(dt){if(S.m5==='stall'&&S.ramp5){S.al5=Math.min(22,S.al5+dt*1.4);if(S.al5>=2
   [-.2,.2].forEach(e=>{x.beginPath();x.ellipse(X(e),wy+sc*.07,sc*.036,sc*.036,0,0,TAU);x.fillStyle='#CFC8B8';x.fill();x.stroke()});
   x.restore();
   x.beginPath();x.strokeStyle='#F4F1EA';x.lineWidth=R*.55;x.moveTo(X(-.637),wy);x.lineTo(X(.637),wy);x.stroke();
-  [-1,1].forEach(s=>line(x,X(s*.637),wy,X(s*.5),Y(.2),'rgba(244,241,234,.5)',1.6,[5,5]));
   T(x,tx('křídlo (letadlo se vzdaluje od nás)','wing (the aircraft moves away from us)'),cx,wy-sc*.52-R*1.5,R*.8,'rgba(244,241,234,.85)','center');
-  arrow(x,X(0),Y(.42),X(0),Y(-.55),TL6,4,R*1);TH(x,tx('klesá','sinks'),X(0)+R*.9,Y(-.2),R*.9,TL6);
-  arrow(x,X(-1.55),Y(-.5),X(-1.55),Y(.35),'#FF972E',3,R*.9);arrow(x,X(1.55),Y(-.5),X(1.55),Y(.35),'#FF972E',3,R*.9);TH(x,tx('stoupá','rises'),X(1.55)+R*.9,Y(-.1),R*.9,'#FF972E');TH(x,tx('stoupá','rises'),X(-1.55)-R*.9,Y(-.1),R*.9,'#FF972E','right');
-  arrow(x,X(0),Y(-1.0),X(0),Y(-1.35),'rgba(244,241,234,.9)',3,R*.9);T(x,tx('celý pár víc a víc klesá','the whole pair keeps sinking'),X(0)+R*.9,Y(-1.2),R*.8,'rgba(244,241,234,.85)');
+  if(S.d6>1.5){arrow(x,X(0),Y(ycs+.42),X(0),Y(ycs-.55),TL6,4,R*1);TH(x,tx('klesá','sinks'),X(0)+R*.9,Y(ycs-.1),R*.9,TL6);
+   [-1.55,1.55].forEach(e=>arrow(x,X(e),Y(ycs-.5),X(e),Y(ycs+.35),'#FF972E',3,R*.9));TH(x,tx('stoupá','rises'),X(1.55)+R*.9,Y(ycs-.1),R*.9,'#FF972E');TH(x,tx('stoupá','rises'),X(-1.55)-R*.9,Y(ycs-.1),R*.9,'#FF972E','right')}
+  else TH(x,tx('víry u konců křídel, ještě se stáčejí','vortices at the wingtips, still rolling up'),cx,Y(.55),R*.85,'#FFB02E','center');
   TH(x,tx('pohled zezadu: řez za letadlem','view from behind: a slice behind the aircraft'),splitX+R*1.2,R*3.4,R*.82,'rgba(244,241,234,.75)');
-  /* půdorys */
+  T(x,tx(`řez ${nf(S.d6,1)} s za letadlem (${nf(S.V6*S.d6)} m)`,`slice ${nf(S.d6,1)} s behind the aircraft (${nf(S.V6*S.d6)} m)`),splitX+R*1.2,h-R*1.6,R*.8,'rgba(244,241,234,.85)');
+  /* půdorys s polohou řezu */
   const pcx=splitX/2,pw=splitX*.36,wy2=h*.3;TH(x,tx('pohled shora','view from above'),R*1.2,R*3.4,R*.82,'rgba(244,241,234,.75)');
   x.fillStyle='#F4F1EA';x.beginPath();x.ellipse(pcx,wy2+h*.05,R*.5,h*.15,0,0,TAU);x.fill();
   x.beginPath();x.moveTo(pcx-pw,wy2+R*.5);x.lineTo(pcx+pw,wy2+R*.5);x.lineTo(pcx+pw*.9,wy2-R*.5);x.lineTo(pcx-pw*.9,wy2-R*.5);x.closePath();x.fill();
   x.beginPath();x.moveTo(pcx-pw*.35,wy2+h*.15);x.lineTo(pcx+pw*.35,wy2+h*.15);x.lineTo(pcx+pw*.3,wy2+h*.15-R*.45);x.lineTo(pcx-pw*.3,wy2+h*.15-R*.45);x.closePath();x.fill();
   arrow(x,pcx+pw*1.25,wy2+R*2.2,pcx+pw*1.25,wy2-R*2.2,'#F4F1EA',2.5,R*.8);T(x,tx('let','flight'),pcx+pw*1.25-R*.4,wy2+R*3.4,R*.8,'rgba(244,241,234,.85)','center');
-  [-1,1].forEach(s=>{const tipx=pcx+s*pw,col=s<0?'#FF972E':'#4DA3FF',ya=wy2+R*.5;x.beginPath();x.strokeStyle=col;x.lineWidth=2.4;
-   for(let yy=ya;yy<h-R*1.6;yy+=3){const d=yy-ya,cxx=tipx-s*pw*.215*(1-Math.exp(-d/(h*.12))),A=Math.min(R*1.2,d*.12+2),px=cxx+Math.sin(d*.07-T6*5)*A*(.5+.5*f);yy===ya?x.moveTo(px,yy):x.lineTo(px,yy)}x.stroke()});
+  const yEnd=h-R*1.6,ya=wy2+R*.5;
+  [-1,1].forEach(s=>{const tipx=pcx+s*pw,col=s<0?'#FF972E':'#4DA3FF';x.beginPath();x.strokeStyle=col;x.lineWidth=2.4;
+   for(let yy=ya;yy<yEnd;yy+=3){const d=yy-ya,tt=d/(yEnd-ya)*TMAX,o=wk(tt,q),cxx=tipx-s*pw*(.637-o.cx)/.637,A=Math.min(R*1.2,d*.12+2),px=cxx+Math.sin(d*.07-T6*5)*A*(.5+.5*f);yy===ya?x.moveTo(px,yy):x.lineTo(px,yy)}x.stroke()});
+  const ys=ya+S.d6/TMAX*(yEnd-ya);x.save();x.setLineDash([7,5]);x.strokeStyle='#F4F1EA';x.lineWidth=2;x.beginPath();x.moveTo(R*.8,ys);x.lineTo(splitX-R*.8,ys);x.stroke();x.restore();TH(x,tx('řez','slice'),R*.8,ys-R*1.1,R*.85,'#F4F1EA','left');
   SUBT(6,'<i></i>'+tx('Koncové víry za letadlem','Wingtip vortices behind an aircraft'),nf(S.m)+' kg · '+S.b+' m · '+S.V6+' m/s');
  }});
- const TL6='#2EC4B6';
  OUT.m6=()=>`<b>${nf(S.m)}</b> kg`;OUT.b6=()=>`<b>${S.b}</b> m`;OUT.v6s=()=>`<b>${S.V6}</b> m/s`;
- OUT.v6=()=>{const q=g6();return rd([[tx('Vztlak = tíha L = m·g','Lift = weight L = m·g'),nf(q.L/1000)+' kN'],[tx('Cirkulace víru Γ','Vortex circulation Γ'),nf(q.G)+' m²/s'],[tx('Rozteč víru b₀ = π·b/4','Vortex spacing b₀ = π·b/4'),nf(q.b0,1)+' m'],[tx('Pár klesá rychlostí','The pair sinks at'),nf(q.U,1)+' m/s'],[tx('za minutu klesne','in one minute it sinks'),nf(q.U*60)+' m']])};
+ OUT.d6=()=>`<b>${nf(S.d6,1)}</b> s · ${nf(S.V6*S.d6)} m`;
+ OUT.pb6=()=>S.p6?tx('⏸ Zastavit posun řezu','⏸ Stop moving the slice'):tx('▶ Posouvat řez od křídel','▶ Move the slice from the wings');
+ OUT.v6=()=>{const q=g6(),o=wk(S.d6,q);return rd([[tx('Vztlak = tíha L = m·g','Lift = weight L = m·g'),nf(q.L/1000)+' kN'],[tx('Cirkulace víru Γ','Vortex circulation Γ'),nf(q.G)+' m²/s'],[tx('Rozteč víru b₀ = π·b/4','Vortex spacing b₀ = π·b/4'),nf(q.b0,1)+' m'],[tx('Pár klesá rychlostí','The pair sinks at'),nf(q.U,1)+' m/s'],[tx('V řezu už klesl o','In the slice it has sunk by'),nf(o.sinkM)+' m'],[tx('Stočení vírů','Roll-up done'),nf(o.r*100)+' %']])};
 }
 
 /* ===== 7 Pro děti ===== */
@@ -1113,7 +1192,7 @@ D:{
  c3b:()=>tx('Graf součinitele tlaku podél tětivy: horní strana, spodní strana a plocha mezi nimi jako vztlak.','Graph of the pressure coefficient along the chord: upper side, lower side and the area between them as lift.'),
  c4:()=>({bern:tx('Vysvětlení tlakem a rychlostí se dvěma sondami.','Explanation by pressure and speed with two probes.'),newton:tx('Vysvětlení odklonem proudu: svislá složka rychlosti.','Explanation by deflected flow: the vertical velocity component.'),race:tx('Závod částic nad a pod křídlem.','Particle race above and below the wing.')})[S.expl],
  c5:()=>S.m5==='start'?tx('Rozběh křídla z klidu: rozběhový vír a cirkulace kolem křídla.','Start of the wing from rest: the starting vortex and circulation around the wing.'):tx('Přetažení: sklon se zvyšuje, nad kritickým úhlem se proud odtrhne a vztlak klesne; v rohu je graf vztlaku podle sklonu.','Stall: the angle rises; above the critical angle the flow separates and lift drops; a chart of lift versus angle is in the corner.'),
- c6:()=>tx(`Koncové víry za letadlem o hmotnosti ${nf(S.m)} kg: pohled shora a zezadu.`,`Wingtip vortices behind an aircraft of ${nf(S.m)} kg: view from above and from behind.`),
+ c6:()=>S.v6m==='3d'?tx(`Koncové víry za letadlem o hmotnosti ${nf(S.m)} kg ve 3D. Pohled lze otáčet tažením, řez je ${nf(S.d6,1)} s za letadlem.`,`Wingtip vortices behind an aircraft of ${nf(S.m)} kg in 3D. The view can be rotated by dragging, the slice is ${nf(S.d6,1)} s behind the aircraft.`):tx(`Koncové víry za letadlem o hmotnosti ${nf(S.m)} kg: pohled shora a zezadu v řezu ${nf(S.d6,1)} s za letadlem.`,`Wingtip vortices behind an aircraft of ${nf(S.m)} kg: view from above and from behind in a slice ${nf(S.d6,1)} s behind the aircraft.`),
  c7:()=>({paper:tx('Pokus s papírem: rychlý vzduch nad papírem ho zvedne.','The paper experiment: fast air above the paper lifts it.'),hand:tx('Nakloněná dlaň ve větru odhání vzduch dolů.','A tilted hand in the wind pushes the air downward.'),wing:tx('Křídlo v proudu vzduchu: nahoře méně tlaku, dole víc.','A wing in the air stream: less pressure above, more below.')})[S.k7]}};
 
 </script>
