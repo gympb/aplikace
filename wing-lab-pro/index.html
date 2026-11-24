@@ -1,0 +1,1175 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wing Lab Pro</title>
+<meta name="description" content="Interaktivní laboratoř křídla letadla: obtékání, rychlost vzduchu, tlak a sání nad křídlem, dvě vysvětlení vztlaku, víry za křídlem, koncové víry a výklad pro děti. Určeno pro projekci a velké dotykové panely.">
+<meta name="author" content="Ivo Bešťák">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/fonty/fonty.css">
+<style>
+:root{
+--f-head:'Montserrat','Segoe UI',system-ui,sans-serif;
+--f-body:'Atkinson Hyperlegible Next','Segoe UI',system-ui,sans-serif;
+--f-mono:'Atkinson Hyperlegible Mono',ui-monospace,Consolas,monospace;
+--orange:#FF972E;--orange-t:#B85800;--orange-soft:#FFE6C8;
+--bg:#F4F1EA;--card:#FFFFFF;--ink:#17140F;--ink2:#5A5446;--line:#E2DBCC;--line2:#CFC7B5;
+--scope:#16130E;--grid:rgba(244,241,234,.08);--grid2:rgba(244,241,234,.2);
+--analog:#BDB6A7;--cream:#F4F1EA;--bad:#FF6A4D;--good:#5DB67F;
+--shadow:0 .06rem 0 rgba(60,40,10,.06),0 1.1rem 2.4rem -1.6rem rgba(60,40,10,.4);
+color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+--orange-t:#FFA94D;--orange-soft:#47311A;--bg:#12100C;--card:#1D1A14;--ink:#F4F1EA;--ink2:#B5AD9C;--line:#332F27;--line2:#463F34;
+--scope:#0A0907;--shadow:0 1.1rem 2.4rem -1.6rem rgba(0,0,0,.8);color-scheme:dark}}
+:root[data-theme=dark]{--orange-t:#FFA94D;--orange-soft:#47311A;--bg:#12100C;--card:#1D1A14;--ink:#F4F1EA;--ink2:#B5AD9C;--line:#332F27;--line2:#463F34;
+--scope:#0A0907;--shadow:0 1.1rem 2.4rem -1.6rem rgba(0,0,0,.8);color-scheme:dark}
+*{box-sizing:border-box}
+html{font-size:clamp(9px,min(calc(100vw/96),calc(100vh/54)),80px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1.1rem/1.38 var(--f-body);overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation;padding:0}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:.2rem solid var(--orange);outline-offset:.15rem}
+b{font-weight:700}
+.app{height:100vh;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+/* hlavička */
+.top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:1.6rem;padding:.9rem 2rem .6rem}
+.brand{display:flex;flex-direction:column;gap:.15rem;min-width:15rem}
+.back{font:600 .82rem/1 var(--f-head);color:var(--ink2);text-decoration:none;letter-spacing:.02em}
+.back:hover{color:var(--orange-t)}
+.brand b{font:800 1.7rem/1 var(--f-head);letter-spacing:-.01em}
+.brand b span{background:linear-gradient(transparent 58%,var(--orange) 58%,var(--orange) 92%,transparent 92%);padding:0 .1rem}
+.brand small{font:700 .66rem/1 var(--f-head);letter-spacing:.22em;text-transform:uppercase;color:var(--orange-t)}
+.tabs{display:flex;gap:.2rem;justify-content:center;min-width:0}
+.tab-b{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;padding:.55rem .6rem .6rem;border-radius:1rem;min-width:0;flex:0 1 auto;min-height:3.6rem;transition:background .2s,color .2s}
+.tab-b .kap{font:700 .6rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
+.tab-b .nm{font:700 .94rem/1.1 var(--f-head);white-space:nowrap}
+.tab-b:hover{background:rgba(255,151,46,.14)}
+.tab-b[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.tab-b[aria-selected=true] .kap{color:var(--orange)}
+.tools{display:flex;gap:.5rem}
+.ib{width:3.1rem;height:3.1rem;border-radius:50%;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center}
+.ib svg{width:1.5rem;height:1.5rem;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ib[aria-pressed=false]{opacity:.55}
+.ib:hover{background:var(--orange);color:#17140F}
+.lang{display:grid;grid-auto-flow:column;gap:.2rem;background:var(--card);box-shadow:var(--shadow);border-radius:1.6rem;padding:.25rem;height:3.1rem;align-items:center}
+.lang button{height:2.6rem;padding:0 .8rem;border-radius:1.3rem;font:800 calc(.9rem*var(--z)) Montserrat,sans-serif;letter-spacing:.04em;color:var(--ink2)}
+.lang button.on{background:var(--ink);color:var(--bg)}
+.lang button:not(.on):hover{background:var(--orange);color:#17140F}
+#stage{padding:.3rem 2rem .5rem;min-height:0;overflow:hidden}
+.foot{display:flex;justify-content:space-between;padding:.2rem 2rem .7rem;font:500 calc(.8rem*var(--z))/1 var(--f-mono);color:var(--ink2)}
+/* rozvržení */
+.tab{height:100%;display:grid;gap:1rem;min-height:0}
+.tab[hidden]{display:none}
+.split{display:grid;grid-template-columns:minmax(0,1fr) var(--side,27rem);gap:1rem;min-height:0}
+.col{display:flex;flex-direction:column;gap:1rem;min-height:0;min-width:0}
+.col>.grow{flex:1;min-height:0}
+.card{background:var(--card);border-radius:1.2rem;padding:1rem 1.2rem;box-shadow:var(--shadow);min-width:0}
+.side{overflow:hidden}
+.side.card{display:flex;flex-direction:column;gap:.75rem}
+.lbl{font:700 calc(.68rem*var(--z))/1 var(--f-head);letter-spacing:.22em;text-transform:uppercase;color:var(--orange-t)}
+.ctl{display:flex;flex-direction:column;gap:.35rem}
+.ctl .hd{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem}
+.val{font:500 1.05rem/1 var(--f-mono);color:var(--ink)}
+.val b{font-weight:500;color:var(--orange-t)}
+h2.t{font:800 1.9rem/1.05 var(--f-head);margin:0;letter-spacing:-.01em}
+p.n{margin:0;color:var(--ink2);font-size:calc(.95rem*var(--z));line-height:1.35}
+/* scope */
+.scope{position:relative;border-radius:1.2rem;background:radial-gradient(120% 140% at 50% 0%,#241F17 0%,var(--scope) 62%);overflow:hidden;box-shadow:var(--shadow);min-height:0}
+:root[data-theme=dark] .scope,:root:not([data-theme=light]) .scope{outline:1px solid rgba(244,241,234,.07)}
+.scope canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.tag{position:absolute;left:1rem;top:.8rem;font:700 .66rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--cream);opacity:.8;pointer-events:none;display:flex;gap:.7rem;align-items:center}
+.tag i{display:inline-block;width:.9rem;height:.28rem;border-radius:.2rem;background:var(--orange)}
+.tag i.a{background:var(--analog)}
+.tag i.b{background:var(--bad)}
+.badge{position:absolute;right:1rem;top:.7rem;font:500 .95rem/1 var(--f-mono);color:var(--cream);opacity:.85;pointer-events:none;text-align:right}
+.scope .over{position:absolute;inset:0;overflow:hidden}
+/* ovládací prvky */
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{min-height:2.7rem;padding:.45rem .95rem;border-radius:1.4rem;background:var(--bg);box-shadow:inset 0 0 0 .13rem var(--line2);font:600 calc(.95rem*var(--z))/1.1 var(--f-head);transition:background .15s,color .15s,transform .1s;white-space:nowrap}
+.chip small{font:500 calc(.78rem*var(--z)) var(--f-body);opacity:.75;margin-left:.35rem}
+.chip:hover{box-shadow:inset 0 0 0 .13rem var(--orange)}
+.chip:active{transform:scale(.96)}
+.chip.on{background:var(--ink);color:var(--bg);box-shadow:none}
+.chips.g4{display:grid;grid-template-columns:repeat(4,1fr)}
+.chips.g4 .chip{padding:.45rem .2rem;text-align:center}
+.chips.g3{display:grid;grid-template-columns:repeat(3,1fr)}
+.chips.g3 .chip{padding:.45rem .3rem;text-align:center}
+.chips.g2{display:grid;grid-template-columns:repeat(2,1fr)}
+.chips.g2 .chip{text-align:center}
+.btn{min-height:3.3rem;padding:.6rem 1.4rem;border-radius:1.7rem;background:var(--orange);color:#17140F;font:700 1.05rem/1 var(--f-head);display:inline-flex;gap:.6rem;align-items:center;justify-content:center;box-shadow:0 .25rem 0 #C86D00;transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(.2rem);box-shadow:0 .05rem 0 #C86D00}
+.btn.sec{background:var(--bg);box-shadow:inset 0 0 0 .13rem var(--line2);color:var(--ink)}
+.btn.sec:active{transform:scale(.97)}
+.btn.sec:hover{box-shadow:inset 0 0 0 .13rem var(--orange)}
+.btn svg{width:1.1rem;height:1.1rem;fill:currentColor}
+.btn.on{background:var(--ink);color:var(--bg);box-shadow:none}
+.row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.row>.btn{flex:1}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2.4rem;background:transparent;touch-action:pan-y;margin:0;--p:50%}
+input[type=range]::-webkit-slider-runnable-track{height:.65rem;border-radius:.4rem;background:linear-gradient(90deg,var(--orange) var(--p),var(--line) var(--p))}
+input[type=range]::-moz-range-track{height:.65rem;border-radius:.4rem;background:var(--line)}
+input[type=range]::-moz-range-progress{height:.65rem;border-radius:.4rem;background:var(--orange)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:2.2rem;height:2.2rem;border-radius:50%;background:var(--card);border:.28rem solid var(--orange);margin-top:-.78rem;box-shadow:0 .2rem .6rem rgba(0,0,0,.25)}
+input[type=range]::-moz-range-thumb{width:1.7rem;height:1.7rem;border-radius:50%;background:var(--card);border:.28rem solid var(--orange)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:.25rem;background:var(--bg);padding:.25rem;border-radius:1.5rem;box-shadow:inset 0 0 0 .13rem var(--line2)}
+.seg .chip{box-shadow:none;background:transparent;border-radius:1.2rem;text-align:center}
+.seg .chip.on{background:var(--ink);color:var(--bg)}
+.callout{border-radius:.9rem;background:var(--bg);padding:.7rem .9rem;border-left:.3rem solid var(--orange);font-size:calc(.9rem*var(--z));line-height:1.35;color:var(--ink2)}
+.callout b.l{display:block;font:700 calc(.62rem*var(--z))/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t);margin-bottom:.3rem}
+.status{display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;border-radius:1rem;font:700 1rem/1.15 var(--f-head);background:rgba(93,182,127,.18);color:var(--ink)}
+.status i{width:1rem;height:1rem;border-radius:50%;background:var(--good);flex:none}
+.status.bad{background:rgba(255,106,77,.18)}
+.status.bad i{background:var(--bad)}
+.big{font:800 3rem/1 var(--f-head);letter-spacing:-.02em}
+.big u{font:600 1rem var(--f-head);text-decoration:none;color:var(--ink2);margin-left:.4rem;letter-spacing:0}
+.or{color:var(--orange-t)}
+
+/* Wing Lab Pro */
+.chartbox{position:relative;height:13rem;padding:0;overflow:hidden}.chartbox canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.rd{display:grid;grid-template-columns:1fr auto;gap:.3rem .9rem;font:500 calc(.95rem*var(--z))/1.25 var(--f-mono)}
+.rd span{color:var(--ink2);font-family:var(--f-body)}.rd b{font-weight:600;text-align:right}
+.mx,.mx5,.mx7{display:none;flex-direction:column;gap:.7rem}.mx.on,.mx5.on,.mx7.on{display:flex}
+.kid{border-radius:.9rem;background:var(--bg);padding:.6rem .9rem;font-size:calc(.95rem*var(--z));line-height:1.4;color:var(--ink)}
+.kid b{display:block;font:700 calc(.62rem*var(--z))/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t);margin-bottom:.3rem}
+.chips.mini .chip{min-height:2.4rem}
+.side{overflow:auto}
+.tab-b .nm,.tab-b .kap{white-space:nowrap}
+.btn{min-height:3rem}
+
+@media (max-aspect-ratio:1/1){
+html{font-size:clamp(9px,1.9vw,22px)}body{overflow:auto}.app{height:auto;min-height:100vh}#stage{overflow:visible}
+.split{grid-template-columns:1fr}.scope{min-height:22rem}.top{grid-template-columns:1fr}.tabs{flex-wrap:wrap}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.cap{position:absolute;left:1rem;top:2.2rem;font:400 calc(.98rem*var(--z))/1.3 var(--f-body);color:var(--cream);opacity:.78;max-width:62%;pointer-events:none}
+.tg{position:absolute;right:1rem;bottom:.7rem;gap:.4rem}
+.tg .chip.on{background:var(--orange);color:#17140F}
+.cmp .rw.on>div:not(.r){background:var(--orange-soft);border-radius:.5rem}
+.cmp .rw[data-k]{cursor:pointer}
+.side hr{border:0;border-top:1px solid var(--line);margin:.2rem 0;width:100%}
+.sz .tr i.rg{background:repeating-linear-gradient(135deg,var(--orange) 0 .4rem,var(--orange-soft) .4rem .8rem)}
+.side .chips.g4 .chip{min-height:2.3rem}
+.bars .br{grid-template-columns:13rem 1fr 6.4rem}
+.fm .br{grid-template-columns:12rem 1fr 10rem 7rem}
+[hidden]{display:none!important}
+
+.msg2{margin-top:.5rem;font-size:calc(.8rem*var(--z));line-height:1.35;color:var(--ink2)}.msg2.bad{color:var(--bad);font-weight:600}
+.scope.drop{outline:.25rem dashed var(--orange);outline-offset:-.6rem}
+
+#c1{cursor:grab;touch-action:none}#c1:active{cursor:grabbing}
+.chips.mini{margin-top:.45rem;gap:.35rem}.chips.mini .chip{min-height:2rem;padding:.2rem .75rem;font-size:calc(.8rem*var(--z))}
+
+
+.ib.q{font:800 1.4rem/1 var(--f-head)}
+#help{position:fixed;inset:0;z-index:50;background:rgba(10,9,7,.6);display:grid;place-items:center;padding:2rem}
+#help[hidden]{display:none}
+#help .dlg{width:min(62rem,100%);max-height:100%;overflow:auto;background:var(--card);color:var(--ink);border-radius:1.2rem;box-shadow:0 2rem 5rem rgba(0,0,0,.5);padding:1.6rem 2rem 1.8rem;user-select:text;-webkit-user-select:text}
+#help h2{margin:0 0 .2rem;font:800 1.6rem/1.15 var(--f-head)}
+#help .kap{font:700 .7rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
+#help h3{margin:1.1rem 0 .3rem;font:700 calc(.8rem*var(--z))/1 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:var(--orange-t)}
+#help p,#help li{font-size:1.02rem;line-height:1.45;color:var(--ink2);margin:.25rem 0}
+#help ul{margin:.2rem 0;padding-left:1.3rem}
+#help b{color:var(--ink)}
+#help .x{float:right;margin:-.3rem -.6rem 0 1rem;width:2.8rem;height:2.8rem;border-radius:50%;background:var(--bg);font:700 1.2rem/1 var(--f-head)}
+#help .nav{display:flex;gap:.6rem;margin-top:1.2rem}
+#help .nav button{padding:.6rem 1rem;border-radius:.8rem;background:var(--bg);font:700 calc(.9rem*var(--z))/1 var(--f-head)}
+
+</style>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="gymplikace">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Wing Lab Pro">
+<meta property="og:description" content="Interaktivní laboratoř křídla letadla: obtékání, rychlost vzduchu, tlak a sání nad křídlem, dvě vysvětlení vztlaku, víry za křídlem, koncové víry a výklad pro děti. Určeno zejména velké dotykové panely. Pro mobily nevhodné.">
+<meta property="og:url" content="https://aplikace.gympb.cz/wing-lab-pro/">
+<meta property="og:image" content="https://aplikace.gympb.cz/wing-lab-pro/nahled.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style id="cr-css">
+.cr-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box}
+.cr-row>a{width:auto!important;flex:0 1 auto;min-width:0}
+.cr-row.cr-left{width:auto;justify-content:flex-start;gap:18px}
+.cr-btn{font:inherit;font-size:14px;line-height:1.2;color:inherit;opacity:.8;background:none;border:0;padding:0 4px;margin:0;min-height:40px;width:auto;cursor:pointer;text-decoration:underline;white-space:nowrap;flex:0 0 auto}
+.cr-btn:hover,.cr-btn:focus-visible{opacity:1}
+.cr-btn.cr-stack{display:block;text-align:left;padding:0;min-height:36px}
+dialog.cr{position:fixed;inset:0;margin:auto;height:fit-content;box-sizing:border-box;width:min(30rem,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;border:1px solid #cfc9bb;border-radius:14px;padding:20px 22px;background:#fff;color:#1b2230;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;text-align:left;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+dialog.cr::backdrop{background:rgba(10,14,22,.55)}
+dialog.cr h2{margin:0 0 12px;font:700 20px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1b2230;text-transform:none;letter-spacing:0}
+dialog.cr dl{margin:0 0 14px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:16px}
+dialog.cr dt{color:#5b6475;margin:0}
+dialog.cr dd{margin:0}
+dialog.cr a{color:#1d4ed8}
+dialog.cr>p{margin:0 0 10px;font-size:15px;color:#3b4556}
+dialog.cr .cr-note{margin:0 0 14px;font-size:14px;color:#3b4556}
+dialog.cr .cr-note p{margin:0 0 8px;font-size:14px;color:#3b4556}
+dialog.cr .cr-extra{margin:0 0 14px}
+dialog.cr button.cr-x,dialog.cr .cr-extra button{font:700 16px/1.2 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;width:auto;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid #cfc9bb;background:#fff;color:#1b2230;cursor:pointer;margin:0}
+</style>
+</head>
+<body>
+<div class="app">
+ <header class="top">
+  <div class="brand"><span class="cr-row cr-left"><a class="back" href="../" id="tBack">← Všechny školní aplikace</a><button type="button" class="cr-btn" id="crBtn" data-credits aria-haspopup="dialog">Autor a licence</button></span><b><span>Wing Lab</span> Pro</b><small id="tSub">Gymnázium Příbram · Fyzika</small></div>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Záložky"></nav>
+  <div class="tools">
+   <button class="ib q" id="bHelp" data-act="help"></button>
+   <div class="lang" role="group" aria-label="Jazyk / Language"><button data-act="lang" data-v="cs" lang="cs">CZ</button><button data-act="lang" data-v="en" lang="en">EN</button></div>
+   <button class="ib" id="bRun" data-act="run" aria-pressed="true"></button>
+   <button class="ib" id="bThm" data-act="theme" aria-label="Světlý nebo tmavý vzhled"></button>
+   <button class="ib" id="bFul" data-act="full" aria-label="Celá obrazovka"></button>
+  </div>
+ </header>
+ <main id="stage"></main>
+ <div id="help" hidden role="dialog" aria-modal="true"><div class="dlg"></div></div></div>
+ <dialog class="cr" id="credits" aria-labelledby="crH">
+<h2 id="crH">Autor a licence</h2>
+<p id="fL"></p>
+<p id="fR"></p>
+<button type="button" class="cr-x" id="cr-x">Zavřít</button>
+</dialog>
+<script>
+(function () {
+  var dlg = document.getElementById('credits'), opener = null;
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-credits]') : null;
+    if (b) { opener = b; if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); return; }
+    if (e.target === dlg || e.target.id === 'cr-x') dlg.close();
+  });
+  dlg.addEventListener('close', function () { if (opener && document.contains(opener)) opener.focus(); });
+})();
+</script>
+<script>
+'use strict';
+/* ========== pomocné funkce ========== */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+let LANG='cs';try{LANG=localStorage.getItem('wlp-lang')||''}catch(e){}
+if(LANG!=='cs'&&LANG!=='en')LANG=/^cs|^sk/i.test(navigator.language||'cs')?'cs':'en';
+const tx=(c,e)=>LANG==='en'?e:c;
+const nf=(n,d=0)=>(+n).toLocaleString(LANG==='en'?'en-US':'cs-CZ',{maximumFractionDigits:d,minimumFractionDigits:0});
+const nfs=(n,d=0)=>(n>0?'+':n<0?'−':'')+nf(Math.abs(n),d);
+const TAU=Math.PI*2;
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const RHO=1.225,CREAL=1.5,G9=9.81;
+
+/* ========== barvy a plátno ========== */
+const C={};
+function readC(){const cs=getComputedStyle(document.documentElement);['orange','orange-t','bg','card','ink','ink2','line','line2','scope','grid','grid2','analog','cream','bad','good'].forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim())}
+const REM=()=>parseFloat(getComputedStyle(document.documentElement).fontSize)||16;
+function setup(cv){
+ const r=cv.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2);
+ const w=Math.max(20,Math.round(r.width)),h=Math.max(20,Math.round(r.height));
+ if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d)}
+ const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,h);
+ return{x,w,h,R:REM()};
+}
+let PZ=1;
+function HALO(){return 'rgba(20,18,16,.7)'}
+function T(x,s,px,py,size,col,al='left',font='Atkinson Hyperlegible Mono',wt=500){x.font=`${wt} ${size*PZ}px "${font}",monospace`;x.fillStyle=col;x.textAlign=al;x.textBaseline='middle';x.lineJoin='round';x.lineWidth=size*PZ*.28;x.strokeStyle=HALO();x.strokeText(s,px,py);x.fillText(s,px,py)}
+function TH(x,s,px,py,size,col,al='left'){T(x,s,px,py,size,col,al,'Montserrat',700)}
+function line(x,x1,y1,x2,y2,col,w=1,dash){x.beginPath();x.strokeStyle=col;x.lineWidth=w*(PZ>1?1.5:1);x.setLineDash(dash||[]);x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();x.setLineDash([])}
+function dot(x,px,py,r,col){x.beginPath();x.fillStyle=col;x.arc(px,py,r,0,TAU);x.fill()}
+function arrow(x,x1,y1,x2,y2,col,w=2,hd){
+ const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);if(L<1)return;const R=REM(),h=hd||Math.min(R*.8,L*.5)*(PZ>1?1.2:1),ux=dx/L,uy=dy/L;
+ x.beginPath();x.strokeStyle=col;x.lineWidth=w*(PZ>1?1.4:1);x.lineCap='round';x.moveTo(x1,y1);x.lineTo(x2-ux*h*.6,y2-uy*h*.6);x.stroke();
+ x.beginPath();x.fillStyle=col;x.moveTo(x2,y2);x.lineTo(x2-ux*h-uy*h*.42,y2-uy*h+ux*h*.42);x.lineTo(x2-ux*h+uy*h*.42,y2-uy*h-ux*h*.42);x.closePath();x.fill();
+}
+/* okno ze souřadnic modelu na plátno: střed (cx,cy), polovina šířky hw */
+function mkView(cv,cx,cy,hw){
+ const g=setup(cv);g.sc=g.w/(2*hw);g.cx=cx;g.cy=cy;g.hw=hw;g.hh=g.h/g.sc/2;
+ g.X=v=>g.w/2+(v-cx)*g.sc;g.Y=v=>g.h/2-(v-cy)*g.sc;g.ix=px=>cx+(px-g.w/2)/g.sc;g.iy=py=>cy-(py-g.h/2)/g.sc;
+ g.xmin=cx-hw;g.xmax=cx+hw;g.ymin=cy-g.hh;g.ymax=cy+g.hh;LG[cv.id]=g;return g;
+}
+const LG={};
+
+/* ========== stav a řídicí smyčka ========== */
+const HOOK={},ACT={},OUT={},MAPS={},IMAP={};
+const S={tab:0,run:!RM,
+ al:6,th:.12,cm:.04,V:60,view:'lines',stag:true,
+ fld:'both',pr:[{x:-.2,y:1.25},{x:-.2,y:-1.25}],
+ f3:'both',
+ expl:'bern',
+ m5:'start',al5:18,
+ pre:'mid',m:1000,b:11,V6:50};
+function set(k,v){S[k]=v;HOOK[k]&&HOOK[k](v);refresh()}
+let _rq=0;
+function refresh(){if(_rq)return;_rq=requestAnimationFrame(()=>{_rq=0;sync();const t=TABS[S.tab];t&&t.render&&t.render()})}
+function sync(){
+ $$('[data-k][data-v]').forEach(el=>el.classList.toggle('on',String(S[el.dataset.k])===el.dataset.v));
+ $$('input[data-k]').forEach(el=>{let v=S[el.dataset.k];if(el.dataset.map)v=IMAP[el.dataset.map](v);el.value=v;el.style.setProperty('--p',((el.value-el.min)/(el.max-el.min)*100)+'%')});
+ $$('[data-o]').forEach(el=>{const f=OUT[el.dataset.o];if(f){const h=f();if(el.innerHTML!==h)el.innerHTML=h}});
+}
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-k][data-v],[data-act]');if(!el)return;
+ if(el.dataset.act){ACT[el.dataset.act]&&ACT[el.dataset.act](el.dataset.v,el);return}
+ let v=el.dataset.v;if(/^-?\d+(\.\d+)?$/.test(v))v=+v;else if(v==='true')v=true;else if(v==='false')v=false;set(el.dataset.k,v);
+});
+document.addEventListener('input',e=>{
+ const el=e.target;if(el.type!=='range'||!el.dataset.k)return;
+ let v=+el.value;if(el.dataset.map)v=MAPS[el.dataset.map](v);set(el.dataset.k,v);
+});
+function syncOut(){$$('#stage [data-t="'+S.tab+'"] [data-o]').forEach(el=>{const f=OUT[el.dataset.o];if(f){const h=f();if(el.innerHTML!==h)el.innerHTML=h}})}
+let lastTs=0;
+function loop(ts){
+ const dt=Math.min(.05,(ts-lastTs)/1000||0.016);lastTs=ts;
+ const t=TABS[S.tab];
+ if(t&&t.anim&&S.run&&!document.hidden&&$('#help').hidden){t.anim(dt);t.render&&t.render();syncOut()}
+ requestAnimationFrame(loop);
+}
+function stopAll(){}
+
+/* ========== fyzikální model: Joukowského profil, ideální proudění s cirkulací ========== */
+/* Proudění se počítá analyticky: kružnice v rovině ζ se zobrazí na profil z = ζ + 1/ζ, cirkulace Γ vychází z Kuttovy podmínky.
+   Rychlost V∞ = 1, délky v jednotkách modelu (tětiva je asi 4). Obraz je otočený tak, aby proud vždy šel zleva doprava. */
+function wing(alDeg,e,f){
+ const a=Math.hypot(1+e,f),beta=Math.asin(f/a),al=alDeg*Math.PI/180,G=4*Math.PI*a*Math.sin(al+beta),ca=Math.cos(al),sa=Math.sin(al);
+ const N=360,P=[];let xmin=1e9,yle=0;
+ for(let i=0;i<N;i++){const t=i/N*TAU,zx=-e+a*Math.cos(t),zy=f+a*Math.sin(t),m=zx*zx+zy*zy,px=zx+zx/m,py=zy-zy/m;P.push([px,py]);if(px<xmin){xmin=px;yle=py}}
+ const chord=2-xmin,mid=(2+xmin)/2;
+ const w={e,f,a,beta,al,alDeg,G,ca,sa,chord,mid,CL:2*G/chord,sig:alDeg+'|'+e+'|'+f};
+ const toS=(zx,zy)=>{const rx=zx-mid;return[rx*ca+zy*sa,-rx*sa+zy*ca]};
+ w.toS=toS;w.out=P.map(p=>toS(p[0],p[1]));w.LE=toS(xmin,yle);w.TE=toS(2,0);
+ /* tloušťka a prohnutí z obrysu */
+ let th=0,cb=0;
+ for(let k=1;k<50;k++){const x0=xmin+chord*k/50;let hi=-1e9,lo=1e9;
+  for(let i=0;i<N;i++){const A=P[i],B=P[(i+1)%N];if((A[0]-x0)*(B[0]-x0)<=0&&A[0]!==B[0]){const y=A[1]+(B[1]-A[1])*(x0-A[0])/(B[0]-A[0]);if(y>hi)hi=y;if(y<lo)lo=y}}
+  if(hi>lo){th=Math.max(th,hi-lo);cb=Math.max(cb,Math.abs((hi+lo)/2-yle*(2-x0)/(2-xmin)))}}
+ w.tc=th/chord;w.cc=cb/chord;
+ const VV={u:0,v:0,inside:false};w.VV=VV;
+ w.vel=(sx,sy)=>{
+  const zx=sx*ca-sy*sa+mid,zy=sx*sa+sy*ca;
+  const px=zx*zx-zy*zy-4,py=2*zx*zy,r=Math.hypot(px,py);
+  let s1=Math.sqrt((r+px)/2),s2=Math.sqrt(Math.max(0,(r-px)/2));if(py<0)s2=-s2;
+  const ax=(zx+s1)/2,ay=(zy+s2)/2,bx=(zx-s1)/2,by=(zy-s2)/2;
+  let cx,cy;if(ax*ax+ay*ay>=bx*bx+by*by){cx=ax;cy=ay}else{cx=bx;cy=by}
+  const qx=cx+e,qy=cy-f,q2=qx*qx+qy*qy;
+  if(q2<a*a){VV.u=0;VV.v=0;VV.inside=true;return VV}
+  const iq=1/q2,rx=qx*iq,ry=-qy*iq,r2x=rx*rx-ry*ry,r2y=2*rx*ry;
+  let wx=ca-a*a*(ca*r2x-sa*r2y),wy=-sa-a*a*(ca*r2y+sa*r2x);
+  wx+=G/TAU*(-ry);wy+=G/TAU*rx;
+  const c2=cx*cx+cy*cy,ix=cx/c2,iy=-cy/c2,dx=1-(ix*ix-iy*iy),dy=-2*ix*iy,d2=dx*dx+dy*dy;
+  let u,v;
+  if(d2<1e-10){u=ca;v=sa}else{const ux=(wx*dx+wy*dy)/d2,uy=(wy*dx-wx*dy)/d2;u=ux;v=-uy}
+  VV.u=u*ca+v*sa;VV.v=-u*sa+v*ca;VV.inside=false;return VV;
+ };
+ /* rychlost a tlak přímo na povrchu */
+ w.surf=function(n){
+  const t0=Math.atan2(-f,1+e),dt=TAU/n,h=dt*.5;
+  const pz=t=>{const zx=-e+a*Math.cos(t),zy=f+a*Math.sin(t),m=zx*zx+zy*zy;return toS(zx+zx/m,zy-zy/m)};
+  const s={n,X:[],Y:[],NX:[],NY:[],Q:[],CP:[],DS:[],UP:[],S:[],FyUp:0,FyLow:0,cpmin:0,ist:0};
+  const LE=w.LE,TE=w.TE,cl2=(TE[0]-LE[0])**2+(TE[1]-LE[1])**2;let qmin=1e9;
+  for(let i=0;i<n;i++){
+   const t=t0+(i+.5)*dt,p=pz(t),p1=pz(t-h),p2=pz(t+h),tx_=p2[0]-p1[0],ty_=p2[1]-p1[1],ds=Math.hypot(tx_,ty_);
+   const qx=a*Math.cos(t),qy=a*Math.sin(t),cx=qx+(-e),cy=qy+f,iq=1/(a*a),rx=qx*iq,ry=-qy*iq,r2x=rx*rx-ry*ry,r2y=2*rx*ry;
+   let wx=ca-a*a*(ca*r2x-sa*r2y),wy=-sa-a*a*(ca*r2y+sa*r2x);wx+=G/TAU*(-ry);wy+=G/TAU*rx;
+   const c2=cx*cx+cy*cy,ix=cx/c2,iy=-cy/c2,dx=1-(ix*ix-iy*iy),dy=-2*ix*iy,d2=dx*dx+dy*dy;
+   const q=Math.sqrt((wx*wx+wy*wy)/d2),cp=1-q*q,nx=ty_/ds,ny=-tx_/ds;
+   const sc=((p[0]-LE[0])*(TE[0]-LE[0])+(p[1]-LE[1])*(TE[1]-LE[1]))/cl2;
+   s.X.push(p[0]);s.Y.push(p[1]);s.NX.push(nx);s.NY.push(ny);s.Q.push(q);s.CP.push(cp);s.DS.push(ds);s.S.push(sc);
+   if(cp<s.cpmin)s.cpmin=cp;if(sc<.35&&q<qmin){qmin=q;s.ist=i}
+  }
+  /* souřadnice jdou od odtokové hrany přes horní stranu k náběžné hraně a dolní stranou zpět */
+  let iLE=0;for(let i=1;i<n;i++)if(s.S[i]<s.S[iLE])iLE=i;
+  for(let i=0;i<n;i++){const up=i<iLE;s.UP.push(up);const fy=-.5*s.CP[i]*s.NY[i]*s.DS[i];if(up)s.FyUp+=fy;else s.FyLow+=fy}
+  s.iLE=iLE;s.Fy=s.FyUp+s.FyLow;return s;
+ };
+ w.sf=null;w.getSf=()=>w.sf||(w.sf=w.surf(300));
+ return w;
+}
+let W=null;
+function curW(){const k=S.al+'|'+S.th+'|'+S.cm;if(!W||W.key!==k){W=wing(S.al,S.th,S.cm);W.key=k}return W}
+const xr=w=>w.vel;
+
+/* proudnice: normovaný krok po oblouku, začátek na levém okraji */
+function streamlines(w,xmin,xmax,ymin,ymax,n){
+ const L=[];
+ for(let k=0;k<n;k++){
+  const y0=ymin+(k+.5)/n*(ymax-ymin);let x=xmin,y=y0;const pts=[[x,y]];
+  for(let s=0;s<800&&x<xmax;s++){
+   let v=w.vel(x,y);if(v.inside)break;let q=Math.hypot(v.u,v.v)||1e-6;const h=.07;
+   const mx=x+v.u/q*h/2,my=y+v.v/q*h/2;v=w.vel(mx,my);if(v.inside)break;q=Math.hypot(v.u,v.v)||1e-6;
+   x+=v.u/q*h;y+=v.v/q*h;pts.push([x,y]);if(y>ymax+3||y<ymin-3)break;
+  }
+  L.push(pts);
+ }
+ return L;
+}
+/* dělicí proudnice: z kritického bodu u náběžné hrany zpět proti proudu */
+function splitY(w,x0){
+ const s=w.getSf(),i=s.ist;let x=s.X[i]+s.NX[i]*.03,y=s.Y[i]+s.NY[i]*.03;
+ for(let k=0;k<2500&&x>x0;k++){
+  let v=w.vel(x,y);if(v.inside)break;let q=Math.hypot(v.u,v.v)||1e-6;const h=.04;
+  const mx=x-v.u/q*h/2,my=y-v.v/q*h/2;v=w.vel(mx,my);q=Math.hypot(v.u,v.v)||1e-6;x-=v.u/q*h;y-=v.v/q*h;
+ }
+ return y;
+}
+/* doba, za kterou částice urazí cestu z (x0,y0) po x = xe (jednotky modelu, V∞ = 1) */
+function transit(w,x0,y0,xe){
+ let x=x0,y=y0,t=0;const dt=.004;
+ for(let k=0;k<9000&&x<xe;k++){
+  let v=w.vel(x,y);if(v.inside)return NaN;
+  const mx=x+v.u*dt/2,my=y+v.v*dt/2;v=w.vel(mx,my);if(v.inside)return NaN;
+  x+=v.u*dt;y+=v.v*dt;t+=dt;
+ }
+ return t;
+}
+
+/* ========== částice (kouř) ========== */
+function mkP(n,L=7){const p={n,L,x:new Float32Array(n),y:new Float32Array(n),h:[]};for(let i=0;i<n;i++)p.h.push(new Float32Array(L*2));return p}
+function pSpawn(p,i,v,init){
+ const x=init?v.xmin+Math.random()*(v.xmax-v.xmin):v.xmin-.05,y=v.ymin+Math.random()*(v.ymax-v.ymin);
+ p.x[i]=x;p.y[i]=y;const h=p.h[i];for(let k=0;k<p.L;k++){h[2*k]=x;h[2*k+1]=y}
+}
+function pInit(p,v){for(let i=0;i<p.n;i++)pSpawn(p,i,v,true)}
+function pStep(p,w,v,dt){
+ for(let i=0;i<p.n;i++){
+  const h=p.h[i];for(let k=p.L-1;k>0;k--){h[2*k]=h[2*k-2];h[2*k+1]=h[2*k-1]}
+  h[0]=p.x[i];h[1]=p.y[i];
+  let x=p.x[i],y=p.y[i],a=w.vel(x,y);
+  if(a.inside){pSpawn(p,i,v,false);continue}
+  const mx=x+a.u*dt/2,my=y+a.v*dt/2,b=w.vel(mx,my);
+  if(b.inside){pSpawn(p,i,v,false);continue}
+  x+=b.u*dt;y+=b.v*dt;
+  if(x>v.xmax||y>v.ymax+.5||y<v.ymin-.5||x<v.xmin-1){pSpawn(p,i,v,false);continue}
+  p.x[i]=x;p.y[i]=y;
+ }
+}
+function drawP(g,p,col,lw){
+ const x=g.x;x.save();x.strokeStyle=col;x.lineWidth=lw*(PZ>1?1.4:1);x.lineCap='round';x.beginPath();
+ for(let i=0;i<p.n;i++){const h=p.h[i];x.moveTo(g.X(p.x[i]),g.Y(p.y[i]));for(let k=0;k<p.L;k++)x.lineTo(g.X(h[2*k]),g.Y(h[2*k+1]))}
+ x.stroke();x.restore();
+}
+
+/* ========== barevné mapy ========== */
+const mixc=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+const VIR=(()=>{const A=[[68,1,84],[59,82,139],[33,145,140],[94,201,98],[253,231,37]],o=[];for(let i=0;i<256;i++){const t=i/255*4,k=Math.min(3,Math.floor(t));o.push(mixc(A[k],A[k+1],t-k))}return o})();
+const DK=[26,31,43],BL=[77,163,255],OR=[255,151,46],TL=[46,196,182];
+const DIV=(()=>{const o=[];for(let i=0;i<256;i++){const cp=-3+4*i/255;o.push(cp<0?mixc(DK,BL,Math.min(1,-cp/3)):mixc(DK,OR,Math.min(1,cp/1)))}return o})();
+const DVY=(()=>{const o=[];for(let i=0;i<256;i++){const v=-1+2*i/255;o.push(v<0?mixc(DK,TL,Math.min(1,-v)):mixc(DK,OR,Math.min(1,v)))}return o})();
+const FC={};
+function fieldImg(kind,g,w){
+ const fw=210,fh=Math.max(40,Math.round(fw*g.h/g.w)),key=kind+'|'+w.sig+'|'+g.cx+'|'+g.cy+'|'+g.hw.toFixed(3)+'|'+fw+'x'+fh;
+ let o=FC[kind];if(o&&o.key===key)return o.cv;
+ const cv=o?o.cv:document.createElement('canvas');cv.width=fw;cv.height=fh;
+ const cx=cv.getContext('2d'),im=cx.createImageData(fw,fh),d=im.data;
+ for(let j=0;j<fh;j++)for(let i=0;i<fw;i++){
+  const sx=g.cx-g.hw+(i+.5)/fw*2*g.hw,sy=g.cy+g.hh-(j+.5)/fh*2*g.hh,v=w.vel(sx,sy),k=(j*fw+i)*4;
+  if(v.inside){d[k+3]=0;continue}
+  let c;
+  if(kind==='speed')c=VIR[clamp(Math.round(Math.hypot(v.u,v.v)/2*255),0,255)];
+  else if(kind==='cp'){const q2=v.u*v.u+v.v*v.v;c=DIV[clamp(Math.round((1-q2+3)/4*255),0,255)]}
+  else c=DVY[clamp(Math.round((v.v+1)/2*255),0,255)];
+  d[k]=c[0];d[k+1]=c[1];d[k+2]=c[2];d[k+3]=255;
+ }
+ cx.putImageData(im,0,0);FC[kind]={cv,key};return cv;
+}
+function drawField(g,kind,w,alpha){
+ const x=g.x;x.save();x.globalAlpha=alpha==null?1:alpha;x.imageSmoothingEnabled=true;x.drawImage(fieldImg(kind,g,w),0,0,g.w,g.h);x.restore();
+}
+function legend(g,lut,v0,v1,labs,title){
+ const x=g.x,R=g.R,bw=R*11,bh=R*.7,bx=R*1.2,by=g.h-R*2.4;
+ for(let i=0;i<64;i++){const c=lut[Math.round(i/63*255)];x.fillStyle=`rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;x.fillRect(bx+i/64*bw,by,bw/64+.6,bh)}
+ x.strokeStyle='rgba(244,241,234,.35)';x.lineWidth=1;x.strokeRect(bx,by,bw,bh);
+ labs.forEach(l=>{const px=bx+(l[0]-v0)/(v1-v0)*bw;line(x,px,by+bh,px,by+bh+R*.25,'rgba(244,241,234,.6)',1);T(x,l[1],px,by+bh+R*.85,R*.72,'rgba(244,241,234,.8)','center')});
+ T(x,title,bx,by-R*.55,R*.72,'rgba(244,241,234,.8)');
+}
+function drawWing(g,w,fill){
+ const x=g.x;x.beginPath();w.out.forEach((p,i)=>{const px=g.X(p[0]),py=g.Y(p[1]);i?x.lineTo(px,py):x.moveTo(px,py)});x.closePath();
+ x.fillStyle=fill||'#F4F1EA';x.fill();x.lineWidth=2*(PZ>1?1.3:1);x.strokeStyle='#17140F';x.lineJoin='round';x.stroke();
+}
+
+/* indexy bodů povrchu rovnoměrně po oblouku */
+function surfPick(s,k){const tot=s.DS.reduce((a,b)=>a+b,0),st=tot/k,o=[];let acc=st/2;for(let i=0;i<s.n;i++){acc+=s.DS[i];if(acc>=st){o.push(i);acc-=st}}return o}
+
+/* ========== záložky 1 až 4 ========== */
+const TABS=[];
+const sl=(k,lbl,min,max,step,o,map)=>`<div class="ctl"><div class="hd"><span class="lbl">${lbl}</span><span class="val" data-o="${o}"></span></div><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}"${map?` data-map="${map}"`:''} aria-label="${lbl}"></div>`;
+const chips=(k,arr,cls='')=>`<div class="chips ${cls}">${arr.map(a=>`<button class="chip" data-k="${k}" data-v="${a[0]}">${a[1]}</button>`).join('')}</div>`;
+const call=(t,b)=>`<div class="callout"><b class="l">${t}</b>${b}</div>`;
+const rd=rows=>`<div class="rd">${rows.map(r=>`<span>${r[0]}</span><b>${r[1]}</b>`).join('')}</div>`;
+const scope=(id,extra='')=>`<div class="scope grow"><canvas id="${id}"></canvas><div class="tag" id="tag${id.slice(1)}"></div><div class="badge" id="bd${id.slice(1)}"></div>${extra}</div>`;
+OUT.al=()=>`<b>${nf(S.al,1)}</b> °`;
+OUT.V=()=>`<b>${S.V}</b> m/s · ${nf(S.V*3.6)} km/h`;
+OUT.th=()=>`<b>${nf(curW().tc*100,1)}</b> %`;
+OUT.cm=()=>`<b>${nf(curW().cc*100,1)}</b> %`;
+const WCTL=()=>sl('al',tx('Sklon křídla α','Angle of attack α'),-4,20,.5,'al')+sl('V',tx('Rychlost letu V','Airspeed V'),20,200,1,'V')+sl('th',tx('Tloušťka profilu','Profile thickness'),.04,.24,.01,'th')+sl('cm',tx('Prohnutí profilu','Profile camber'),0,.14,.005,'cm')+
+ `<div class="chips g3 mini"><button class="chip" data-act="prof" data-v="sym">${tx('Souměrný','Symmetric')}</button><button class="chip" data-act="prof" data-v="mid">${tx('Běžný','Typical')}</button><button class="chip" data-act="prof" data-v="thin">${tx('Tenký','Thin')}</button></div>`;
+ACT.prof=v=>{const p={sym:[.12,0],mid:[.12,.04],thin:[.06,.02]}[v];S.th=p[0];S.cm=p[1];refresh()};
+OUT.warn=()=>S.al>14?`<div class="callout" style="border-color:var(--bad)"><b class="l">${tx('Pozor, hranice modelu','Careful, limit of the model')}</b>${tx('Skutečné křídlo by už při tak velkém sklonu mělo odtržený proud a vztlak by klesl. Tento model odtržení nezná. Podívej se na kapitolu 5.','A real wing would have separated flow at such an angle and lift would drop. This model does not know separation. See chapter 5.')}</div>`:'';
+OUT.lift=()=>{const w=curW(),L=.5*RHO*S.V*S.V*CREAL*w.CL;return rd([[tx('Součinitel vztlaku C_L','Lift coefficient C_L'),nf(w.CL,2)],[tx('Vztlak na 1 m rozpětí','Lift per 1 m of span'),nf(L)+' N/m'],[tx('Unese na 1 m rozpětí','Carries per 1 m of span'),nf(L/G9)+' kg']])};
+const SUBT=(id,a,b)=>{const t=$('#tag'+id),d=$('#bd'+id);if(t)t.innerHTML=a;if(d)d.innerHTML=b};
+const BADGE=()=>`α ${nf(S.al,1)}° · V ${S.V} m/s`;
+
+/* ===== 1 Obtékání ===== */
+{
+ const P1=mkP(380),SL={k:''};let v1=null;
+ TABS.push({kap:'1',name:tx('Obtékání','Flow'),side:'28rem',
+ build(){return `<div class="split"><div class="col">${scope('c1')}</div><aside class="side card">
+  <div class="lbl">${tx('Zobrazení','View')}</div>
+  <div class="chips g2">${[['lines',tx('Proudnice a kouř','Streamlines and smoke')],['smoke',tx('Jen kouř','Smoke only')]].map(a=>`<button class="chip" data-k="view" data-v="${a[0]}">${a[1]}</button>`).join('')}</div>
+  ${WCTL()}
+  <div class="chips g2 mini"><button class="chip" data-act="stag" id="bStag">${tx('Stagnační bod','Stagnation point')}</button><button class="chip" data-act="pause" id="bPs1"></button></div>
+  <hr><div data-o="lift"></div><div data-o="warn"></div>
+  ${call(tx('Co sledovat','What to watch'),tx('Čáry jsou stopy částic vzduchu. Kde jsou hustší, proudí vzduch rychleji. Před křídlem se proud zvedá, za ním klesá.','The lines are traces of air particles. Where they crowd together, the air flows faster. Ahead of the wing the flow rises, behind it falls.'))}
+ </aside></div>`},
+ init(){HOOK.view=()=>{}},
+ anim(dt){if(!v1)return;pStep(P1,curW(),v1,dt*(1.3+S.V/80))},
+ render(){
+  const w=curW(),cv=$('#c1'),g=mkView(cv,0,0,5.6),x=g.x,R=g.R;
+  v1={xmin:g.xmin,xmax:g.xmax,ymin:g.ymin,ymax:g.ymax};if(!P1.init){pInit(P1,v1);P1.init=true}
+  if(S.view==='lines'){const k=w.sig+'|'+g.hw+'|'+g.hh.toFixed(2);if(SL.k!==k){SL.k=k;SL.L=streamlines(w,g.xmin,g.xmax,g.ymin,g.ymax,Math.round(g.hh*2/.4))}
+   x.strokeStyle='rgba(244,241,234,.34)';x.lineWidth=1.5*(PZ>1?1.4:1);x.lineJoin='round';SL.L.forEach(p=>{x.beginPath();p.forEach((q,i)=>{const px=g.X(q[0]),py=g.Y(q[1]);i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke()})}
+  drawP(g,P1,'rgba(244,241,234,.8)',1.9);
+  drawWing(g,w);
+  /* sklon a proud: úhel mezi směrem proudu a prodlouženou tětivou za odtokovou hranou */
+  const TE=w.TE,cx=g.X(TE[0]),cy=g.Y(TE[1]),aR=w.alDeg*Math.PI/180,Lr=g.sc*3.4;
+  line(x,cx,cy,cx+Lr,cy,'rgba(255,151,46,.85)',1.4,[6,5]);line(x,cx,cy,cx+Lr*Math.cos(aR),cy+Lr*Math.sin(aR),'rgba(255,151,46,.85)',1.4,[6,5]);
+  x.beginPath();x.strokeStyle='#FF972E';x.lineWidth=2.2;x.arc(cx,cy,g.sc*2.4,Math.min(0,aR),Math.max(0,aR));x.stroke();
+  TH(x,'α = '+nf(w.alDeg,1)+'°',cx+g.sc*2.7,cy-R*1.1,R*.95,'#FF972E','left');
+  arrow(x,g.X(g.xmin+.35),g.Y(g.ymax-.7),g.X(g.xmin+1.9),g.Y(g.ymax-.7),'#F4F1EA',2.5);
+  T(x,'V∞ = '+S.V+' m/s',g.X(g.xmin+.35),g.Y(g.ymax-1.15),R*.82,'rgba(244,241,234,.85)');
+  if(S.stag){const s=w.getSf(),i=s.ist,px=g.X(s.X[i]),py=g.Y(s.Y[i]);x.beginPath();x.strokeStyle='#FF6A4D';x.lineWidth=2.4;x.arc(px,py,R*.6,0,TAU);x.stroke();
+   TH(x,tx('stagnační bod: vzduch se tu zastaví a rozdělí','stagnation point: the air stops here and splits'),px-R*.6,py+R*2.4,R*.8,'#FF6A4D','left');}
+  SUBT(1,'<i></i>'+tx('Proudění kolem křídla · ideální model','Flow around the wing · ideal model'),BADGE());
+  $('#bPs1').textContent=S.run?tx('Pozastavit','Pause'):tx('Spustit','Play');
+  $('#bStag').classList.toggle('on',S.stag);
+ }});
+ ACT.stag=()=>{S.stag=!S.stag;refresh()};
+ ACT.pause=()=>{S.run=!S.run;ACT.runIcon&&ACT.runIcon();refresh()};
+}
+
+/* ===== 2 Rychlost ===== */
+{
+ const P2=mkP(300,9);let v2=null,drag=-1;
+ TABS.push({kap:'2',name:tx('Rychlost','Speed'),side:'28rem',
+ build(){return `<div class="split"><div class="col">${scope('c2')}</div><aside class="side card">
+  <div class="lbl">${tx('Zobrazení','View')}</div>
+  <div class="chips g3">${[['map',tx('Barvy','Colors')],['arrows',tx('Šipky','Arrows')],['both',tx('Obojí','Both')]].map(a=>`<button class="chip" data-k="fld" data-v="${a[0]}">${a[1]}</button>`).join('')}</div>
+  ${sl('al',tx('Sklon křídla α','Angle of attack α'),-4,20,.5,'al')}${sl('V',tx('Rychlost letu V','Airspeed V'),20,200,1,'V')}
+  <hr><div class="lbl">${tx('Sondy: přetáhni je myší nebo prstem','Probes: drag them with mouse or finger')}</div>
+  <div data-o="pr2"></div>
+  ${call(tx('Co sledovat','What to watch'),tx('Čím je barva světlejší a žlutější, tím proudí vzduch rychleji. Nad křídlem je rychlejší než volný proud, pod křídlem pomalejší. Delší světlá čárka u částice znamená větší rychlost.','The lighter and yellower the color, the faster the air. Above the wing it is faster than the free stream, below the wing slower. A longer light streak on a particle means higher speed.'))}
+ </aside></div>`},
+ init(){
+  const cv=$('#c2');
+  const pt=e=>{const r=cv.getBoundingClientRect(),g=LG.c2;return g?{px:e.clientX-r.left,py:e.clientY-r.top,g}:null};
+  cv.addEventListener('pointerdown',e=>{const p=pt(e);if(!p)return;let best=-1,bd=1e9;S.pr.forEach((q,i)=>{const d=Math.hypot(p.g.X(q.x)-p.px,p.g.Y(q.y)-p.py);if(d<bd){bd=d;best=i}});if(bd<p.g.R*3){drag=best;cv.setPointerCapture(e.pointerId)}});
+  cv.addEventListener('pointermove',e=>{if(drag<0)return;const p=pt(e);if(!p)return;S.pr[drag]={x:clamp(p.g.ix(p.px),p.g.xmin+.3,p.g.xmax-.3),y:clamp(p.g.iy(p.py),p.g.ymin+.3,p.g.ymax-.3)};refresh()});
+  const up=()=>{drag=-1};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+  cv.style.cursor='grab';
+ },
+ anim(dt){if(v2)pStep(P2,curW(),v2,dt*(1.3+S.V/80))},
+ render(){
+  const w=curW(),g=mkView($('#c2'),0,0,5.6),x=g.x,R=g.R;
+  v2={xmin:g.xmin,xmax:g.xmax,ymin:g.ymin,ymax:g.ymax};if(!P2.init){pInit(P2,v2);P2.init=true}
+  if(S.fld!=='arrows')drawField(g,'speed',w,1);
+  if(S.fld!=='map'){
+   const st=.8;for(let gx=g.xmin+.5;gx<g.xmax;gx+=st)for(let gy=g.ymin+.45;gy<g.ymax;gy+=st){const v=w.vel(gx,gy);if(v.inside)continue;const q=Math.hypot(v.u,v.v),px=g.X(gx),py=g.Y(gy),L=q*g.sc*.5;
+    arrow(x,px,py,px+v.u/q*L,py-v.v/q*L,S.fld==='both'?'rgba(255,255,255,.85)':'rgba(244,241,234,.8)',1.6,R*.45)}}
+  drawP(g,P2,S.fld==='arrows'?'rgba(244,241,234,.55)':'rgba(255,255,255,.75)',1.7);
+  drawWing(g,w);
+  S.pr.forEach((q,i)=>{const v=w.vel(q.x,q.y),sp=Math.hypot(v.u,v.v),px=g.X(q.x),py=g.Y(q.y),col=i?'#2EC4B6':'#FF972E';
+   if(!v.inside)arrow(x,px,py,px+v.u/sp*g.sc*sp*.9,py-v.v/sp*g.sc*sp*.9,col,3.2,R*.7);
+   x.beginPath();x.fillStyle='#17140F';x.strokeStyle=col;x.lineWidth=3;x.arc(px,py,R*.62,0,TAU);x.fill();x.stroke();TH(x,i?'B':'A',px,py,R*.8,col,'center');
+   T(x,nf(sp*S.V)+' m/s',px,py+(i?1:-1)*R*1.7,R*.95,'#fff','center',undefined,700)});
+  legend(g,VIR,0,2,[[0,'0'],[1,'V∞'],[2,'2 V∞']],tx('rychlost proudění','flow speed'));
+  SUBT(2,'<i></i>'+tx('Rychlost vzduchu kolem křídla','Air speed around the wing'),BADGE());
+ }});
+ OUT.pr2=()=>{const w=curW(),a=w.vel(S.pr[0].x,S.pr[0].y),qa=Math.hypot(a.u,a.v),b=w.vel(S.pr[1].x,S.pr[1].y),qb=Math.hypot(b.u,b.v);
+  return rd([[tx('Sonda A','Probe A'),nf(qa,2)+' V∞ = '+nf(qa*S.V)+' m/s'],[tx('Sonda B','Probe B'),nf(qb,2)+' V∞ = '+nf(qb*S.V)+' m/s'],[tx('A je rychlejší o','A is faster by'),qb>0?nf((qa/qb-1)*100)+' %':'—']])};
+}
+
+/* ===== 3 Tlak a sání ===== */
+{
+ TABS.push({kap:'3',name:tx('Tlak a sání','Pressure'),side:'28rem',rows:'minmax(0,1fr)',
+ build(){return `<div class="split"><div class="col">${scope('c3')}<div class="card chartbox"><canvas id="c3b"></canvas></div></div><aside class="side card">
+  <div class="lbl">${tx('Zobrazení','View')}</div>
+  <div class="chips g3">${[['map',tx('Mapa','Map')],['arrows',tx('Šipky','Arrows')],['both',tx('Obojí','Both')]].map(a=>`<button class="chip" data-k="f3" data-v="${a[0]}">${a[1]}</button>`).join('')}</div>
+  ${sl('al',tx('Sklon křídla α','Angle of attack α'),-4,20,.5,'al')}${sl('V',tx('Rychlost letu V','Airspeed V'),20,200,1,'V')}
+  <hr><div data-o="cp3"></div><div data-o="warn"></div>
+  ${call(tx('Co sledovat','What to watch'),tx('Modrá znamená nižší tlak než v klidném vzduchu: horní strana křídla je jakoby „vcucávána“ nahoru. Oranžová znamená vyšší tlak: spodní strana je tlačena nahoru. Obě síly míří nahoru a sečtou se do vztlaku.','Blue means lower pressure than in still air: the top of the wing is sucked upward. Orange means higher pressure: the bottom is pushed upward. Both forces point up and add up to lift.'))}
+ </aside></div>`},
+ render(){
+  const w=curW(),g=mkView($('#c3'),0,0,5.6),x=g.x,R=g.R,s=w.getSf();
+  if(S.f3!=='arrows')drawField(g,'cp',w,S.f3==='both'?.9:1);
+  drawWing(g,w);
+  if(S.f3!=='map'){
+   surfPick(s,34).forEach(i=>{const cp=s.CP[i],L=clamp(Math.abs(cp),.12,3.4)*g.sc*.42,px=g.X(s.X[i]),py=g.Y(s.Y[i]),nx=s.NX[i],ny=-s.NY[i];
+    if(cp<0)arrow(x,px,py,px+nx*L,py+ny*L,'#4DA3FF',3,R*.6);else arrow(x,px+nx*L,py+ny*L,px,py,'#FF972E',3,R*.6)})}
+  /* vztlak */
+  const qx=g.X(w.LE[0]+.25*(w.TE[0]-w.LE[0])),qy=g.Y(w.LE[1]+.25*(w.TE[1]-w.LE[1])),Ll=clamp(w.CL,0,2.6)*g.sc*1.1;
+  if(Ll>R){arrow(x,qx,qy,qx,qy-Ll,'#F4F1EA',5,R*1.1);TH(x,tx('vztlak L','lift L'),qx+R*.9,qy-Ll-R*.2,R*1,'#F4F1EA')}
+  legend(g,DIV,-3,1,[[-3,'−3'],[-2,'−2'],[-1,'−1'],[0,'0'],[1,'+1']],tx('tlak (modrá: nižší, oranžová: vyšší než v klidu)','pressure (blue: lower, orange: higher than at rest)'));
+  SUBT(3,'<i></i>'+tx('Tlak na povrchu křídla','Pressure on the wing surface'),BADGE());
+  /* graf Cp */
+  const gc=setup($('#c3b')),cx=gc.x,r=gc.R,l=r*3.2,rr=gc.w-r*1.2,t=r*2,b=gc.h-r*2;
+  let hi=2.6,lo=-1.2;for(let i=0;i<s.n;i++){hi=Math.max(hi,-s.CP[i]+.3);lo=Math.min(lo,-s.CP[i]-.2)}hi=Math.ceil(hi);lo=Math.floor(lo);
+  const X=v=>l+v*(rr-l),Y=v=>b-(v-lo)/(hi-lo)*(b-t);
+  const col=getComputedStyle(document.documentElement).getPropertyValue('--ink2').trim();
+  for(let v=lo;v<=hi;v++){line(cx,l,Y(v),rr,Y(v),v===0?C.ink2:C.line,v===0?1.6:1);T(cx,nfs(v),l-r*.5,Y(v),r*.8,col,'right')}
+  [0,.25,.5,.75,1].forEach(v=>T(cx,nf(v,2),X(v),b+r*.9,r*.75,col,'center'));
+  T(cx,'x / c',rr,b+r*1.5,r*.75,col,'right');TH(cx,'−Cp',l-r*.4,t-r*1.05,r*.85,C['orange-t'],'right');
+  const up=[],low=[];for(let i=0;i<s.n;i++)(s.UP[i]?up:low).push([s.S[i],-s.CP[i]]);up.sort((a,b)=>a[0]-b[0]);low.sort((a,b)=>a[0]-b[0]);
+  cx.beginPath();up.forEach((p,i)=>{const px=X(clamp(p[0],0,1)),py=Y(p[1]);i?cx.lineTo(px,py):cx.moveTo(px,py)});for(let i=low.length-1;i>=0;i--)cx.lineTo(X(clamp(low[i][0],0,1)),Y(low[i][1]));cx.closePath();cx.fillStyle='rgba(255,151,46,.28)';cx.fill();
+  const pl=(a,c)=>{cx.beginPath();a.forEach((p,i)=>{const px=X(clamp(p[0],0,1)),py=Y(p[1]);i?cx.lineTo(px,py):cx.moveTo(px,py)});cx.strokeStyle=c;cx.lineWidth=2.8;cx.lineJoin='round';cx.stroke()};
+  pl(up,'#4DA3FF');pl(low,'#FF972E');
+  TH(cx,tx('horní strana','upper surface'),X(.55),Y(hi-.5),r*.85,'#4DA3FF');TH(cx,tx('spodní strana','lower surface'),X(.55),Y(lo+.45),r*.85,'#FF972E');
+  TH(cx,tx('plocha mezi křivkami = vztlak','area between the curves = lift'),rr,Y(hi-.55),r*.85,C.ink,'right');
+ }});
+ OUT.cp3=()=>{const w=curW(),s=w.getSf(),L=.5*RHO*S.V*S.V*CREAL*w.CL,tot=s.FyUp+s.FyLow,sh=Math.abs(tot)>.02?s.FyUp/tot*100:null,dp=.5*RHO*S.V*S.V*s.cpmin;
+  return rd([[tx('Vztlak na 1 m rozpětí','Lift per 1 m of span'),nf(L)+' N/m'],[tx('Z toho sání nad křídlem','Of that suction above'),sh==null?'—':nf(sh)+' %'],[tx('Z toho přetlak pod křídlem','Of that pressure below'),sh==null?'—':nf(100-sh)+' %'],[tx('Největší podtlak','Strongest suction'),nf(dp)+' Pa'],[tx('To je z tlaku vzduchu','That is of air pressure'),nf(Math.abs(dp)/101325*100,1)+' %']])};
+}
+
+/* ===== 4 Dvě vysvětlení ===== */
+{
+ const R4={run:false,t:0,done:false,key:'',mk:[],A:null,B:null,trA:[],trB:[],x0:0,tU:NaN,tL:NaN,ys:0};
+ function race4(g){const w=curW();R4.key=w.sig;R4.x0=g.xmin+.3;R4.ys=splitY(w,R4.x0);R4.t=0;R4.done=false;R4.run=false;R4.mk=[];
+  for(let i=0;i<44;i++){const y=R4.ys+(i-21.5)*.11;R4.mk.push({x:R4.x0,y,up:y>R4.ys,on:true})}
+  R4.A={x:R4.x0,y:R4.ys+.05,on:true};R4.B={x:R4.x0,y:R4.ys-.05,on:true};R4.trA=[[R4.A.x,R4.A.y]];R4.trB=[[R4.B.x,R4.B.y]];
+  R4.tU=transit(w,R4.x0,R4.ys+.05,w.TE[0]);R4.tL=transit(w,R4.x0,R4.ys-.05,w.TE[0]);}
+ const adv=(w,m,dt)=>{let v=w.vel(m.x,m.y);if(v.inside){m.on=false;return}const mx=m.x+v.u*dt/2,my=m.y+v.v*dt/2;v=w.vel(mx,my);if(v.inside){m.on=false;return}m.x+=v.u*dt;m.y+=v.v*dt};
+ TABS.push({kap:'4',name:tx('Vysvětlení','Explanations'),side:'28rem',
+ build(){return `<div class="split"><div class="col">${scope('c4')}</div><aside class="side card">
+  <div class="chips">${[['bern',tx('Tlak a rychlost (Bernoulli)','Pressure and speed (Bernoulli)')],['newton',tx('Odklon proudu (Newton)','Deflected flow (Newton)')],['race',tx('Závod částic: mýtus','Particle race: a myth')]].map(a=>`<button class="chip" data-k="expl" data-v="${a[0]}">${a[1]}</button>`).join('')}</div>
+  ${sl('al',tx('Sklon křídla α','Angle of attack α'),-4,20,.5,'al')}${sl('V',tx('Rychlost letu V','Airspeed V'),20,200,1,'V')}
+  <hr>
+  <div class="mx" data-m="bern"><div data-o="b4"></div>${call(tx('Bernoulliho rovnice','Bernoulli equation'),tx('Podél proudnice platí p + ½ρv² = konst. Kde je vzduch rychlejší (sonda A), je tlak nižší. Pod křídlem (sonda B) je tlak vyšší. Rozdíl tlaků tlačí křídlo nahoru.','Along a streamline p + ½ρv² = constant. Where the air is faster (probe A), pressure is lower. Under the wing (probe B) pressure is higher. The pressure difference pushes the wing up.'))}</div>
+  <div class="mx" data-m="newton"><div data-o="n4"></div>${call(tx('Třetí Newtonův zákon','Newton\'s third law'),tx('Křídlo vychyluje proud dolů. Vzduch dostává svislou hybnost dolů, a proto křídlo dostává stejně velkou sílu nahoru. Je to totéž, co ukazují tlaky: dvě řeči pro jednu věc.','The wing deflects the flow downward. The air gains downward momentum, so the wing gets an equal force upward. It is the same thing the pressures show: two languages for one fact.'))}</div>
+  <div class="mx" data-m="race"><div class="row"><button class="btn" data-act="race">${tx('Pustit časovou čáru','Release the time line')}</button><button class="btn sec" data-act="race0">${tx('Znovu','Again')}</button></div><div data-o="r4"></div>${call(tx('Mýtus','Myth'),tx('„Vzduch nahoře musí cestu stihnout ve stejném čase, proto je rychlejší.“ Nemusí. Částice nad křídlem dorazí k odtokové hraně dřív než částice pod ním.','"Air on top must finish its trip in the same time, so it is faster." It need not. The particle over the wing reaches the trailing edge before the one beneath.'))}</div>
+ </aside></div>`},
+ init(){HOOK.expl=v=>{if(v==='race')race4(LG.c4||{xmin:-5.6})};ACT.race=()=>{if(R4.key!==curW().sig||R4.done)race4(LG.c4);R4.run=true;refresh()};ACT.race0=()=>{race4(LG.c4);refresh()}},
+ anim(dt){if(S.expl!=='race'||!R4.run)return;const w=curW();let n=0;const d=dt*1.1;
+  for(let s=0;s<4;s++){R4.mk.forEach(m=>{if(m.on!==false)adv(w,m,d/4)});[R4.A,R4.B].forEach(m=>{if(m.on!==false)adv(w,m,d/4)})}
+  R4.t+=d;R4.trA.push([R4.A.x,R4.A.y]);R4.trB.push([R4.B.x,R4.B.y]);
+  if(R4.mk.every(m=>m.on===false||m.x>(LG.c4?LG.c4.xmax:5.6))||R4.t>16){R4.run=false;R4.done=true}},
+ render(){
+  const w=curW(),g=mkView($('#c4'),0,0,5.6),x=g.x,R=g.R,m=S.expl;
+  $$('.mx').forEach(e=>e.classList.toggle('on',e.dataset.m===m));
+  if(m==='race'&&(R4.key!==w.sig||!R4.mk.length))race4(g);
+  if(m==='bern'){drawField(g,'speed',w,.55)}
+  else if(m==='newton'){drawField(g,'vy',w,.9)}
+  drawWing(g,w);
+  if(m==='bern'){
+   S.pr.forEach((q,i)=>{const v=w.vel(q.x,q.y),sp=Math.hypot(v.u,v.v),px=g.X(q.x),py=g.Y(q.y),col=i?'#2EC4B6':'#FF972E',dp=.5*RHO*S.V*S.V*(1-sp*sp);
+    if(!v.inside)arrow(x,px,py,px+v.u/sp*g.sc*sp*.9,py-v.v/sp*g.sc*sp*.9,col,3.4,R*.7);
+    x.beginPath();x.fillStyle='#17140F';x.strokeStyle=col;x.lineWidth=3;x.arc(px,py,R*.62,0,TAU);x.fill();x.stroke();TH(x,i?'B':'A',px,py,R*.8,col,'center');
+    T(x,'v = '+nf(sp*S.V)+' m/s',px+R*1.1,py+(i?1:-1)*R*1.5,R*.95,'#fff','left',undefined,700);T(x,'Δp = '+nfs(dp)+' Pa',px+R*1.1,py+(i?1:-1)*R*2.7,R*.95,'#fff','left',undefined,700)});
+   legend(g,VIR,0,2,[[0,'0'],[1,'V∞'],[2,'2 V∞']],tx('rychlost proudění','flow speed'));
+  }else if(m==='newton'){
+   for(let gx=g.xmin+.6;gx<g.xmax;gx+=.95)for(let gy=g.ymin+.5;gy<g.ymax;gy+=.8){const v=w.vel(gx,gy);if(v.inside)continue;const dv=v.v,mag=Math.hypot(v.u-1,dv);if(mag<.06)continue;
+    const px=g.X(gx),py=g.Y(gy),L=clamp(mag*g.sc*1.6,R*.5,g.sc*1.1);arrow(x,px,py,px+(v.u-1)/mag*L,py-dv/mag*L,'rgba(244,241,234,.9)',1.8,R*.5)}
+   const qx=g.X(w.LE[0]+.25*(w.TE[0]-w.LE[0])),qy=g.Y(w.LE[1]+.25*(w.TE[1]-w.LE[1])),Ll=clamp(w.CL,0,2.6)*g.sc*1.1;
+   if(Ll>R){arrow(x,qx,qy,qx,qy-Ll,'#F4F1EA',5,R*1.1);TH(x,tx('vztlak (reakce)','lift (reaction)'),qx+R*.9,qy-Ll,R*1,'#F4F1EA')}
+   TH(x,tx('vzduch odkloněn dolů','air deflected down'),g.X(w.TE[0]+1.2),g.Y(w.TE[1]-1.9),R*.95,TL_,'left');
+   TH(x,tx('vzduch zvednut nahoru','air lifted up'),g.X(w.LE[0]-.3),g.Y(w.LE[1]+1.8),R*.95,'#FF972E','right');
+   legend(g,DVY,-1,1,[[-1,tx('dolů','down')],[0,'0'],[1,tx('nahoru','up')]],tx('svislá složka rychlosti','vertical velocity component'));
+  }else{
+   const iU=R4.mk.filter(q=>q.up),iL=R4.mk.filter(q=>!q.up);
+   const pl=(a,c)=>{x.beginPath();a.forEach((q,i)=>{const px=g.X(q.x),py=g.Y(q.y);i?x.lineTo(px,py):x.moveTo(px,py)});x.strokeStyle=c;x.lineWidth=2;x.stroke()};
+   pl(iU.filter(q=>q.on!==false),'rgba(255,151,46,.5)');pl(iL.filter(q=>q.on!==false),'rgba(46,196,182,.5)');
+   R4.mk.forEach(q=>{if(q.on===false)return;dot(x,g.X(q.x),g.Y(q.y),R*.2,q.up?'#FF972E':'#2EC4B6')});
+   const tr=(a,c)=>{x.beginPath();a.forEach((q,i)=>{const px=g.X(q[0]),py=g.Y(q[1]);i?x.lineTo(px,py):x.moveTo(px,py)});x.strokeStyle=c;x.lineWidth=3;x.stroke()};
+   tr(R4.trA,'#FF972E');tr(R4.trB,'#2EC4B6');
+   [[R4.A,'#FF972E','A'],[R4.B,'#2EC4B6','B']].forEach(a=>{x.beginPath();x.fillStyle='#17140F';x.strokeStyle=a[1];x.lineWidth=3;x.arc(g.X(a[0].x),g.Y(a[0].y),R*.55,0,TAU);x.fill();x.stroke();TH(x,a[2],g.X(a[0].x),g.Y(a[0].y),R*.7,a[1],'center')});
+   const te=g.X(w.TE[0]);line(x,te,g.Y(g.ymax),te,g.Y(g.ymin),'rgba(244,241,234,.45)',1.5,[6,6]);T(x,tx('odtoková hrana','trailing edge'),te+R*.4,g.Y(g.ymax)+R*1.6,R*.8,'rgba(244,241,234,.8)');
+   T(x,tx('zpomalený záznam','slow motion'),g.X(g.xmin)+R*1.2,R*3.4,R*.8,'rgba(244,241,234,.6)');
+  }
+  SUBT(4,'<i></i>'+({bern:tx('Vysvětlení 1: tlak a rychlost','Explanation 1: pressure and speed'),newton:tx('Vysvětlení 2: odklon proudu','Explanation 2: deflected flow'),race:tx('Závod částic','Particle race')})[m],BADGE());
+ }});
+ const TL_='#2EC4B6';
+ OUT.b4=()=>{const w=curW(),a=w.vel(S.pr[0].x,S.pr[0].y),qa=Math.hypot(a.u,a.v),b=w.vel(S.pr[1].x,S.pr[1].y),qb=Math.hypot(b.u,b.v),k=.5*RHO*S.V*S.V,da=k*(1-qa*qa),db=k*(1-qb*qb);
+  return rd([[tx('A: tlak proti klidu','A: pressure vs. rest'),nfs(da)+' Pa'],[tx('B: tlak proti klidu','B: pressure vs. rest'),nfs(db)+' Pa'],[tx('Rozdíl B − A','Difference B − A'),nf(db-da)+' Pa'],[tx('To odpovídá závaží','Like a weight of'),nf((db-da)/G9,1)+' kg/m²']])};
+ OUT.n4=()=>{const w=curW(),a=w.vel(w.LE[0]-1.5,w.LE[1]),b=w.vel(w.TE[0]+1.5,w.TE[1]),ea=Math.atan2(a.v,a.u)*180/Math.PI,eb=Math.atan2(b.v,b.u)*180/Math.PI;
+  return rd([[tx('Před křídlem proud míří','Ahead the flow points'),nfs(ea,1)+' °'],[tx('Za křídlem proud míří','Behind the flow points'),nfs(eb,1)+' °'],[tx('Vztlak na 1 m rozpětí','Lift per 1 m of span'),nf(.5*RHO*S.V*S.V*CREAL*w.CL)+' N/m']])};
+ OUT.r4=()=>{const w=curW(),k=CREAL/w.chord/S.V,tu=R4.tU*k*1000,tl=R4.tL*k*1000;if(!isFinite(tu)||!isFinite(tl))return '';
+  return rd([[tx('Částice A (nad křídlem)','Particle A (over the wing)'),R4.done||R4.t>0?nf(tu,1)+' ms':'?'],[tx('Částice B (pod křídlem)','Particle B (under the wing)'),R4.done||R4.t>0?nf(tl,1)+' ms':'?'],[tx('B dorazí později o','B arrives later by'),R4.done||R4.t>0?nf((tl/tu-1)*100)+' %':'?']])};
+}
+
+/* ========== záložky 5 až 7 ========== */
+const ctrl5=()=>chips('m5',[['start',tx('Rozběh z klidu','Start from rest')],['stall',tx('Přetažení (schéma)','Stall (schematic)')]],'g2');
+
+/* ===== 5 Víry za křídlem (PLUS) ===== */
+{
+ const V5={b:[],tr:[],t:0,k:0,Gb:0,lost:0};let W5=null;
+ const SIG=.34;
+ const getW5=()=>{if(S.m5==='start')return curW();const k=S.al5+'|'+S.th+'|'+S.cm;if(!W5||W5.key!==k){W5=wing(S.al5,S.th,S.cm);W5.key=k}return W5};
+ const reset5=()=>{V5.b=[];V5.tr=[];V5.t=0;V5.k=0;V5.Gb=0;V5.lost=0};
+ let _u=0,_v=0;
+ function vel5(px,py,w,self){
+  let u=1,v=0;const b=V5.b;
+  for(let j=0;j<b.length;j++){const q=b[j];if(q===self)continue;const dx=px-q.x,dy=py-q.y,k=q.g/(TAU*(dx*dx+dy*dy+SIG*SIG));u+=k*dy;v-=k*dx}
+  if(S.m5==='start'&&V5.Gb){const qx=w.LE[0]+.25*(w.TE[0]-w.LE[0]),qy=w.LE[1]+.25*(w.TE[1]-w.LE[1]),dx=px-qx,dy=py-qy,k=V5.Gb/(TAU*(dx*dx+dy*dy+.09));u+=k*dy;v-=k*dx}
+  _u=u;_v=v;
+ }
+ function step5(dtm,xmax){
+  const w=getW5(),TE=w.TE,LE=w.LE;let ex=TE[0]+.1,ey=TE[1]-.04;
+  if(S.m5==='start'){const Gi=w.G,tau=1.6,g0=Gi*(1-Math.exp(-V5.t/tau)),g1=Gi*(1-Math.exp(-(V5.t+dtm)/tau));V5.Gb=g1;if(Math.abs(g1-g0)>1e-6)V5.b.push({x:ex,y:ey,g:-(g1-g0)})}
+  else{V5.Gb=0;const gain=clamp((S.al5-12)/7,0,1.3),px=LE[0]+.3*(TE[0]-LE[0]),py=LE[1]+.3*(TE[1]-LE[1])+.5;
+   if(gain>0){V5.b.push({x:px,y:py,g:.9*gain*dtm*(.6+.8*Math.random())});if(V5.k%3===0)V5.b.push({x:ex,y:ey,g:-.9*gain*dtm*3*(.6+.8*Math.random())})}ex=px;ey=py}
+  const n=V5.b.length,U=new Float32Array(n),Vv=new Float32Array(n);
+  for(let i=0;i<n;i++){vel5(V5.b[i].x,V5.b[i].y,w,V5.b[i]);U[i]=_u;Vv[i]=_v}
+  for(let i=0;i<n;i++){V5.b[i].x+=U[i]*dtm;V5.b[i].y+=Vv[i]*dtm}
+  for(let i=0;i<2;i++)V5.tr.push({x:ex+Math.random()*.06,y:ey+(Math.random()-.5)*.1,a:0});
+  V5.tr.forEach(q=>{vel5(q.x,q.y,w,null);q.x+=_u*dtm;q.y+=_v*dtm;q.a++});
+  V5.b=V5.b.filter(q=>{if(q.x>xmax+1.5||Math.abs(q.y)>12){V5.lost+=q.g;return false}return true});
+  V5.tr=V5.tr.filter(q=>q.x<xmax+1.5&&Math.abs(q.y)<12);if(V5.tr.length>900)V5.tr.splice(0,V5.tr.length-900);
+  V5.t+=dtm;V5.k++;
+ }
+ TABS.push({kap:'5',name:tx('Víry','Vortices'),side:'28rem',plus:true,
+ build(){return `<div class="split"><div class="col">${scope('c5')}</div><aside class="side card">
+  <div class="lbl">PLUS · ${tx('nad rámec učiva','beyond the curriculum')}</div>
+  ${ctrl5()}
+  <div class="row"><button class="btn" data-act="rst5">${tx('Spustit znovu','Run again')}</button></div>
+  <div class="mx5" data-m="start">${sl('al',tx('Sklon křídla α','Angle of attack α'),-4,20,.5,'al')}</div>
+  <div class="mx5" data-m="stall">${sl('al5',tx('Sklon při přetažení','Angle at stall'),8,24,.5,'al5')}</div>
+  <hr><div data-o="v5"></div>
+  <div class="mx5" data-m="start">${call(tx('Co sledovat','What to watch'),tx('Když se křídlo rozjede, na odtokové hraně se utrhne víc vírů a stočí se do jednoho: rozběhový vír (modrý, proti směru hodin). Křídlo si „vezme“ stejně velký oběh opačným směrem (po směru hodin): to je jeho cirkulace Γ. Součet obou je nula.','When the wing starts, vortices break off at the trailing edge and roll into one: the starting vortex (blue, counter-clockwise). The wing takes an equal circulation in the opposite sense (clockwise): its circulation Γ. The sum of both is zero.'))}</div>
+  <div class="mx5" data-m="stall">${call(tx('Co sledovat','What to watch'),tx('Při velkém sklonu se proud odtrhne od horní strany. Za křídlem vzniká změť vírů a vztlak klesá. Je to schéma, ne výpočet: jen ukazuje, jak asi to vypadá.','At a large angle the flow separates from the upper side. A tangle of vortices forms behind the wing and lift drops. This is a sketch, not a calculation: it only shows roughly how it looks.'))}</div>
+ </aside></div>`},
+ init(){HOOK.m5=()=>reset5();HOOK.al5=()=>reset5();const old=HOOK.al;HOOK.al=v=>{old&&old(v);if(S.tab===4)reset5()};ACT.rst5=()=>{reset5();refresh()}},
+ anim(dt){const n=clamp(Math.round(dt/.0166),1,3);for(let i=0;i<n;i++)step5(.045,LG.c5?LG.c5.xmax:12)},
+ render(){
+  const w=getW5(),g=mkView($('#c5'),3.6,0,8.6),x=g.x,R=g.R;
+  $$('.mx5').forEach(e=>e.classList.toggle('on',e.dataset.m===S.m5));
+  /* kouř a víry */
+  V5.tr.forEach(q=>{x.fillStyle=`rgba(244,241,234,${Math.max(.12,.75-q.a/260)})`;x.fillRect(g.X(q.x)-1,g.Y(q.y)-1,2.2,2.2)});
+  V5.b.forEach(q=>{const r=Math.max(R*.18,Math.sqrt(Math.abs(q.g))*g.sc*.5);x.beginPath();x.fillStyle=q.g<0?'rgba(77,163,255,.32)':'rgba(255,151,46,.32)';x.arc(g.X(q.x),g.Y(q.y),Math.min(r,R*2.4),0,TAU);x.fill()});
+  drawWing(g,w);
+  if(S.m5==='start'){
+   const a=clamp(V5.Gb/(w.G||1),0,1);x.save();x.globalAlpha=.25+.7*a;x.strokeStyle='#FF972E';x.lineWidth=2.6;x.setLineDash([9,7]);x.beginPath();x.ellipse(g.X(0),g.Y(0),g.sc*2.9,g.sc*1.15,0,0,TAU);x.stroke();x.setLineDash([]);
+   [.5,2.5,4.4].forEach(ph=>{const px=g.X(0)+g.sc*2.9*Math.cos(ph),py=g.Y(0)-g.sc*1.15*Math.sin(ph),tx_=Math.sin(ph)*2.9,ty_=-Math.cos(ph)*1.15,m=Math.hypot(tx_,ty_);arrow(x,px-tx_/m*R*.5,py+ty_/m*R*.5,px+tx_/m*R*.5,py-ty_/m*R*.5,'#FF972E',3,R*.8)});x.restore();
+   TH(x,'Γ',g.X(0),g.Y(-1.55),R*1.3,'#FF972E','center');
+   let sx=0,sy=0,sg=0;V5.b.forEach(q=>{if(q.g<0){const a2=-q.g;sx+=q.x*a2;sy+=q.y*a2;sg+=a2}});
+   if(sg>.05&&V5.t>1.2){const px=g.X(sx/sg),py=g.Y(sy/sg);TH(x,tx('rozběhový vír','starting vortex'),px,py+R*3.4,R*.95,'#4DA3FF','center');arrow(x,px,py+R*2.7,px,py+R*1.2,'#4DA3FF',2,R*.6)}
+  }else TH(x,tx('odtržený proud: neuspořádané víry','separated flow: disordered vortices'),g.X(g.xmax)-R,g.Y(g.ymax)+R*4,R*.95,'#FF972E','right');
+  arrow(x,g.X(g.xmin+.3),g.Y(g.ymax-.7),g.X(g.xmin+1.8),g.Y(g.ymax-.7),'#F4F1EA',2.5);T(x,'V∞',g.X(g.xmin+.3),g.Y(g.ymax-1.2),R*.85,'rgba(244,241,234,.85)');
+  T(x,'●',R*1.4,g.h-R*1.4,R*.8,'#FF972E');T(x,tx('po směru hodin','clockwise'),R*2.4,g.h-R*1.4,R*.75,'rgba(244,241,234,.8)');
+  T(x,'●',R*11.2,g.h-R*1.4,R*.8,'#4DA3FF');T(x,tx('proti směru hodin','counter-clockwise'),R*12.2,g.h-R*1.4,R*.75,'rgba(244,241,234,.8)');
+  SUBT(5,'<i></i>'+(S.m5==='start'?tx('Rozběhový vír a cirkulace','Starting vortex and circulation'):tx('Přetažení: odtržení proudu (schéma)','Stall: flow separation (sketch)')),S.m5==='start'?'α '+nf(S.al,1)+'°':'α '+nf(S.al5,1)+'°');
+ }});
+ OUT.al5=()=>`<b>${nf(S.al5,1)}</b> °`;
+ OUT.v5=()=>{const w=getW5(),k=S.V*CREAL/w.chord;
+  if(S.m5==='start'){let sum=V5.lost;V5.b.forEach(q=>sum+=q.g);const Gr=V5.Gb*k,Gs=sum*k;
+   return rd([[tx('Čas od rozjezdu','Time since the start'),nf(V5.t*CREAL/w.chord/S.V,3)+' s'],[tx('Cirkulace křídla Γ','Wing circulation Γ'),nfs(Gr,1)+' m²/s'],[tx('Z konečné hodnoty','Of the final value'),nf(w.G?V5.Gb/w.G*100:0)+' %'],[tx('Rozběhový vír (součet vírů)','Starting vortex (sum of vortices)'),nfs(Gs,1)+' m²/s'],[tx('Součet obou','Sum of both'),nfs(Gr+Gs,1)+' m²/s']])}
+  return rd([[tx('Sklon','Angle'),nf(S.al5,1)+' °'],[tx('Ideální model by dal C_L','The ideal model would give C_L'),nf(w.CL,2)],[tx('Skutečné křídlo','A real wing'),tx('vztlak klesá a kolísá','lift drops and fluctuates')]])};
+}
+
+/* ===== 6 Koncové víry (PLUS) ===== */
+{
+ const N6=520,P6={x:new Float32Array(N6),y:new Float32Array(N6),h:[]};const L6=12;let ready=false,T6=0;
+ for(let i=0;i<N6;i++)P6.h.push(new Float32Array(L6*2));
+ const PRES={small:[1000,11,50],mid:[70000,34,75],big:[350000,64,80]};
+ MAPS.m=v=>Math.round(300*Math.pow(1500,v/100)/50)*50;IMAP.m=m=>100*Math.log(m/300)/Math.log(1500);
+ const g6=()=>{const L=S.m*G9,G=4*L/(Math.PI*RHO*S.V6*S.b),b0=Math.PI*S.b/4;return{L,G,b0,U:G/(TAU*b0)}};
+ const XM=2.3,YM=1.5;
+ function sp6(i,init){const x=(Math.random()*2-1)*XM,y=init?(Math.random()*2-1)*YM:-YM+.01;P6.x[i]=x;P6.y[i]=y;const h=P6.h[i];for(let k=0;k<L6;k++){h[2*k]=x;h[2*k+1]=y}}
+ const vp=(px,py)=>{let u=0,v=0;[[-.5,1],[.5,-1]].forEach(a=>{const dx=px-a[0],dy=py,k=a[1]/(TAU*(dx*dx+dy*dy+.02));u+=k*dy;v-=k*dx});return[u,v+1/TAU]};
+ TABS.push({kap:'6',name:tx('Koncové víry','Tip vortices'),side:'28rem',plus:true,
+ build(){return `<div class="split"><div class="col">${scope('c6')}</div><aside class="side card">
+  <div class="lbl">PLUS · ${tx('nad rámec učiva','beyond the curriculum')}</div>
+  <div class="chips g3">${[['small',tx('Malé','Small')],['mid',tx('Dopravní','Airliner')],['big',tx('Velké','Large')]].map(a=>`<button class="chip" data-act="pre6" data-v="${a[0]}" data-k="pre">${a[1]}</button>`).join('')}</div>
+  ${sl('m',tx('Hmotnost','Mass'),0,100,1,'m6','m')}${sl('b',tx('Rozpětí křídel','Wingspan'),8,70,1,'b6')}${sl('V6',tx('Rychlost','Speed'),30,250,1,'v6s')}
+  <hr><div data-o="v6"></div>
+  ${call(tx('Co sledovat','What to watch'),tx('Vzduch, který křídlo svisle vychýlilo, se na koncích křídel stáčí do dvou protiběžných vírů. Mezi nimi vzduch klesá, vně stoupá. Těžší letadlo má víry silnější, a proto se při vzletech a přistáních dodržují odstupy.','The air the wing deflects downward curls up at the wingtips into two counter-rotating vortices. Between them the air sinks, outside it rises. A heavier aircraft makes stronger vortices, which is why separations are kept at takeoff and landing.'))}
+  <div class="callout"><b class="l">${tx('Poznámka','Note')}</b>${tx('Čísla jsou orientační. Počítají se pro rovnoměrné rozložení vztlaku po rozpětí (eliptické křídlo). Hmotnosti, rozpětí a rychlosti předvoleb jsou zaokrouhlené, nejde o konkrétní letadla.','The numbers are indicative. They assume an even distribution of lift along the span (an elliptical wing). Masses, spans and speeds of the presets are rounded, they are not specific aircraft.')}</div>
+ </aside></div>`},
+ init(){HOOK.m=HOOK.b=HOOK.V6=()=>{S.pre=''};HOOK.pre=()=>{};ACT.pre6=v=>{const p=PRES[v];S.pre=v;S.m=p[0];S.b=p[1];S.V6=p[2];refresh()}},
+ anim(dt){
+  T6+=dt;if(!ready){for(let i=0;i<N6;i++)sp6(i,true);ready=true}
+  const q=g6(),f=clamp(q.G/q.b0/13.8,.3,1)*.9,s=dt*5*f;
+  for(let i=0;i<N6;i++){const h=P6.h[i];for(let k=L6-1;k>0;k--){h[2*k]=h[2*k-2];h[2*k+1]=h[2*k-1]}h[0]=P6.x[i];h[1]=P6.y[i];
+   let x=P6.x[i],y=P6.y[i],a=vp(x,y);const mx=x+a[0]*s/2,my=y+a[1]*s/2;a=vp(mx,my);x+=a[0]*s;y+=a[1]*s;
+   if(Math.abs(x)>XM||y>YM||y<-YM-.05)sp6(i,false);else{P6.x[i]=x;P6.y[i]=y}}
+ },
+ render(){
+  const cv=$('#c6'),g=setup(cv),x=g.x,R=g.R,w=g.w,h=g.h,q=g6();LG.c6=g;
+  if(!ready){for(let i=0;i<N6;i++)sp6(i,true);ready=true}
+  const f=clamp(q.G/q.b0/13.8,.15,1);
+  const splitX=w*.36;line(x,splitX,R*1.4,splitX,h-R*1.4,'rgba(244,241,234,.18)',1);
+  /* pohled zezadu */
+  const rw=w-splitX-R*1.6,sc=Math.min(rw/(2*XM),h*.9/(2*YM)),cx=splitX+(w-splitX)/2,cy=h*.54,X=v=>cx+v*sc,Y=v=>cy-v*sc;
+  x.strokeStyle='rgba(244,241,234,.7)';x.lineWidth=1.6*(PZ>1?1.3:1);x.lineCap='round';x.beginPath();
+  for(let i=0;i<N6;i++){const hh=P6.h[i];x.moveTo(X(P6.x[i]),Y(P6.y[i]));for(let k=0;k<L6;k++)x.lineTo(X(hh[2*k]),Y(hh[2*k+1]))}x.stroke();
+  [[-.5,'#FF972E'],[.5,'#4DA3FF']].forEach((a,i)=>{const px=X(a[0]),py=Y(0);x.beginPath();x.strokeStyle=a[1];x.lineWidth=3;x.setLineDash([6,5]);x.arc(px,py,sc*.2,0,TAU);x.stroke();x.setLineDash([]);
+   const ph=i?-1:1,an=-T6*2*ph;arrow(x,px+Math.cos(an)*sc*.2,py+Math.sin(an)*sc*.2,px+Math.cos(an+ph*.55)*sc*.2,py+Math.sin(an+ph*.55)*sc*.2,a[1],3,R*.7)});
+  /* křídlo a konce */
+  const wy=Y(1.15);x.beginPath();x.strokeStyle='#F4F1EA';x.lineWidth=R*.55;x.moveTo(X(-.637),wy);x.lineTo(X(.637),wy);x.stroke();
+  [-1,1].forEach(s=>line(x,X(s*.637),wy,X(s*.5),Y(.2),'rgba(244,241,234,.5)',1.6,[5,5]));
+  T(x,tx('křídlo (letadlo se vzdaluje od nás)','wing (the aircraft moves away from us)'),cx,wy-R*1.3,R*.8,'rgba(244,241,234,.85)','center');
+  arrow(x,X(0),Y(.42),X(0),Y(-.55),TL6,4,R*1);TH(x,tx('klesá','sinks'),X(0)+R*.9,Y(-.2),R*.9,TL6);
+  arrow(x,X(-1.55),Y(-.5),X(-1.55),Y(.35),'#FF972E',3,R*.9);arrow(x,X(1.55),Y(-.5),X(1.55),Y(.35),'#FF972E',3,R*.9);TH(x,tx('stoupá','rises'),X(1.55)+R*.9,Y(-.1),R*.9,'#FF972E');TH(x,tx('stoupá','rises'),X(-1.55)-R*.9,Y(-.1),R*.9,'#FF972E','right');
+  arrow(x,X(0),Y(-1.0),X(0),Y(-1.35),'rgba(244,241,234,.9)',3,R*.9);T(x,tx('celý pár víc a víc klesá','the whole pair keeps sinking'),X(0)+R*.9,Y(-1.2),R*.8,'rgba(244,241,234,.85)');
+  TH(x,tx('pohled zezadu: řez za letadlem','view from behind: a slice behind the aircraft'),splitX+R*1.2,R*3.4,R*.82,'rgba(244,241,234,.75)');
+  /* půdorys */
+  const pcx=splitX/2,pw=splitX*.36,wy2=h*.3;TH(x,tx('pohled shora','view from above'),R*1.2,R*3.4,R*.82,'rgba(244,241,234,.75)');
+  x.fillStyle='#F4F1EA';x.beginPath();x.ellipse(pcx,wy2+h*.05,R*.5,h*.15,0,0,TAU);x.fill();
+  x.beginPath();x.moveTo(pcx-pw,wy2+R*.5);x.lineTo(pcx+pw,wy2+R*.5);x.lineTo(pcx+pw*.9,wy2-R*.5);x.lineTo(pcx-pw*.9,wy2-R*.5);x.closePath();x.fill();
+  x.beginPath();x.moveTo(pcx-pw*.35,wy2+h*.15);x.lineTo(pcx+pw*.35,wy2+h*.15);x.lineTo(pcx+pw*.3,wy2+h*.15-R*.45);x.lineTo(pcx-pw*.3,wy2+h*.15-R*.45);x.closePath();x.fill();
+  arrow(x,pcx+pw*1.25,wy2+R*2.2,pcx+pw*1.25,wy2-R*2.2,'#F4F1EA',2.5,R*.8);T(x,tx('let','flight'),pcx+pw*1.25-R*.4,wy2+R*3.4,R*.8,'rgba(244,241,234,.85)','center');
+  [-1,1].forEach(s=>{const tipx=pcx+s*pw,col=s<0?'#FF972E':'#4DA3FF',ya=wy2+R*.5;x.beginPath();x.strokeStyle=col;x.lineWidth=2.4;
+   for(let yy=ya;yy<h-R*1.6;yy+=3){const d=yy-ya,cxx=tipx-s*pw*.215*(1-Math.exp(-d/(h*.12))),A=Math.min(R*1.2,d*.12+2),px=cxx+Math.sin(d*.07-T6*5)*A*(.5+.5*f);yy===ya?x.moveTo(px,yy):x.lineTo(px,yy)}x.stroke()});
+  SUBT(6,'<i></i>'+tx('Koncové víry za letadlem','Wingtip vortices behind an aircraft'),nf(S.m)+' kg · '+S.b+' m · '+S.V6+' m/s');
+ }});
+ const TL6='#2EC4B6';
+ OUT.m6=()=>`<b>${nf(S.m)}</b> kg`;OUT.b6=()=>`<b>${S.b}</b> m`;OUT.v6s=()=>`<b>${S.V6}</b> m/s`;
+ OUT.v6=()=>{const q=g6();return rd([[tx('Vztlak = tíha L = m·g','Lift = weight L = m·g'),nf(q.L/1000)+' kN'],[tx('Cirkulace víru Γ','Vortex circulation Γ'),nf(q.G)+' m²/s'],[tx('Rozteč víru b₀ = π·b/4','Vortex spacing b₀ = π·b/4'),nf(q.b0,1)+' m'],[tx('Pár klesá rychlostí','The pair sinks at'),nf(q.U,1)+' m/s'],[tx('za minutu klesne','in one minute it sinks'),nf(q.U*60)+' m']])};
+}
+
+/* ===== 7 Pro děti ===== */
+{
+ const P7=mkP(260,8),PA={x:[],y:[],n:90},PB={x:[],y:[],n:70};let v7=null,W7=null,T7=0;
+ for(let i=0;i<PA.n;i++){PA.x.push(Math.random());PA.y.push(Math.random())}for(let i=0;i<PB.n;i++){PB.x.push(Math.random());PB.y.push(Math.random())}
+ const k7w=()=>{const sc=S.k7,al=sc==='hand'?S.hand:S.wang,key=sc+'|'+al;if(!W7||W7.key!==key){W7=sc==='hand'?wing(al,.05,0):wing(al,.12,.04);W7.key=key}return W7};
+ S.k7='paper';S.blow=60;S.hand=15;S.wang=6;
+ const box=(m,rows)=>`<div class="mx7" data-m="${m}">${rows.map(r=>`<div class="kid"><b>${r[0]}</b>${r[1]}</div>`).join('')}</div>`;
+ TABS.push({kap:'7',name:tx('Pro děti','For kids'),side:'30rem',
+ build(){return `<div class="split"><div class="col">${scope('c7')}</div><aside class="side card">
+  <div class="lbl">${tx('Jak to vysvětlit dětem na ZŠ','How to explain it to primary school kids')}</div>
+  <div class="chips g3">${[['paper',tx('Papír','Paper')],['hand',tx('Dlaň','Hand')],['wing',tx('Křídlo','Wing')]].map(a=>`<button class="chip" data-k="k7" data-v="${a[0]}">${a[1]}</button>`).join('')}</div>
+  <div class="mx7" data-m="paper">${sl('blow',tx('Foukání','Blowing'),0,100,1,'blow')}</div>
+  <div class="mx7" data-m="hand">${sl('hand',tx('Sklon dlaně','Hand tilt'),0,25,1,'hand')}</div>
+  <div class="mx7" data-m="wing">${sl('wang',tx('Sklon křídla','Wing tilt'),0,14,1,'wang')}</div>
+  <hr>
+  ${box('paper',[[tx('Řekni dětem','Say to the children'),tx('Papír visí dolů. Když přes něj foukneš, vzduch nad ním letí rychle. Rychlý vzduch tlačí na papír málo, klidný vzduch pod papírem tlačí víc. Klidný vzduch papír zespodu zvedne.','The paper hangs down. When you blow across it, the air above it rushes fast. Fast air pushes on the paper little, the calm air below pushes more. The calm air lifts the paper from below.')],[tx('Zeptej se dřív','Ask first'),tx('Co se stane, když foukneme nad papír? A co když pod něj? Nech děti hádat a pak to zkus.','What happens if we blow above the paper? And if we blow under it? Let the children guess, then try.')],[tx('Zkus ve třídě','Try in class'),tx('Pruh papíru drž těsně pod spodním rtem a foukej rovně dopředu přes horní stranu.','Hold a paper strip right under the lower lip and blow straight ahead across its top.')]])}
+  ${box('hand',[[tx('Řekni dětem','Say to the children'),tx('Nakloněná plochá deska odhání vzduch dolů. Když ty odhodíš vzduch dolů, vzduch odhodí zpátky tebe nahoru. Stejně, jako když plavec odhrnuje vodu dozadu a plave dopředu.','A tilted flat board pushes air downward. When you throw air down, the air throws you back up. Just like a swimmer who pushes the water back and swims forward.')],[tx('Zeptej se dřív','Ask first'),tx('Kam poletí dlaň, když ji naklopíme víc? A co když ji dáme rovně proti větru?','Where will the hand go if we tilt it more? And if we hold it level against the wind?')],[tx('Zkus venku','Try outside'),tx('Venku ve větru drž pevnou lepenku a naklápěj ji. Ruce z okna jedoucího auta se nikdy nevystrkují!','Outside in the wind hold a stiff piece of cardboard and tilt it. Never put hands out of a moving car window!')]])}
+  ${box('wing',[[tx('Řekni dětem','Say to the children'),tx('Křídlo je zvláštně tvarované: vzduch nad ním urychlí a celý proud sklopí dolů. Nad křídlem je proto méně tlaku a pod ním víc, takže ho vzduch nese nahoru. Když letadlo letí dost rychle, unese se.','The wing has a special shape: it speeds the air above it and turns the whole stream downward. So there is less pressure above and more below, and the air carries the wing up. If the aircraft flies fast enough, it holds itself up.')],[tx('Zeptej se dřív','Ask first'),tx('Proč musí letadlo před vzletem hodně rozjet po dráze?','Why must an aircraft speed up a lot on the runway before takeoff?')],[tx('Zkus ve třídě','Try in class'),tx('Dva svisle visící papíry 10 cm od sebe: foukni mezi ně. Papíry se k sobě přiblíží, protože mezi nimi je rychlý vzduch a menší tlak.','Two papers hanging 10 cm apart: blow between them. They come closer together, because the air between is fast and the pressure is lower.')]])}
+  ${call(tx('Pozor na mýty (pro učitele)','Beware of myths (for teachers)'),tx('Neříkej, že vzduch nahoře musí „dohnat“ vzduch dole: není to pravda (kapitola 4, závod částic). Papírový pokus ukazuje, že rychlý proud znamená nižší tlak. Celé křídlo je složitější: tlaky i odklon proudu popisují totéž (kapitola 4).','Do not say the air on top must "catch up" with the air below: it is not true (chapter 4, particle race). The paper experiment shows that fast flow means lower pressure. The whole wing is subtler: the pressures and the deflected flow describe the same thing (chapter 4).'))}
+ </aside></div>`},
+ init(){HOOK.k7=()=>{P7.init=false}},
+ anim(dt){T7+=dt;if(S.k7==='paper'){const b=S.blow/100;for(let i=0;i<PA.n;i++){PA.x[i]+=dt*(.1+.9*b)*.55;if(PA.x[i]>1){PA.x[i]-=1;PA.y[i]=Math.random()}}for(let i=0;i<PB.n;i++){PB.x[i]+=dt*.05;if(PB.x[i]>1){PB.x[i]-=1;PB.y[i]=Math.random()}}}
+  else if(v7)pStep(P7,k7w(),v7,dt*2.2)},
+ render(){
+  $$('#stage [data-t="6"] .mx7').forEach(e=>e.classList.toggle('on',e.dataset.m===S.k7));
+  const cv=$('#c7');
+  if(S.k7==='paper'){
+   const g=setup(cv),x=g.x,R=g.R,w=g.w,h=g.h,b=S.blow/100,sm=b*b*(3-2*b),thE=(-72+75*sm)*Math.PI/180;LG.c7=g;
+   const x0=w*.17,y0=h*.5,Lp=w*.52,pts=[];let px=x0,py=y0;pts.push([px,py]);
+   for(let i=1;i<=40;i++){const s=i/40,th=thE*Math.pow(s,.9)+Math.sin(T7*9+s*14)*.05*b*s;px+=Math.cos(th)*Lp/40;py-=Math.sin(th)*Lp/40;pts.push([px,py])}
+   const mid=pts[22];
+   /* vzduch nad papírem: rychlé čárky, pod ním: pomalé tečky */
+   x.strokeStyle='rgba(244,241,234,.8)';x.lineWidth=2;x.lineCap='round';x.beginPath();
+   for(let i=0;i<PA.n;i++){const sx=PA.x[i]*(w-R*3)+R*1.5,sy=y0-R*1.2-PA.y[i]*h*.3,L=(.08+.92*b)*w*.07;x.moveTo(sx,sy);x.lineTo(sx+L,sy)}x.stroke();
+   for(let i=0;i<PB.n;i++)dot(x,PB.x[i]*(w-R*3)+R*1.5,y0+R*2.2+PB.y[i]*h*.28,R*.17,'rgba(244,241,234,.6)');
+   /* papír */
+   x.beginPath();x.strokeStyle='#F4F1EA';x.lineWidth=R*.45;x.lineJoin='round';pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.stroke();
+   x.fillStyle='#E2B98F';x.beginPath();x.roundRect?x.roundRect(x0-R*2.8,y0-R*1.2,R*2.8,R*2.4,R*.7):x.rect(x0-R*2.8,y0-R*1.2,R*2.8,R*2.4);x.fill();
+   /* tlaky */
+   const L0=R*3.6,La=L0*(1-.55*b);
+   [-1.6,0,1.6].forEach(o=>{const ax=mid[0]+o*R*1.6;arrow(x,ax,mid[1]+R*1.1+L0,ax,mid[1]+R*1.1,'#FF972E',4,R*.9);arrow(x,ax,mid[1]-R*1.1-La,ax,mid[1]-R*1.1,'#4DA3FF',4,R*.9)});
+   TH(x,tx('rychlý vzduch: míň tlaku','fast air: less pressure'),w-R*1.4,y0-h*.36,R*1.05,'#4DA3FF','right');
+   TH(x,tx('klidný vzduch: víc tlaku','calm air: more pressure'),w-R*1.4,y0+h*.4,R*1.05,'#FF972E','right');
+   arrow(x,R*1.5,y0-R*3.4,R*7,y0-R*3.4,'#F4F1EA',3,R*.9);T(x,tx('foukání','blowing'),R*1.5,y0-R*4.6,R*.9,'rgba(244,241,234,.85)');
+   if(b>.45)TH(x,tx('papír se zvedne!','the paper lifts!'),x0+Lp*.35,y0-h*.17+R*0,R*1.3,'#F4F1EA','center');
+   SUBT(7,'<i></i>'+tx('Pokus s papírem (znázornění)','Paper experiment (illustration)'),'');
+  }else{
+   const w=k7w(),g=mkView(cv,0,0,5.6),x=g.x,R=g.R;v7={xmin:g.xmin,xmax:g.xmax,ymin:g.ymin,ymax:g.ymax};if(!P7.init){pInit(P7,v7);P7.init=true}
+   drawP(g,P7,'rgba(244,241,234,.8)',2);drawWing(g,w,S.k7==='hand'?'#E2B98F':'#F4F1EA');
+   const qx=g.X(w.LE[0]+.25*(w.TE[0]-w.LE[0])),qy=g.Y(w.LE[1]+.25*(w.TE[1]-w.LE[1])),Ll=clamp(w.CL,.25,2.6)*g.sc*1.1;
+   arrow(x,qx,qy,qx,qy-Ll,'#F4F1EA',6,R*1.3);TH(x,tx('letí nahoru','goes up'),qx+R*1,qy-Ll-R*.3,R*1.15,'#F4F1EA');
+   if(S.k7==='hand'){
+    TH(x,tx('dlaň','hand'),g.X(w.LE[0])-R*.8,g.Y(w.LE[1])+R*.2,R*1,'#E2B98F','right');
+    [1.3,2.4,3.5].forEach(d=>{const px=w.TE[0]+d,py=w.TE[1]-.2-d*.06,v=w.vel(px,py),L=clamp(Math.abs(v.v)*g.sc*3.4,R*1.2,g.sc*1.4);arrow(x,g.X(px),g.Y(py),g.X(px),g.Y(py)+L,'#2EC4B6',4,R*.9)});
+    TH(x,tx('vzduch letí dolů','the air goes down'),g.X(w.TE[0]+1.2),g.Y(w.TE[1]-2.6),R*1.15,'#2EC4B6');
+   }else{
+    const s=w.getSf();surfPick(s,22).forEach(i=>{const cp=s.CP[i],L=clamp(Math.abs(cp),.2,3)*g.sc*.4,px=g.X(s.X[i]),py=g.Y(s.Y[i]),nx=s.NX[i],ny=-s.NY[i];
+     if(cp<0)arrow(x,px,py,px+nx*L,py+ny*L,'#4DA3FF',3.4,R*.7);else arrow(x,px+nx*L,py+ny*L,px,py,'#FF972E',3.4,R*.7)})
+    TH(x,tx('nahoře: rychle, málo tlaku','above: fast, little pressure'),g.X(0),g.Y(2.5),R*1.1,'#4DA3FF','center');
+    TH(x,tx('dole: pomaleji, víc tlaku','below: slower, more pressure'),g.X(0),g.Y(-2.4),R*1.1,'#FF972E','center');
+   }
+   arrow(x,g.X(g.xmin+.3),g.Y(g.ymax-.7),g.X(g.xmin+1.8),g.Y(g.ymax-.7),'#F4F1EA',2.5);T(x,tx('vítr','wind'),g.X(g.xmin+.3),g.Y(g.ymax-1.2),R*.9,'rgba(244,241,234,.85)');
+   SUBT(7,'<i></i>'+(S.k7==='hand'?tx('Nakloněná dlaň ve větru','A tilted hand in the wind'):tx('Křídlo v proudu vzduchu','A wing in the air stream')),'');
+  }
+ }});
+ OUT.blow=()=>`<b>${S.blow}</b> %`;OUT.hand=()=>`<b>${S.hand}</b> °`;OUT.wang=()=>`<b>${S.wang}</b> °`;
+}
+
+/* ========== záložky, start, nápověda ========== */
+const ICON={
+ run:'<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
+ play:'<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>',
+ theme:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg>',
+ full:'<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+};
+function go(i){
+ S.tab=i;
+ $$('#stage>.tab').forEach((s,j)=>s.hidden=j!==i);
+ $$('#tabs .tab-b').forEach((b,j)=>b.setAttribute('aria-selected',j===i));
+ if(location.hash!=='#'+(i+1))history.replaceState(null,'','#'+(i+1));
+ const t=TABS[i];if(t.enter)t.enter();
+ sync();requestAnimationFrame(()=>{sync();t.render&&t.render()});
+}
+ACT.runIcon=()=>{const b=$('#bRun');b.innerHTML=S.run?ICON.run:ICON.play;b.setAttribute('aria-pressed',S.run);b.setAttribute('aria-label',S.run?tx('Pozastavit animaci','Pause the animation'):tx('Spustit animaci','Play the animation'));b.title=b.getAttribute('aria-label')};
+ACT.run=()=>{S.run=!S.run;ACT.runIcon();refresh()};
+ACT.theme=()=>{const d=document.documentElement;const dark=d.dataset.theme?d.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;d.dataset.theme=dark?'light':'dark';try{localStorage.setItem('wlp-theme',d.dataset.theme)}catch(e){}readC();refresh()};
+ACT.lang=v=>{if(v===LANG)return;try{localStorage.setItem('wlp-lang',v)}catch(e){}location.reload()};
+ACT.full=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()};
+function boot(){
+ try{const th=localStorage.getItem('wlp-theme');if(th==='dark'||th==='light')document.documentElement.dataset.theme=th}catch(e){}
+ document.documentElement.lang=LANG;document.title='Wing Lab Pro';
+ $('meta[name=description]').content=tx('Interaktivní laboratoř křídla letadla: obtékání, rychlost vzduchu, tlak a sání nad křídlem, dvě vysvětlení vztlaku, víry za křídlem, koncové víry a výklad pro děti. Určeno pro projekci a velké dotykové panely.','Interactive lab on an aircraft wing: flow, air speed, pressure and suction above the wing, two explanations of lift, vortices behind the wing, wingtip vortices and an explanation for children. Made for projection and large touch panels.');
+ {const hb=$('#bHelp');hb.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 5h16v11H4zM8 20h8M12 16v4M8 9h8M8 12h5"/></svg>';hb.setAttribute('aria-label',tx('Vysvětlení k této kapitole','Explanation of this chapter'));hb.title=hb.getAttribute('aria-label')}
+ $('#tBack').textContent=tx('← Všechny školní aplikace','← All school apps');$('#tSub').textContent=tx('Gymnázium Příbram · Fyzika','Gymnázium Příbram · Physics');
+ $('#tabs').setAttribute('aria-label',tx('Záložky','Tabs'));
+ $('#bThm').setAttribute('aria-label',tx('Světlý nebo tmavý vzhled','Light or dark theme'));$('#bFul').setAttribute('aria-label',tx('Celá obrazovka','Fullscreen'));
+ $$('.lang button').forEach(b=>b.classList.toggle('on',b.dataset.v===LANG));
+ $('#crH').textContent=tx('Autor a licence','Author and license');$('#crBtn').textContent=tx('Autor a licence','Author and license');$('#cr-x').textContent=tx('Zavřít','Close');
+ $('#fL').textContent=tx('Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 24. 11. 2026','Author: Ivo Bešťák · License CC BY 4.0 · Updated: 24 Nov 2026');
+ $('#fR').textContent=tx('Všechno se počítá přímo v prohlížeči. Nic se nikam neodesílá.','Everything is computed right in your browser. Nothing is sent anywhere.');
+ readC();ACT.runIcon();$('#bThm').innerHTML=ICON.theme;$('#bFul').innerHTML=ICON.full;
+ const nav=$('#tabs'),st=$('#stage');
+ TABS.forEach((t,i)=>{
+  nav.insertAdjacentHTML('beforeend',`<button class="tab-b" role="tab" aria-selected="false" data-act="tab" data-v="${i}"><span class="kap">${tx('kap.','ch.')} ${t.kap}${t.plus?' · PLUS':''}</span><span class="nm">${t.name}</span></button>`);
+  st.insertAdjacentHTML('beforeend',`<section class="tab" hidden data-t="${i}" style="${t.side?'--side:'+t.side+';':''}">${t.build()}</section>`);
+ });
+ ACT.tab=v=>go(+v);
+ TABS.forEach(t=>t.init&&t.init());
+ document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||!$('#help').hidden)return;if(e.key==='ArrowRight')go((S.tab+1)%TABS.length);if(e.key==='ArrowLeft')go((S.tab+TABS.length-1)%TABS.length)});
+ new ResizeObserver(()=>refresh()).observe(st);
+ matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{readC();refresh()});
+ window.addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1));if(n>=1&&n<=TABS.length&&n-1!==S.tab)go(n-1)});
+ const h=parseInt(location.hash.slice(1));go(h>=1&&h<=TABS.length?h-1:0);
+ document.fonts&&document.fonts.ready.then(()=>{readC();refresh()});
+ requestAnimationFrame(t=>{lastTs=t;requestAnimationFrame(loop)});
+}
+
+/* ===== nápověda ===== */
+(function(){
+const U=(a)=>'<ul>'+a.map(s=>'<li>'+s+'</li>').join('')+'</ul>';
+const TIT=[[ 'Jak vzduch obtéká křídlo','How air flows around a wing'],['Proč je vzduch nad křídlem rychlejší','Why the air is faster above the wing'],['Tlak a „sání“ nad křídlem','Pressure and "suction" above the wing'],['Dvě vysvětlení vztlaku a jeden mýtus','Two explanations of lift and one myth'],['Cirkulace, rozběhový vír a přetažení','Circulation, the starting vortex and the stall'],['Víry na koncích křídel','Vortices at the wingtips'],['Jak to vysvětlit dětem na základní škole','How to explain it to primary school children']];
+const CH=[
+ {a:tx('<p>Křídlo je tvarované tak, aby při letu vzniklo síla směrem nahoru, vztlak. Aplikace počítá proudění kolem profilu křídla v ideálním modelu bez tření a ukazuje ho jako proudnice a pohybující se částice kouře.</p>','<p>A wing is shaped so that flight produces an upward force, lift. The app computes the flow around a wing profile in an ideal model without friction and shows it as streamlines and moving smoke particles.</p>'),
+  x:[[['Jak model funguje','How the model works'],tx('<p>Profil vzniká matematickým zobrazením kružnice (Joukowského transformace). Kolem kružnice umíme proudění spočítat přesně, přenesením dostaneme proudění kolem křídla. Cirkulace Γ se určí tak, aby vzduch plynule odtékal z ostré odtokové hrany (Kuttova podmínka).</p>','<p>The profile comes from a mathematical mapping of a circle (the Joukowski transformation). Flow around a circle can be computed exactly, and mapping it gives the flow around the wing. The circulation Γ is chosen so that air leaves the sharp trailing edge smoothly (the Kutta condition).</p>')],
+     [['Co model neumí','What the model cannot do'],tx('<p>Nezná tření vzduchu a mezní vrstvu, a proto nepočítá odpor ani odtržení proudu při velkém sklonu. Pro malé sklony dává dobrý obraz vztlaku, nad asi 14° už skutečné křídlo vztlak ztrácí (kapitola 5).</p>','<p>It knows nothing about air friction and the boundary layer, so it computes neither drag nor flow separation at large angles. For small angles it gives a good picture of lift, but above about 14° a real wing loses lift (chapter 5).</p>')]],
+  c:U([tx('Zvětši sklon a sleduj, jak se stagnační bod posouvá pod náběžnou hranu.','Increase the angle and watch the stagnation point move below the leading edge.'),tx('Zvol souměrný profil a sklon 0°: proudění je nahoře i dole stejné, vztlak je nulový.','Choose the symmetric profile and 0°: the flow is the same above and below and lift is zero.')]),
+  d:tx('Křídlo odklání proud a nad sebou ho zrychluje. Tak vznikne síla nahoru.','The wing deflects the flow and speeds it up above itself. That is how an upward force arises.')},
+ {a:tx('<p>Barva ukazuje rychlost vzduchu v každém místě: žlutá je rychlé proudění, fialová pomalé. Šipky a světlé čárky u částic ukazují směr a rychlost.</p>','<p>The color shows the air speed at every point: yellow is fast flow, purple is slow. Arrows and the light streaks on particles show direction and speed.</p>'),
+  x:[[['Proč je vzduch nahoře rychlejší','Why the air is faster on top'],tx('<p>Proudnice nad křídlem se zhušťují a zhuštěné proudnice znamenají rychlejší proudění. Příčinu dává cirkulace (kapitola 5): kolem křídla se vzduch točí po směru hodin, takže nahoře rychlost proudu zvětšuje a dole zmenšuje.</p>','<p>The streamlines above the wing crowd together, and crowded streamlines mean faster flow. The cause is circulation (chapter 5): around the wing the air turns clockwise, so it adds to the stream speed on top and takes away below.</p>')]],
+  c:U([tx('Přetáhni sondu A nad křídlo a sondu B pod něj a porovnej rychlosti.','Drag probe A above the wing and probe B below it and compare the speeds.'),tx('Dej sondu daleko před křídlo: rychlost je skoro stejná jako rychlost letu.','Put a probe far ahead of the wing: its speed is almost the same as the airspeed.')]),
+  d:tx('Nad křídlem je vzduch rychlejší než ve volném proudu, pod křídlem pomalejší.','Above the wing the air is faster than in the free stream, below it slower.')},
+ {a:tx('<p>Rychlost a tlak spolu souvisejí. Součinitel Cp říká, o kolik je tlak nižší nebo vyšší než v klidném vzduchu, v násobcích dynamického tlaku ½ρV².</p>','<p>Speed and pressure are linked. The coefficient Cp tells how much the pressure is lower or higher than in still air, in multiples of the dynamic pressure ½ρV².</p>'),
+  x:[[['Sání nahoře, přetlak dole','Suction on top, overpressure below'],tx('<p>Na horní straně je podtlak, který křídlo táhne nahoru. Na spodní straně je přetlak, který ho tlačí nahoru. U běžných sklonů nese větší část vztlaku horní strana. Aplikace to počítá z tlaků na povrchu a ukazuje v procentech.</p>','<p>On the top there is lower pressure that pulls the wing up. On the bottom there is higher pressure that pushes it up. At ordinary angles the top carries the larger part of lift. The app computes this from the surface pressures and shows it in percent.</p>')],
+     [['Kolik je „sání“','How big is the "suction"'],tx('<p>Podtlak je řádu tisíců pascalů, tedy jen pár procent atmosférického tlaku. Stačí, protože plocha křídla je velká.</p>','<p>The suction is on the order of thousands of pascals, only a few percent of atmospheric pressure. It is enough because the wing area is large.</p>')]],
+  c:U([tx('Souměrný profil, sklon 0°: tlaky nahoře a dole jsou stejné a vztlak je nulový.','Symmetric profile, 0°: the pressures above and below are equal and lift is zero.'),tx('Zvyšuj rychlost letu: tlaky rostou s druhou mocninou rychlosti.','Raise the airspeed: pressures grow with the square of speed.')]),
+  d:tx('Vztlak je součet sání nad křídlem a přetlaku pod ním. Plocha mezi křivkami v grafu je právě vztlak.','Lift is the sum of the suction above the wing and the overpressure below it. The area between the curves in the graph is the lift.')},
+ {a:tx('<p>Vztlak se dá vysvětlit dvěma způsoby, které se nevylučují. Tlakový: rychlejší vzduch má nižší tlak. Odklonový: křídlo vychýlí proud dolů a reakcí je síla nahoru.</p>','<p>Lift can be explained in two ways that do not exclude each other. The pressure one: faster air has lower pressure. The deflection one: the wing turns the stream downward and the reaction is a force upward.</p>'),
+  x:[[['Mýtus o stejné době','The equal transit time myth'],tx('<p>Častá, ale nesprávná představa tvrdí, že se vzduch nad a pod křídlem po rozdělení musí potkat za křídlem ve stejný okamžik. Závod částic ukazuje, že částice nad křídlem je u odtokové hrany dřív. Nic ji nenutí čekat.</p>','<p>A common but wrong idea says that air going over and under the wing must meet behind it at the same moment. The particle race shows that the particle over the wing reaches the trailing edge sooner. Nothing makes it wait.</p>')],
+     [['Proč platí obě vysvětlení','Why both explanations hold'],tx('<p>Bernoulliho rovnice i Newtonovy zákony plynou ze stejných pohybových rovnic vzduchu. Jedno vysvětlení popisuje síly na povrchu, druhé změnu hybnosti proudu. Proč mají rychlost a odklon proudu právě takovou hodnotu, vysvětlí až cirkulace (kapitola 5).</p>','<p>The Bernoulli equation and Newton\'s laws both follow from the same equations of air motion. One explanation describes forces on the surface, the other the change of the stream\'s momentum. Why speed and deflection have exactly these values is explained by circulation (chapter 5).</p>')]],
+  c:U([tx('Pusť časovou čáru a porovnej časy částic A a B.','Release the time line and compare the times of particles A and B.'),tx('Přepni na odklon proudu: před křídlem vzduch stoupá, za ním klesá.','Switch to deflected flow: ahead of the wing the air rises, behind it sinks.')]),
+  d:tx('Rychlejší vzduch nad křídlem a proud vychýlený dolů jsou dva pohledy na tentýž jev.','Faster air above the wing and a stream turned downward are two views of the same event.')},
+ {a:tx('<p>Vztlak a cirkulace jsou spojené. Cirkulace Γ je „oběh“ rychlosti kolem křídla. Vzorec Kutty a Žukovského říká, že vztlak na jednotku rozpětí je L = ρ·V·Γ.</p>','<p>Lift and circulation are connected. The circulation Γ is the "going round" of the velocity around the wing. The Kutta–Joukowski formula says that lift per unit span is L = ρ·V·Γ.</p>'),
+  x:[[['Rozběhový vír','The starting vortex'],tx('<p>Celková cirkulace v ideálním proudění zůstává nulová (Kelvinova věta). Když křídlo nabírá cirkulaci Γ po směru hodin, utrhne se od odtokové hrany vír opačného směru a zůstane za křídlem na místě rozjezdu. V aplikaci je vidět, že součet obou je nula.</p>','<p>In ideal flow the total circulation stays zero (Kelvin\'s theorem). When the wing gains clockwise circulation Γ, a vortex of the opposite sense breaks off the trailing edge and stays behind where the start happened. The app shows that the sum of both is zero.</p>')],
+     [['Přetažení','The stall'],tx('<p>Při příliš velkém sklonu se proud neudrží u horní strany a odtrhne se. Za křídlem vznikají neuspořádané víry a vztlak prudce klesne. Obrázek v aplikaci je schematický, nejde o výpočet.</p>','<p>At too large an angle the flow does not stay on the upper side and separates. Disordered vortices form behind the wing and lift drops sharply. The picture in the app is a sketch, not a calculation.</p>')]],
+  c:U([tx('Změň sklon: rozběh se spustí znovu a ukáže silnější nebo slabší vír.','Change the angle: the start runs again and shows a stronger or weaker vortex.'),tx('Přepni na přetažení a zvyš sklon nad 14°.','Switch to the stall and raise the angle above 14°.')]),
+  d:tx('Křídlo nese cirkulaci a stejně velkou opačnou cirkulaci nechává za sebou ve víru.','The wing carries circulation and leaves an equal opposite circulation behind in a vortex.')},
+ {a:tx('<p>Křídlo konečného rozpětí nemá vztlak na koncích. Vzduch zespodu, kde je vyšší tlak, obtéká konce nahoru a stáčí se do dvou protiběžných vírů.</p>','<p>A wing of finite span has no lift at its tips. Air from below, where the pressure is higher, flows round the tips upward and curls into two counter-rotating vortices.</p>'),
+  x:[[['Jak jsou víry velké','How big the vortices are'],tx('<p>Při eliptickém rozložení vztlaku je Γ₀ = 4L / (π·ρ·V·b). Víry jsou od sebe ve vzdálenosti b₀ = π·b/4 a pár klesá rychlostí U = Γ₀ / (2π·b₀).</p>','<p>With elliptical lift distribution Γ₀ = 4L / (π·ρ·V·b). The vortices are b₀ = π·b/4 apart and the pair sinks at U = Γ₀ / (2π·b₀).</p>')],
+     [['Proč na tom záleží','Why it matters'],tx('<p>Za těžkým letadlem je vzduch zvířený a může ohrozit menší letadlo, které za ním letí. Proto se při vzletech a přistáních dodržují odstupy.</p>','<p>Behind a heavy aircraft the air is churned and can endanger a smaller aircraft following it. That is why separations are kept at takeoff and landing.</p>')]],
+  c:U([tx('Přepni z malého letadla na dopravní: cirkulace víru vzroste.','Switch from the small aircraft to the airliner: the vortex circulation grows.'),tx('Zvětšuj rozpětí při stejné hmotnosti: cirkulace klesá.','Increase the span at the same mass: the circulation falls.')]),
+  d:tx('Čím těžší letadlo a čím pomaleji letí, tím silnější víry za sebou nechává.','The heavier the aircraft and the slower it flies, the stronger the vortices it leaves behind.')},
+ {a:tx('<p>Tato kapitola je pomůcka pro učitele, kteří vysvětlují princip křídla dětem na základní škole (asi 3. až 5. třída). Nemá vzorce. Má tři scény: papír, dlaň a křídlo. U každé je věta, kterou lze říct dětem, otázka k hádání před pokusem a pokus, který lze udělat ve třídě.</p>','<p>This chapter is a tool for teachers explaining how a wing works to primary school children (about grades 3 to 5). It has no formulas. It has three scenes: paper, hand and wing. Each has something to say to the children, a question to guess before the experiment and an experiment that can be done in class.</p>'),
+  x:[[['Jak ji použít','How to use it'],U([tx('Nejdřív se zeptej dětí, co se stane. Nech je hádat.','First ask the children what will happen. Let them guess.'),tx('Pak ukaž pokus nebo scénu.','Then show the experiment or the scene.'),tx('Vysvětli jednou větou, používej slova „rychlý vzduch“ a „méně tlaku“.','Explain in one sentence, use the words "fast air" and "less pressure".')])],
+     [['Čemu se vyhnout','What to avoid'],U([tx('Neříkej, že vzduch nahoře musí „dohnat“ vzduch dole.','Do not say the air on top must "catch up" with the air below.'),tx('Pokusy dělej pod dohledem a ruce z oken vozidel nikdy nevystrkuj.','Run experiments under supervision and never put hands out of vehicle windows.')])]],
+  c:U([tx('Začni papírem: je to nejjednodušší pokus.','Start with the paper: it is the simplest experiment.'),tx('Pak ukaž dlaň a nakláněním ukaž, že vzduch míří dolů.','Then show the hand and tilt it to show that the air goes down.'),tx('Nakonec ukaž křídlo a spoj všechno do jednoho obrazu.','Finally show the wing and join everything into one picture.')]),
+  d:tx('Rychlý vzduch tlačí méně a křídlo odhání vzduch dolů, takže vzduch nese křídlo nahoru.','Fast air pushes less and the wing throws air downward, so the air carries the wing upward.')},
+];
+let open=false;
+function render(){
+ const n=S.tab,c=CH[n],t=TIT[n];
+ let h=`<button class="x" data-act="help" aria-label="${tx('Zavřít','Close')}">✕</button><div class="kap">${tx('kap.','ch.')} ${TABS[n].kap} · ${tx('vysvětlení','explanation')}</div><h2>${tx(t[0],t[1])}</h2><h3>${tx('Co to je','What it is')}</h3>${c.a}`;
+ h+=c.x.map(s=>`<h3>${tx(s[0][0],s[0][1])}</h3>`+s[1]).join('');
+ h+=`<h3>${tx('Co zkusit','What to try')}</h3>${c.c}<h3>${tx('Co si odnést','Takeaway')}</h3><p><b>${c.d}</b></p><div class="nav"><button data-act="hnav" data-v="-1">← ${tx('Předchozí kapitola','Previous chapter')}</button><button data-act="hnav" data-v="1">${tx('Další kapitola','Next chapter')} →</button></div>`;
+ $('#help .dlg').innerHTML=h;
+}
+ACT.help=()=>{open=!open;const e=$('#help');e.hidden=!open;if(open){render();$('#help .dlg').scrollTop=0;$('#help .x').focus()}else $('#bHelp').focus()};
+ACT.hnav=v=>{go((S.tab+ +v+CH.length)%CH.length);render();$('#help .dlg').scrollTop=0};
+document.addEventListener('keydown',e=>{if(open&&e.key==='Escape')ACT.help()});
+document.addEventListener('click',e=>{if(open&&e.target.id==='help')ACT.help()});
+})();
+
+
+</script>
+<script>
+const A=(u,t)=>`<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`;
+window.LXC={ns:'wlp',num:false,min:tx('asi 45 minut','about 45 minutes'),
+PRE:[
+ {t:tx('Základní obraz: typický profil, 6°','The basic picture: typical profile, 6°'),d:tx('Záložka 1: sklon 6°, rychlost 60 m/s. Proudnice a částice kolem křídla.','Tab 1: 6°, 60 m/s. Streamlines and particles around the wing.'),f:()=>{Object.assign(S,{al:6,th:.12,cm:.04,V:60});go(0)}},
+ {t:tx('Nulový sklon, souměrný profil','Zero angle, symmetric profile'),d:tx('Záložka 3: tlaky nahoře i dole jsou stejné a vztlak je nulový. Pak zvyšuj sklon.','Tab 3: the pressures above and below are equal and lift is zero. Then raise the angle.'),f:()=>{Object.assign(S,{al:0,th:.12,cm:0});go(2)}},
+ {t:tx('Vzduch nad křídlem je rychlejší','The air above the wing is faster'),d:tx('Záložka 2: sondy A a B nad a pod křídlem. Porovnej rychlosti.','Tab 2: probes A and B above and below the wing. Compare the speeds.'),f:()=>{Object.assign(S,{al:6,th:.12,cm:.04,fld:'both',pr:[{x:-.2,y:1.25},{x:-.2,y:-1.25}]});go(1)}},
+ {t:tx('Křídlo „vcucává“ nahoru','The wing is "sucked" upward'),d:tx('Záložka 3: šipky sání nad křídlem a přetlaku pod ním, procenta vztlaku.','Tab 3: arrows of suction above the wing and overpressure below, percent of lift.'),f:()=>{Object.assign(S,{al:8,f3:'both'});go(2)}},
+ {t:tx('Mýtus o stejné době obtékání','The equal transit time myth'),d:tx('Záložka 4: časová čára a částice A a B. Která dorazí dřív?','Tab 4: a time line and particles A and B. Which arrives first?'),f:()=>{Object.assign(S,{al:6,expl:'race'});go(3)}},
+ {t:tx('Odklon proudu dolů','The stream deflected downward'),d:tx('Záložka 4: svislá složka rychlosti a odklon proudu před křídlem a za ním.','Tab 4: the vertical velocity component and the deflection ahead of and behind the wing.'),f:()=>{Object.assign(S,{al:8,expl:'newton'});go(3)}},
+ {t:tx('Rozběhový vír','The starting vortex'),d:tx('Záložka 5: rozběh z klidu, vznik víru a cirkulace křídla.','Tab 5: start from rest, formation of the vortex and the wing circulation.'),f:()=>{Object.assign(S,{al:8,m5:'start'});go(4)}},
+ {t:tx('Přetažení křídla','The wing stall'),d:tx('Záložka 5: schéma odtržení proudu při velkém sklonu.','Tab 5: a sketch of flow separation at a large angle.'),f:()=>{Object.assign(S,{m5:'stall',al5:18});go(4)}},
+ {t:tx('Víry za dopravním letadlem','Vortices behind an airliner'),d:tx('Záložka 6: předvolba Dopravní, síla vírů a klesání páru.','Tab 6: the Airliner preset, vortex strength and the sinking of the pair.'),f:()=>{ACT.pre6('mid');go(5)}},
+ {t:tx('Vysvětlení pro děti: papír','For children: the paper'),d:tx('Záložka 7: pokus s papírem. Nejdřív ať děti hádají.','Tab 7: the paper experiment. Let the children guess first.'),f:()=>{Object.assign(S,{k7:'paper',blow:60});go(6)}},
+],
+PLAN:[
+ [tx('Obtékání křídla','Flow around the wing'),'6 min',tx('Záložka 1, základní obraz, stagnační bod.','Tab 1, the basic picture, the stagnation point.')],
+ [tx('Rychlost vzduchu','Air speed'),'6 min',tx('Záložka 2, sondy A a B.','Tab 2, probes A and B.')],
+ [tx('Tlak a sání','Pressure and suction'),'8 min',tx('Záložka 3, předvolba „Křídlo vcucává nahoru“.','Tab 3, the preset "The wing is sucked upward".')],
+ [tx('Dvě vysvětlení a mýtus','Two explanations and a myth'),'10 min',tx('Záložka 4, odklon proudu a závod částic.','Tab 4, deflected flow and the particle race.')],
+ [tx('Cirkulace a rozběhový vír','Circulation and the starting vortex'),'8 min',tx('Záložka 5, rozběh a přetažení.','Tab 5, the start and the stall.')],
+ [tx('Koncové víry','Wingtip vortices'),'7 min',tx('Záložka 6, malé a velké letadlo.','Tab 6, small and large aircraft.')]],
+NOTES:[tx('Záložky 5 a 6 jsou PLUS, tedy nad rámec učiva ročníků. Lze je vynechat.','Tabs 5 and 6 are PLUS, beyond the curriculum of the years. They can be skipped.'),tx('Záložka 7 je pomůcka pro výklad dětem na základní škole a do postupu 4R se nezapočítává.','Tab 7 is an aid for explaining to primary school children and is not counted in the plan for the final year.'),tx('Model je ideální (bez tření). Neukazuje odpor ani odtržení proudu; přetažení v záložce 5 je schematické.','The model is ideal (without friction). It shows neither drag nor flow separation; the stall in tab 5 is schematic.'),tx('Tlačítko vpravo nahoře (dvě svislé čárky) pozastaví animace.','The button at the top right (two vertical bars) pauses the animations.')],
+F:[
+ [[tx('Vztlak z cirkulace (Kutta–Žukovskij)','Lift from circulation (Kutta–Joukowski)'),'L = ρ · V · Γ'],[tx('Součinitel vztlaku','Lift coefficient'),'C_L = L / (½ · ρ · V² · c)'],[tx('Hustota vzduchu u země','Air density near the ground'),'ρ ≈ 1,225 kg/m³'.replace(',',LANG==='en'?'.':',')]],
+ [[tx('Dynamický tlak','Dynamic pressure'),'q = ½ · ρ · V²'],[tx('Rychlost v násobcích V∞','Speed in multiples of V∞'),'v / V∞']],
+ [[tx('Bernoulliho rovnice','Bernoulli equation'),'p + ½ · ρ · v² = konst.'],[tx('Součinitel tlaku','Pressure coefficient'),'C_p = (p − p∞) / (½ρV∞²) = 1 − (v / V∞)²']],
+ [[tx('Rozdíl tlaků','Pressure difference'),'p₁ − p₂ = ½ · ρ · (v₂² − v₁²)'],[tx('Odklon proudu','Deflected flow'),'L = ṁ · w']],
+ [[tx('Kutta–Žukovskij','Kutta–Joukowski'),'L = ρ · V · Γ'],[tx('Kelvinova věta','Kelvin\'s theorem'),'Γ_křídla + Γ_víru = 0'.replace('křídla',tx('křídla','wing')).replace('víru',tx('víru','vortex'))]],
+ [[tx('Cirkulace víru','Vortex circulation'),'Γ₀ = 4L / (π · ρ · V · b)'],[tx('Rozteč víru','Vortex spacing'),'b₀ = π · b / 4'],[tx('Klesání páru','Sinking of the pair'),'U = Γ₀ / (2π · b₀)']],
+ []],
+GL:[
+ [tx('Proudnice','Streamline'),tx('Čára, která v každém bodě sleduje směr rychlosti proudění.','A line that follows the direction of the flow velocity at every point.'),[0,1]],
+ [tx('Úhel náběhu (sklon) α','Angle of attack α'),tx('Úhel mezi tětivou profilu a směrem proudu.','The angle between the chord of the profile and the direction of the flow.'),[0,2,4]],
+ [tx('Tětiva','Chord'),tx('Spojnice náběžné a odtokové hrany profilu.','The line joining the leading and trailing edge of the profile.'),[0]],
+ [tx('Stagnační bod','Stagnation point'),tx('Místo, kde se proud zastaví a rozdělí na část nad a pod křídlem.','The place where the flow stops and splits into a part above and a part below the wing.'),[0,3]],
+ [tx('Vztlak','Lift'),tx('Síla na křídlo kolmá na směr proudu.','The force on the wing perpendicular to the direction of the flow.'),[0,2,3,4]],
+ [tx('Dynamický tlak','Dynamic pressure'),tx('Veličina ½ρV²: pohybová energie vzduchu v jednotce objemu.','The quantity ½ρV²: the kinetic energy of air per unit volume.'),[2]],
+ [tx('Součinitel tlaku C_p','Pressure coefficient C_p'),tx('Rozdíl tlaku proti klidu v násobcích dynamického tlaku. Záporný znamená podtlak.','Pressure difference against rest in multiples of dynamic pressure. Negative means suction.'),[2]],
+ [tx('Bernoulliho rovnice','Bernoulli equation'),tx('Podél proudnice ideálního proudění platí p + ½ρv² = konst.','Along a streamline of ideal flow p + ½ρv² = constant.'),[2,3]],
+ [tx('Cirkulace Γ','Circulation Γ'),tx('Součet složek rychlosti podél uzavřené křivky kolem křídla. Určuje vztlak.','The sum of velocity components along a closed curve around the wing. It sets the lift.'),[4,5]],
+ [tx('Kuttova podmínka','Kutta condition'),tx('Vzduch plynule odtéká z ostré odtokové hrany. Určuje velikost cirkulace.','Air leaves the sharp trailing edge smoothly. It sets the size of the circulation.'),[4]],
+ [tx('Rozběhový vír','Starting vortex'),tx('Vír, který se utrhne od odtokové hrany při rozjezdu a zůstane za křídlem.','The vortex that breaks off the trailing edge at the start and stays behind the wing.'),[4]],
+ [tx('Přetažení','Stall'),tx('Odtržení proudu od horní strany při velkém sklonu, vztlak prudce klesne.','Separation of the flow from the upper side at a large angle; lift drops sharply.'),[4]],
+ [tx('Koncový vír','Wingtip vortex'),tx('Vír, který se stáčí na konci křídla z obtékání vzduchu od spodní strany nahoru.','A vortex curling at the wingtip from the air flowing round from the lower side upward.'),[5]],
+ [tx('Turbulence v brázdě','Wake turbulence'),tx('Zvířený vzduch za letadlem, hlavně od koncových vírů.','Churned air behind an aircraft, mostly from the wingtip vortices.'),[5]]],
+SRC:[
+ [tx('J. D. Anderson: Fundamentals of Aerodynamics (Joukowského transformace, Kuttova podmínka)','J. D. Anderson: Fundamentals of Aerodynamics (Joukowski transformation, Kutta condition)')],
+ [tx('J. D. Anderson: Fundamentals of Aerodynamics (rychlost a tlak kolem profilu)','J. D. Anderson: Fundamentals of Aerodynamics (speed and pressure around a profile)')],
+ [tx('J. D. Anderson: Fundamentals of Aerodynamics (součinitel tlaku)','J. D. Anderson: Fundamentals of Aerodynamics (pressure coefficient)'),tx('I. H. Abbott, A. E. von Doenhoff: Theory of Wing Sections','I. H. Abbott, A. E. von Doenhoff: Theory of Wing Sections')],
+ [tx('D. Anderson, S. Eberhardt: Understanding Flight (mýtus o stejné době obtékání, odklon proudu)','D. Anderson, S. Eberhardt: Understanding Flight (the equal transit time myth, deflected flow)')],
+ [tx('J. D. Anderson: Fundamentals of Aerodynamics (cirkulace, Kelvinova věta)','J. D. Anderson: Fundamentals of Aerodynamics (circulation, Kelvin\'s theorem)')],
+ [tx('L. Prandtl: teorie nosné čáry (1918, 1919), eliptické rozložení vztlaku','L. Prandtl: lifting-line theory (1918, 1919), elliptical lift distribution'),tx('ICAO Doc 4444 (odstupy kvůli turbulenci v brázdě)','ICAO Doc 4444 (separations due to wake turbulence)')],
+ []],
+D:{
+ c1:()=>tx(`Proudění kolem křídla při sklonu ${nf(S.al,1)}° a rychlosti ${S.V} m/s: proudnice a částice kouře.`,`Flow around the wing at ${nf(S.al,1)}° and ${S.V} m/s: streamlines and smoke particles.`),
+ c2:()=>tx('Mapa rychlosti vzduchu kolem křídla a dvě sondy A a B. Nad křídlem je rychlost vyšší.','Map of the air speed around the wing and two probes A and B. Above the wing the speed is higher.'),
+ c3:()=>tx('Mapa tlaku kolem křídla a šipky sání nad křídlem a přetlaku pod ním.','Pressure map around the wing and arrows of suction above and overpressure below.'),
+ c3b:()=>tx('Graf součinitele tlaku podél tětivy: horní strana, spodní strana a plocha mezi nimi jako vztlak.','Graph of the pressure coefficient along the chord: upper side, lower side and the area between them as lift.'),
+ c4:()=>({bern:tx('Vysvětlení tlakem a rychlostí se dvěma sondami.','Explanation by pressure and speed with two probes.'),newton:tx('Vysvětlení odklonem proudu: svislá složka rychlosti.','Explanation by deflected flow: the vertical velocity component.'),race:tx('Závod částic nad a pod křídlem.','Particle race above and below the wing.')})[S.expl],
+ c5:()=>S.m5==='start'?tx('Rozběh křídla z klidu: rozběhový vír a cirkulace kolem křídla.','Start of the wing from rest: the starting vortex and circulation around the wing.'):tx('Schéma přetažení: odtržený proud a neuspořádané víry.','Sketch of the stall: separated flow and disordered vortices.'),
+ c6:()=>tx(`Koncové víry za letadlem o hmotnosti ${nf(S.m)} kg: pohled shora a zezadu.`,`Wingtip vortices behind an aircraft of ${nf(S.m)} kg: view from above and from behind.`),
+ c7:()=>({paper:tx('Pokus s papírem: rychlý vzduch nad papírem ho zvedne.','The paper experiment: fast air above the paper lifts it.'),hand:tx('Nakloněná dlaň ve větru odhání vzduch dolů.','A tilted hand in the wind pushes the air downward.'),wing:tx('Křídlo v proudu vzduchu: nahoře méně tlaku, dole víc.','A wing in the air stream: less pressure above, more below.')})[S.k7]}};
+
+</script>
+<script>
+/* ===== Lab Pro: profil obrazovky, projekční režim, strukturovaná nápověda, okno Pro učitele, popisy grafů ===== */
+(function(){
+const C=window.LXC,NS=C.ns;
+/* ---- styly ---- */
+const st=document.createElement('style');st.textContent=`
+.lxd{position:fixed;inset:0;z-index:50;background:rgba(10,9,7,.6);display:grid;place-items:center;padding:2rem}
+.lxd[hidden]{display:none}
+.lxd .dlg{width:min(54rem,100%);max-height:100%;overflow:auto;background:var(--card);color:var(--ink);border-radius:1.2rem;box-shadow:0 2rem 5rem rgba(0,0,0,.5);padding:1.6rem 2rem 1.8rem;user-select:text;-webkit-user-select:text}
+.lxd h2{margin:0 0 .2rem;font:800 1.6rem/1.15 var(--f-head)}
+.lxd .kap{font:700 .7rem/1 var(--f-head);letter-spacing:.2em;text-transform:uppercase;color:var(--orange-t)}
+.lxd h3{margin:1.1rem 0 .3rem;font:700 .8rem/1 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:var(--orange-t)}
+.lxd p,.lxd li{font-size:1.02rem;line-height:1.45;color:var(--ink2);margin:.25rem 0}
+.lxd ul{margin:.2rem 0;padding-left:1.3rem}.lxd b{color:var(--ink)}
+.lxd .x{float:right;margin:-.3rem -.6rem 0 1rem;width:2.8rem;height:2.8rem;border-radius:50%;background:var(--bg);font:700 1.2rem/1 var(--f-head)}
+.lxd .opt{display:block;width:100%;text-align:left;margin:.4rem 0;padding:.65rem 1rem;border-radius:.9rem;background:var(--bg);box-shadow:inset 0 0 0 .13rem var(--line2)}
+.lxd .opt.on{box-shadow:inset 0 0 0 .2rem var(--orange);background:var(--orange-soft)}
+.lxd .opt b{display:block;font:700 1.05rem/1.2 var(--f-head)}
+.lxd .opt span{display:block;margin-top:.15rem;font-size:.92rem;line-height:1.35;color:var(--ink2)}
+.lxd .chp{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.3rem 0}
+.lxd .chp button{padding:.6rem .8rem;border-radius:.9rem;background:var(--bg);box-shadow:inset 0 0 0 .13rem var(--line2);font:700 .95rem/1.1 var(--f-head)}
+.lxd .chp button.on{background:var(--ink);color:var(--card);box-shadow:none}
+.lxd .det{margin-top:.8rem;padding:.7rem .9rem;border-radius:.9rem;background:var(--bg);font-size:.92rem;line-height:1.4;color:var(--ink2)}
+.lxd table{width:100%;border-collapse:collapse;margin:.3rem 0;font-size:.95rem}
+.lxd td,.lxd th{padding:.4rem .5rem;border-bottom:1px solid var(--line2);text-align:left;vertical-align:top;color:var(--ink2)}
+.lxd th{font:700 .8rem/1.2 var(--f-head);color:var(--ink)}
+.lxh{margin:1.2rem 0 .2rem!important;font:700 1.12rem/1.25 var(--f-head)!important;letter-spacing:0!important;text-transform:none!important;color:var(--ink)!important;scroll-margin-top:.5rem}
+.fb{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:.5rem;margin:.7rem 0 .2rem}
+.fbox{padding:.55rem .8rem;border-radius:.8rem;background:var(--bg);font:500 .9rem/1.4 var(--f-mono);color:var(--ink);border-left:.25rem solid var(--orange)}
+.fbox b{display:block;font:700 .66rem/1.2 var(--f-head);letter-spacing:.14em;text-transform:uppercase;color:var(--orange-t);margin-bottom:.2rem}
+.toc{display:flex;flex-wrap:wrap;gap:.35rem .45rem;margin:.6rem 0 .1rem}
+.toc button,.lnk{padding:.35rem .75rem;border-radius:1rem;background:var(--bg);font:600 .85rem/1 var(--f-head)}
+.lnk{margin-top:.2rem}
+.gl{margin:.3rem 0}.gl dt{font-weight:700;color:var(--ink);font-size:1rem}.gl dd{margin:0 0 .4rem;color:var(--ink2);font-size:.98rem;line-height:1.4}
+.srcl{font-size:.92rem}.srcl a{color:var(--orange-t);text-decoration:underline}.srcn{font-size:.85rem}
+/* hlavička: dvě tlačítka navíc */
+.top{gap:1rem}.tab-b{padding:.5rem .4rem .55rem}.tab-b .nm{font-size:.88rem}.ib{width:2.8rem;height:2.8rem}.lang{height:2.8rem}.lang button{height:2.3rem;padding:0 .65rem}
+html{--z:1}html[data-proj]{--z:1.15;--grid:rgba(244,241,234,.16);--grid2:rgba(244,241,234,.34)}
+`;document.head.appendChild(st);
+/* ---- profil a projekční režim ---- */
+const PROF={panel:{proj:true},monitor:{proj:false}};
+const PN={panel:{n:tx('Panel ve třídě','Classroom panel'),s:tx('Zrcadlení z počítače na interaktivní panel 4K, světlá třída, diváci 6 až 8 m daleko. Větší písmo a výraznější čáry. Výchozí volba.','Mirrored from a computer to a 4K interactive panel, bright classroom, viewers 6 to 8 m away. Larger text and stronger lines. Default.')},
+ monitor:{n:tx('Monitor','Monitor'),s:tx('Běžný monitor (například 24 palců) nebo notebook, práce zblízka.','An ordinary monitor (for example 24 inch) or a laptop, working up close.')}};
+S.prof='panel';S.proj=false;
+function applyProj(on){S.proj=!!on;document.documentElement.toggleAttribute('data-proj',!!on);PZ=on?1.12:1;try{readC()}catch(e){}}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(NS+'-'+k);if(v===null)localStorage.removeItem(NS+'-'+k);else localStorage.setItem(NS+'-'+k,v)}catch(e){return null}}
+function applyProfile(id,explicit){if(!PROF[id])id='panel';S.prof=id;ls('prof',id);if(explicit)ls('proj',null);applyProj(PROF[id].proj)}
+function detect(){const d=window.devicePixelRatio||1;return{w:Math.round((screen.width||0)*d),h:Math.round((screen.height||0)*d),dpr:d}}
+{const p=ls('prof'),j=ls('proj');applyProfile(PROF[p]?p:'panel',false);if(j==='1'||j==='0')applyProj(j==='1')}
+/* ---- dialogy ---- */
+const $0=document.querySelector.bind(document);
+function mk(id){const d=document.createElement('div');d.id=id;d.className='lxd';d.hidden=true;d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.innerHTML='<div class="dlg"></div>';($0('.app')||document.body).appendChild(d);return d}
+const dP=mk('lxprof'),dT=mk('lxtch');
+const helpEl=()=>$0('#hlp')||$0('#help');
+function closeHelp(){const h=helpEl();if(h&&!h.hidden)ACT.help()}
+const nfx=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+function renderProf(){
+ const d=detect();
+ dP.firstChild.innerHTML=`<button class="x" data-act="lxprof" aria-label="${tx('Zavřít','Close')}">✕</button>
+ <div class="kap">${tx('nastavení','settings')}</div><h2>${tx('Obrazovka a promítání','Screen and projection')}</h2>
+ <h3>${tx('Kde se aplikace promítá','Where the app is shown')}</h3>
+ ${Object.keys(PROF).map(id=>`<button class="opt${S.prof===id?' on':''}" data-act="lxprofset" data-v="${id}"><b>${PN[id].n}</b><span>${PN[id].s}</span></button>`).join('')}
+ <h3>${tx('Projekční režim','Projection mode')}</h3>
+ <div class="chp"><button class="${S.proj?'on':''}" data-act="lxproj" data-v="1">${tx('Zapnuto: větší písmo a čáry','On: larger text and lines')}</button><button class="${S.proj?'':'on'}" data-act="lxproj" data-v="0">${tx('Vypnuto','Off')}</button></div>
+ <div class="det">${tx(`Prohlížeč hlásí: ${nfx(d.w)}×${nfx(d.h)} bodů · zvětšení ${String(Math.round(d.dpr*100)/100).replace('.',',')}×. Aplikace se přizpůsobí velikosti okna v poměru 16:9, na 4K i Full HD.`,`The browser reports: ${nfx(d.w)}×${nfx(d.h)} dots · scaling ${Math.round(d.dpr*100)/100}×. The app adapts to the window size at 16:9, on 4K and Full HD alike.`)}</div>`;
+}
+function renderTch(){
+ dT.firstChild.innerHTML=`<button class="x" data-act="lxtch" aria-label="${tx('Zavřít','Close')}">✕</button>
+ <div class="kap">${tx('pro učitele','for teachers')}</div><h2>${tx('Předvolby a postup hodiny','Presets and lesson flow')}</h2>
+ <h3>${tx('Předvolby jedním klepnutím','One-tap presets')}</h3>
+ ${C.PRE.map((p,i)=>`<button class="opt" data-act="lxtchgo" data-v="${i}"><b>${p.t}</b><span>${p.d}</span></button>`).join('')}
+ <h3>${tx('Doporučený postup','Suggested flow')} (${C.min})</h3>
+ <table><tr><th>#</th><th>${tx('Téma','Topic')}</th><th>${tx('Čas','Time')}</th><th>${tx('Co ukázat','What to show')}</th></tr>${C.PLAN.map((r,i)=>`<tr><td>${i+1}</td><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</table>
+ <h3>${tx('Poznámky','Notes')}</h3><ul>${C.NOTES.map(n=>`<li>${n}</li>`).join('')}<li>${tx('Ovládání: klávesy ← a → přepínají kapitoly, tlačítko ? otevře vysvětlení, tlačítko obrazovky nastaví promítání.','Controls: the ← and → keys switch chapters, the ? button opens the explanation, the screen button sets projection.')}</li></ul>`;
+}
+let oP=false,oT=false;
+function setP(v){oP=v;dP.hidden=!v;if(v){closeHelp();if(oT)setT(false);renderProf();dP.querySelector('.x').focus()}else $0('#bProf').focus()}
+function setT(v){oT=v;dT.hidden=!v;if(v){closeHelp();if(oP)setP(false);renderTch();dT.querySelector('.x').focus()}else $0('#bTch').focus()}
+ACT.lxprof=()=>setP(!oP);ACT.lxtch=()=>setT(!oT);
+ACT.lxprofset=v=>{applyProfile(v,true);renderProf();refresh()};
+ACT.lxproj=v=>{applyProj(v==='1');ls('proj',v==='1'?'1':'0');renderProf();refresh()};
+ACT.lxtchgo=v=>{C.PRE[+v].f();setT(false);refresh()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(oP)setP(false);if(oT)setT(false)}});
+[dP,dT].forEach(d=>d.addEventListener('click',e=>{if(e.target===d){oP&&setP(false);oT&&setT(false)}}));
+window.addEventListener('keydown',e=>{if((oP||oT)&&(e.key==='ArrowLeft'||e.key==='ArrowRight'))e.stopPropagation()},true);
+/* tlačítka v záhlaví */
+{const tools=$0('.tools'),h=$0('#bHelp')||$0('#bHlp');
+ const mkb=(id,act,svg,t)=>{const b=document.createElement('button');b.className='ib';b.id=id;b.dataset.act=act;b.innerHTML='<svg viewBox="0 0 24 24">'+svg+'</svg>';b.title=t;b.setAttribute('aria-label',t);tools.insertBefore(b,h||tools.firstChild)};
+ mkb('bTch','lxtch','<path d="M2 9l10-5 10 5-10 5zM6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5M22 9v6"/>',tx('Pro učitele: předvolby a postup','For teachers: presets and flow'));
+ mkb('bProf','lxprof','<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M9 20h6M12 16v4"/>',tx('Obrazovka a promítání','Screen and projection'));{const hp=$0('#bHelp')||$0('#bHlp'),tc=$0('#bTch'),pr=$0('#bProf');if(hp&&tc&&pr){tools.insertBefore(hp,tc);pr.after(tc)}}}
+/* ---- strukturovaná nápověda: úprava hotového okna ---- */
+let allGl=false;
+const hc=()=>$0('#hlp .box')||$0('#help .dlg');
+function enhance(){
+ const c=hc();if(!c||!c.parentElement||c.parentElement.hidden||c.querySelector('.toc'))return;
+ const n=S.tab,h2=c.querySelector('h2');if(!h2)return;
+ const hs=[...c.querySelectorAll('h3')].filter(h=>!h.closest('.fb'));
+ hs.forEach((h,k)=>{h.id='lxs'+k;h.classList.add('lxh');h.textContent=(C.num?(n+1)+'.'+(k+1):(k+1)+'.')+' '+h.textContent});
+ const toc=hs.map(h=>`<button data-act="lxgo" data-v="${h.id}">${h.textContent.replace(/^[\d.]+\s/,'')}</button>`).join('')+`<button data-act="lxgo" data-v="lxG">${tx('Slovníček','Glossary')}</button>`+((C.SRC[n]||[]).length?`<button data-act="lxgo" data-v="lxS">${tx('Zdroje','Sources')}</button>`:'');
+ const fb=(C.F[n]||[]).map(f=>`<div class="fbox"><b>${f[0]}</b>${f[1].replace(/\n/g,'<br>')}</div>`).join('');
+ h2.insertAdjacentHTML('afterend',`<div class="toc" aria-label="${tx('Obsah','Contents')}">${toc}</div>${fb?`<div class="fb">${fb}</div>`:''}`);
+ const gl=C.GL.filter(g=>allGl||g[2].includes(n)),src=C.SRC[n]||[];
+ const anchor=c.querySelector('.pl')||c.querySelector('.nav');
+ const html=`<h3 id="lxG" class="lxh">${tx('Slovníček','Glossary')}${allGl?'':' · '+tx('této kapitoly','of this chapter')}</h3><dl class="gl">${gl.map(g=>`<dt>${g[0]}</dt><dd>${g[1]}</dd>`).join('')}</dl><button class="lnk" data-act="lxgl">${allGl?tx('Jen pojmy této kapitoly','Only this chapter\'s terms'):tx('Zobrazit celý slovníček','Show the whole glossary')}</button>`+(src.length?`<h3 id="lxS" class="lxh">${tx('Zdroje','Sources')}</h3><ul class="srcl">${src.map(s=>`<li>${s}</li>`).join('')}</ul><p class="srcn">${tx('Obsah vychází z těchto zdrojů, nebyl znovu porovnán s jejich textem. Čísla v simulaci jsou orientační (ideální proudění).','The content is based on these sources and was not re-checked against their text. Numbers in the simulation are indicative (ideal flow).')}</p>`:'');
+ anchor?anchor.insertAdjacentHTML('beforebegin',html):c.insertAdjacentHTML('beforeend',html);
+}
+ACT.lxgo=v=>{const e=document.getElementById(v);e&&e.scrollIntoView({block:'start'})};
+ACT.lxgl=()=>{allGl=!allGl;ACT.hnav('0');requestAnimationFrame(()=>ACT.lxgo('lxG'))};
+['help','hnav'].forEach(k=>{const f=ACT[k];ACT[k]=function(){const r=f.apply(this,arguments);enhance();return r}});
+/* ---- popisy grafů pro čtečky ---- */
+function a11y(){
+ Object.keys(C.D).forEach(id=>{const c=document.getElementById(id);if(c){c.setAttribute('role','img');try{c.setAttribute('aria-label',C.D[id]())}catch(e){}}});
+}
+const _sync=window.sync;window.sync=sync=function(){_sync();a11y()};
+/* GL má u pojmu [cs,en] jako tx() texty, v lang už je rozhodnuto */
+})();
+</script>
+<script>boot();</script>
+</body>
+</html>
