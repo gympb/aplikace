@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Počitadlo</title>
+<meta name="description" content="Dětské počitadlo na obrazovce: pozicové (jednotky, desítky, stovky) i klasické 10×10. Čtení čísel, sčítání a odčítání s přechodem přes desítku krok za krokem.">
+<meta name="author" content="Ivo Bešťák">
+<meta name="theme-color" content="#FBFAF7">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+:root{
+  --bg:#FBFAF7;--card:#FFFFFF;--ink:#1B2230;--ink2:#505A6B;--ink3:#6B7486;--line:#E2DED4;--line2:#CFC9BB;
+  --si:#2457C5;--si-bg:#E6EDFB;
+  --ok:#17794A;--ok-bg:#E3F2E9;--bad:#B3261E;--bad-bg:#FBE7E5;--warn:#8A5A00;--warn-bg:#FAF0D8;
+  --p0:#2E9E6B;--p1:#E8892B;--p2:#3A66C8;--b1:#C9472B;--b2:#F3EBDD;
+  --on:#FFFFFF;--focus:#1B2230;--shadow:0 1px 2px rgba(27,34,48,.06);
+  --font:'Atkinson Hyperlegible Next',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'Atkinson Hyperlegible Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14181F;--card:#1C222C;--ink:#E9ECF2;--ink2:#B4BCCB;--ink3:#8E98AA;--line:#2C3441;--line2:#3B4556;
+  --si:#8FB0FF;--si-bg:#202C4A;
+  --ok:#5DD39B;--ok-bg:#16332A;--bad:#FF8D84;--bad-bg:#40201F;--warn:#F0C265;--warn-bg:#3A2F15;
+  --p0:#4CC08A;--p1:#F2A04D;--p2:#7FA2FF;--b1:#E2694B;--b2:#D9CFBC;
+  --on:#101420;--focus:#E9ECF2;--shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181F;--card:#1C222C;--ink:#E9ECF2;--ink2:#B4BCCB;--ink3:#8E98AA;--line:#2C3441;--line2:#3B4556;
+  --si:#8FB0FF;--si-bg:#202C4A;
+  --ok:#5DD39B;--ok-bg:#16332A;--bad:#FF8D84;--bad-bg:#40201F;--warn:#F0C265;--warn-bg:#3A2F15;
+  --p0:#4CC08A;--p1:#F2A04D;--p2:#7FA2FF;--b1:#E2694B;--b2:#D9CFBC;
+  --on:#101420;--focus:#E9ECF2;--shadow:none;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.5 var(--font);min-height:100vh;min-height:100dvh}
+.shell{max-width:1060px;margin:0 auto;padding:0 16px 48px}
+body.proj .shell{max-width:1320px}
+a{color:var(--si)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+h1,h2,h3{line-height:1.25;margin:0}
+h1{font-size:28px;font-weight:700;letter-spacing:-.01em}
+h3{font-size:18px;font-weight:700}
+p{margin:0 0 10px}
+.mono{font-family:var(--mono)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0 4px;font-size:15px}
+.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink2);text-decoration:none}
+.top a:hover{text-decoration:underline}
+.cr-btn{font:inherit;font-size:14px;color:var(--ink3);background:none;border:0;min-height:44px;padding:0 4px;cursor:pointer;text-decoration:underline}
+.cr-btn:hover{color:var(--ink)}
+dialog.cr{max-width:min(32rem,calc(100vw - 32px));width:100%;border:1px solid var(--line2);border-radius:14px;padding:20px 22px;background:var(--card);color:var(--ink);box-shadow:0 12px 40px rgba(0,0,0,.25);max-height:calc(100dvh - 32px);overflow:auto}
+dialog.cr::backdrop{background:rgba(10,14,22,.55)}
+dialog.cr h2{margin:0 0 12px;font-size:20px}
+dialog.cr dl{margin:0 0 14px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:16px}
+dialog.cr dt{color:var(--ink3)}
+dialog.cr dd{margin:0}
+dialog.cr p{margin:0 0 12px;font-size:15px;color:var(--ink2)}
+.brand{display:flex;align-items:baseline;gap:8px;margin:0 0 8px}
+.brand small{color:var(--ink3);font-size:15px}
+.goal{margin:0 0 10px;color:var(--ink2);font-size:15.5px;line-height:1.4}
+.goal b{color:var(--ink)}
+.muted{color:var(--ink2)}.small{font-size:15px}.tiny{font-size:13.5px;color:var(--ink3)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 12px;box-shadow:var(--shadow)}
+.card.flat{box-shadow:none;background:transparent}
+.btn{appearance:none;font:inherit;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 18px;border-radius:12px;border:2px solid var(--ink);background:var(--card);color:var(--ink);cursor:pointer;text-align:center;line-height:1.25}
+.btn.primary{background:var(--ink);color:var(--bg)}
+.btn.quiet{border-color:var(--line2);font-weight:400;color:var(--ink2)}
+.btn.sm{min-height:44px;padding:8px 12px;font-size:15px}
+.btn.block{display:flex;width:100%}
+.btn[disabled]{opacity:.4;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>.btn{flex:1 1 92px;padding-left:8px;padding-right:8px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 8px}
+.tab{appearance:none;font:inherit;font-weight:700;font-size:15px;min-height:46px;padding:4px 2px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink2);cursor:pointer}
+.tab[aria-selected="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.seg{display:flex;gap:0;margin:0 0 10px;border:2px solid var(--line2);border-radius:12px;overflow:hidden}
+.seg button{appearance:none;flex:1;font:inherit;font-size:14.5px;min-height:44px;padding:4px 6px;border:0;border-left:2px solid var(--line2);background:var(--card);color:var(--ink2);cursor:pointer;line-height:1.2}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--si-bg);color:var(--si);font-weight:700}
+.seg button[disabled]{opacity:.4}
+.eyebrow{font-size:13.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.task{font:600 30px/1.2 var(--mono);margin:0 0 8px}
+.fb{border-radius:12px;padding:12px 14px;margin:10px 0;border:2px solid}
+.fb.ok{background:var(--ok-bg);border-color:var(--ok)}
+.fb.bad{background:var(--bad-bg);border-color:var(--bad)}
+.fb.info{background:var(--warn-bg);border-color:var(--warn)}
+.fb h3{font-size:17px;margin-bottom:4px}
+.fb p:last-child{margin-bottom:0}
+.hint{background:var(--si-bg);border-radius:12px;padding:10px 14px;margin:10px 0;font-size:16px}
+.prog{display:flex;gap:4px;margin:6px 0 10px}
+.prog i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.prog i.on{background:var(--ok)}.prog i.cur{background:var(--si)}
+ol.rm{margin:6px 0 10px;padding-left:22px;font-size:16px}
+ol.rm li{margin:3px 0}
+ol.rm li.dn{color:var(--ink3)}
+.log{list-style:none;margin:8px 0;padding:0}
+.log li{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 8px;background:var(--card)}
+.log li b{display:block}
+.log li.last{border-color:var(--si);box-shadow:0 0 0 1px var(--si)}
+.log li span{color:var(--ink2);font-size:15.5px}
+.num{font:600 24px var(--mono);min-height:52px;width:100%;padding:8px 14px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink)}
+.num:focus{border-color:var(--ink);outline:none}
+.copybox{width:100%;min-height:84px;font:13.5px var(--mono);border:2px solid var(--line2);border-radius:10px;background:var(--card);color:var(--ink);padding:8px;resize:vertical}
+table.st{border-collapse:collapse;width:100%;font-size:15px;margin:0 0 12px}
+table.st th,table.st td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}
+table.st td+td,table.st th+th{text-align:right}
+
+/* rozložení */
+.work{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+.work>.card{margin:0}
+@media (min-width:880px){
+  .work{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-areas:"aba panel";align-items:start}
+  #abacard{grid-area:aba}#panel{grid-area:panel}
+}
+
+/* počitadlo */
+.aba{--gap:22px;--h:44px}
+body.proj .aba{--h:62px}
+.wr{display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px;align-items:center;margin:0 0 4px}
+.aba[data-mode="kl"] .wr{grid-template-columns:34px minmax(0,1fr);margin:0 0 3px}
+.aba[data-mode="kl"]{--h:40px}
+body.proj .aba[data-mode="kl"]{--h:44px}
+.rl{font-size:13.5px;line-height:1.15;color:var(--ink3)}
+.rl b{display:block;font-size:15px;color:var(--ink)}
+.rl.t{text-align:right;font-family:var(--mono)}
+.rl.t.full{color:var(--ink);font-weight:700}
+.wire{position:relative;height:var(--h);border-radius:10px;touch-action:pan-y;cursor:pointer;user-select:none;-webkit-user-select:none;background:linear-gradient(var(--line2),var(--line2)) 0 50%/100% 3px no-repeat}
+.wire.lock{cursor:default}
+.wire:focus-visible{outline-offset:1px}
+.bead{position:absolute;top:5px;bottom:5px;left:calc((100% - var(--gap)) / 10 * var(--i));width:calc((100% - var(--gap)) / 10 - 3px);border-radius:999px;background:var(--bc);border:2px solid rgba(0,0,0,.35);opacity:.55;transition:transform .22s ease,opacity .22s;pointer-events:none}
+.bead.on{transform:translateX(var(--gap));opacity:1}
+.bead.ghost{background:none;border:2px dashed var(--line2);opacity:.6}
+.p0{--bc:var(--p0)}.p1{--bc:var(--p1)}.p2{--bc:var(--p2)}.c1{--bc:var(--b1)}.c2{--bc:var(--b2)}
+@media (prefers-reduced-motion:reduce){.bead{transition:none}}
+.ex{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 6px}
+.ex .btn{min-height:44px;font-size:14px;padding:4px 6px}
+.read{margin-top:10px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;min-height:48px}
+.read .big{font:700 40px/1 var(--mono)}
+.read .eq{color:var(--ink2);font-size:16px}
+.read.hid .big{color:var(--ink3)}
+.abahead{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap}
+.abahead .seg{margin:0;flex:1 1 220px}
+body.proj{font-size:20px}
+body.proj .task{font-size:40px}
+</style>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="gymplikace">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Počitadlo">
+<meta property="og:description" content="Dětské počitadlo na obrazovce: pozicové (jednotky, desítky, stovky) i klasické 10×10. Čtení čísel, sčítání a odčítání s přechodem přes desítku krok za krokem.">
+<meta property="og:url" content="https://aplikace.gympb.cz/pocitadlo/">
+<meta property="og:image" content="https://aplikace.gympb.cz/pocitadlo/nahled.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<div class="shell" id="shell">
+  <div class="top"><a href="../">← Všechny školní aplikace</a><button type="button" class="cr-btn" data-credits aria-haspopup="dialog">Autor a licence</button></div>
+  <div class="brand"><h1>Počitadlo</h1><small>pozice a počítání</small></div>
+  <p class="goal" id="goal"></p>
+  <div class="tabs" role="tablist" aria-label="Části aplikace" id="tabs"></div>
+  <div class="work">
+    <section class="card" id="panel" aria-label="Úkol"></section>
+    <section class="card" id="abacard" aria-label="Počitadlo">
+      <div class="abahead">
+        <div class="seg" role="group" aria-label="Typ počitadla" id="modeseg"></div>
+        <button type="button" class="btn quiet sm" id="projbtn" aria-pressed="false">Projekce</button>
+      </div>
+      <div class="aba" id="aba"></div>
+      <div class="read" id="read" role="status"></div>
+    </section>
+  </div>
+  <details class="card flat" style="margin-top:12px">
+    <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700">Dá se na počitadle pracovat s pozicemi?</summary>
+    <p class="small muted">Ano, ale každé počitadlo to ukazuje jinak. Na klasickém školním počitadle (10 řad po 10 kuličkách) mají všechny kuličky hodnotu 1. Pozice vidíš nepřímo: plná řada je jedna desítka a kuličky navíc jsou jednotky. Pozicové počitadlo má pro jednotky, desítky a stovky vlastní tyčku. Stejná kulička má na každé tyčce jinou hodnotu (1, 10, 100). Když se tyčka zaplní, deset kuliček se vymění za jednu na vyšší tyčce. Právě tak funguje zápis čísel v desítkové soustavě.</p>
+  </details>
+  <div class="row" style="margin-top:4px"><button type="button" class="btn quiet sm" id="pbtn" style="flex:0 1 auto">Postup a záloha</button></div>
+</div>
+
+<dialog class="cr" id="credits" aria-labelledby="cr-h">
+  <h2 id="cr-h">Autor a licence</h2>
+  <dl>
+    <dt>Aplikace</dt><dd>Počitadlo</dd>
+    <dt>Autor</dt><dd>Ivo Bešťák, Gymnázium Příbram</dd>
+    <dt>Licence</dt><dd><a href="https://creativecommons.org/licenses/by/4.0/deed.cs" target="_blank" rel="noopener">CC BY 4.0</a></dd>
+    <dt>Aktualizace</dt><dd>25. 11. 2026</dd>
+  </dl>
+  <p>Postup se ukládá jen v tomto prohlížeči. Aplikace nic neodesílá.</p>
+  <button type="button" class="btn sm" data-close>Zavřít</button>
+</dialog>
+<dialog class="cr" id="progdlg" aria-labelledby="pg-h">
+  <h2 id="pg-h">Postup a záloha</h2>
+  <div id="pgbody"></div>
+  <button type="button" class="btn sm" data-close>Zavřít</button>
+</dialog>
+<noscript><p style="padding:16px">Aplikace potřebuje zapnutý JavaScript.</p></noscript>
+<script>
+'use strict';
+/* ===== pomocné funkce ===== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pl = (n, a, b, c) => n === 1 ? a : (n >= 2 && n <= 4 ? b : c);
+const JW = [['jednotka','jednotky','jednotek'], ['desítka','desítky','desítek'], ['stovka','stovky','stovek']];
+const W = (p, n) => `${n} ${pl(n, ...JW[p])}`;
+const KUL = n => `${n} ${pl(n, 'kuličku', 'kuličky', 'kuliček')}`;
+const KULN = n => `${n} ${pl(n, 'kulička', 'kuličky', 'kuliček')}`;
+const RAD = n => `${n} ${pl(n, 'plná řada', 'plné řady', 'plných řad')}`;
+const GEN = ['jednotek', 'desítek', 'stovek'];
+const AC = ['jednotku', 'desítku', 'stovku'];
+const CAPT = ['Jednotky', 'Desítky', 'Stovky'];
+const MUL = [1, 10, 100];
+const dg = n => [n % 10, Math.floor(n / 10) % 10, Math.floor(n / 100)];
+const cap = p => p === 2 ? 9 : 10;
+const descrP = A => { const t = [2, 1, 0].filter(p => A[p] > 0).map(p => W(p, A[p])); return t.length ? t.join(' + ') : 'nic'; };
+const descrK = n => { const f = Math.floor(n / 10), r = n % 10; const t = []; if (f) t.push(RAD(f)); if (r) t.push(KULN(r)); return t.length ? t.join(' + ') : 'nic'; };
+
+/* ===== stav ===== */
+const KEY = 'pocitadlo-v1';
+const z = () => ({ w: 0, g: 0, s: 0, ok: 0, bad: 0, hint: 0, byd: [0, 0, 0] });
+const defS = () => ({ mode: 'poz', tab: 'zkouset', proj: false, lvl: { add: 'worked', sub: 'worked' }, diff: { add: 0, sub: 0 }, st: { add: z(), sub: z(), num: { ok: 0, bad: 0, hint: 0 } }, conf: { j: [0, 0], s: [0, 0], h: [0, 0] } });
+const nn = x => Number.isFinite(x) && x >= 0 ? Math.min(Math.floor(x), 1e6) : 0;
+function sanitize(o) {
+  const d = defS(); if (!o || typeof o !== 'object') return d;
+  if (o.mode === 'poz' || o.mode === 'kl') d.mode = o.mode;
+  if (['zkouset', 'cislo', 'scitani', 'odcitani'].includes(o.tab)) d.tab = o.tab;
+  d.proj = !!o.proj;
+  for (const k of ['add', 'sub']) {
+    if (o.lvl && ['worked', 'guided', 'solo'].includes(o.lvl[k])) d.lvl[k] = o.lvl[k];
+    if (o.diff && [0, 1, 2].includes(o.diff[k])) d.diff[k] = o.diff[k];
+    const s = o.st && o.st[k]; if (s) { for (const f of ['w', 'g', 's', 'ok', 'bad', 'hint']) d.st[k][f] = nn(s[f]); if (Array.isArray(s.byd)) d.st[k].byd = [0, 1, 2].map(i => nn(s.byd[i])); }
+  }
+  const n = o.st && o.st.num; if (n) { d.st.num.ok = nn(n.ok); d.st.num.bad = nn(n.bad); d.st.num.hint = nn(n.hint); }
+  for (const k of ['j', 's', 'h']) if (o.conf && Array.isArray(o.conf[k])) d.conf[k] = [nn(o.conf[k][0]), nn(o.conf[k][1])];
+  return d;
+}
+let S; try { S = sanitize(JSON.parse(localStorage.getItem(KEY))); } catch (e) { S = defS(); }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+const encode = () => 'POC1-' + btoa(JSON.stringify(S));
+const decode = c => { c = String(c).trim(); if (!c.startsWith('POC1-')) return null; try { return sanitize(JSON.parse(atob(c.slice(5)))); } catch (e) { return null; } };
+
+/* ===== počitadlo (stav) ===== */
+const A = { poz: [0, 0, 0], rows: Array(10).fill(0) };
+const sumRows = () => A.rows.reduce((a, b) => a + b, 0);
+const val = () => S.mode === 'poz' ? A.poz[0] + 10 * A.poz[1] + 100 * A.poz[2] : sumRows();
+const cur = () => S.mode === 'poz' ? [...A.poz] : sumRows();
+const eqS = (a, b) => S.mode === 'poz' ? a.every((v, i) => v === b[i]) : a === b;
+function setSnap(s) { if (S.mode === 'poz') A.poz = [...s]; else setN(s); }
+function setN(n) { A.rows = Array.from({ length: 10 }, (_, r) => Math.max(0, Math.min(10, n - 10 * r))); }
+const canon = () => { const n = sumRows(); return A.rows.every((k, r) => k === Math.max(0, Math.min(10, n - 10 * r))); };
+const resetAba = () => { A.poz = [0, 0, 0]; A.rows = Array(10).fill(0); };
+
+/* ===== plány úloh ===== */
+function planAddP(a, b) {
+  const Ad = dg(a), B = dg(b), steps = []; let c = [...Ad], lv = 0;
+  const push = (o, to) => { steps.push({ ...o, to: [...to] }); c = [...to]; };
+  push({ title: 'Nastav první číslo', h: 'Čti číslo po cifrách: stovky, desítky, jednotky.', text: `Nastav na počitadle číslo ${a}: ${descrP(Ad)}.`, why: `${a} = ${descrP(Ad)}.` }, Ad);
+  for (let p = 0; p < 3; p++) {
+    while (c[p] === 10 && p < 2) {
+      lv = Math.max(lv, p + 1); const to = [...c]; to[p] = 0; to[p + 1] += 1;
+      push({ title: 'Výměna', h: 'Tyčka je plná. Použij tlačítko mezi tyčkami.', text: `Tyčka ${GEN[p]} je plná. Vyměň 10 ${GEN[p]} za 1 ${AC[p + 1]} (tlačítko ↑).`, why: `Plná tyčka (10) se vždy vymění za 1 kuličku na vyšší pozici. Přenos pokračuje dál, dokud není žádná tyčka plná.` }, to);
+    }
+    const need = B[p]; if (!need) continue; const x = c[p], N = CAPT[p].toLowerCase();
+    if (x + need <= 9) {
+      const to = [...c]; to[p] = x + need;
+      push({ title: `Přidej ${N} druhého čísla`, h: `Kolik kuliček už na tyčce je a kolik jich přibude? Vejdou se všechny?`, text: `Přidej ${KUL(need)} na tyčku ${GEN[p]}.`, why: `${x} + ${need} = ${x + need}. Vejde se to na tyčku (nejvýš 9), výměna není potřeba.` }, to);
+    } else {
+      lv = Math.max(lv, p + 1); const f = 10 - x;
+      let to = [...c]; to[p] = 10;
+      push({ title: `Přidej ${N}: doplň tyčku`, h: `Na tyčku se vejde 10 kuliček. Kolik jich chybí do plné?`, text: `Přidej ${KUL(f)} na tyčku ${GEN[p]}, aby byla plná (10).`, why: `K ${x} přidáš ${f} a máš 10. Plná tyčka je 10 ${GEN[p]}, tedy 1 ${AC[p + 1].replace('u', 'a')}.` }, to);
+      to = [...c]; to[p] = 0; to[p + 1] += 1;
+      push({ title: 'Výměna', h: 'Použij tlačítko mezi tyčkami.', text: `Vyměň 10 ${GEN[p]} za 1 ${AC[p + 1]} (tlačítko ↑).`, why: `Hodnota se výměnou nemění: 10 kuliček na nižší tyčce nahradí 1 kulička na vyšší.` }, to);
+      const r = need - f;
+      if (r > 0) { to = [...c]; to[p] = r; push({ title: `Přidej ${N}: zbytek`, h: `Z ${need} kuliček už ${f} přibylo před výměnou. Kolik zbývá?`, text: `Přidej ještě ${KUL(r)}.`, why: `${need} = ${f} + ${r}, první část šla do výměny a teď přidáš zbytek ${r}.` }, to); }
+    }
+  }
+  return { steps, lv, res: a + b };
+}
+function planSubP(a, b) {
+  const Ad = dg(a), B = dg(b), steps = []; let c = [...Ad], lv = 0;
+  const push = (o, to) => { steps.push({ ...o, to: [...to] }); c = [...to]; };
+  push({ title: 'Nastav první číslo', h: 'Čti číslo po cifrách: stovky, desítky, jednotky.', text: `Nastav na počitadle číslo ${a}: ${descrP(Ad)}.`, why: `${a} = ${descrP(Ad)}.` }, Ad);
+  for (let p = 0; p < 3; p++) {
+    const need = B[p]; if (!need) continue; const x = c[p], N = CAPT[p].toLowerCase();
+    if (x >= need) {
+      const to = [...c]; to[p] = x - need;
+      push({ title: `Odeber ${N} druhého čísla`, h: 'Je na tyčce dost kuliček k odebrání?', text: `Odeber ${KUL(need)} z tyčky ${GEN[p]}.`, why: `${x} − ${need} = ${x - need}. Kuliček je dost, půjčovat nemusíš.` }, to);
+    } else {
+      if (x > 0) { const to = [...c]; to[p] = 0; push({ title: `Odeber ${N}: všechno, co je`, h: `Potřebuješ odebrat ${need}, ale máš jen ${x}.`, text: `Odeber všech ${KUL(x)} z tyčky ${GEN[p]}.`, why: `Potřebuješ odebrat ${need}, ale máš jen ${x}. Odeber ${x} a zbylých ${need - x} si půjčíš z vyšší tyčky.` }, to); }
+      let q = p + 1; while (q < 3 && c[q] === 0) q++;
+      for (let t = q; t > p; t--) {
+        lv = Math.max(lv, t); const to = [...c]; to[t] -= 1; to[t - 1] += 10;
+        push({ title: 'Půjčení', t, h: 'Použij tlačítko mezi tyčkami.', text: `Rozměň 1 ${AC[t]} na 10 ${GEN[t - 1]} (tlačítko ↓).`, why: `1 ${AC[t]} je totéž co 10 ${GEN[t - 1]}. Hodnota se nemění, jen se přesune na nižší tyčku.` }, to);
+      }
+      const r = need - x, to = [...c]; to[p] = 10 - r;
+      push({ title: `Odeber ${N}: zbytek`, h: `Teď je na tyčce 10. Kolik ještě zbývá odebrat?`, text: `Odeber ještě ${KUL(r)} z tyčky ${GEN[p]}.`, why: `10 − ${r} = ${10 - r}.` }, to);
+    }
+  }
+  return { steps, lv, res: a - b };
+}
+function planAddK(a, b) {
+  const steps = [], bd = Math.floor(b / 10), bj = b % 10; let n = a, lv = 0;
+  const push = (o, to) => { steps.push({ ...o, to }); n = to; };
+  push({ title: 'Nastav první číslo', h: 'Plné řady jsou desítky, kuličky navíc jsou jednotky.', text: `Nastav číslo ${a}: ${descrK(a)}.`, why: `${a} = ${descrK(a)}.` }, a);
+  if (bd) push({ title: 'Přidej desítky druhého čísla', h: 'Jedna plná řada je 10 kuliček.', text: `Přidej ${RAD(bd)} (${bd * 10} kuliček).`, why: `${n} + ${bd * 10} = ${n + bd * 10}. Plná řada je 10 kuliček, tedy jedna desítka.` }, n + bd * 10);
+  if (bj) {
+    const aj = n % 10; if (aj + bj >= 10) lv = 1;
+    if (aj + bj > 10) {
+      const f = 10 - aj; push({ title: 'Doplň řadu do 10', h: 'Kolik kuliček chybí, aby byla řada plná?', text: `Přidej ${KUL(f)}, aby se řada zaplnila na 10.`, why: `${aj} + ${f} = 10. Zaplněná řada je nová desítka (číslo ${n + f}).` }, n + f);
+      const r = bj - f; push({ title: 'Přidej zbytek do další řady', h: `Z ${bj} už ${f} přibylo. Kolik zbývá?`, text: `Přidej zbývající ${KUL(r)} do další řady.`, why: `${bj} = ${f} + ${r}. Zbytek ${r} patří do nové řady.` }, n + r);
+    } else push({ title: 'Přidej jednotky druhého čísla', h: 'Kolik kuliček přibude v neplné řadě?', text: `Přidej ${KUL(bj)}.`, why: aj + bj === 10 ? `${aj} + ${bj} = 10: řada se právě zaplnila, vznikla další desítka.` : `${aj} + ${bj} = ${aj + bj}. Vejde se to do řady.` }, n + bj);
+  }
+  return { steps, lv, res: a + b };
+}
+function planSubK(a, b) {
+  const steps = [], bd = Math.floor(b / 10), bj = b % 10; let n = a, lv = 0;
+  const push = (o, to) => { steps.push({ ...o, to }); n = to; };
+  push({ title: 'Nastav první číslo', h: 'Plné řady jsou desítky, kuličky navíc jsou jednotky.', text: `Nastav číslo ${a}: ${descrK(a)}.`, why: `${a} = ${descrK(a)}.` }, a);
+  if (bd) push({ title: 'Odeber desítky druhého čísla', h: 'Jedna plná řada je 10 kuliček.', text: `Odeber ${RAD(bd)} (${bd * 10} kuliček).`, why: `${n} − ${bd * 10} = ${n - bd * 10}.` }, n - bd * 10);
+  if (bj) {
+    const aj = n % 10;
+    if (aj >= bj) push({ title: 'Odeber jednotky druhého čísla', h: 'Je v neplné řadě dost kuliček?', text: `Odeber ${KUL(bj)}.`, why: `${aj} − ${bj} = ${aj - bj}. Kuliček je dost.` }, n - bj);
+    else {
+      lv = 1;
+      if (aj > 0) push({ title: 'Dokonči rozdělanou řadu', h: `Potřebuješ odebrat ${bj}, ale v řadě je jen ${aj}.`, text: `Odeber všech ${KUL(aj)} z neplné řady.`, why: `Odebereš ${aj} a zbylých ${bj - aj} si vezmeš z předchozí plné řady.` }, n - aj);
+      const r = bj - aj; push({ title: 'Odeber zbytek z plné řady', h: `Řada, ze které bereš, je plná (10). Kolik ještě odebrat?`, text: `Odeber ještě ${KUL(r)} z předchozí plné řady.`, why: `10 − ${r} = ${10 - r}. Z plné řady zbyde ${10 - r} kuliček.` }, n - r);
+    }
+  }
+  return { steps, lv, res: a - b };
+}
+function genTask(kind, d, mode) {
+  const P = mode === 'poz';
+  for (let t = 0; t < 2000; t++) {
+    let a, b;
+    if (kind === 'add') { a = P ? ri(10, 899) : ri(1, 89); b = P ? ri(2, 99) : ri(1, 89); if (a + b > (P ? 999 : 100)) continue; }
+    else { a = P ? ri(20, 999) : ri(10, 100); b = P ? ri(2, 99) : ri(1, 99); if (b > a) continue; }
+    const pl_ = kind === 'add' ? (P ? planAddP(a, b) : planAddK(a, b)) : (P ? planSubP(a, b) : planSubK(a, b));
+    const lv = P ? (kind === 'add' ? Math.min(pl_.lv, 2) : (pl_.lv === 0 ? 0 : (pl_.lv === 1 ? 1 : 2))) : pl_.lv;
+    if (lv === d) return { a, b, ...pl_ };
+  }
+  const a = kind === 'add' ? 38 : 52, b = 7; return { a, b, ...(kind === 'add' ? (P ? planAddP(a, b) : planAddK(a, b)) : (P ? planSubP(a, b) : planSubK(a, b))) };
+}
+
+/* ===== úlohy ===== */
+let T = null, idea = 0;
+const maxDiff = () => S.mode === 'poz' ? 2 : 1;
+function newTask() {
+  resetAba(); T = null;
+  if (S.tab === 'cislo') {
+    const ok = S.st.num.ok, P = S.mode === 'poz'; let n;
+    if (P) { const lv = Math.min(2, Math.floor(ok / 4)); n = lv === 0 ? ri(11, 99) : lv === 1 ? ri(1, 9) * 100 + ri(1, 9) * 10 + ri(1, 9) : ri(100, 999); }
+    else n = ri(0, 100);
+    T = { kind: 'num', sub: Math.random() < .5 ? 'read' : 'set', n, hint: 0, done: false, fb: null };
+    if (T.sub === 'read') { if (P) A.poz = dg(n); else setN(n); }
+  } else if (S.tab === 'scitani' || S.tab === 'odcitani') {
+    const kind = S.tab === 'scitani' ? 'add' : 'sub'; const d = Math.min(S.diff[kind], maxDiff());
+    const g = genTask(kind, d, S.mode), lvl = S.lvl[kind];
+    T = { kind, lvl, diff: d, ...g, i: 0, log: [], hint: 0, phase: lvl === 'solo' ? 'work' : 'predict', pred: null, fb: null, tries: 0, conf: null };
+  }
+  renderAll();
+}
+const locked = () => !!T && ((T.kind === 'num' && T.sub === 'read' && !T.done) || ((T.kind === 'add' || T.kind === 'sub') && (T.lvl === 'worked' || T.phase === 'predict' || T.phase === 'done')));
+
+/* ===== vykreslení ===== */
+const GOALS = {
+  poz: { zkouset: 'Zjistíš, že stejná kulička má na každé tyčce jinou hodnotu a že plná tyčka se mění za jednu kuličku na vyšší pozici.', cislo: 'Přečteš číslo z počitadla a nastavíš zadané číslo.', scitani: 'Sečteš s přechodem přes desítku: 10 kuliček vyměníš za 1 na vyšší pozici.', odcitani: 'Odečteš s přechodem přes desítku: 1 kuličku z vyšší pozice rozměníš na 10.' },
+  kl: { zkouset: 'Zjistíš, že plná řada je desítka a kuličky navíc jsou jednotky.', cislo: 'Přečteš číslo z počitadla a nastavíš zadané číslo.', scitani: 'Sečteš s přechodem přes desítku: doplníš řadu do 10 a zbytek přidáš do další řady.', odcitani: 'Odečteš s přechodem přes desítku: dokončíš řadu a zbytek odebereš z předchozí plné řady.' }
+};
+const TABS = [['zkouset', 'Zkoušet'], ['cislo', 'Číslo'], ['scitani', 'Sčítání'], ['odcitani', 'Odčítání']];
+function renderChrome() {
+  $('#goal').innerHTML = `<b>Cíl:</b> ${GOALS[S.mode][S.tab]}`;
+  $('#tabs').innerHTML = TABS.map(([k, t]) => `<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${S.tab === k}">${t}</button>`).join('');
+  $('#modeseg').innerHTML = [['poz', 'Pozicové'], ['kl', 'Klasické 10×10']].map(([k, t]) => `<button type="button" data-mode="${k}" aria-pressed="${S.mode === k}">${t}</button>`).join('');
+  document.body.classList.toggle('proj', S.proj); $('#projbtn').setAttribute('aria-pressed', S.proj);
+}
+function renderAll() { renderChrome(); buildAba(); paintAba(); renderPanel(); }
+
+function wireHTML(id, cls, ghost, label, max) {
+  let b = ''; for (let i = 0; i < 10; i++) b += `<i class="bead ${cls(i)}${ghost && i === 0 ? ' ghost' : ''}" style="--i:${i}"></i>`;
+  return `<div class="wire" role="slider" tabindex="0" data-w="${id}" aria-label="${label}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="0">${b}</div>`;
+}
+function buildAba() {
+  const box = $('#aba'); box.dataset.mode = S.mode; box.style.setProperty('--gap', (S.proj ? 30 : 22) + 'px'); let h = '';
+  if (S.mode === 'poz') {
+    for (const p of [2, 1, 0]) {
+      h += `<div class="wr"><div class="rl"><b>${CAPT[p]}</b><span id="rv${p}"></span></div>${wireHTML('p' + p, () => 'p' + p, p === 2, `Tyčka ${GEN[p]}`, cap(p))}</div>`;
+      if (p > 0) h += `<div class="ex"><button type="button" class="btn quiet" data-ex="up" data-lo="${p - 1}">↑ 10 ${GEN[p - 1]} → 1 ${AC[p]}</button><button type="button" class="btn quiet" data-ex="down" data-lo="${p - 1}">↓ 1 ${AC[p]} → 10 ${GEN[p - 1]}</button></div>`;
+    }
+  } else {
+    for (let r = 0; r < 10; r++) h += `<div class="wr"><div class="rl t" id="rt${r}">${(r + 1) * 10}</div>${wireHTML('r' + r, i => i < 5 ? 'c1' : 'c2', false, `Řada ${r + 1}`, 10)}</div>`;
+  }
+  box.innerHTML = h;
+}
+function paintAba() {
+  const lock = locked();
+  if (S.mode === 'poz') {
+    for (let p = 0; p < 3; p++) {
+      const k = A.poz[p], w = $(`[data-w="p${p}"]`); w.classList.toggle('lock', lock);
+      $$('.bead', w).forEach((b, i) => b.classList.toggle('on', i >= 10 - k));
+      w.setAttribute('aria-valuenow', k); w.setAttribute('aria-valuetext', `${KULN(k)}`);
+      $('#rv' + p).textContent = `${k} × ${MUL[p]}`;
+    }
+    $$('[data-ex]').forEach(b => { const lo = +b.dataset.lo, c = A.poz; b.disabled = lock || (b.dataset.ex === 'up' ? !(c[lo] === 10 && c[lo + 1] < cap(lo + 1)) : !(c[lo + 1] >= 1 && c[lo] === 0)); });
+  } else {
+    for (let r = 0; r < 10; r++) {
+      const k = A.rows[r], w = $(`[data-w="r${r}"]`); w.classList.toggle('lock', lock);
+      $$('.bead', w).forEach((b, i) => b.classList.toggle('on', i >= 10 - k));
+      w.setAttribute('aria-valuenow', k); w.setAttribute('aria-valuetext', KULN(k));
+      $('#rt' + r).classList.toggle('full', k === 10);
+    }
+  }
+  paintRead();
+}
+function paintRead() {
+  const el = $('#read'), v = val(); let big = String(v), eq = '', cls = '';
+  if (T && T.kind === 'num' && T.sub === 'read' && !T.done) { big = '?'; eq = 'Číslo se ukáže po odpovědi.'; cls = 'hid'; }
+  else if (S.mode === 'poz') {
+    eq = descrP(A.poz); if (A.poz.some((x, p) => x === 10)) eq += '. Plná tyčka: vyměň 10 za 1 na vyšší.';
+  } else { const f = A.rows.filter(k => k === 10).length, r = v - 10 * f; eq = f || r ? [f ? RAD(f) : '', r ? KULN(r) : ''].filter(Boolean).join(' + ') : 'nic'; }
+  el.className = 'read ' + cls; el.innerHTML = `<span class="big">${big}</span><span class="eq">${eq}</span>`;
+}
+
+/* ===== ovládání počitadla ===== */
+const aba = $('#aba'); let drag = null;
+function nearest(w, x) {
+  const r = w.getBoundingClientRect(), gap = S.proj ? 30 : 22, pitch = (r.width - gap) / 10, id = w.dataset.w;
+  const k = id[0] === 'p' ? A.poz[+id[1]] : A.rows[+id.slice(1)]; let best = 0, bd = 1e9;
+  for (let i = 0; i < 10; i++) { const cx = r.left + (i + .5) * pitch + (i >= 10 - k ? gap : 0), d = Math.abs(x - cx); if (d < bd) { bd = d; best = i; } }
+  return best;
+}
+function applyIdx(w, idx, tap) {
+  const id = w.dataset.w, isP = id[0] === 'p', p = isP ? +id[1] : +id.slice(1), k = isP ? A.poz[p] : A.rows[p];
+  let nk = (tap && k > 0 && idx === 10 - k) ? k - 1 : 10 - idx; if (isP) nk = Math.min(nk, cap(p));
+  if (nk === k) return; if (isP) A.poz[p] = nk; else A.rows[p] = nk; changed();
+}
+aba.addEventListener('pointerdown', e => { const w = e.target.closest('.wire'); if (!w || locked()) return; drag = { w, x0: e.clientX, moved: false }; try { w.setPointerCapture(e.pointerId); } catch (_) {} });
+aba.addEventListener('pointermove', e => { if (!drag) return; if (Math.abs(e.clientX - drag.x0) > 6) drag.moved = true; if (drag.moved) applyIdx(drag.w, nearest(drag.w, e.clientX), false); });
+aba.addEventListener('pointerup', e => { if (!drag) return; const d = drag; drag = null; if (!d.moved) applyIdx(d.w, nearest(d.w, e.clientX), true); });
+aba.addEventListener('pointercancel', () => { drag = null; });
+aba.addEventListener('keydown', e => {
+  const w = e.target.closest('.wire'); if (!w || locked()) return; const id = w.dataset.w, isP = id[0] === 'p', p = isP ? +id[1] : +id.slice(1); const k = isP ? A.poz[p] : A.rows[p];
+  let nk = k; if (['ArrowRight', 'ArrowUp'].includes(e.key)) nk = k + 1; else if (['ArrowLeft', 'ArrowDown'].includes(e.key)) nk = k - 1; else if (e.key === 'Home') nk = 0; else if (e.key === 'End') nk = isP ? cap(p) : 10; else return;
+  e.preventDefault(); nk = Math.max(0, Math.min(isP ? cap(p) : 10, nk)); if (nk !== k) { if (isP) A.poz[p] = nk; else A.rows[p] = nk; changed(); }
+});
+aba.addEventListener('click', e => {
+  const b = e.target.closest('[data-ex]'); if (!b || locked()) return; const lo = +b.dataset.lo, c = A.poz;
+  if (b.dataset.ex === 'up' && c[lo] === 10 && c[lo + 1] < cap(lo + 1)) { c[lo] = 0; c[lo + 1]++; changed(); }
+  else if (b.dataset.ex === 'down' && c[lo + 1] >= 1 && c[lo] === 0) { c[lo + 1]--; c[lo] = 10; changed(); }
+});
+function changed() {
+  paintAba();
+  if (T && (T.kind === 'add' || T.kind === 'sub') && T.lvl === 'guided' && T.phase === 'work') {
+    const st = T.steps[T.i];
+    if (st && eqS(cur(), st.to)) { T.log.push(st); T.i++; T.hint = 0; T.fb = { ok: true, t: st.why }; if (T.i >= T.steps.length) finish(true); renderPanel(); }
+  }
+}
+
+/* ===== panely ===== */
+const IDEAS = {
+  poz: ['Nastav na každé tyčce 3 kuličky. Nejdřív odhadni, jaké číslo to je, a pak se podívej na čtení pod počitadlem.', 'Posuň jednu kuličku na tyčku stovek a jednu na tyčku jednotek. Proč jsou tak rozdílné, i když je to pokaždé jedna kulička?', 'Zaplň tyčku jednotek (10 kuliček) a stiskni výměnu ↑. Co se stalo s číslem? A co s kuličkami?', 'Najdi nejmenší počet kuliček, kterým nastavíš 305. Kolik kuliček potřebuješ na 999?', 'Zkus nastavit 1000. Proč to na třech tyčkách nejde?'],
+  kl: ['Posuň 3 plné řady. Odhadni, jaké je to číslo, a pak to ověř čtením pod počitadlem.', 'Nastav číslo 47. Kolik je plných řad a kolik kuliček navíc?', 'Dojdi k číslu 100. Kolik řad je plných?', 'Nastav číslo, které má stejně plných řad jako kuliček navíc (třeba 33). Najdeš další?', 'Rozlož kuličky 24 do dvou neplných řad. Změní se číslo, nebo jen jeho čtení po řadách?']
+};
+const LVLN = { worked: 'Ukázka', guided: 'S vedením', solo: 'Samostatně' };
+const DN = { add: [['Bez přechodu'], ['Přes desítku'], ['Přes stovku']], sub: [['Bez půjčování'], ['Půjčení z desítek'], ['Půjčení přes stovku']] };
+function pZk() {
+  const L = IDEAS[S.mode], t = L[idea % L.length];
+  return `<div class="hint" style="margin-top:0"><b>Nápad ${idea % L.length + 1} z ${L.length}:</b> ${t}</div>
+  <div class="row"><button class="btn quiet sm" type="button" data-a="idea">Další nápad</button><button class="btn quiet sm" type="button" data-a="zero">Vynulovat</button><button class="btn quiet sm" type="button" data-a="rand">Náhodné číslo</button></div>
+  <p class="tiny" style="margin:8px 0 0">Kuličky posuneš tahem nebo klepnutím.${S.mode === 'poz' ? ' Výměna ↑ jde, když je tyčka plná, rozměnění ↓ když je nižší tyčka prázdná.' : ''}</p>`;
+}
+function pNum() {
+  const t = T; let h = '<div class="eyebrow">Číslo</div>';
+  if (t.sub === 'read') h += `<h3>Přečti číslo z počitadla</h3><p class="muted small">Podívej se na počitadlo a napiš, jaké číslo je nastavené.</p><input class="num" id="ans" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Číslo na počitadle" value="${t.ans || ''}" ${t.done ? 'disabled' : ''}>`;
+  else h += `<h3>Nastav číslo na počitadle</h3><div class="task">${t.n}</div><p class="muted small">Nastav počitadlo tak, aby ukazovalo toto číslo.</p>`;
+  if (t.fb) h += `<div class="fb ${t.fb.ok ? 'ok' : 'bad'}" role="status"><h3>${t.fb.ok ? 'Správně' : 'Zatím ne'}</h3><p>${t.fb.t}</p></div>`;
+  if (t.hint > 0 && !t.done) h += `<div class="hint" role="status">${numHint(t)}</div>`;
+  h += '<div class="row" style="margin-top:10px">';
+  if (!t.done) h += `<button class="btn primary" type="button" data-a="ncheck">Zkontroluj</button><button class="btn quiet" type="button" data-a="nhint">Nápověda (${t.hint}/3)</button>`;
+  else h += '<button class="btn primary" type="button" data-a="new">Další číslo</button>';
+  return h + '</div>';
+}
+function numHint(t) {
+  const P = S.mode === 'poz', d = dg(t.n);
+  if (t.hint === 1) return P ? 'Čti po tyčkách zleva: nejdřív stovky, pak desítky, nakonec jednotky. Kuličky na každé tyčce počítej zvlášť.' : 'Spočítej plné řady (každá je 10) a pak kuličky v neplné řadě.';
+  if (t.hint === 2) return P ? 'Kuličky na tyčce stovek jsou stovky, na tyčce desítek desítky a na tyčce jednotek jednotky. Prázdná tyčka znamená cifru 0.' : `Plné řady jsou desítky. ${t.sub === 'read' ? 'Kolik řad je plných?' : `Číslo ${t.n} má ${Math.floor(t.n / 10)} desítek a ${t.n % 10} jednotek.`}`;
+  return P ? `Rozklad: ${t.n} = ${descrP(d)}.` : `Rozklad: ${t.n} = ${descrK(t.n)}.`;
+}
+function pTask() {
+  const t = T, k = t.kind, st = S.st[k], P = S.mode === 'poz';
+  const lvl = ['worked', 'guided', 'solo'].map(v => `<button type="button" data-a="lvl" data-v="${v}" aria-pressed="${t.lvl === v}">${LVLN[v]}</button>`).join('');
+  const dif = DN[k].map(([n], i) => `<button type="button" data-a="diff" data-v="${i}" aria-pressed="${t.diff === i}" ${i > maxDiff() ? 'disabled' : ''}>${n}</button>`).join('');
+  const rec = st.w < 1 ? 'worked' : st.g < 3 ? 'guided' : 'solo';
+  let h = `<div class="eyebrow">${k === 'add' ? 'Sčítání' : 'Odčítání'}</div>`;
+  h += `<details style="margin:0 0 8px"><summary style="cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:15px;color:var(--ink2)">Úroveň: <b style="margin:0 4px">${LVLN[t.lvl]}</b> · obtížnost: <b style="margin-left:4px">${DN[k][t.diff][0]}</b></summary><div class="seg" role="group" aria-label="Úroveň vedení">${lvl}</div><div class="seg" role="group" aria-label="Obtížnost">${dif}</div><p class="tiny" style="margin:-4px 0 8px">Doporučeno: ${LVLN[rec]}. Úroveň si můžeš zvolit sám.</p></details>`;
+  h += `<div class="task">${t.a} ${k === 'add' ? '+' : '−'} ${t.b}</div>`;
+  if (t.phase === 'predict') {
+    const q = k === 'add' ? (P ? 'Bude potřeba vyměnit 10 kuliček za jednu na vyšší tyčce?' : 'Přejdeš při přičítání jednotek přes plnou řadu (přes desítku)?') : (P ? 'Bude potřeba si půjčit, tedy rozměnit kuličku z vyšší tyčky?' : 'Budeš muset odebírat kuličky i z předchozí plné řady?');
+    h += `<p><b>Nejdřív odhadni:</b> ${q}</p>`;
+    if (t.pred === null) h += '<div class="row"><button class="btn" type="button" data-a="pred" data-v="1">Ano</button><button class="btn" type="button" data-a="pred" data-v="0">Ne</button></div>';
+    else {
+      const need = t.lv >= 1, ok = (t.pred === 1) === need, aj = t.a % 10, bj = t.b % 10;
+      const why = k === 'add' ? (aj + bj >= 10 && need ? `Jednotky: ${aj} + ${bj} = ${aj + bj}, to je 10 nebo víc, takže se jednotky přelijí do desítek.` : (need ? `Přechod nastane až ve vyšším řádu, ne na jednotkách.` : `Jednotky: ${aj} + ${bj} = ${aj + bj} a to se vejde. Výměna není potřeba.`)) : (need ? (aj < bj ? `Na jednotkách je ${aj} a odebíráš ${bj}, to nejde bez půjčení.` : `Půjčení nastane až ve vyšším řádu.`) : `Odebíráš z každé pozice méně, než tam je, takže půjčení není potřeba.`);
+      h += `<div class="fb ${ok ? 'ok' : 'info'}" role="status"><h3>${ok ? 'Odhad sedí' : 'Odhad se liší'}</h3><p>${need ? 'Ano, výměna bude potřeba.' : 'Ne, výměna potřeba nebude.'} ${why}</p></div><button class="btn primary block" type="button" data-a="go">Začít</button>`;
+    }
+    return h;
+  }
+  if (t.lvl === 'worked') {
+    if (t.phase === 'work') {
+      h += `<div class="prog" aria-label="Postup">${t.steps.map((_, i) => `<i class="${i < t.i ? 'on' : i === t.i ? 'cur' : ''}"></i>`).join('')}</div>`;
+      const s = t.log[t.log.length - 1];
+      h += s ? `<ul class="log"><li class="last"><b>${s.title}</b>${s.text}<br><span>${s.why}</span></li></ul>` : '<p class="muted small">Stiskni Další krok a sleduj počitadlo. U každého kroku uvidíš, proč se tak děje.</p>';
+    }
+    if (t.phase === 'work') h += `<div class="row"><button class="btn quiet" type="button" data-a="wback" ${t.i === 0 ? 'disabled' : ''}>Zpět</button><button class="btn primary" type="button" data-a="wnext">Další krok (${t.i + 1}/${t.steps.length})</button></div>`;
+  } else if (t.lvl === 'guided' && t.phase === 'work') {
+    const s = t.steps[t.i];
+    h += `<div class="prog" aria-label="Postup">${t.steps.map((_, i) => `<i class="${i < t.i ? 'on' : i === t.i ? 'cur' : ''}"></i>`).join('')}</div>`;
+    if (t.fb) h += `<div class="fb ${t.fb.ok ? 'ok' : 'bad'}" role="status"><h3>${t.fb.ok ? 'Krok hotový' : 'Zatím ne'}</h3><p>${t.fb.t}</p></div>`;
+    h += `<div class="eyebrow">Krok ${t.i + 1} z ${t.steps.length}</div><h3>${s.title}</h3>`;
+    if (t.hint >= 1) h += `<div class="hint" role="status">${s.h}</div>`;
+    if (t.hint >= 2) h += `<div class="hint" role="status"><b>Postup:</b> ${s.text}</div>`;
+    h += `<div class="row" style="margin-top:10px"><button class="btn primary" type="button" data-a="gcheck">Zkontroluj</button><button class="btn quiet" type="button" data-a="ghint">${t.hint >= 3 ? 'Ukaž mi krok' : `Nápověda (${t.hint}/3)`}</button><button class="btn quiet" type="button" data-a="grew">Krok znovu</button></div>`;
+  } else if (t.lvl === 'solo' && t.phase === 'work') {
+    h += `<p class="muted small">${k === 'add' ? 'Sečti na počitadle: nastav první číslo, přidej druhé a vyměň, kde to je potřeba.' : 'Odečti na počitadle: nastav první číslo a odeber druhé, v případě potřeby si půjč.'}</p>`;
+    if (t.fb) h += `<div class="fb bad" role="status"><h3>Zatím ne</h3><p>${t.fb.t}</p></div>`;
+    if (t.hint >= 1) h += `<div class="hint" role="status">${soloHint(t)}</div>`;
+    h += `<div class="row"><button class="btn primary" type="button" data-a="scheck">Zkontroluj</button><button class="btn quiet" type="button" data-a="shint">Nápověda (${t.hint}/3)</button><button class="btn quiet" type="button" data-a="zero">Vymazat počitadlo</button></div>`;
+  } else if (t.phase === 'confirm') {
+    h += `<p><b>Jak moc jsi si jistý nebo jistá výsledkem?</b></p><div class="row"><button class="btn" type="button" data-a="conf" data-v="j">Jistě</button><button class="btn" type="button" data-a="conf" data-v="s">Spíš ano</button><button class="btn" type="button" data-a="conf" data-v="h">Hádám</button></div>`;
+  }
+  if (t.phase === 'done') {
+    h += `<details style="margin:0 0 8px"><summary style="cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:15px;color:var(--ink2)">Zobrazit všechny kroky</summary><ul class="log">${t.steps.map(s => `<li><b>${s.title}</b>${s.text}<br><span>${s.why}</span></li>`).join('')}</ul></details>`;
+    h += `<div class="fb ok" role="status"><h3>${t.a} ${k === 'add' ? '+' : '−'} ${t.b} = ${t.res}</h3><p>${t.fb && t.fb.t ? t.fb.t : ''}</p></div>`;
+    const sug = st.byd[t.diff] >= 2 && t.diff < maxDiff();
+    h += `<div class="row"><button class="btn primary" type="button" data-a="new">Další příklad</button>${sug ? '<button class="btn quiet" type="button" data-a="harder">Zkusit těžší</button>' : ''}</div>`;
+    if (t.lvl !== 'solo' && st.w + st.g >= 2) h += '<p class="tiny" style="margin-top:8px">Zvládáš to s oporou. Zkus úroveň Samostatně.</p>';
+  }
+  return h;
+}
+function soloHint(t) {
+  const k = t.kind;
+  if (t.hint === 1) return k === 'add' ? 'Začni nastavením prvního čísla a pak přidávej druhé číslo po tyčkách od jednotek. Když se tyčka zaplní, vyměň 10 za 1 na vyšší.' : 'Začni nastavením prvního čísla a pak odebírej druhé číslo po tyčkách od jednotek. Když na tyčce není dost kuliček, odeber všechny, rozměň 1 z vyšší tyčky a odeber zbytek.';
+  const list = t.steps.map(s => `<li>${t.hint >= 3 ? s.text : s.title}</li>`).join('');
+  return `<b>Postup:</b><ol class="rm">${list}</ol>`;
+}
+function renderPanel() {
+  const el = $('#panel'); el.innerHTML = S.tab === 'zkouset' ? pZk() : S.tab === 'cislo' ? pNum() : pTask();
+}
+
+/* ===== akce ===== */
+function diffMsgP(c, to) {
+  const m = [];
+  for (let p = 0; p < 3; p++) if (c[p] !== to[p]) {
+    if (c[p] === 10 && to[p] === 0) m.push(`Tyčka ${GEN[p]} je plná (10). Vyměň 10 za 1 na vyšší (↑).`);
+    else m.push(`Na tyčce ${GEN[p]} ${c[p] > to[p] ? 'přebývá' : 'chybí'} ${KULN(Math.abs(c[p] - to[p]))}.`);
+  }
+  return m.join(' ');
+}
+function finish(ok) {
+  const t = T, st = S.st[t.kind]; t.phase = 'done'; t.log = t.log.length ? t.log : [];
+  if (t.lvl === 'worked') st.w++; else if (t.lvl === 'guided') { st.g++; st.ok++; st.byd[t.diff]++; } else if (ok) { st.s++; st.ok++; st.byd[t.diff]++; }
+  save();
+}
+function act(a, d) {
+  const t = T;
+  switch (a) {
+    case 'idea': idea++; break;
+    case 'zero': resetAba(); if (t && t.fb && t.lvl === 'solo') t.fb = null; paintAba(); break;
+    case 'rand': { const v = S.mode === 'poz' ? ri(1, 999) : ri(1, 100); if (S.mode === 'poz') A.poz = dg(v); else setN(v); paintAba(); return; }
+    case 'lvl': S.lvl[t.kind] = d.v; save(); return newTask();
+    case 'diff': S.diff[t.kind] = +d.v; save(); return newTask();
+    case 'harder': S.diff[t.kind] = Math.min(maxDiff(), t.diff + 1); save(); return newTask();
+    case 'new': return newTask();
+    case 'pred': t.pred = +d.v; break;
+    case 'go': t.phase = 'work'; resetAba(); if (t.lvl === 'worked') { } paintAba(); break;
+    case 'wnext': { const s = t.steps[t.i]; setSnap(s.to); t.log.push(s); t.i++; if (t.i >= t.steps.length) { finish(true); t.fb = { t: '' }; } paintAba(); break; }
+    case 'wback': { t.i--; t.log.pop(); const prev = t.i > 0 ? t.steps[t.i - 1].to : (S.mode === 'poz' ? [0, 0, 0] : 0); setSnap(prev); paintAba(); break; }
+    case 'ghint': { if (t.hint >= 3) { const s = t.steps[t.i]; setSnap(s.to); paintAba(); changed(); return; } t.hint++; break; }
+    case 'grew': { const prev = t.i > 0 ? t.steps[t.i - 1].to : (S.mode === 'poz' ? [0, 0, 0] : 0); setSnap(prev); t.fb = null; paintAba(); break; }
+    case 'gcheck': {
+      const s = t.steps[t.i], c = cur(); if (eqS(c, s.to)) { changed(); return; }
+      S.st[t.kind].bad++; save();
+      t.fb = { ok: false, t: S.mode === 'poz' ? diffMsgP(c, s.to) : `Na počitadle ${val() > s.to ? 'přebývá' : 'chybí'} ${KULN(Math.abs(val() - s.to))}.` };
+      break;
+    }
+    case 'shint': if (t.hint < 3) t.hint++; break;
+    case 'scheck': t.phase = 'confirm'; break;
+    case 'conf': {
+      t.conf = d.v; const c = cur(), ok = eqS(c, S.mode === 'poz' ? dg(t.res) : t.res), v = val();
+      S.conf[d.v][ok ? 0 : 1]++;
+      if (ok) { t.log = t.steps; t.fb = { t: (d.v === 'h' ? 'Hádání vyšlo. Projdi si kroky níže, ať příště víš proč. ' : '') + (S.mode === 'kl' && !canon() ? 'Tip: kuličky srovnej do plných řad, pak číslo přečteš nejrychleji.' : '') }; finish(true); }
+      else {
+        S.st[t.kind].bad++; t.tries++; t.phase = 'work';
+        let m = v === t.res ? 'Číslo na počitadle sedí, ale tyčka je plná. Vyměň 10 za 1 na vyšší tyčce.' : (v - t.res) % 10 === 0 ? `Výsledek se liší o ${Math.abs(v - t.res)}. Zkontroluj přechod přes desítku (výměnu nebo půjčení).` : 'Výsledek nesedí. Projdi to po tyčkách od jednotek a po každém kroku se podívej na čtení čísla.';
+        if (d.v === 'j') m += ' Byl jsi si jistý, tak si tady příště ověř postup krok za krokem.';
+        t.fb = { t: m }; save();
+      }
+      save(); break;
+    }
+    case 'nhint': if (t.hint < 3) { t.hint++; S.st.num.hint++; save(); } break;
+    case 'ncheck': return numCheck();
+  }
+  renderPanel();
+}
+function numCheck() {
+  const t = T, P = S.mode === 'poz'; let ok = false, msg = '';
+  if (t.sub === 'read') {
+    const raw = ($('#ans').value || '').trim(); if (!/^\d+$/.test(raw)) { t.fb = { ok: false, t: 'Napiš číslo číslicemi.' }; return renderPanel(); }
+    const v = +raw; ok = v === t.n;
+    if (!ok) { const d = dg(t.n);
+      if (P && v === d[0] + d[1] + d[2]) msg = 'To je součet kuliček. Kuličky na různých tyčkách ale mají různou hodnotu: na stovkách 100, na desítkách 10, na jednotkách 1.';
+      else if (P && v === d[0] * 100 + d[1] * 10 + d[2]) msg = 'Pozor na pořadí: vlevo jsou stovky, vpravo jednotky.';
+      else if (P && d.some(x => x === 0) && v === +String(t.n).replace(/0/g, '')) msg = 'Prázdná tyčka znamená nulu, ta drží pozici.';
+      else if (!P && v === Math.floor(t.n / 10)) msg = 'To jsou jen plné řady. Přičti ještě kuličky v neplné řadě.';
+      else if (!P && v === t.n % 10) msg = 'To jsou jen kuličky v neplné řadě. Přičti ještě desítky z plných řad.';
+      else msg = P ? 'Číslo nesedí. Zkus to po tyčkách od stovek.' : 'Číslo nesedí. Zkus to po řadách.';
+    }
+  } else {
+    const c = cur(); ok = eqS(c, P ? dg(t.n) : t.n);
+    if (!ok) msg = P ? (A.poz.some(x => x === 10) && val() === t.n ? 'Číslo sedí, ale tyčka je plná. Vyměň 10 za 1 na vyšší.' : diffMsgP(c, dg(t.n))) : `Na počitadle ${val() > t.n ? 'přebývá' : 'chybí'} ${KULN(Math.abs(val() - t.n))}.`;
+  }
+  if (ok) { t.done = true; S.st.num.ok++; t.fb = { ok: true, t: `${t.n} = ${P ? descrP(dg(t.n)) : descrK(t.n)}.` }; if (t.sub === 'read') { if (P) A.poz = dg(t.n); else setN(t.n); } }
+  else { S.st.num.bad++; t.fb = { ok: false, t: msg }; }
+  save(); paintAba(); renderPanel();
+}
+
+/* ===== globální události ===== */
+$('#panel').addEventListener('click', e => {
+  const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a, v = b.dataset.v; act(a, b.dataset);
+  const n = $(`#panel [data-a="${a}"]${v !== undefined ? `[data-v="${v}"]` : ''}`); if (n && !n.disabled) n.focus();
+});
+$('#panel').addEventListener('input', e => { if (e.target.id === 'ans' && T) T.ans = e.target.value.replace(/\D/g, '').slice(0, 4); });
+$('#panel').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'ans') { e.preventDefault(); numCheck(); } });
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (!b) return; S.tab = b.dataset.tab; save(); newTask(); const n = $(`[data-tab="${S.tab}"]`); if (n) n.focus(); });
+$('#modeseg').addEventListener('click', e => {
+  const b = e.target.closest('[data-mode]'); if (!b || b.dataset.mode === S.mode) return;
+  const v = val(); S.mode = b.dataset.mode; save();
+  if (S.tab === 'zkouset') { resetAba(); if (S.mode === 'poz') A.poz = dg(Math.min(v, 999)); else setN(Math.min(v, 100)); renderChrome(); buildAba(); paintAba(); renderPanel(); } else newTask();
+});
+$('#projbtn').addEventListener('click', () => { S.proj = !S.proj; save(); renderChrome(); buildAba(); paintAba(); });
+$('#pbtn').addEventListener('click', openProg);
+document.addEventListener('click', e => {
+  const c = e.target.closest('[data-credits]'); if (c) { $('#credits').showModal(); return; }
+  if (e.target.closest('[data-close]')) { e.target.closest('dialog').close(); return; }
+  if (e.target.tagName === 'DIALOG') e.target.close();
+});
+
+/* ===== postup a záloha ===== */
+function rate(a) { const t = a[0] + a[1]; return t ? `${a[0]} z ${t}` : 'zatím nic'; }
+function openProg() {
+  const row = (n, s) => `<tr><td>${n}</td><td>${s.w}</td><td>${s.g}</td><td>${s.s}</td><td>${s.bad}</td></tr>`;
+  $('#pgbody').innerHTML = `<table class="st"><tr><th>Úloha</th><th>Ukázky</th><th>S vedením</th><th>Samostatně</th><th>Chyby</th></tr>${row('Sčítání', S.st.add)}${row('Odčítání', S.st.sub)}</table>
+  <p class="small">Čtení a nastavení čísel: správně ${S.st.num.ok}, chyb ${S.st.num.bad}.</p>
+  <p class="small"><b>Jistota a výsledek (samostatně):</b> když jsi byl jistý nebo jistá, vyšlo to ${rate(S.conf.j)}; spíš ano ${rate(S.conf.s)}; hádání ${rate(S.conf.h)}.</p>
+  <h3 style="margin:14px 0 6px">Záloha postupu</h3><p class="small muted">Postup je jen v tomto prohlížeči. Zkopíruj kód a vlož ho na jiném zařízení.</p>
+  <textarea class="copybox" id="code" readonly aria-label="Kód zálohy">${encode()}</textarea>
+  <div class="row" style="margin:8px 0 14px"><button class="btn sm" type="button" id="cp">Kopírovat kód</button><span id="cpm" class="small muted" role="status"></span></div>
+  <textarea class="copybox" id="imp" aria-label="Vložit kód zálohy" placeholder="Sem vlož kód zálohy"></textarea>
+  <div class="row" style="margin:8px 0 14px"><button class="btn sm" type="button" id="imb">Načíst kód</button><button class="btn quiet sm" type="button" id="rst">Smazat postup</button><span id="imm" class="small" role="status"></span></div>`;
+  $('#cp').onclick = async () => { const c = $('#code'); c.select(); try { await navigator.clipboard.writeText(c.value); $('#cpm').textContent = 'Zkopírováno.'; } catch (e) { document.execCommand && document.execCommand('copy'); $('#cpm').textContent = 'Označeno, zkopíruj ručně.'; } };
+  $('#imb').onclick = () => { const d = decode($('#imp').value); if (!d) { $('#imm').textContent = 'Kód se nepodařilo načíst.'; return; } S = d; save(); $('#progdlg').close(); newTask(); };
+  $('#rst').onclick = () => { if (confirm('Opravdu smazat veškerý postup v tomto prohlížeči?')) { S = defS(); save(); $('#progdlg').close(); newTask(); } };
+  $('#progdlg').showModal();
+}
+
+/* ===== start ===== */
+if (S.tab === 'zkouset') { renderAll(); } else newTask();
+</script>
+</body>
+</html>
