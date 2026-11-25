@@ -247,7 +247,7 @@ svg.chart .pt{fill:var(--cu);stroke:var(--card);stroke-width:2}
   <section class="card" style="margin-top:22px;max-width:70ch">
     <h3 style="font-size:18px;margin:0 0 4px">Kde číst dál</h3>
     <ul class="links" id="reading"></ul>
-    <p class="tiny" style="margin:6px 0 0">Odkazy vedou na cizí weby a otevřou se v novém okně.</p>
+    <p class="tiny" style="margin:6px 0 0">Odkazy vedou na cizí weby a otevřou se v novém okně. Obrázky strojů se hledají na Wikimedia Commons, kde je většina snímků pod svobodnými licencemi.</p>
   </section>
 </div>
 
@@ -521,6 +521,15 @@ const TOOLS=[
  {id:'moore',t:'Mooreův zákon',why:'Odhad počtu tranzistorů na čipu. Je to pozorování o tranzistorech, ne o rychlosti.',init:initMoore}
 ];
 
+/* hledané výrazy pro obrázky (odkaz na Wikimedia Commons, v aplikaci žádné obrázky nejsou) */
+const IMG={abakus:'abacus',antikythera:'Antikythera mechanism',scot:'Russian abacus schoty',logaritmy:"Napier's bones",pravitko:'slide rule',
+ schickard:'Schickard calculating clock',pascal:'Pascaline',leibniz:'Leibniz stepped reckoner',colmar:'Thomas arithmometer',
+ jacquard:'Jacquard loom punched cards',babbage:'Difference Engine No. 2',lovelace:'Analytical Engine Babbage',hollerith:'Hollerith tabulating machine',
+ boole:'logic gates',turing:'Turing Bombe',shannon:'relay circuit',zuse:'Zuse Z3',colossus:'Colossus computer',mark1:'Harvard Mark I',eniac:'ENIAC',sapo:'SAPO computer Czechoslovakia',
+ vonneumann:'EDVAC',baby:'Manchester Baby',tranzistor:'first transistor Bell Labs',io:'integrated circuit Kilby',s360:'IBM System/360',moore:"Moore's law transistor count",
+ pdp8:'PDP-8',4004:'Intel 4004',altair:'Altair 8800',ibmpc:'IBM PC 5150',gui:'Xerox Alto',arpanet:'ARPANET IMP',web:'first web server NeXT CERN',mobil:'IBM Simon',gpu:'graphics card GPU',llm:'Transformer deep learning architecture',kvant:'quantum computer'};
+const imgUrl=t=>'https://commons.wikimedia.org/w/index.php?title=Special:MediaSearch&type=image&search='+encodeURIComponent(t);
+
 /* ===== Karty mezníků ===== */
 const chip=id=>`<a class="chip" href="#m-${id}">${byId[id].t}</a>`;
 function msHtml(m){
@@ -537,6 +546,7 @@ function msHtml(m){
   let more='';
   if(m.tool) more+=`<a class="chip" href="#tool-${m.tool[0]}">${m.tool[1]}</a>`;
   if(m.app) more+=m.app.map(a=>`<a class="chip" href="../${a[0]}/">Aplikace: ${a[1]}</a>`).join('');
+  if(IMG[m.id]) more+=`<a class="chip" href="${imgUrl(IMG[m.id])}" target="_blank" rel="noopener">Jak to vypadalo: obrázky ↗</a>`;
   if(m.l) more+=`<a class="chip" href="${m.l[1]}" target="_blank" rel="noopener">${m.l[0]} ↗</a>`;
   if(more) side+=`<div><h4>Zkus a čti dál</h4><div class="chips">${more}</div></div>`;
   return `<details class="ms" id="m-${m.id}"><summary><span class="yr">${m.y}</span><span class="tt">${m.t}</span><span class="tg">${tags}</span></summary><div class="msb"><div>${main}</div>${side?`<div class="aside">${side}</div>`:''}</div></details>`;
