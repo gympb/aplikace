@@ -26,6 +26,8 @@
 .va .hnew .hplus,.etop .hnew .hplus{width:28px;height:28px}.va .hnew .hplus svg,.etop .hnew .hplus svg{width:19px;height:19px}.va .btn.hnew,.etop .btn.hnew{padding-left:7px;gap:8px}
 .hero .btn.hb{height:52px;min-height:52px;padding-top:0;padding-bottom:0;box-sizing:border-box;align-items:center}
 .btn.hnew{justify-content:flex-start!important;gap:12px!important;padding-left:12px!important;padding-right:18px}
+#evs .evshake{transform-box:fill-box;transform-origin:50% 100%;animation:evshake .25s ease-in-out infinite}@keyframes evshake{0%,100%{transform:rotate(0)}25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)}}
+#evs .evtrail{animation:evtr .9s ease-out forwards}@keyframes evtr{0%{opacity:1}70%{opacity:1}100%{opacity:0}}
 .zpet{display:block;background:var(--hd);padding:9px 18px 7px;font-size:13px;font-weight:500;color:#A3AAB5;text-decoration:none;border-bottom:1px solid #ffffff12}.zpet:hover{color:#fff}body.ing .zpet{display:none}
 </style>
 <style>
@@ -1201,7 +1203,7 @@ function renderSetup(){const{v,players,rules}=SU,figs=FIGS[v.obor];
    <label class="chk"><input type="checkbox" id="sJok" ${rules.joker?'checked':''}> každý hráč má jednoho žolíka 50 : 50</label>
    <label class="chk"><input type="checkbox" id="sRound" ${rules.round?'checked':''}> dohrát kolo – všichni odehrají stejný počet tahů</label>
    <div class="rule evrule"><p class="h">Příhody na cestě <span class="mut" style="font-weight:500">(náhodně se objeví a za 2 kola zmizí)</span></p><div class="seg" data-r="ev">${[[0,'vypnuto'],[1,'občas'],[2,'často']].map(([n,t])=>`<button data-v="${n}" class="${+rules.ev===n?'on':''}">${t}</button>`).join('')}</div>
-    <div class="evopts ${+rules.ev?'':'off'}"><label class="evc"><input type="checkbox" id="sSot" ${rules.sot!==false?'checked':''} ${+rules.ev?'':'disabled'}><span class="evi sot"><img src="${MASC}" alt=""></span><span><b>Šotek Vondrys</b>${esc(nb('Kdo zastaví na jeho poli, toho šoupne o 3 pole zpět.'))}</span></label>
+    <div class="evopts ${+rules.ev?'':'off'}"><label class="evc"><input type="checkbox" id="sSot" ${rules.sot!==false?'checked':''} ${+rules.ev?'':'disabled'}><span class="evi sot"><img src="${MASC}" alt=""></span><span><b>Šotek Vondrys</b>${esc(nb('Kdo zastaví na jeho poli, riskuje: šoupne ho o 3 pole zpět, nebo katapultuje o 5 vpřed.'))}</span></label>
     <label class="evc"><input type="checkbox" id="sUz" ${rules.uz!==false?'checked':''} ${+rules.ev?'':'disabled'}><span class="evi uz"></span><span><b>Uzavírka – údržba</b>${esc(nb('Na 2 uzavřených polích se nedá zastavit. Kdo stojí před nimi, musí skočit dál.'))}</span></label></div></div>
    <div class="row" style="margin-top:20px"><button class="btn primary big grow" id="sGo">Začít hru ▸</button></div></section></div>`;
   $('sBack').onclick=goHome;
@@ -1343,7 +1345,8 @@ async function resolve(ok){if(!MQ)return;const st=MQ,p=curP(),i=G.turn,k=+st.k;c
     if(t.to!==p.pos)await walk(i,t.to);
     if(t.jump){say(EVT.uzJump(),3500)}
     if(p.pos>=G.n)return reachGoal(p);
-    if(await evAfterMove(i,from)){saveG();return nextTurn()}
+    const er=await evAfterMove(i,from);if(er==='back'){saveG();return nextTurn()}
+    if(er==='fly'&&p.pos>=G.n)return reachGoal(p);
     const L=BRD.lad.find(l=>l.b===p.pos);
     if(L){saveG();banner(G.obor==='biologie'?'DNA žebřík!':'Žebřík!','Otázka navíc');say(hl('ladder'));await sleep(reduce?300:1500);const d=drawQ('z');if(d){SND.open();return openQ({k:'z',...d,ladder:L})}}}
   else{const pn=Math.min(penalty(k),p.pos);if(pn){const to=evBackTarget(p.pos,p.pos-pn);if(to!==p.pos)await walk(i,to)}}
@@ -1364,7 +1367,7 @@ function openRules(){const d=document.createElement('div');d.className='modal';d
    <li>${esc(nb('Za správnou odpověď postoupí o tolik polí, jakou obtížnost zvolil.'))}</li>
    <li>${esc(nb('Při špatné odpovědi figurka '+PEN[r.pen]+'.'))}</li>
    <li>${esc(nb('Kdo zastaví na poli se žebříkem, dostane žebříkovou otázku navíc. Když ji zvládne, vyšplhá rovnou nahoru. Když ne, zůstává stát.'))}</li>
-   ${+r.ev&&r.sot!==false?`<li>${esc(nb('Šotek Vondrys: občas se na cestě objeví v čepici skřítka. Kdo zastaví na jeho poli, toho šoupne o 3 pole zpět a šotek zmizí. Kdo ho přeskočí, utekl mu. Sám zmizí po 2 kolech.'))}</li>`:''}
+   ${+r.ev&&r.sot!==false?`<li>${esc(nb('Šotek Vondrys: občas se na cestě objeví v čepici skřítka. Kdo zastaví na jeho poli, riskuje – teprve pak se ukáže, jakou má šotek náladu: buď figurku šoupne o 3 pole zpět, nebo ji katapultuje o 5 polí vpřed (klidně až do cíle, přes uzavírku přeletí). Pak šotek zmizí. Sám zmizí po 2 kolech.'))}</li>`:''}
    ${+r.ev&&r.uz!==false?`<li>${esc(nb('Uzavírka: občas se 2 pole zavřou kvůli údržbě. Na uzavřeném poli se nedá zastavit – kdo by tam skončil, zastaví před uzavírkou. Přeskočit ji jde. Po 2 kolech je opraveno.'))}</li>`:''}
    ${r.joker?`<li>${esc(nb('Každý má jednoho žolíka 50 : 50 – odebere dvě špatné odpovědi.'))}</li>`:''}
    ${r.timer?`<li>${esc(nb('Na odpověď je '+r.timer+' sekund. Když čas vyprší, počítá se jako špatná odpověď.'))}</li>`:''}
@@ -1437,7 +1440,9 @@ const isLadF=i=>BRD.lad.some(l=>l.b===i||l.t===i);
 const occF=i=>G.players.some(p=>p.pos===i&&!p.done);
 const uzIn=i=>{const u=G.ev&&G.ev.uz;return !!u&&i>=u.a&&i<=u.b};
 const EVT={
-  sotIn:()=>pick(['Hehe! Na poli {n} se zabydlel šotek Vondrys. Kdo tam zastaví, letí o 3 pole zpátky!','Psst… šotek Vondrys číhá na poli {n}. Raději ho přeskoč!','Na poli {n} se něco hýbe. To nebude nic dobrého – šotek Vondrys!']),
+  sotIn:()=>pick(['Hehe! Na poli {n} se zabydlel šotek Vondrys. Kdo tam zastaví, pozná, jakou mám náladu – 3 pole zpátky, nebo katapult o 5 dopředu!','Psst… šotek Vondrys číhá na poli {n}. Troufneš si? Můžu tě poslat zpátky, nebo vystřelit vpřed.','Na poli {n} se něco hýbe – šotek Vondrys! Kdo tam stoupne, hraje o všechno.']),
+  sotWait:()=>pick(['Hmm… co s tebou udělám?','Tak co, mám dneska dobrou náladu?','Chvilku… ještě přemýšlím…']),
+  sotGood:()=>pick(G.obor==='chemie'?['Katapult připraven… a fííí! Pět polí vpřed!','Exotermní reakce: uvolněná energie tě posunula o 5 polí!','Dnes mám dobrou náladu – leť!','Katalyzátor v akci! Pět polí rychleji.']:['Katapult připraven… a fííí! Pět polí vpřed!','Mutace s výhodou! Pět polí vpřed.','Dnes mám dobrou náladu – leť!','Přirozený výběr ti přeje – pět polí vpřed!']),
   sotHit:()=>pick(G.obor==='chemie'?['Hups! Tři kroky zpátky – i chemické reakce bývají vratné.','Šup zpátky! Rovnováha se posunula doleva.','Pozor, tady se vytíralo! Tři pole zpátky.','Pardon, potřeboval jsem si tu zamíchat kádinkou.','Chemie je o vratných dějích, ne? Tak hezky tři pole zpátky!']:['Hups! Tři kroky zpátky – evoluce taky občas couvá.','Šup zpátky! Tady se zrovna dělila buňka.','Pozor, tady se vytíralo! Tři pole zpátky.','Pardon, šlápl jsi mi na mitochondrii.']),
   sotEsc:()=>pick(['Utekl jsi mi! Příště tě dostanu.','Grr! Přeskočil mě. Ale já počkám…','Ty jsi ale mrštný! Tentokrát ti to prošlo.']),
   sotOut:()=>pick(['Šotek se nudil a zmizel. Vrátí se, až to nikdo nebude čekat.','Puf! Šotek je pryč. Zatím…']),
@@ -1447,6 +1452,10 @@ const EVT={
   uzOut:()=>(G.obor==='chemie'?'Potrubí je opravené':'Stezka je opravená')+', cesta je zase volná.'};
 function evSnd(t){if(!pref.snd||!ac())return;const n=AC.currentTime;
   if(t==='boing'){/* pružinový zvuk šoupnutí: klouzavý tón s chvěním */const o=AC.createOscillator(),g=AC.createGain(),l=AC.createOscillator(),lg=AC.createGain();o.type='triangle';o.frequency.setValueAtTime(140,n);o.frequency.exponentialRampToValueAtTime(520,n+.12);o.frequency.exponentialRampToValueAtTime(110,n+.6);l.frequency.value=22;lg.gain.setValueAtTime(40,n);lg.gain.exponentialRampToValueAtTime(1,n+.6);l.connect(lg);lg.connect(o.frequency);g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(.22,n+.02);g.gain.exponentialRampToValueAtTime(.001,n+.7);o.connect(g);g.connect(AC.destination);o.start(n);l.start(n);o.stop(n+.72);l.stop(n+.72)}
+  else if(t==='drum'){for(let k=0;k<9;k++)tone(150+k*8,n+k*.11,.09,'triangle',.09)}
+  else if(t==='stretch'){const o=AC.createOscillator(),g=AC.createGain();o.type='sawtooth';o.frequency.setValueAtTime(120,n);o.frequency.exponentialRampToValueAtTime(420,n+.4);g.gain.setValueAtTime(.0001,n);g.gain.linearRampToValueAtTime(.06,n+.05);g.gain.exponentialRampToValueAtTime(.001,n+.45);o.connect(g);g.connect(AC.destination);o.start(n);o.stop(n+.46)}
+  else if(t==='whoosh'){const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(1400,n);o.frequency.exponentialRampToValueAtTime(300,n+.9);g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(.12,n+.08);g.gain.exponentialRampToValueAtTime(.001,n+.95);o.connect(g);g.connect(AC.destination);o.start(n);o.stop(n+1)}
+  else if(t==='land'){tone(110,n,.25,'triangle',.18);tone(660,n+.05,.15,'triangle',.08)}
   else if(t==='pop'){[520,780,1040].forEach((f,i)=>tone(f,n+i*.05,.12,'triangle',.11))}
   else if(t==='poof'){[900,700,500].forEach((f,i)=>tone(f,n+i*.06,.15,'sine',.08))}
   else if(t==='warn'){[880,660,880,660].forEach((f,i)=>tone(f,n+i*.14,.13,'square',.05))}}
@@ -1471,10 +1480,27 @@ function evTarget(pos,k){let to=Math.min(G.n,pos+k);const u=G.ev&&G.ev.uz;
 function evBackTarget(pos,to){const u=G.ev&&G.ev.uz;if(u&&to>=u.a&&to<=u.b&&pos>u.b)return u.b+1;return to}
 /* --- šotek po dopadu --- */
 async function evAfterMove(i,from){const p=G.players[i],E=G.ev||{};
-  if(E.sot&&p.pos===E.sot.pos){const s=E.sot;evHit(s.pos);evSnd('boing');banner('Tři pole zpět!','Šotek Vondrys');say(EVT.sotHit(),5000);await sleep(reduce?200:900);
-    E.sot=null;E.sotCd=G.round+2;renderEv();evPoof(s.pos);const to=evBackTarget(p.pos,Math.max(0,p.pos-3));p.sot=(p.sot||0)+1;await walk(i,to);return true}
+  if(E.sot&&p.pos===E.sot.pos){const s=E.sot;
+    /* napětí: šotek se zavrtí, teprve teď se rozhodne */
+    const el=document.querySelector(`#evs .sot[data-p="${s.pos}"]`);if(el)el.classList.add('evshake');evSnd('drum');say(EVT.sotWait(),2500);await sleep(reduce?200:1300);
+    s.mood=Math.random()<.5?'good':'bad';renderEv();
+    if(s.mood==='bad'){evHit(s.pos,'−3','#D7262E','#FFC81E');evSnd('boing');banner('Tři pole zpět!','Zlobivý šotek');say(EVT.sotHit(),5000);await sleep(reduce?200:900);
+      E.sot=null;E.sotCd=G.round+2;renderEv();evPoof(s.pos);const to=evBackTarget(p.pos,Math.max(0,p.pos-3));p.sot=(p.sot||0)+1;await walk(i,to);return 'back'}
+    evHit(s.pos,'+5','#fff','#2E9E4F');evSnd('pop');banner('Katapult!','Hodný šotek');say(EVT.sotGood(),5000);await sleep(reduce?200:900);
+    E.sot=null;E.sotCd=G.round+2;renderEv();evPoof(s.pos);
+    let to=Math.min(G.n,p.pos+5);const u=E.uz;if(u&&to>=u.a&&to<=u.b)to=Math.min(G.n,u.b+1);
+    if(to>p.pos){p.sotPlus=(p.sotPlus||0)+1;await evFly(i,to)}
+    return 'fly'}
   if(E.sot&&from<E.sot.pos&&p.pos>E.sot.pos){say(EVT.sotEsc(),4000);mascot('spark',700)}
   return false}
+/* let katapultem: oblouk se stopou a dopad s obláčkem */
+async function evFly(i,to){const p=G.players[i],a=FPOS[i],f=BRD.F[to],b={x:f.x,y:f.y+BRD.tr*.38,s:1},h=BRD.tr*3.4,g=$('evs');
+  const mx=(a.x+b.x)/2,my=Math.min(a.y,b.y)-h*1.1;let tr=null;
+  if(g){tr=document.createElementNS('http://www.w3.org/2000/svg','path');tr.setAttribute('d',`M${f1(a.x)} ${f1(a.y)}Q${f1(mx)} ${f1(my)} ${f1(b.x)} ${f1(b.y)}`);tr.setAttribute('fill','none');tr.setAttribute('stroke','#2E9E4F');tr.setAttribute('stroke-width','4');tr.setAttribute('stroke-dasharray','2 12');tr.setAttribute('stroke-linecap','round');tr.setAttribute('class','evtrail');g.appendChild(tr)}
+  evSnd('stretch');await sleep(reduce?50:450);evSnd('whoosh');
+  await new Promise(res=>{const t0=performance.now(),ms=reduce?80:1000;const step=t=>{const k=Math.min(1,(t-t0)/ms),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2,u=1-e;
+    setFig(i,{x:u*u*a.x+2*u*e*mx+e*e*b.x,y:u*u*a.y+2*u*e*my+e*e*b.y,s:1+.25*Math.sin(Math.PI*k)});if(k<1)requestAnimationFrame(step);else res()};requestAnimationFrame(step)});
+  p.pos=to;renderBars();evPoof(to);evSnd('land');if(tr)setTimeout(()=>tr.remove(),900);await settle()}
 /* --- grafika --- */
 function evDefs(){return `<defs><pattern id="hzS" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="18" height="18" fill="#FFC81E"/><rect width="9" height="18" fill="#1F2329"/></pattern>
   <clipPath id="sotC"><circle cx="0" cy="0" r="1"/></clipPath><radialGradient id="holeG"><stop offset="0" stop-color="#0d1014"/><stop offset=".7" stop-color="#2B313A"/><stop offset="1" stop-color="#5B6B80"/></radialGradient></defs>`}
@@ -1482,17 +1508,17 @@ function coneSVG(x,y,h){const w=h*.62;return `<g transform="translate(${f1(x)} $
 function barrierSVG(a,b,tr){/* zábrana kolmo na směr cesty mezi poli a a b */const A=BRD.F[a],B=BRD.F[b],mx=(A.x+B.x)/2,my=(A.y+B.y)/2,ang=Math.atan2(B.y-A.y,B.x-A.x)*57.2958+90,L=tr*2.1,H=tr*.34;
   return `<g transform="translate(${f1(mx)} ${f1(my)}) rotate(${f1(ang)})"><rect x="${f1(-L/2-3)}" y="${f1(-H/2+5)}" width="${f1(L+6)}" height="${f1(H)}" rx="${f1(H/3)}" fill="#0003"/><rect x="${f1(-L/2)}" y="${f1(-H/2)}" width="${f1(L)}" height="${f1(H)}" rx="${f1(H/3)}" fill="url(#hzS)" stroke="#1F2329" stroke-width="3"/><circle cx="${f1(-L/2)}" cy="0" r="${f1(H*.42)}" fill="#E0343C" stroke="#fff" stroke-width="2"><animate attributeName="opacity" values="1;.25;1" dur="1s" repeatCount="indefinite"/></circle><circle cx="${f1(L/2)}" cy="0" r="${f1(H*.42)}" fill="#E0343C" stroke="#fff" stroke-width="2"><animate attributeName="opacity" values=".25;1;.25" dur="1s" repeatCount="indefinite"/></circle></g>`}
 function cntBadge(x,y,n,col){return `<g transform="translate(${f1(x)} ${f1(y)})"><circle r="15" fill="${col}" stroke="#fff" stroke-width="3"/><path d="M-5-7h10M-5 7h10M-4-7q0 5 4 7q-4 2-4 7M4-7q0 5-4 7q4 2 4 7" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/><g transform="translate(15 -13)"><circle r="10" fill="#fff" stroke="${col}" stroke-width="2.5"/><text y="4.5" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="800" font-size="13" fill="${col}">${n}</text></g></g>`}
-function sotSVG(pos,fresh){const f=BRD.F[pos],tr=BRD.tr,r=tr*.58,hy=f.y+tr*.42,left=Math.max(1,G.ev.sot.until-G.round);
+function sotSVG(pos,fresh){const f=BRD.F[pos],tr=BRD.tr,r=tr*.58,hy=f.y+tr*.42,left=Math.max(1,G.ev.sot.until-G.round),md=G.ev.sot.mood,HC=md==='good'?['#2E9E4F','#1B5E30','#5BC27A']:md==='bad'?['#C62828','#7A1414','#E57373']:['#6B3FA8','#3E2266','#8E5BD0'];
   /* šotek: Vondrys v čepici skřítka vykukuje z díry v poli */
   return `<g class="ev sot${fresh?' evpop':''}" data-p="${pos}"><ellipse cx="${f1(f.x)}" cy="${f1(hy)}" rx="${f1(tr*.78)}" ry="${f1(tr*.26)}" fill="url(#holeG)" stroke="#1F2329" stroke-width="2.5"/>
    <clipPath id="sotH${pos}"><rect x="${f1(f.x-tr*1.4)}" y="${f1(f.y-tr*3)}" width="${f1(tr*2.8)}" height="${f1(tr*3+tr*.42)}"/></clipPath>
    <g clip-path="url(#sotH${pos})"><g><animateTransform attributeName="transform" type="translate" values="0 ${f1(tr*.16)};0 ${f1(-tr*.06)};0 ${f1(tr*.16)}" dur="1.6s" repeatCount="indefinite"/>
-    <g transform="translate(${f1(f.x)} ${f1(f.y-tr*.28)})"><circle r="${f1(r+4)}" fill="#8E5BD0"/><clipPath id="sotM${pos}"><circle r="${f1(r)}"/></clipPath><image href="${MASC}" x="${f1(-r*1.32)}" y="${f1(-r*1.02)}" width="${f1(r*2.64)}" height="${f1(r*2.97)}" clip-path="url(#sotM${pos})" preserveAspectRatio="xMidYMid slice"/>
-     <g transform="translate(${f1(-r*.19)} ${f1(-r*.03)})"><path d="M${f1(-r*.5)} ${f1(-r*.56)}Q${f1(-r*.32)} ${f1(-r*1.2)} ${f1(r*.38)} ${f1(-r*1.62)}Q${f1(r*.16)} ${f1(-r*1.1)} ${f1(r*.5)} ${f1(-r*.56)}Q0 ${f1(-r*.74)} ${f1(-r*.5)} ${f1(-r*.56)}z" fill="#6B3FA8" stroke="#3E2266" stroke-width="2.2" stroke-linejoin="round"/>
+    <g transform="translate(${f1(f.x)} ${f1(f.y-tr*.28)})"><circle r="${f1(r+4)}" fill="${HC[2]}"/><clipPath id="sotM${pos}"><circle r="${f1(r)}"/></clipPath><image href="${MASC}" x="${f1(-r*1.32)}" y="${f1(-r*1.02)}" width="${f1(r*2.64)}" height="${f1(r*2.97)}" clip-path="url(#sotM${pos})" preserveAspectRatio="xMidYMid slice"/>
+     <g transform="translate(${f1(-r*.19)} ${f1(-r*.03)})"><path d="M${f1(-r*.5)} ${f1(-r*.56)}Q${f1(-r*.32)} ${f1(-r*1.2)} ${f1(r*.38)} ${f1(-r*1.62)}Q${f1(r*.16)} ${f1(-r*1.1)} ${f1(r*.5)} ${f1(-r*.56)}Q0 ${f1(-r*.74)} ${f1(-r*.5)} ${f1(-r*.56)}z" fill="${HC[0]}" stroke="${HC[1]}" stroke-width="2.2" stroke-linejoin="round"/>${md==='good'?`<path d="M${f1(-r*.02)} ${f1(-r*1.12)}l${f1(r*.07)} ${f1(r*.15)}l${f1(r*.16)} ${f1(r*.02)}l${f1(-r*.12)} ${f1(r*.11)}l${f1(r*.04)} ${f1(r*.16)}l${f1(-r*.15)} ${f1(-r*.08)}l${f1(-r*.15)} ${f1(r*.08)}l${f1(r*.04)} ${f1(-r*.16)}l${f1(-r*.12)} ${f1(-r*.11)}l${f1(r*.16)} ${f1(-r*.02)}z" fill="#FFC81E" stroke="#B8860B" stroke-width="1"/>`:''}
      <path d="M${f1(-r*.53)} ${f1(-r*.54)}Q0 ${f1(-r*.76)} ${f1(r*.53)} ${f1(-r*.54)}" stroke="#FFC81E" stroke-width="${f1(r*.14)}" fill="none" stroke-linecap="round"/><circle cx="${f1(r*.38)}" cy="${f1(-r*1.62)}" r="${f1(r*.14)}" fill="#FFC81E" stroke="#B8860B" stroke-width="1.8"/></g>
      <g fill="#FFC81E"><path d="M${f1(-r*1.35)} ${f1(-r*.1)}l3 7l7 1l-7 2l-3 7l-3-7l-7-2l7-1z"><animate attributeName="opacity" values="0;1;0" dur="1.3s" repeatCount="indefinite"/></path><path d="M${f1(r*1.3)} ${f1(r*.1)}l2.4 5l5 .8l-5 1.6l-2.4 5l-2.4-5l-5-1.6l5-.8z"><animate attributeName="opacity" values="1;0;1" dur="1.3s" repeatCount="indefinite"/></path></g></g></g></g>
    <path d="M${f1(f.x-tr*.78)} ${f1(hy)}a${f1(tr*.78)} ${f1(tr*.26)} 0 0 0 ${f1(tr*1.56)} 0" fill="none" stroke="#1F2329" stroke-width="3"/>
-   ${cntBadge(f.x+tr*.78,f.y+tr*.5,left,'#8E5BD0')}</g>`}
+   ${cntBadge(f.x+tr*.78,f.y+tr*.5,left,'#8E5BD0')}${md?'':`<g transform="translate(${f1(f.x-tr*.9)} ${f1(f.y-tr*.95)})"><circle r="14" fill="#fff" stroke="#8E5BD0" stroke-width="3"><animate attributeName="r" values="13;15;13" dur="1.2s" repeatCount="indefinite"/></circle><text y="7" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="900" font-size="19" fill="#8E5BD0">?</text></g>`}</g>`}
 function uzSVG(fresh){const u=G.ev.uz,tr=BRD.tr,hexy=G.obor==='chemie',left=Math.max(1,u.until-G.round);let s=`<g class="ev uz${fresh?' evpop':''}">`;
   [u.a,u.b].forEach(i=>{const f=BRD.F[i];s+=hexy?`<polygon points="${hexPts(f.x,f.y,tr*.97)}" fill="url(#hzS)" opacity=".42"/>`:`<circle cx="${f1(f.x)}" cy="${f1(f.y)}" r="${f1(tr*.97)}" fill="url(#hzS)" opacity=".42"/>`;
     s+=coneSVG(f.x-tr*.42,f.y+tr*.62,tr*.62)+coneSVG(f.x+tr*.42,f.y+tr*.62,tr*.62)});
@@ -1505,14 +1531,14 @@ function renderEv(fresh){const g=$('evs');if(!g)return;fresh=fresh||[];const E=G
 function evPoof(pos){const g=$('evs');if(!g||!BRD.F[pos])return;const f=BRD.F[pos],tr=BRD.tr,el=document.createElementNS('http://www.w3.org/2000/svg','g');
   el.innerHTML=[0,1,2,3,4,5,6].map(k=>{const a=k/7*Math.PI*2,dx=Math.cos(a)*tr*.9,dy=Math.sin(a)*tr*.6;return`<circle cx="${f1(f.x)}" cy="${f1(f.y)}" r="${f1(tr*.28)}" fill="#fff" stroke="#C9CED6" stroke-width="2"><animate attributeName="cx" to="${f1(f.x+dx)}" dur=".6s" fill="freeze"/><animate attributeName="cy" to="${f1(f.y+dy)}" dur=".6s" fill="freeze"/><animate attributeName="opacity" from="1" to="0" dur=".7s" fill="freeze"/></circle>`}).join('');
   g.appendChild(el);evSnd('poof');setTimeout(()=>el.remove(),800)}
-function evHit(pos){const el=document.querySelector(`#evs .sot[data-p="${pos}"]`);if(el)el.classList.add('evhit');
+function evHit(pos,lab,tcol,bg){lab=lab||'−3';tcol=tcol||'#D7262E';bg=bg||'#FFC81E';const el=document.querySelector(`#evs .sot[data-p="${pos}"]`);if(el)el.classList.add('evhit');
   const g=$('evs'),f=BRD.F[pos];if(!g)return;const b=document.createElementNS('http://www.w3.org/2000/svg','g');
-  b.innerHTML=`<g transform="translate(${f1(f.x+BRD.tr*.9)} ${f1(f.y-BRD.tr*1.3)})" class="evpop"><path d="M0-34L9-14L30-22L18-4L38 6L16 10L22 32L4 18L-10 36L-12 14L-34 18L-20 0L-36-16L-12-12z" fill="#FFC81E" stroke="#1F2329" stroke-width="3" stroke-linejoin="round"/><text y="6" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="900" font-size="22" fill="#D7262E" transform="rotate(-8)">−3</text></g>`;
+  b.innerHTML=`<g transform="translate(${f1(f.x+BRD.tr*.9)} ${f1(f.y-BRD.tr*1.3)})" class="evpop"><path d="M0-34L9-14L30-22L18-4L38 6L16 10L22 32L4 18L-10 36L-12 14L-34 18L-20 0L-36-16L-12-12z" fill="${bg}" stroke="#1F2329" stroke-width="3" stroke-linejoin="round"/><text y="7" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="900" font-size="22" fill="${tcol}" transform="rotate(-8)">${lab}</text></g>`;
   g.appendChild(b);setTimeout(()=>b.remove(),1400)}
 /* nápověda u tlačítek obtížnosti */
 function evHint(k){if(!evOn()||!G.ev)return'';const p=curP(),t=evTarget(p.pos,k);
   if(t.blocked)return t.to===p.pos?'uzavírka – nepohneš se':'uzavírka – jen na pole '+t.to;
-  if(G.ev.sot&&t.to===G.ev.sot.pos)return'pozor, šotek!';return''}
+  if(G.ev.sot&&t.to===G.ev.sot.pos)return'šotek – risk!';return''}
 
 window.addEventListener('error',e=>{try{say('Chyba: '+(e.message||'neznámá'),9000)}catch(_){}});
 window.addEventListener('unhandledrejection',e=>{try{const r=e.reason;if(r&&r.code==='timeout')return;say('Chyba: '+(r&&r.message||r),9000)}catch(_){}});
