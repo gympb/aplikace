@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mezníky vývoje výpočetní techniky</title>
+<meta name="description" content="Od abaku po strojové učení: co který mezník výpočetní techniky změnil a proč vznikl. Časová osa, pět průvodních otázek, časté omyly a dílna s drobnými pokusy.">
+<meta name="author" content="Ivo Bešťák">
+<meta name="theme-color" content="#F6F1E6">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="gymplikace">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Mezníky vývoje výpočetní techniky">
+<meta property="og:description" content="Od abaku po strojové učení: co který mezník výpočetní techniky změnil a proč vznikl. Časová osa, pět průvodních otázek, časté omyly a dílna s drobnými pokusy.">
+<meta property="og:url" content="https://aplikace.gympb.cz/meziniky-vypocetni-techniky/">
+<meta property="og:image" content="https://aplikace.gympb.cz/meziniky-vypocetni-techniky/nahled.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="fonty/fonty.css">
+<style>
+:root{
+  --bg:#F6F1E6;--card:#FFFDF8;--ink:#22262E;--ink2:#464D5B;--ink3:#626A79;--line:#DDD3BF;--line2:#C4B79C;
+  --ac:#1F6F78;--ac-bg:#E1EFEE;--cu:#A94B22;--cu-bg:#F8E7DB;--warn:#7D5400;--warn-bg:#F7ECD0;
+  --ok:#17794A;--ok-bg:#E3F2E9;--plus:#1F3B73;--plus-bg:#E4EAF8;--on:#FFFDF8;--focus:#22262E;--shadow:0 1px 2px rgba(34,38,46,.07);
+  --font:'Atkinson Hyperlegible Next',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'Atkinson Hyperlegible Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14181E;--card:#1C222A;--ink:#ECEFF4;--ink2:#BAC1CE;--ink3:#97A0B0;--line:#2E3642;--line2:#434D5C;
+  --ac:#6CC4CC;--ac-bg:#1B3236;--cu:#EE9467;--cu-bg:#3A2619;--warn:#F0C265;--warn-bg:#3A2F15;
+  --ok:#5DD39B;--ok-bg:#16332A;--plus:#A9BDF5;--plus-bg:#1F2A4A;--on:#14181E;--focus:#ECEFF4;--shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181E;--card:#1C222A;--ink:#ECEFF4;--ink2:#BAC1CE;--ink3:#97A0B0;--line:#2E3642;--line2:#434D5C;
+  --ac:#6CC4CC;--ac-bg:#1B3236;--cu:#EE9467;--cu-bg:#3A2619;--warn:#F0C265;--warn-bg:#3A2F15;
+  --ok:#5DD39B;--ok-bg:#16332A;--plus:#A9BDF5;--plus-bg:#1F2A4A;--on:#14181E;--focus:#ECEFF4;--shadow:none;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.55 var(--font);min-height:100vh;min-height:100dvh}
+.shell{max-width:1120px;margin:0 auto;padding:0 16px 56px}
+a{color:var(--ac)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+h1,h2,h3,h4{line-height:1.25;margin:0}
+h1{font-size:clamp(26px,5vw,38px);font-weight:700;letter-spacing:-.015em}
+h2{font-size:clamp(21px,3.4vw,26px);font-weight:700}
+p{margin:0 0 10px}
+.mono{font-family:var(--mono)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0 4px;font-size:15px}
+.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink2);text-decoration:none}
+.top a:hover{text-decoration:underline}
+.cr-btn{font:inherit;font-size:14px;color:var(--ink3);background:none;border:0;min-height:44px;padding:0 4px;cursor:pointer;text-decoration:underline}
+.cr-btn:hover{color:var(--ink)}
+dialog.cr{max-width:min(32rem,calc(100vw - 32px));width:100%;border:1px solid var(--line2);border-radius:14px;padding:20px 22px;background:var(--card);color:var(--ink);box-shadow:0 12px 40px rgba(0,0,0,.25);max-height:calc(100dvh - 32px);overflow:auto}
+dialog.cr::backdrop{background:rgba(10,14,22,.55)}
+dialog.cr h2{margin:0 0 12px;font-size:20px}
+dialog.cr dl{margin:0 0 14px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:16px}
+dialog.cr dt{color:var(--ink3)}dialog.cr dd{margin:0}
+dialog.cr p{margin:0 0 12px;font-size:15px;color:var(--ink2)}
+.hero{padding:6px 0 10px}
+.eyebrow{font-size:13.5px;font-weight:700;color:var(--cu);text-transform:uppercase;letter-spacing:.07em;margin:0 0 4px}
+.sub{font-size:clamp(17px,2.6vw,20px);color:var(--ink2);margin:6px 0 0;font-style:italic}
+.lead{max-width:70ch;color:var(--ink2);margin:14px 0 0}
+.lead b{color:var(--ink)}
+.muted{color:var(--ink2)}.small{font-size:15px}.tiny{font-size:13.5px;color:var(--ink3)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 12px;box-shadow:var(--shadow)}
+.btn{appearance:none;font:inherit;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 16px;border-radius:12px;border:2px solid var(--ink);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--ink);color:var(--on)}
+.btn.quiet{border-color:var(--line2);font-weight:400;color:var(--ink2)}
+.btn.sm{padding:6px 12px;font-size:15px}
+.btn[disabled]{opacity:.4;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:16px 0 14px}
+@media (min-width:700px){.tabs{grid-template-columns:repeat(4,1fr)}}
+.tab{appearance:none;font:inherit;font-weight:700;font-size:15.5px;min-height:48px;padding:4px 8px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink2);cursor:pointer;line-height:1.2}
+.tab[aria-selected="true"]{border-color:var(--ink);background:var(--ink);color:var(--on)}
+.panel[hidden]{display:none}
+
+/* filtry a navigace */
+.bar{display:grid;gap:10px;margin:0 0 16px}
+.bar .lab{font-size:13.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin:0 0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;font:inherit;font-size:15px;display:inline-flex;align-items:center;min-height:40px;padding:6px 13px;border-radius:999px;border:1.5px solid var(--line2);background:var(--card);color:var(--ink2);cursor:pointer;text-decoration:none;line-height:1.2}
+.chip[aria-pressed="true"]{background:var(--ac-bg);border-color:var(--ac);color:var(--ink);font-weight:700}
+a.chip{color:var(--ac)}
+a.chip:hover,.chip:hover{border-color:var(--ink)}
+.kapnav{display:flex;flex-wrap:wrap;gap:6px}
+.kapnav button{appearance:none;font:inherit;font-weight:700;min-width:44px;min-height:44px;border-radius:12px;border:1.5px solid var(--line2);background:var(--card);color:var(--ink2);cursor:pointer}
+.kapnav button:hover{border-color:var(--ink)}
+.count{font-size:15px;color:var(--ink3);min-height:24px}
+
+/* časová osa */
+.chap{margin:0 0 30px;scroll-margin-top:12px}
+.chap>header{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline;margin:0 0 12px}
+.kn{font:700 clamp(32px,6vw,46px)/1 var(--mono);color:var(--cu);opacity:.85}
+.intro{grid-column:2;color:var(--ink2);max-width:70ch;margin:2px 0 0}
+.chap-extra{margin:0 0 14px}
+.rail{position:relative;margin-left:8px;padding-left:20px;border-left:3px solid var(--line2)}
+details.ms{position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;margin:0 0 10px;box-shadow:var(--shadow);scroll-margin-top:12px}
+details.ms::before{content:"";position:absolute;left:-30px;top:20px;width:15px;height:15px;border-radius:50%;background:var(--bg);border:3px solid var(--cu)}
+details.ms[open]{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}
+details.ms[open]::before{background:var(--cu)}
+details.ms[hidden]{display:none}
+details.ms>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 10px;padding:10px 14px;min-height:60px}
+details.ms>summary::-webkit-details-marker{display:none}
+details.ms>summary::after{content:"";width:12px;height:12px;border-right:3px solid var(--ink3);border-bottom:3px solid var(--ink3);transform:rotate(45deg);margin:0 4px 4px 0;grid-row:1/3;grid-column:2}
+details.ms[open]>summary::after{transform:rotate(-135deg);margin:4px 4px 0 0}
+.yr{font:500 14px/1.3 var(--mono);color:var(--cu)}
+.tt{font-size:clamp(18px,2.6vw,21px);font-weight:700;line-height:1.25}
+.tg{font-size:13.5px;color:var(--ink3)}
+.msb{display:grid;gap:14px;padding:2px 14px 16px}
+@media (min-width:880px){.msb{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:24px}}
+.msb h4,.tool h4{font-size:13.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 4px}
+.msb h4:first-child{margin-top:0}
+.msb p{max-width:68ch}
+.aside{display:grid;gap:12px;align-content:start}
+.aside .chips{gap:6px}
+.box{border-radius:12px;padding:10px 14px;border:1.5px solid var(--line2);background:var(--bg)}
+.box h4{margin:0 0 4px!important}
+.box p:last-child{margin-bottom:0}
+.box.fun{background:var(--warn-bg);border-color:var(--warn)}
+.box.myth{background:var(--cu-bg);border-color:var(--cu)}
+.box.plus{background:var(--plus-bg);border-color:var(--plus)}
+.tagplus{display:inline-block;font:700 13px/1 var(--font);letter-spacing:.06em;background:var(--plus);color:var(--on);border-radius:5px;padding:3px 6px;vertical-align:middle;margin-right:6px}
+details.podnet{border:1.5px dashed var(--line2);border-radius:12px;padding:0 12px;margin:12px 0 0}
+details.podnet>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700;color:var(--ac)}
+details.podnet details{margin:6px 0 12px}
+details.podnet details>summary{cursor:pointer;min-height:40px;display:flex;align-items:center;color:var(--ink2)}
+.ans{background:var(--ac-bg);border-radius:10px;padding:8px 12px}
+.tw{overflow-x:auto;margin:0 0 6px}
+table.st{border-collapse:collapse;width:100%;min-width:520px;font-size:15px}
+table.st th,table.st td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.st th{color:var(--ink3);font-size:13.5px;text-transform:uppercase;letter-spacing:.04em}
+.cta{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+
+/* otázky a omyly */
+.qgrid{display:grid;gap:8px;grid-template-columns:1fr;margin:0 0 14px}
+@media (min-width:800px){.qgrid{grid-template-columns:repeat(5,1fr)}}
+.qbtn{appearance:none;font:inherit;text-align:left;display:grid;gap:4px;align-content:start;min-height:64px;padding:10px 12px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink);cursor:pointer;line-height:1.3}
+.qbtn b{font:700 22px/1 var(--mono);color:var(--cu)}
+.qbtn[aria-pressed="true"]{border-color:var(--ink);background:var(--ac-bg)}
+ol.qa{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+ol.qa li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+ol.qa a{font-weight:700;display:inline-flex;align-items:center;min-height:40px}
+.mgrid{display:grid;gap:12px}
+@media (min-width:880px){.mgrid{grid-template-columns:1fr 1fr}}
+.mcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.mcard q{display:block;font-weight:700;font-size:18px;quotes:none;margin:0 0 6px}
+.mcard .src{font-size:14.5px;color:var(--ink3)}
+
+/* dílna */
+.tools{display:grid;gap:14px}
+@media (min-width:980px){.tools{grid-template-columns:1fr 1fr;align-items:start}}
+.tool{scroll-margin-top:12px}
+.tool h3{font-size:20px;margin:0 0 4px}
+.tool .why{color:var(--ink2);margin:0 0 10px;font-size:16px}
+.seg{display:flex;margin:0 0 10px;border:2px solid var(--line2);border-radius:12px;overflow:hidden}
+.seg button{appearance:none;flex:1;font:inherit;font-size:15px;min-height:44px;padding:4px 6px;border:0;border-left:2px solid var(--line2);background:var(--card);color:var(--ink2);cursor:pointer;line-height:1.2}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--ac-bg);color:var(--ink);font-weight:700}
+.wheels{display:flex;gap:8px;margin:6px 0 8px}
+.wheel{flex:0 0 auto;min-width:64px;text-align:center;border:2px solid var(--line2);border-radius:12px;padding:6px 6px 4px;background:var(--bg)}
+.wheel b{display:block;font:600 36px/1.1 var(--mono)}
+.wheel span{font-size:13.5px;color:var(--ink3)}
+.wheel.fl{border-color:var(--cu);background:var(--cu-bg)}
+.out{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:8px 0;font-size:16px}
+.out p{margin:0 0 4px}.out p:last-child{margin:0}
+select,input[type=text]{font:inherit;font-size:17px;min-height:44px;border-radius:10px;border:2px solid var(--line2);background:var(--card);color:var(--ink);padding:4px 10px}
+input[type=range]{width:100%;min-height:44px;accent-color:var(--ac)}
+.fld{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 8px}
+.fld label{font-size:15px;color:var(--ink2)}
+.bar2{display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--line);margin:4px 0}
+.bar2 i{display:block;height:100%}
+.bar2 .a{background:var(--ac)}.bar2 .b{background:var(--cu)}
+.bits{display:grid;grid-template-columns:repeat(var(--n,8),minmax(0,1fr));gap:4px;margin:6px 0 10px}
+.bit{appearance:none;font:600 22px var(--mono);min-height:48px;border-radius:10px;border:2px solid var(--line2);background:var(--card);color:var(--ink2);cursor:pointer;padding:0}
+.bit[aria-checked="true"]{background:var(--ink);color:var(--on);border-color:var(--ink)}
+.tape{display:grid;grid-template-columns:repeat(var(--n,10),minmax(0,1fr));gap:3px;margin:6px 0 0}
+.cell{aspect-ratio:1;max-height:44px;display:flex;align-items:center;justify-content:center;border:2px solid var(--line2);border-radius:8px;font:600 20px var(--mono);background:var(--card)}
+.cell.h{border-color:var(--cu);background:var(--cu-bg)}
+.head{display:grid;grid-template-columns:repeat(var(--n,10),minmax(0,1fr));gap:3px;margin:0 0 8px;color:var(--cu);font-size:15px;text-align:center;line-height:1.2;min-height:20px}
+table.rules{border-collapse:collapse;width:100%;font-size:15px;margin:6px 0}
+table.rules th,table.rules td{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}
+table.rules th{font-size:13.5px;color:var(--ink3)}
+table.rules tr[aria-current="true"] td{background:var(--cu-bg);font-weight:700}
+svg.chart{width:100%;height:auto;display:block;margin:6px 0}
+svg.chart text{fill:var(--ink3);font:13.5px var(--font)}
+svg.chart .ax{stroke:var(--line2);stroke-width:1}
+svg.chart .ln{fill:none;stroke:var(--ac);stroke-width:2.5}
+svg.chart .pt{fill:var(--cu);stroke:var(--card);stroke-width:2}
+.big{font:700 clamp(26px,5vw,34px)/1.15 var(--mono)}
+.links{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:2px}
+.links a{display:inline-flex;align-items:center;min-height:44px}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+  <div class="top"><a href="../">← Všechny školní aplikace</a><button type="button" class="cr-btn" data-credits aria-haspopup="dialog">Autor a licence</button></div>
+
+  <header class="hero">
+    <p class="eyebrow">Hloubavá povaha · Informatika</p>
+    <h1>Mezníky vývoje výpočetní techniky</h1>
+    <p class="sub">Jak se z kamínků v prachu stal stroj, který se učí</p>
+    <p class="lead"><b>Mezník</b> je okamžik, kdy nová myšlenka nebo součástka změnila, co je možné spočítat, jak rychle nebo pro koho. Tady si je můžeš prohlížet v pořadí, které tě zajímá. Nic tě nezkouší: u některých mezníků je jen nepovinný podnět k zamyšlení a řešení se odkryje, až když chceš.</p>
+    <details class="card" style="margin:14px 0 0;max-width:70ch">
+      <summary style="cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700">Odkud je slovo computer a na co se budeme ptát?</summary>
+      <p>Slovo <i>computer</i> pochází z latinského <i>computare</i>, tedy „počítat“. Dlouho označovalo člověka, který počítal ručně; pro stroje se začalo používat až ve 20. století.</p>
+      <p>Dějinami se prolíná pět otázek. Každý mezník na ně odpovídá aspoň trochu jinak:</p>
+      <ol class="small" style="margin:0 0 6px;padding-left:22px"><li>Jak počítání zautomatizovat?</li><li>Jak stroji říct, co má dělat (jak ho naprogramovat)?</li><li>Jak stroj zmenšit, zrychlit a zlevnit?</li><li>Kde má být program uložen?</li><li>Jak stroje propojit?</li></ol>
+      <p class="tiny">Názvy jednotlivých strojů jsou příklady, učit se je nemusíš. Důležité je, co daný stroj přinesl. Pasáže označené <span class="tagplus">PLUS</span> jsou rozšiřující učivo nad rámec školního vzdělávacího programu.</p>
+    </details>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Části aplikace" id="tabs"></div>
+
+  <section class="panel" id="p-osa" role="tabpanel" aria-labelledby="t-osa">
+    <div class="bar">
+      <div><p class="lab" id="lab-f">Co tě zajímá? (nic nevybráno = všechno)</p><div class="chips" id="filters" role="group" aria-labelledby="lab-f"></div></div>
+      <div><p class="lab" id="lab-k">Přeskoč na kapitolu</p><div class="kapnav" id="kapnav" role="group" aria-labelledby="lab-k"></div></div>
+      <div class="row"><button type="button" class="btn quiet sm" id="openall">Rozbalit vše</button><button type="button" class="btn quiet sm" id="closeall">Sbalit vše</button><span class="count" id="count" role="status"></span></div>
+    </div>
+    <div id="osa"></div>
+    <div class="card" style="max-width:70ch">
+      <h3 style="font-size:19px;margin:0 0 6px">Na závěr: vlastní časová osa</h3>
+      <p>Vyber si deset mezníků, které tě zaujaly nejvíc, a ke každému napiš jednou větou, jaké omezení předchozí technologie překonal. Můžeš to udělat na papír nebo do sešitu; aplikace to nijak nehodnotí.</p>
+      <p class="tiny" style="margin:0">Vývoj výpočetní techniky není řada náhodných vynálezů, ale řetěz překonaných omezení.</p>
+    </div>
+  </section>
+
+  <section class="panel" id="p-otazky" role="tabpanel" aria-labelledby="t-otazky" hidden>
+    <p class="muted" style="max-width:70ch">Vyber si otázku a uvidíš, které mezníky na ni odpovídaly a jak. Odpovědi se z otázky na otázku překrývají: jeden mezník často řeší víc věcí najednou.</p>
+    <div class="qgrid" id="qgrid"></div>
+    <div id="qout" aria-live="polite"></div>
+  </section>
+
+  <section class="panel" id="p-omyly" role="tabpanel" aria-labelledby="t-omyly" hidden>
+    <p class="muted" style="max-width:70ch">Dějiny techniky jsou plné jednoduchých vět, které jsou skoro pravdivé. Tady je přehled těch nejčastějších a toho, co je za nimi.</p>
+    <div class="mgrid" id="myths"></div>
+  </section>
+
+  <section class="panel" id="p-dilna" role="tabpanel" aria-labelledby="t-dilna" hidden>
+    <p class="muted" style="max-width:70ch">Drobné pokusy k mezníkům. Nic se tu nehodnotí a nic se neukládá.</p>
+    <div class="tools" id="tools"></div>
+  </section>
+
+  <section class="card" style="margin-top:22px;max-width:70ch">
+    <h3 style="font-size:18px;margin:0 0 4px">Kde číst dál</h3>
+    <ul class="links" id="reading"></ul>
+    <p class="tiny" style="margin:6px 0 0">Odkazy vedou na cizí weby a otevřou se v novém okně.</p>
+  </section>
+</div>
+
+<dialog class="cr" id="credits" aria-labelledby="cr-h">
+  <h2 id="cr-h">Autor a licence</h2>
+  <dl>
+    <dt>Aplikace</dt><dd>Mezníky vývoje výpočetní techniky</dd>
+    <dt>Autor</dt><dd>Ivo Bešťák, Gymnázium Příbram</dd>
+    <dt>Licence</dt><dd><a href="https://creativecommons.org/licenses/by/4.0/deed.cs" target="_blank" rel="noopener">CC BY 4.0</a></dd>
+    <dt>Aktualizace</dt><dd>25. 11. 2026</dd>
+  </dl>
+  <p>Aplikace nic neukládá a nic neodesílá.</p>
+  <button type="button" class="btn sm" data-close>Zavřít</button>
+</dialog>
+<noscript><p style="padding:16px">Aplikace potřebuje zapnutý JavaScript.</p></noscript>
+<script>
+'use strict';
+/* ===== Data ===== */
+const THEMES={pom:'Pomůcky a mechanika',prog:'Programy a data',log:'Logika a teorie',souc:'Součástky',arch:'Architektura',pc:'Osobní počítače',sit:'Sítě a umělá inteligence'};
+
+const CHAPS=[
+{n:1,t:'První výpočetní pomůcky',i:'Nejdřív šlo o to, aby člověk nemusel držet všechna čísla v hlavě. Pomůcky si čísla pamatovaly, ale každý krok výpočtu pořád řídil člověk.'},
+{n:2,t:'Mechanické kalkulátory',i:'Hodináři uměli přesně vyrábět ozubená kola. Napadlo je svěřit jim sečítání včetně přenosu do vyššího řádu. Řídit stroj ale musel pořád člověk, krok po kroku.'},
+{n:3,t:'Programovatelné stroje a zpracování dat',i:'Stroj, který ví, co dělat dál, potřebuje program. Prvním nosičem programu i dat byl děrný štítek.'},
+{n:4,t:'Logika a teorie za počítači',i:'Aby stroj uměl víc než sečítat, bylo potřeba odpovědět na tři otázky: co vůbec je výpočet, jak ho popsat pomocí logiky a jak ho přenést na součástky, které mají jen dva stavy. Odpovědi přišly od matematiků a inženýrů, kteří tehdy ještě žádný počítač neměli.'},
+{n:5,t:'Od relé k elektronkám',i:'V první polovině 20. století nahradila mechaniku elektřina. Relé je elektromagnetický spínač: proud v cívce přitáhne kovový kontakt a obvod se sepne nebo rozpojí. Má dva stavy, hodí se tedy na jeden bit, ale protože má pohyblivé části, je pomalé a hlučné.',
+ x:`<div class="card"><div class="tw"><table class="st"><caption class="tiny" style="text-align:left;padding:0 0 6px">Srovnání čtyř strojů</caption><thead><tr><th>Stroj</th><th>Rok</th><th>Součástky</th><th>Soustava</th><th>Jak se programoval</th></tr></thead><tbody>
+<tr><td>Z3</td><td>1941</td><td>relé</td><td>dvojková</td><td>děrný film</td></tr>
+<tr><td>Colossus</td><td>1943–1944</td><td>elektronky</td><td>dvojková</td><td>přepínače a zástrčky</td></tr>
+<tr><td>Harvard Mark I</td><td>1944</td><td>elektromechanické součásti</td><td>desítková</td><td>děrná papírová páska</td></tr>
+<tr><td>ENIAC</td><td>1945–1946</td><td>elektronky</td><td>desítková</td><td>kabely a přepínače</td></tr></tbody></table></div></div>`},
+{n:6,t:'Von Neumannova architektura',i:'ENIAC měl zásadní nevýhodu: program byl součástí zapojení stroje, ne dat. Chtěl-li někdo spočítat jinou úlohu, musel přepojit kabely. Právě proto vznikl nápad, který dodnes tvoří základ většiny počítačů.'},
+{n:7,t:'Generace počítačů a Mooreův zákon',i:'Vývoj počítačů se běžně dělí do generací podle součástky, která tvořila základ logických obvodů. Hranice nejsou přesné a učebnice se v letech liší, jde tedy o orientační rozdělení.',
+ x:`<div class="card"><div class="tw"><table class="st"><caption class="tiny" style="text-align:left;padding:0 0 6px">Generace počítačů (orientačně)</caption><thead><tr><th>Generace</th><th>Období</th><th>Součástka</th><th>Příklad</th><th>Co přinesla</th></tr></thead><tbody>
+<tr><td>0.</td><td>1930–1940</td><td>relé</td><td>Zuse Z3</td><td>první automatické číslicové stroje, pomalé</td></tr>
+<tr><td>1.</td><td>1940–1955</td><td>elektronky</td><td>ENIAC, UNIVAC I</td><td>rychlost, ale velikost, spotřeba a poruchovost</td></tr>
+<tr><td>2.</td><td>1955–1965</td><td>tranzistory</td><td>IBM 7090</td><td>menší a spolehlivější stroje, vyšší jazyky (FORTRAN, COBOL)</td></tr>
+<tr><td>3.</td><td>1965–1971</td><td>integrované obvody</td><td>IBM System/360</td><td>miniaturizace, rodiny kompatibilních počítačů</td></tr>
+<tr><td>4.</td><td>od 1971</td><td>mikroprocesory</td><td>Intel 4004, IBM PC</td><td>osobní počítače, miliardy tranzistorů na čipu</td></tr></tbody></table></div>
+<p class="small muted" style="margin:6px 0 0">O páté generaci se mluví nejednotně. Japonský projekt z let 1982–1992 chtěl stavět paralelní stroje pro umělou inteligenci a svůj cíl nesplnil; dnes se tento pojem používá spíš volně.</p></div>`},
+{n:8,t:'Mikroprocesor a osobní počítače',i:'Skutečný zlom přišel, když se celý procesor vešel na jediný čip. Počítač se mohl zmenšit a hlavně zlevnit, a tak se přesunul ze sálu na stůl.'},
+{n:9,t:'Od ARPANETu po umělou inteligenci',i:'Počítače se propojily do sítě, zmenšily do kapsy a dostaly výkon, na kterém se dají učit stroje. Z jednotlivých strojů se stala součást celosvětové sítě.'}
+];
+
+/* c kapitola, y zobrazený rok, s řazení, th témata, t název, a „Co to bylo“, b „Proč vznikl / co překonal“,
+   n co z toho vyrostlo, f zajímavost, m [omyl, oprava], p [podnět, řešení], plus [název, text], app [[slug, název]], tool [id, text], l [text, url] */
+const MS=[
+{id:'abakus',c:1,y:'2700–2300 př. n. l.',s:-2500,th:['pom'],t:'Abakus: sloupce místo hlavy',
+ a:`První sumerské počítací desky se sloupci pro jednotlivé řády (jednotky, desítky, stovky…) se objevují zhruba v letech 2700–2300 př. n. l. v Mezopotámii. Zpočátku se počítalo kamínky v prachu nebo v písku. Později vznikly desky se žlábky a rámy s kuličkami na drátech, které se v Asii používají dodnes. Slovo abakus pravděpodobně pochází z řeckého <i>abax</i> (deska), které možná sahá k semitskému slovu pro „prach“.`,
+ b:`Člověk si neudrží všechny mezivýsledky. Abakus je pamatuje za něj. Důležitá je myšlenka, která se za ním skrývá: hodnota kuličky závisí na tom, ve kterém sloupci leží, stejně jako hodnota cifry v zápisu čísla. Je to první pomůcka založená na pozičním zápisu čísel.`,
+ m:['„Abakus počítá.“','Ne. Abakus si jen pamatuje mezivýsledky. Každý krok výpočtu rozhoduje člověk, který s ním hýbe.'],
+ n:['scot'],app:[['pocitadlo','Počitadlo']]},
+{id:'antikythera',c:1,y:'2.–1. století př. n. l.',s:-150,th:['pom'],t:'Mechanismus z Antikythéry',
+ a:`Ze vraku lodi u řeckého ostrova Antikythéra pochází převodový mechanismus, který pomocí ozubených kol předpovídal polohy Slunce a Měsíce i zatmění.`,
+ b:`Je to nejstarší známý analogový počítač: místo čísel v něm výsledek vyjadřovalo natočení kol.`,
+ f:`Podobně složité stroje se objevily až o více než tisíc let později.`,n:['pascal']},
+{id:'scot',c:1,y:'16. století',s:1550,th:['pom'],t:'Ruský sčot a školní počitadlo',
+ a:`Školní počitadlo z prvního stupně základní školy je nejznámější potomek abaku: rám s deseti drátky, na každém deset kuliček. Není ale poziční. Každá kulička má vždy hodnotu 1, ať leží na kterémkoli drátku, drátky je jen seskupují po deseti. Poziční desítkovou verzí je ruský sčot: každý drát odpovídá jednomu řádu a má deset kuliček. Naplníš-li drát, kuličky odsuneš zpět a jednu přidáš na drát vyššího řádu, stejně jako při sečítání na papíře přenášíš „1 dál“.`,
+ b:`Na sčotu je rychlé sečítání a odčítání. Násobení a dělení lze provést jen opakovaným sečítáním nebo odčítáním, což je zdlouhavé. Přesně tuto práci chtěly usnadnit logaritmy. Sčot vznikl v 16. století se zavedením desítkové měny a v ruských obchodech se používal ještě v 90. letech 20. století.`,
+ f:`Prostřední dvě kuličky na drátu mají jinou barvu, aby šla pětka poznat na první pohled. Jeden kratší drát má jen čtyři kuličky; podle dostupných popisů sloužil ke čtvrtinám jednotky měny. Čínský suan-pan a japonský soroban mají jinou stavbu: kuličky s hodnotou pět jsou v horní části rámu.`,
+ p:['Nakresli na papír sčot se třemi dráty (jednotky, desítky, stovky) a nastav číslo 478. Pak přičti 35 a sleduj přenosy.','8 + 5 = 13, zapíšeš 3 a přeneseš 1 do desítek. 7 + 3 + 1 = 11, zapíšeš 1 a přeneseš 1 do stovek. Výsledek je 513.'],
+ n:['logaritmy'],tool:['carry','Vyzkoušej přenos desítek v dílně'],app:[['pocitadlo','Počitadlo']]},
+{id:'logaritmy',c:1,y:'1614',s:1614,th:['pom','log'],t:'Logaritmy: násobení přes sečítání',
+ a:`Skotský matematik John Napier zveřejnil logaritmy. Jejich smysl je práce ušetřit: násobení čísel se změní na sečítání jejich logaritmů, protože platí <i>log(a · b) = log a + log b</i>. Další výpočet pak už jen z logaritmu zpět „vrátí“ na číslo. Napier navrhl i počítací tyčky pro násobení, tzv. Napierovy kosti.`,
+ b:`Násobení a dělení na abaku nebo sčotu bylo zdlouhavé. Logaritmy z nich udělaly práci, kterou zvládne i sečítání.`,
+ p:['Vynásob 8 × 16 jen sečítáním. Použij dvojkové logaritmy.','log<sub>2</sub> 8 = 3 a log<sub>2</sub> 16 = 4, součet je 7 a 2<sup>7</sup> = 128. Stejným postupem vyjde 32 × 64: 5 + 6 = 11 a 2<sup>11</sup> = 2 048.'],
+ n:['pravitko'],tool:['log','Sečítej logaritmy v dílně'],app:[['logaritmicke-pravitko','Logaritmické pravítko']]},
+{id:'pravitko',c:1,y:'kolem 1622',s:1622,th:['pom'],t:'Logaritmické pravítko',
+ a:`Anglický matematik William Oughtred spojil dvě logaritmicky rozdělené stupnice posuvné proti sobě. Sečítání délek na stupnicích tu nahrazuje násobení čísel.`,
+ b:`Pravítko dává výsledek jen přibližně, na tři až čtyři platné cifry, ale pro inženýry to stačilo. Používalo se překvapivě dlouho: až do sedmdesátých let 20. století, kdy je vytěsnily kapesní elektronické kalkulačky (první vědecká kapesní kalkulačka HP-35 vyšla roku 1972).`,
+ app:[['logaritmicke-pravitko','Logaritmické pravítko']]},
+
+{id:'schickard',c:2,y:'1623',s:1623,th:['pom'],t:'Schickardovy počítací hodiny',
+ a:`Wilhelm Schickard postavil roku 1623 tzv. počítací hodiny. Známe je z jeho dopisů astronomovi Keplerovi. Stroj sečítal a odčítal šestimístná čísla, při překročení rozsahu zazvonil zvonek a násobení mu usnadňovaly Napierovy kosti.`,
+ b:`Poprvé se sečítání svěřilo ozubeným kolům, která už hodináři uměli přesně vyrábět. Původní stroj se nedochoval, podle dopisů se však dají vyrobit funkční repliky.`,n:['pascal']},
+{id:'pascal',c:2,y:'1642',s:1642,th:['pom'],t:'Pascaline: přenos desítek',
+ a:`Blaise Pascal vytvořil, když mu bylo 19 let, kalkulátor Pascaline, který měl pomoci jeho otci, úředníkovi vybírajícímu daně. Sečítal pomocí ozubených koleček, a když jedno kolo přešlo z 9 na 0, mechanicky posunulo o jedničku kolo vedle. Tomu se říká přenos desítek.`,
+ b:`Odčítání řešil trikem s doplňkem čísla. Podobný princip (dvojkový doplněk) používají počítače dodnes.`,
+ m:['„Pascal vynalezl první mechanický kalkulátor.“','Schickardovy hodiny vznikly o dvacet let dříve. Pascalovo jméno se přesto uvádí nejčastěji, protože jeho stroje se dochovaly, vyráběla se jich víc a fungovaly spolehlivěji.'],
+ p:['Tři ozubená kola ukazují číslo 0 9 9. Přičteš jednu jedničku. Co se stane s každým kolem?','Pravé kolo přejde z 9 na 0 a posune prostřední, to také přejde z 9 na 0 a posune levé. Výsledek je 1 0 0. Stejný princip přenosu používá sečítačka v procesoru, jen ve dvojkové soustavě.'],
+ n:['leibniz'],tool:['carry','Zkus přenos desítek v dílně'],app:[['dvojkova-soustava','Dvojková soustava']]},
+{id:'leibniz',c:2,y:'1673 · 1703',s:1673,th:['pom'],t:'Leibniz: násobení a dvojková soustava',
+ a:`Gottfried Wilhelm Leibniz navrhoval stroj od roku 1672 a roku 1673 představil stroj se stupňovým válcem (Leibnizovo kolo), který dokázal i násobit a dělit, a to opakovaným sečítáním.`,
+ b:`V roce 1703 navíc podrobně popsal dvojkovou soustavu, tedy myšlenku, na kterou počítače navázaly až o více než dvě století později.`,n:['colmar'],app:[['dvojkova-soustava','Dvojková soustava']]},
+{id:'colmar',c:2,y:'1820',s:1820,th:['pom'],t:'Arithmometr: kancelářský kalkulátor',
+ a:`Thomas de Colmar si nechal roku 1820 patentovat arithmometr. Jeho stroj byl spolehlivý, od poloviny 19. století se vyráběl sériově a stal se běžnou kancelářskou pomůckou v bankách a pojišťovnách.`,
+ b:`Mechanické kalkulátory se v kancelářích používaly překvapivě dlouho, až do sedmdesátých let 20. století. Jejich omezením byla přesnost výroby a rychlost: každá operace vyžadovala fyzický pohyb kol, a hlavně každý krok výpočtu musel zadat člověk. Stroj nevěděl, co má dělat dál.`,n:['jacquard']},
+
+{id:'jacquard',c:3,y:'1801',s:1801,th:['prog'],t:'Jacquardův stav: program na štítcích',
+ a:`Joseph-Marie Jacquard představil tkalcovský stav řízený děrnými štítky (patent získal 1804). Každý štítek určoval, které nitě se zvednou, a tím i jaký vzor látka dostane.`,
+ b:`Změna vzoru znamenala výměnu štítků, ne přestavbu stroje. Poprvé tak byl program (štítky) oddělen od stroje (stavu), a proto se Jacquardovu stavu říká první programovatelný stroj.`,n:['babbage','hollerith']},
+{id:'babbage',c:3,y:'1822 · 1837',s:1837,th:['prog','arch'],t:'Babbage: analytický stroj',
+ a:`Anglický matematik Charles Babbage navrhl roku 1822 diferenční stroj pro výpočet číselných tabulek bez chyb způsobených opisováním. Od roku 1837 pak pracoval na mnohem ambicióznějším analytickém stroji. Celý byl mechanický, ale měl aritmetickou jednotku („mlýn“), paměť („sklad“) pro asi tisíc čísel, řízení pomocí děrných štítků a dokonce podmíněné větvení a cykly.`,
+ b:`Je to první návrh univerzálního programovatelného počítače. Kvůli nedostatku peněz a omezené přesnosti tehdejší výroby ho však Babbage nikdy nedokončil. Myšlenka tak předběhla technologii o celé století.`,
+ f:`V roce 1991 postavilo londýnské Muzeum vědy podle Babbageových výkresů jeho Diferenční stroj č. 2. Fungoval, takže se potvrdilo, že Babbageovy návrhy byly správné.`,
+ m:['„Babbage postavil první počítač.“','Analytický stroj zůstal na papíře, vyrobily se jen jeho části. Je to příklad, že myšlenka může předběhnout technologii o celé století.'],
+ n:['lovelace']},
+{id:'lovelace',c:3,y:'1843',s:1843,th:['prog'],t:'Ada Lovelace: první publikovaný program',
+ a:`Ada Lovelace, Babbageova spolupracovnice, publikovala poznámky k článku o analytickém stroji. V nich popsala postup pro výpočet Bernoulliho čísel, což se považuje za první publikovaný program.`,
+ b:`Všimla si i další důležité věci: stroj nemusí pracovat jen s čísly, ale s jakýmikoli symboly (zmiňovala například hudbu). Napsala tedy program pro stroj, který neexistoval.`,n:['boole']},
+{id:'hollerith',c:3,y:'1889–1890',s:1889,th:['prog'],t:'Hollerith: data na štítcích',
+ a:`Sčítání lidu v USA z roku 1880 se zpracovávalo ručně asi sedm let. Statistik Herman Hollerith proto vyvinul elektromechanický stroj, který četl děrné štítky (patent získal 1889). Každá osoba měla svůj štítek a díry v určitých místech značily věk, pohlaví nebo povolání. Stroj štítky četl, třídil a počítal.`,
+ b:`Při rostoucím počtu obyvatel by sčítání z roku 1890 nebylo hotové dříve, než by začalo další. Díky stroji se zpracovalo podstatně rychleji a levněji, než se čekalo. Hollerith v roce 1896 založil firmu Tabulating Machine Company; po sloučení v roce 1911 a přejmenování v roce 1924 z ní vznikla společnost IBM. Děrné štítky přitom zůstaly běžným nosičem dat i programů až do sedmdesátých let 20. století.`,
+ p:['Představ si štítek, na kterém může být každá z 12 pozic buď proděravěná, nebo ne. Kolik různých hodnot to umí vyjádřit? Jaký pojem z prvního ročníku to připomíná?','2<sup>12</sup> = 4 096. Je to bit: každá pozice má právě dva stavy.'],
+ tool:['stitek','Vyzkoušej štítek v dílně'],n:['zuse']},
+
+{id:'boole',c:4,y:'1854',s:1854,th:['log'],t:'Booleova algebra',
+ a:`Britský matematik George Boole vydal algebru logických hodnot pravda a nepravda s operacemi AND, OR a NOT, dnes nazývanou Booleova algebra.`,
+ b:`Osmdesát let vypadala jako čistě teoretická hra. Teprve Shannon ukázal, že se podle týchž pravidel chovají spínače.`,n:['shannon']},
+{id:'turing',c:4,y:'1936',s:1936,th:['log','arch'],t:'Turingův stroj: jeden stroj pro všechny programy',
+ a:`Alan Turing popsal myšlenkový stroj, který čte a zapisuje symboly na pásek podle pravidel. Jmenuje se Turingův stroj a je to matematický model, ne skutečný přístroj.`,
+ b:`Z jeho práce plynou dva závěry. Za prvé existuje univerzální stroj, který podle popisu jiného stroje (zapsaného na pásku stejně jako data) umí tento stroj napodobit. Je to myšlenka obecného počítače: jeden stroj, mnoho programů. Za druhé existují úlohy, které nevyřeší žádný algoritmus, například zda se libovolný program někdy zastaví.<br><br>Za druhé světové války pracoval Turing v Bletchley Parku na luštění německé šifry Enigma. Šlo o práci velkého týmu, který navázal na výsledky polských matematiků z 30. let; Turing přispěl zejména návrhem luštících postupů a elektromechanického zařízení Bombe. Právě proto se Turing považuje za jednoho z otců moderní informatiky.`,
+ m:['„Turing rozluštil Enigmu sám.“','Byla to týmová práce stovek lidí a řada jejich výsledků zůstala přísně tajná ještě desítky let po válce, proto se o nich dlouho nevědělo.'],
+ plus:['Turingův stroj podrobněji',`Turingův stroj má nekonečný pásek rozdělený na buňky se symboly, čtecí a zapisovací hlavu, konečný počet stavů a tabulku pravidel. Každé pravidlo říká: když jsi ve stavu X a vidíš symbol Y, zapiš nový symbol, posuň hlavu doleva nebo doprava a přejdi do nového stavu. Podle Church–Turingovy teze lze každý výpočet, který se dá popsat algoritmem, provést na Turingově stroji. Zařízení nebo programovací jazyk, které to umí (při neomezené paměti), se nazývá Turingovsky úplné. Dnešní počítače se od Turingova stroje liší rychlostí a pohodlím, ne tím, co dokážou spočítat.`],
+ tool:['turing','Projdi Turingův stroj krok za krokem'],n:['vonneumann'],app:[['enigma','Enigma']],l:['Turingův stroj (Wikipedie)','https://cs.wikipedia.org/wiki/Turing%C5%AFv_stroj']},
+{id:'shannon',c:4,y:'1937',s:1937,th:['log','souc'],t:'Shannon: logika v drátech',
+ a:`Americký student Claude Shannon ve své diplomové práci na MIT ukázal, že obvody ze spínačů a relé se řídí stejnými pravidly jako Booleova algebra: spínače zapojené za sebou odpovídají AND, spínače zapojené vedle sebe odpovídají OR. Logické výrazy se tedy dají „vyrobit“ z drátů.`,
+ b:`Na tom stojí logické obvody, které znáš z prvního ročníku a ze kterých jsou postavené sečítačky i procesory. Shannon později (1948) položil základy teorie informace, z níž pochází model komunikace i řada pojmů kolem bitu jako jednotky informace.`,
+ p:['Nakresli obvod se třemi spínači A, B, C, ve kterém žárovka svítí, když je splněno (A AND B) OR C. Které spínače zapojíš za sebou a který vedle nich?','A a B zapojíš za sebou (AND). Tuto dvojici zapojíš vedle spínače C (OR).'],
+ n:['zuse'],app:[['logicke-obvody-a-procesor','Logické obvody a procesor']]},
+
+{id:'zuse',c:5,y:'1938 · 1941',s:1941,th:['souc','prog'],t:'Zuse Z3: relé a dvojková soustava',
+ a:`Konrad Zuse, německý inženýr, postavil roku 1938 mechanický stroj Z1 a roku 1941 stroj Z3. Z3 pracoval s relé, ve dvojkové soustavě a program četl z děrného filmu.`,
+ b:`Považuje se za první funkční programovatelný automatický číslicový počítač, i když neuměl podmíněné skoky. Původní stroj zničilo bombardování Berlína.`,n:['colossus']},
+{id:'colossus',c:5,y:'1943–1944',s:1943,th:['souc'],t:'Colossus: elektronky ve službě',
+ a:`V Británii postavil inženýr Tommy Flowers v letech 1943–1944 stroj Colossus, který měl více než tisíc elektronek a luštil německou šifru Lorenz. Programoval se přepínači a zástrčkami a jeho existence zůstala utajena další desetiletí.`,
+ b:`Elektronka je skleněná trubice, ve které proud řídí tok elektronů ve vakuu, bez pohyblivých částí. Spíná řádově tisíckrát rychleji než relé, ale žhaví se, spotřebuje hodně energie a často se pálí.`,n:['eniac']},
+{id:'mark1',c:5,y:'1944',s:1944,th:['souc','arch'],t:'Harvard Mark I',
+ a:`V USA dokončil Howard Aiken s firmou IBM roku 1944 elektromechanický Harvard Mark I, který četl program z děrné papírové pásky.`,
+ b:`Měl oddělenou paměť instrukcí a dat. Tomu se později začalo říkat harvardská architektura (viz rozšiřující část u von Neumannovy architektury).`,n:['vonneumann']},
+{id:'eniac',c:5,y:'1945–1946',s:1945.2,th:['souc'],t:'ENIAC',
+ a:`Nejznámější z těchto strojů byl ENIAC z Pensylvánské univerzity (J. Presper Eckert a John Mauchly), dokončený 1945 a veřejně představený v únoru 1946. Měl zhruba 18 000 elektronek, vážil přes 30 tun a zvládal přibližně 5 000 sečítání za sekundu, tedy asi tisíckrát víc než Mark I.`,
+ b:`Počítal v desítkové soustavě a jiný výpočet znamenal přepojit kabely a přestavit přepínače, což trvalo dny. Několik elektronek se navíc spálilo téměř každý den, takže stroj byl zhruba polovinu času mimo provoz. Slabiny ENIACu ukázaly, že program nemá být v kabelech a že jsou potřeba menší a spolehlivější součástky.`,
+ m:['„ENIAC byl první počítač.“','Záleží na tom, co od počítače čekáš: aby byl elektronický, programovatelný, univerzální, nebo aby měl program v paměti? Podle každého kritéria vyjde jiný stroj, proto se historici o „prvním“ počítači neshodnou.'],
+ n:['vonneumann','tranzistor']},
+{id:'sapo',c:5,y:'1957–1958',s:1957,th:['souc'],t:'SAPO: první československý počítač',
+ a:`První československý počítač SAPO (Samočinný POčítač) vedl Antonín Svoboda. Stavěl se od začátku 50. let a do provozu byl uveden v letech 1957–1958.`,
+ b:`Místo elektronek použil telefonní relé a pracoval do začátku 60. let.`},
+
+{id:'vonneumann',c:6,y:'1945',s:1945.6,th:['arch','prog'],t:'Program v paměti: von Neumannova architektura',
+ a:`V červnu 1945 sepsal matematik John von Neumann zprávu o chystaném počítači EDVAC (<i>First Draft of a Report on the EDVAC</i>). Shrnul v ní myšlenky týmu kolem Eckerta a Mauchlyho z Pensylvánské univerzity: program se uloží do paměti stejně jako data. Stroj pak program nenačítá z kabelů, ale z paměti, a změna úlohy znamená jen nahrát jiný program.<br><br>Počítač podle této koncepce má čtyři části: <b>paměť</b>, kde jsou uložena data i program (obojí ve dvojkovém zápisu); <b>aritmeticko-logickou jednotku (ALU)</b>, která počítá a porovnává; <b>řadič</b>, který z paměti postupně načítá instrukce, dekóduje je a řídí jejich provedení; a <b>vstupní a výstupní zařízení</b>, přes která počítač komunikuje s okolím. ALU společně s řadičem tvoří procesor.`,
+ b:`Důsledek je dalekosáhlý. Protože je program jen zvláštní druh dat, dá se kopírovat, ukládat na disk a hlavně ho může vytvářet jiný program: překladač převede text programu na instrukce, operační systém spouští další programy. Software jako samostatný obor tedy vyrostl z této myšlenky.`,
+ m:['„ENIAC byl první stroj s von Neumannovou architekturou.“','Roku 1946 ji ještě neměl, program se zadával kabely. Jméno von Neumanna se vžilo, i když na myšlenkách se podílel celý tým.'],
+ p:['Procesor načetl z paměti posloupnost bitů 0100 0001. Je to číslo 65, písmeno A v kódu ASCII, nebo instrukce?','Z obsahu se to nepozná: záleží na tom, zda ji řadič použije jako instrukci, nebo ji procesor zpracuje jako data. Proto je důležité paměť chránit; mnoho útoků se snaží dostat data tam, kde se vykonávají jako instrukce.'],
+ plus:['Úzké hrdlo a harvardská architektura',`Společná paměť pro instrukce i data má nevýhodu: procesor nemůže v jedné chvíli načíst instrukci a zároveň data. Tomu se říká von Neumannovo úzké hrdlo. Protože je paměť pomalejší než procesor, používají se mezipaměti (cache). Harvardská architektura má paměť instrukcí a paměť dat oddělené, jako u Harvard Mark I. Používá se u mikrokontrolérů (třeba v desce Arduino) a dnešní procesory ji částečně napodobují: mají oddělenou mezipaměť pro instrukce a pro data.`],
+ tool:['bity','Přepínej bity a sleduj jejich význam'],n:['baby'],app:[['ascii-kod-pod-lupou','ASCII kód pod lupou']]},
+{id:'baby',c:6,y:'1948–1951',s:1948,th:['arch'],t:'Manchester Baby a EDSAC: první stroje s programem v paměti',
+ a:`První stroje s programem v paměti vznikly až po válce. Manchester Baby spustil 21. června 1948 jako první program uložený v přepisovatelné elektronické paměti (měl paměť jen 128 bajtů). EDSAC z Cambridge (Maurice Wilkes, 1949) byl první prakticky použitelný stroj tohoto typu.`,
+ b:`Samotný EDVAC dokončil jiný tým až roku 1951 a ve stejném roce začal první komerčně vyráběný americký počítač UNIVAC I. ENIAC se tomuto principu přiblížil až roku 1948 po přestavbě, kdy četl program z pevných tabulek (jen pro čtení).`,n:['tranzistor']},
+
+{id:'tranzistor',c:7,y:'1947',s:1947,th:['souc'],t:'Tranzistor',
+ a:`Roku 1947 ho vynalezli v Bellových laboratořích John Bardeen, Walter Brattain a William Shockley. Je to polovodičová součástka, která nepotřebuje vakuum ani žhavení: je malá, spolehlivá a úsporná.`,
+ b:`Řeší přesně to, co dělalo potíže elektronkám: spotřebu a poruchovost. Počítače druhé generace (1955–1965, např. IBM 7090) byly menší a spolehlivější a přišly vyšší programovací jazyky, například FORTRAN a COBOL.`,n:['io'],l:['Tranzistor (Wikipedie)','https://cs.wikipedia.org/wiki/Tranzistor']},
+{id:'io',c:7,y:'1958–1959',s:1958,th:['souc'],t:'Integrovaný obvod',
+ a:`Jack Kilby (Texas Instruments, 1958) a Robert Noyce (Fairchild, 1959) ukázali, že se mnoho součástek dá vyrobit najednou na jediném křemíkovém čipu.`,
+ b:`Obvod se tak nezapojuje součástku po součástce, ale vyrábí se celý najednou, podobně jako se tiskne obrázek.`,n:['s360','moore']},
+{id:'s360',c:7,y:'1964',s:1964,th:['arch'],t:'IBM System/360: rodina kompatibilních počítačů',
+ a:`IBM System/360 byla první řada počítačů různého výkonu, na kterých běžel stejný software. Používala ji i NASA.`,
+ b:`Patří do třetí generace (1965–1971, integrované obvody), jejímž znakem je miniaturizace a rodiny kompatibilních počítačů.`,n:['pdp8']},
+{id:'moore',c:7,y:'1965 · 1975',s:1965.5,th:['souc'],t:'Mooreův zákon',
+ a:`Gordon Moore, pozdější spoluzakladatel Intelu, si v roce 1965 všiml, že se počet součástek na čipu zdvojnásobuje zhruba každý rok. V roce 1975 odhad změnil na každé dva roky. Nejde o fyzikální zákon, ale o pozorování, které se stalo cílem celého průmyslu. Počet tranzistorů N po t letech od výchozího počtu N<sub>0</sub> pak odhadneme jako <i>N = N<sub>0</sub> · 2<sup>t/2</sup></i>.`,
+ b:`Další růst se zpomaluje: rozměry součástí se blíží rozměrům několika atomů a čipy se přehřívají. Proto se výrobci zaměřují na paralelismus a na čipy navržené pro konkrétní úkoly.`,
+ m:['„Mooreův zákon říká, že se každé dva roky zdvojnásobí rychlost počítače.“','Říká to o počtu tranzistorů, ne o rychlosti. Takt procesorů přestal vyrůstat zhruba po roce 2005 a výkon se od té doby zvyšuje hlavně přidáváním jader a specializovanými čipy.'],
+ p:['Intel 4004 z roku 1971 měl 2 300 tranzistorů. Kolik by jich měl čip z roku 1991, tedy po 20 letech? A po 50 letech, v roce 2021? (Zdvojnásobení každé dva roky.)','Za 20 let je to 10 zdvojnásobení: 2 300 · 2<sup>10</sup> = 2 355 200, tedy asi 2,4 milionu. Procesory z počátku 90. let měly skutečně miliony tranzistorů. Za 50 let je to 25 zdvojnásobení: 2 300 · 2<sup>25</sup> = 77 175 193 600, tedy asi 7,7 · 10<sup>10</sup>. Řádově to odpovídá dnešním největším čipům s desítkami miliard tranzistorů.'],
+ tool:['moore','Zkus si Mooreův zákon v dílně'],n:['4004']},
+
+{id:'pdp8',c:8,y:'1965',s:1965,th:['pc'],t:'Od sálů k minipočítačům: PDP-8',
+ a:`V 50. a 60. letech byly počítače sálové (mainframy). Potřebovaly klimatizovanou místnost a tým operátorů a patřily univerzitám, úřadům a velkým firmám. Roku 1965 představila firma DEC minipočítač PDP-8, který byl velikosti skříně a stál zlomek ceny sálových strojů.`,
+ b:`Počítač tak přestal být výsadou nejbohatších, ale pořád zabral celý stůl a nebyl určen pro domácnosti.`,n:['4004']},
+{id:'4004',c:8,y:'1971',s:1971,th:['souc','pc'],t:'Intel 4004: celý procesor na jednom čipu',
+ a:`Roku 1971 uvedl Intel 4004: celý procesor na jediném čipu, tedy mikroprocesor. Měl 4 bity a 2 300 tranzistorů a vznikl pro japonské kalkulačky firmy Busicom (tým Ted Hoff, Federico Faggin a Stan Mazor). Podle běžně uváděného srovnání měl výpočetní výkon srovnatelný s ENIACem, přitom měl rozměry jen několik milimetrů.`,
+ b:`Následoval 8bitový Intel 8008 (1972) a Intel 8080 (1974). Mikroprocesor měl dva důsledky: počítač se mohl zmenšit a hlavně zlevnit, protože se nejdražší část vyrábí jako jeden čip.`,
+ p:['Zjisti na svém počítači (ve Windows např. ve Správci úloh), jaký má procesor, kolik jader a jakou frekvenci. Porovnej s Intel 4004: jedno jádro, 4 bity, frekvence ve stovkách kilohertzů. Kolikrát je tvůj procesor rychlejší podle frekvence?','Záleží na tvém počítači; podle samotné frekvence vyjde řádově tisíckrát víc, ale tím nezapočítáš počet jader, šířku slova ani složitost instrukcí. Názvy položek se liší podle verze systému, proto je zkontroluj.'],
+ n:['altair']},
+{id:'altair',c:8,y:'1975–1977',s:1975,th:['pc'],t:'Altair 8800 a první domácí počítače',
+ a:`V lednu 1975 představil časopis Popular Electronics stavebnici Altair 8800 s procesorem Intel 8080. Neměla klávesnici ani monitor, jen přepínače a kontrolky, přesto se rozprodala v tisících kusů. Nadšenci se sdružovali do klubů (např. Homebrew Computer Club) a vyměňovali si programy.`,
+ b:`Bill Gates a Paul Allen pro Altair napsali interpret jazyka BASIC a v dubnu 1975 založili Microsoft. V roce 1977 přišly hotové počítače pro domácnosti a školy, například Apple II, Commodore PET a TRS-80. Na začátku 80. let se rozšířily domácí počítače jako Sinclair ZX Spectrum a Commodore 64 (oba z roku 1982).`,
+ f:`V Československu se v 80. letech hojně používaly klony ZX Spectra, např. Didaktik. Pro mnohé dnešní programátory to byl první počítač.`,n:['ibmpc']},
+{id:'ibmpc',c:8,y:'1981',s:1981,th:['pc'],t:'IBM PC: jak vznikl průmyslový standard',
+ a:`V srpnu 1981 představila IBM IBM PC 5150 s procesorem Intel 8088. Aby byla rychlá, postavila ho z běžně dostupných dílů a architekturu nechala poměrně otevřenou. Operační systém dodal Microsoft pod názvem PC DOS. Základ systému koupil od malé firmy Seattle Computer Products a smlouva mu dovolila prodávat téměř stejný systém dalším výrobcům jako MS-DOS.`,
+ b:`Otevřená architektura měla důsledek, který IBM neplánovala. Jiné firmy, například Compaq (1982), vytvořily reverzním inženýrstvím vlastní verzi základního programového vybavení BIOS, které počítač spouští. Vznikly levnější a kompatibilní stroje, tzv. PC klony, a ty používaly MS-DOS od Microsoftu. Software z jednoho počítače běžel na všech. Rychlé rozšíření klonů s MS-DOS vytvořilo de facto standard celého odvětví: IBM ztratila kontrolu nad platformou, kterou sama založila, a zbohatly Microsoft a Intel.`,
+ m:['„IBM vynalezla osobní počítač.“','Osobní počítače existovaly už před IBM PC (Altair 1975, Apple II 1977). IBM PC je ale první, který se stal průmyslovým standardem.'],n:['gui']},
+{id:'gui',c:8,y:'1973 · 1984',s:1984,th:['pc'],t:'Grafické rozhraní: okna, ikony a myš',
+ a:`MS-DOS se ovládal textovými příkazy. Okna, ikony a myš vyvinulo už roku 1973 výzkumné středisko Xerox PARC na počítači Alto, ale do běžného života je přinesly až Apple Macintosh (1984) a později Windows (verze 1.0 vyšla 1985, širokého rozšíření dosáhly Windows 95).`,
+ b:`Paralelně se vyvíjel operační systém Unix (1969) a jeho svobodný následovník Linux (1991).`,n:['web']},
+
+{id:'arpanet',c:9,y:'1969 · 1983',s:1969,th:['sit'],t:'ARPANET a TCP/IP: síť sítí',
+ a:`V roce 1969 propojila americká agentura ARPA první počítače v síti ARPANET. První zpráva byla 29. října 1969 odeslána mezi univerzitou v Los Angeles a Stanfordským výzkumným ústavem. Síť používala paketový přenos: data se dělí na malé části, které putují nezávisle.`,
+ b:`V roce 1983 přešel ARPANET na protokoly TCP/IP, které umožnily propojit různé sítě do jedné, a vznikl internet jako síť sítí.`,n:['web']},
+{id:'web',c:9,y:'1989–1991',s:1989,th:['sit'],t:'World Wide Web',
+ a:`Službu web vymyslel Tim Berners-Lee v Evropské organizaci pro jaderný výzkum CERN. Návrh sepsal roku 1989, první webový server a prohlížeč vznikly 1990 a veřejnosti se web otevřel roku 1991. Patří k němu protokol HTTP, jazyk HTML a adresy URL. Web zpopularizoval prohlížeč Mosaic (1993) díky přívětivému grafickému rozhraní.`,
+ f:`Československo se k internetu oficiálně připojilo 13. února 1992 přes ČVUT v Praze, a to datovým okruhem do rakouského Linze. Zpočátku mohli internet používat jen lidé z akademické sféry.`,
+ m:['„Internet a web jsou to samé.“','Internet je celosvětová síť sítí s pravidly TCP/IP, web je jen jedna ze služeb, které na ní běží. E-mail nebo online hry používají internet bez webu.'],
+ n:['mobil'],app:[['unicode-pod-lupou','Unicode pod lupou']]},
+{id:'mobil',c:9,y:'1994 · 2006–2008',s:1994,th:['pc','sit'],t:'Chytré telefony a cloud',
+ a:`Roku 1994 představila IBM telefon Simon s dotykovým displejem, který se považuje za první chytrý telefon. Masově se chytré telefony prosadily po roce 2007 (iPhone) a 2008 (Android a obchody s aplikacemi). Je to počítač čtvrté generace s dotykovým displejem, kamerou, GPS a trvalým připojením k internetu.`,
+ b:`Výpočet se přitom často přesouvá do datových center: roku 2006 spustil Amazon služby Amazon Web Services a začal pronajímat výpočetní výkon a úložiště přes internet. Tomu se říká cloud computing.`,n:['gpu']},
+{id:'gpu',c:9,y:'1956–2012',s:2012,th:['souc','sit'],t:'Grafické procesory a strojové učení',
+ a:`Termín umělá inteligence zazněl poprvé roku 1956 na konferenci v Dartmouthu a Turing o strojích, které „myslí“, přemýšlel už roku 1950. Neuronové sítě nejsou nový nápad (první perceptron vznikl 1958), dlouho jim ale chyběl výkon a data.`,
+ b:`Přelom přinesly grafické procesory (GPU), které vznikly pro počítačové hry. Umějí paralelně provádět obrovské množství jednoduchých operací, přesně to, co vyžaduje trénování neuronových sítí (násobení matic). V roce 2012 zvítězila síť AlexNet v soutěži v rozpoznávání obrázků a rozjela vlnu hlubokého učení.`,
+ f:`Veřejnost zaujaly i souboje s lidmi: Deep Blue porazil mistra světa v šachu Kasparova roku 1997, program AlphaGo porazil mistra hry go Lee Sedola roku 2016.`,n:['llm']},
+{id:'llm',c:9,y:'2017–2022',s:2017,th:['sit'],t:'Transformer a generativní umělá inteligence',
+ a:`Architektura Transformer (2017) vedla k velkým jazykovým modelům a veřejnosti se generativní umělá inteligence zpřístupnila s ChatGPT v listopadu 2022.`,
+ b:`Pokrok v hardwaru (zejména GPU) a dostatek dat umožnily rozvoj strojového učení.`,n:['kvant']},
+{id:'kvant',c:9,y:'dnes a zítra',s:2030,th:['arch','sit'],t:'Co bude dál? Kvantové počítače',
+ a:`Základ se přitom od roku 1945 nezměnil: téměř všechny dnešní počítače, od telefonu po superpočítač, dodnes používají von Neumannovu architekturu, tedy program a data ve společné paměti a řadič, který instrukce provádí jednu po druhé. Kvantové počítače nepočítají s bity, které jsou buď 0, nebo 1, ale s kvantovými stavy (qubity), a pro některé úlohy mohou fungovat zcela jinak než klasické stroje.`,
+ b:`Zatím jsou experimentální a málo spolehlivé, takže pravděpodobně nenahradí klasické počítače, ale budou je doplňovat. Může to ale být další mezník, který změní, co a jak rychle umíme spočítat.`,
+ f:`Superpočítač Frontier v USA překročil roku 2022 jako první hranici jednoho exaflopu, tedy 10<sup>18</sup> operací za sekundu. Dnes se znovu blížíme fyzikálním limitům, a proto další pokrok hledáme v paralelním zpracování, specializovaných čipech a nových principech.`}
+];
+
+/* pět otázek: [id mezníku, jednou větou] */
+const QS=[
+{q:'Jak počítání zautomatizovat?',r:[
+ ['pascal','Ozubená kola přenesou desítku sama: když kolo přejde z 9 na 0, posune sousední.'],
+ ['leibniz','Stupňový válec umí násobit a dělit opakovaným sečítáním.'],
+ ['hollerith','Stroj čte děrné štítky, třídí je a počítá, takže sčítání lidu netrvá roky.'],
+ ['shannon','Logiku lze „vyrobit“ ze spínačů, a tedy i sečítačku.'],
+ ['eniac','Elektronky zvládly asi 5 000 sečítání za sekundu.']]},
+{q:'Jak stroji říct, co má dělat?',r:[
+ ['jacquard','Děrné štítky určují vzor tkaniny, program je oddělený od stroje.'],
+ ['babbage','Návrh stroje řízeného štítky s podmíněným větvením a cykly.'],
+ ['lovelace','První publikovaný program pro stroj, který ještě neexistoval.'],
+ ['zuse','Program na děrném filmu, ve dvojkové soustavě.'],
+ ['colossus','Přepínače a zástrčky: rychlé, ale pracné.'],
+ ['eniac','Kabely a přepínače, přeprogramování trvalo dny.'],
+ ['vonneumann','Program je data: stačí nahrát jiný program.']]},
+{q:'Jak stroj zmenšit, zrychlit a zlevnit?',r:[
+ ['colossus','Elektronky spínají asi tisíckrát rychleji než relé, ale jsou žhavé a pálí se.'],
+ ['tranzistor','Polovodič bez vakua a žhavení: malý, spolehlivý, úsporný.'],
+ ['io','Mnoho součástek vyrobených najednou na jednom čipu.'],
+ ['4004','Celý procesor na čipu: počítač se zmenší a zlevní.'],
+ ['ibmpc','Běžně dostupné díly a klony srazily cenu.'],
+ ['mobil','Počítač s dotykovým displejem, kamerou a GPS v kapse.']]},
+{q:'Kde má být program uložen?',r:[
+ ['jacquard','Na děrných štítcích mimo stroj.'],
+ ['zuse','Na děrném filmu.'],
+ ['mark1','Na děrné papírové pásce; paměť instrukcí a dat odděleně.'],
+ ['eniac','V zapojení kabelů a přepínačů.'],
+ ['vonneumann','V paměti, stejně jako data.'],
+ ['baby','První běžící program v přepisovatelné elektronické paměti (1948).']]},
+{q:'Jak stroje propojit?',r:[
+ ['arpanet','Paketový přenos: data putují po malých částech nezávisle.'],
+ ['arpanet','TCP/IP propojilo různé sítě do jedné: vznikl internet.'],
+ ['web','Služba nad internetem: HTTP, HTML, adresy URL a prohlížeč.'],
+ ['mobil','Výpočet se přesouvá do datových center, tedy do cloudu.']]}
+];
+
+const READ=[
+ ['Computer History Museum','https://www.computerhistory.org/'],
+ ['Bletchley Park','https://www.bletchleypark.org.uk/'],
+ ['CERN: zrození webu','https://home.cern/science/computing/birth-web'],
+ ['Science Museum Group','https://www.sciencemuseum.org.uk/']
+];
+</script>
+<script>
+/* ===== Pomocné ===== */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const byId=Object.fromEntries(MS.map(m=>[m.id,m]));
+const prevOf={};
+MS.forEach(m=>(m.n||[]).forEach(x=>{(prevOf[x]=prevOf[x]||[]).push(m.id)}));
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const nf=n=>Math.round(n).toLocaleString('cs-CZ');
+
+const TOOLS=[
+ {id:'carry',t:'Přenos desítek',why:'Když kolo přejde z nejvyšší číslice na 0, posune sousední. Tak sečítal Pascal i dnešní procesor, jen v jiné soustavě.',init:initCarry},
+ {id:'log',t:'Sečítání místo násobení',why:'Vyber dvě mocniny dvojky. Místo násobení sečti jejich exponenty a výsledek vrať zpět na číslo.',init:initLog},
+ {id:'stitek',t:'Děrný štítek',why:'Klepni na pozice štítku a zjisti, kolik různých vzorů se na dvanáct pozic vejde.',init:initStitek},
+ {id:'bity',t:'Stejné bity, jiný význam',why:'V paměti jsou jen nuly a jedničky. Co znamenají, určuje to, jak je program použije.',init:initBity},
+ {id:'turing',t:'Turingův stroj',plus:true,why:'Hlava čte symbol, podle tabulky pravidel ho přepíše, posune se a změní stav. Tento stroj obrací každý bit.',init:initTuring},
+ {id:'moore',t:'Mooreův zákon',why:'Odhad počtu tranzistorů na čipu. Je to pozorování o tranzistorech, ne o rychlosti.',init:initMoore}
+];
+
+/* ===== Karty mezníků ===== */
+const chip=id=>`<a class="chip" href="#m-${id}">${byId[id].t}</a>`;
+function msHtml(m){
+  const tags=m.th.map(k=>THEMES[k]).join(' · ');
+  let main=`<h4>Co to bylo</h4><p>${m.a}</p>`;
+  if(m.b) main+=`<h4>Proč vznikl a co změnil</h4><p>${m.b}</p>`;
+  if(m.plus) main+=`<div class="box plus" style="margin-top:12px"><h4><span class="tagplus">PLUS</span>${m.plus[0]}</h4><p>${m.plus[1]}</p></div>`;
+  if(m.f) main+=`<div class="box fun" style="margin-top:12px"><h4>Zajímavost</h4><p>${m.f}</p></div>`;
+  if(m.m) main+=`<div class="box myth" style="margin-top:12px"><h4>Častý omyl</h4><p><b>${m.m[0]}</b></p><p>${m.m[1]}</p></div>`;
+  if(m.p) main+=`<details class="podnet"><summary>Zamysli se (nepovinné)</summary><p>${m.p[0]}</p><details><summary>Ukázat řešení</summary><div class="ans"><p>${m.p[1]}</p></div></details></details>`;
+  let side='';
+  if(m.n&&m.n.length) side+=`<div><h4>Co z toho vyrostlo</h4><div class="chips">${m.n.map(chip).join('')}</div></div>`;
+  if(prevOf[m.id]) side+=`<div><h4>Navazuje na</h4><div class="chips">${prevOf[m.id].map(chip).join('')}</div></div>`;
+  let more='';
+  if(m.tool) more+=`<a class="chip" href="#tool-${m.tool[0]}">${m.tool[1]}</a>`;
+  if(m.app) more+=m.app.map(a=>`<a class="chip" href="../${a[0]}/">Aplikace: ${a[1]}</a>`).join('');
+  if(m.l) more+=`<a class="chip" href="${m.l[1]}" target="_blank" rel="noopener">${m.l[0]} ↗</a>`;
+  if(more) side+=`<div><h4>Zkus a čti dál</h4><div class="chips">${more}</div></div>`;
+  return `<details class="ms" id="m-${m.id}"><summary><span class="yr">${m.y}</span><span class="tt">${m.t}</span><span class="tg">${tags}</span></summary><div class="msb"><div>${main}</div>${side?`<div class="aside">${side}</div>`:''}</div></details>`;
+}
+function renderOsa(){
+  $('#osa').innerHTML=CHAPS.map(c=>{
+    const items=MS.filter(m=>m.c===c.n).sort((a,b)=>a.s-b.s);
+    return `<section class="chap" id="kap-${c.n}" aria-labelledby="kh-${c.n}"><header><span class="kn" aria-hidden="true">${c.n}</span><h2 id="kh-${c.n}">${c.t}</h2><p class="intro">${c.i}</p></header>${c.x?`<div class="chap-extra">${c.x}</div>`:''}<div class="rail">${items.map(msHtml).join('')}</div></section>`;
+  }).join('');
+  $('#kapnav').innerHTML=CHAPS.map(c=>`<button type="button" data-kap="${c.n}" aria-label="Kapitola ${c.n}: ${c.t}" title="${c.t}">${c.n}</button>`).join('');
+}
+
+/* ===== Filtry ===== */
+const active=new Set();
+function renderFilters(){
+  $('#filters').innerHTML=Object.entries(THEMES).map(([k,v])=>`<button type="button" class="chip" data-th="${k}" aria-pressed="false">${v}</button>`).join('');
+}
+function applyFilters(){
+  let shown=0;
+  $$('details.ms').forEach(el=>{
+    const m=byId[el.id.slice(2)];
+    const ok=!active.size||m.th.some(t=>active.has(t));
+    el.hidden=!ok; if(ok) shown++;
+  });
+  $$('.chap').forEach(s=>{s.hidden=!$$('details.ms',s).some(e=>!e.hidden)});
+  $$('#filters .chip').forEach(b=>b.setAttribute('aria-pressed',active.has(b.dataset.th)?'true':'false'));
+  $('#count').textContent=`Zobrazeno ${shown} z ${MS.length} mezníků.`;
+}
+
+/* ===== Otázky a omyly ===== */
+function renderQ(){
+  $('#qgrid').innerHTML=QS.map((q,i)=>`<button type="button" class="qbtn" data-q="${i}" aria-pressed="false"><b>${i+1}</b><span>${q.q}</span></button>`).join('');
+}
+function showQ(i){
+  $$('#qgrid .qbtn').forEach((b,k)=>b.setAttribute('aria-pressed',k===i?'true':'false'));
+  const q=QS[i];
+  $('#qout').innerHTML=`<h2 style="margin:6px 0 10px">${i+1}. ${q.q}</h2><ol class="qa">${q.r.map(r=>`<li><a href="#m-${r[0]}">${byId[r[0]].t} <span class="yr">(${byId[r[0]].y})</span></a><br>${r[1]}</li>`).join('')}</ol>`;
+}
+function renderMyths(){
+  $('#myths').innerHTML=MS.filter(m=>m.m).sort((a,b)=>a.s-b.s).map(m=>`<div class="mcard"><q>${m.m[0]}</q><p>${m.m[1]}</p><p class="src">Z mezníku <a href="#m-${m.id}" style="display:inline-flex;align-items:center;min-height:40px">${m.t}</a></p></div>`).join('');
+}
+function renderTools(){
+  $('#tools').innerHTML=TOOLS.map(t=>`<section class="card tool" id="tool-${t.id}" aria-labelledby="th-${t.id}"><h3 id="th-${t.id}">${t.plus?'<span class="tagplus">PLUS</span>':''}${t.t}</h3><p class="why">${t.why}</p><div data-body></div></section>`).join('');
+  TOOLS.forEach(t=>t.init($('#tool-'+t.id+' [data-body]')));
+  $('#reading').innerHTML=READ.map(r=>`<li><a href="${r[1]}" target="_blank" rel="noopener">${r[0]} ↗</a></li>`).join('');
+}
+
+/* ===== Záložky a navigace ===== */
+const TABS=[['osa','Časová osa'],['otazky','Pět otázek'],['omyly','Co se často plete'],['dilna','Dílna']];
+let curTab='osa';
+function renderTabs(){
+  $('#tabs').innerHTML=TABS.map(([k,v])=>`<button type="button" role="tab" class="tab" id="t-${k}" data-tab="${k}" aria-controls="p-${k}" aria-selected="false" tabindex="-1">${v}</button>`).join('');
+}
+function showTab(k){
+  curTab=k;
+  TABS.forEach(([n])=>{
+    const on=n===k, b=$('#t-'+n), p=$('#p-'+n);
+    b.setAttribute('aria-selected',on?'true':'false'); b.tabIndex=on?0:-1; p.hidden=!on;
+  });
+}
+function goEl(el,focus){
+  el.scrollIntoView({behavior:REDUCED?'auto':'smooth',block:'start'});
+  if(focus){const f=el.querySelector('summary,h3')||el; if(f.tabIndex<0&&f.tagName!=='SUMMARY')f.tabIndex=-1; f.focus({preventScroll:true});}
+}
+function route(){
+  const h=decodeURIComponent(location.hash.slice(1));
+  if(!h){showTab('osa');return}
+  if(h.startsWith('m-')){
+    const el=document.getElementById(h); if(!el){showTab('osa');return}
+    showTab('osa');
+    if(el.hidden){active.clear();applyFilters()}
+    el.open=true; goEl(el,true); return;
+  }
+  if(h.startsWith('tool-')){showTab('dilna');const el=document.getElementById(h); if(el) goEl(el,true); return}
+  if(h.startsWith('kap-')){showTab('osa');const el=document.getElementById(h); if(el&&!el.hidden) goEl(el,false); return}
+  const map={osa:'osa',otazky:'otazky',omyly:'omyly',dilna:'dilna'};
+  if(map[h]) showTab(h);
+}
+
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a[href^="#"]');
+  if(a){e.preventDefault();history.pushState(null,'',a.getAttribute('href'));route();return}
+  const tab=e.target.closest('[data-tab]'); if(tab){history.replaceState(null,'','#'+tab.dataset.tab);showTab(tab.dataset.tab);return}
+  const th=e.target.closest('[data-th]'); if(th){const k=th.dataset.th;active.has(k)?active.delete(k):active.add(k);applyFilters();return}
+  const kap=e.target.closest('[data-kap]'); if(kap){const el=$('#kap-'+kap.dataset.kap); if(el&&!el.hidden) goEl(el,false);return}
+  const q=e.target.closest('[data-q]'); if(q){showQ(+q.dataset.q);return}
+  if(e.target.closest('[data-credits]')){$('#credits').showModal();return}
+  const cl=e.target.closest('[data-close]'); if(cl){cl.closest('dialog').close();return}
+  if(e.target.id==='openall'){$$('details.ms').forEach(d=>{if(!d.hidden)d.open=true});return}
+  if(e.target.id==='closeall'){$$('details.ms').forEach(d=>d.open=false);return}
+});
+$('#tabs').addEventListener('keydown',e=>{
+  const ks=TABS.map(t=>t[0]); let i=ks.indexOf(curTab);
+  if(e.key==='ArrowRight')i=(i+1)%ks.length; else if(e.key==='ArrowLeft')i=(i+ks.length-1)%ks.length; else if(e.key==='Home')i=0; else if(e.key==='End')i=ks.length-1; else return;
+  e.preventDefault(); history.replaceState(null,'','#'+ks[i]); showTab(ks[i]); $('#t-'+ks[i]).focus();
+});
+$('#credits').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
+addEventListener('popstate',route);
+
+/* ===== Dílna: přenos desítek ===== */
+function initCarry(root){
+  const NAMES={10:['jednotek','desítek','stovek'],2:['jedniček','dvojek','čtyřek','osmiček']};
+  let base=10,d=[0,0,0],fl=[],msg='Číslo je 0. Klepni na „+1“.';
+  root.innerHTML=`<div class="seg" role="group" aria-label="Soustava"><button type="button" data-b="10" aria-pressed="true">Desítková, 3 kola</button><button type="button" data-b="2" aria-pressed="false">Dvojková, 4 kola</button></div><div class="wheels" data-w></div><div class="row"><button type="button" class="btn primary" data-a="add">+1</button><button type="button" class="btn quiet sm" data-a="nines">Samé nejvyšší číslice</button><button type="button" class="btn quiet sm" data-a="zero">Vynulovat</button></div><div class="out" role="status" data-o></div>`;
+  const val=()=>parseInt(d.join(''),base);
+  function draw(){
+    const n=d.length;
+    $('[data-w]',root).innerHTML=d.map((x,i)=>`<div class="wheel${fl.includes(i)?' fl':''}"><b>${x}</b><span>${NAMES[base][n-1-i]}</span></div>`).join('');
+    $$('[data-b]',root).forEach(b=>b.setAttribute('aria-pressed',+b.dataset.b===base?'true':'false'));
+    $('[data-o]',root).innerHTML=`<p>${msg}</p><p class="tiny" style="margin:0">Hodnota: ${val()}${base===2?' (dekadicky)':''}</p>`;
+  }
+  function add(){
+    const n=d.length,ev=[];fl=[];let i=n-1;
+    while(i>=0){
+      const nm=NAMES[base][n-1-i];
+      fl.push(i);
+      if(d[i]<base-1){d[i]++;ev.push(`Kolo ${nm} se zvýšilo na ${d[i]}.`);break}
+      d[i]=0;ev.push(`Kolo ${nm} přešlo z ${base-1} na 0 a posunulo kolo vedle.`);i--;
+      if(i<0)ev.push(`Přetečení: výsledek se na ${n} kola už nevejde, proto se všechna vrátila na nulu. U Schickardových hodin by zazvonil zvonek.`);
+    }
+    msg=ev.join(' ');draw();
+  }
+  root.addEventListener('click',e=>{
+    const b=e.target.closest('[data-b]');
+    if(b){base=+b.dataset.b;d=Array(base===10?3:4).fill(0);fl=[];msg='Číslo je 0. Klepni na „+1“.';draw();return}
+    const a=e.target.closest('[data-a]');if(!a)return;
+    if(a.dataset.a==='add')add();
+    if(a.dataset.a==='nines'){d=d.map(()=>base-1);fl=[];msg=`Všechna kola ukazují ${base-1}. Co se stane po „+1“?`;draw()}
+    if(a.dataset.a==='zero'){d=d.map(()=>0);fl=[];msg='Číslo je 0.';draw()}
+  });
+  draw();
+}
+
+/* ===== Dílna: logaritmy ===== */
+function initLog(root){
+  const opts=Array.from({length:11},(_,k)=>`<option value="${k}">${2**k}</option>`).join('');
+  root.innerHTML=`<div class="fld"><label>První číslo <select data-s="a" aria-label="První číslo">${opts}</select></label><span aria-hidden="true">×</span><label>Druhé číslo <select data-s="b" aria-label="Druhé číslo">${opts}</select></label></div><div class="bar2" aria-hidden="true"><i class="a" data-ba></i><i class="b" data-bb></i></div><div class="out" role="status" data-o></div><p class="tiny" style="margin:0">Délky úseků odpovídají exponentům. Logaritmické pravítko sečítá právě takové délky.</p>`;
+  $('[data-s="a"]',root).value=3;$('[data-s="b"]',root).value=4;
+  function draw(){
+    const a=+$('[data-s="a"]',root).value,b=+$('[data-s="b"]',root).value,s=a+b;
+    $('[data-ba]',root).style.width=(a/20*100)+'%';$('[data-bb]',root).style.width=(b/20*100)+'%';
+    $('[data-o]',root).innerHTML=`<p>log<sub>2</sub> ${2**a} = ${a}, log<sub>2</sub> ${2**b} = ${b}</p><p>Součet logaritmů: ${a} + ${b} = <b>${s}</b></p><p>Zpět na číslo: 2<sup>${s}</sup> = <b>${nf(2**s)}</b></p><p class="tiny" style="margin:0">Kontrola násobením: ${2**a} × ${2**b} = ${nf(2**a*2**b)}</p>`;
+  }
+  root.addEventListener('change',draw);draw();
+}
+
+/* ===== Dílna: štítek ===== */
+function initStitek(root){
+  const N=12;let bits=Array(N).fill(0);
+  root.innerHTML=`<div class="bits" style="--n:6" data-g></div><div class="row"><button type="button" class="btn quiet sm" data-a="clr">Vymazat</button><button type="button" class="btn quiet sm" data-a="rnd">Náhodný štítek</button></div><div class="out" role="status" data-o></div>`;
+  function draw(){
+    $('[data-g]',root).innerHTML=bits.map((x,i)=>`<button type="button" class="bit" role="switch" aria-checked="${x?'true':'false'}" aria-label="Pozice ${i+1}: ${x?'proděravěná':'neproděravěná'}" data-i="${i}">${x?'●':'○'}</button>`).join('');
+    const s=bits.join('');
+    $('[data-o]',root).innerHTML=`<p>Vzor: <span class="mono">${s}</span></p><p>Jako dvojkové číslo: ${parseInt(s,2)}</p><p>Různých vzorů na ${N} pozic: 2<sup>${N}</sup> = <b>${nf(2**N)}</b></p>`;
+  }
+  root.addEventListener('click',e=>{
+    const b=e.target.closest('[data-i]');if(b){const i=+b.dataset.i;bits[i]^=1;draw();$('[data-i="'+i+'"]',root).focus();return}
+    const a=e.target.closest('[data-a]');if(!a)return;
+    bits=a.dataset.a==='clr'?Array(N).fill(0):bits.map(()=>Math.random()<.5?1:0);draw();
+  });
+  draw();
+}
+
+/* ===== Dílna: stejné bity ===== */
+function initBity(root){
+  let bits=[0,1,0,0,0,0,0,1];
+  root.innerHTML=`<div class="bits" style="--n:8" data-g></div><div class="row"><button type="button" class="btn quiet sm" data-p="01000001">0100 0001</button><button type="button" class="btn quiet sm" data-p="00110000">0011 0000</button><button type="button" class="btn quiet sm" data-p="11111111">1111 1111</button></div><div class="out" role="status" data-o></div><p class="tiny" style="margin:0">Kdy je to instrukce, záleží na procesoru a na tom, kam se ukazuje řadič. Samotné bity to neříkají.</p>`;
+  function draw(){
+    $('[data-g]',root).innerHTML=bits.map((x,i)=>`<button type="button" class="bit" role="switch" aria-checked="${x?'true':'false'}" aria-label="Bit ${7-i}: ${x}" data-i="${i}">${x}</button>`).join('');
+    const v=parseInt(bits.join(''),2);
+    let ch;
+    if(v===32)ch='mezera';else if(v>32&&v<127)ch=`znak „${String.fromCharCode(v)}“`;else if(v<32||v===127)ch='řídicí (neviditelný) znak';else ch='mimo sedmibitové ASCII';
+    $('[data-o]',root).innerHTML=`<p>Jako číslo bez znaménka: <b>${v}</b> (šestnáctkově ${v.toString(16).toUpperCase().padStart(2,'0')})</p><p>Jako číslo se znaménkem (dvojkový doplněk): <b>${v>=128?v-256:v}</b></p><p>Jako znak v kódu ASCII: <b>${ch}</b></p><p style="margin:0">Jako instrukce: kdyby ji řadič načetl jako instrukci, provedl by ji podle svého souboru instrukcí.</p>`;
+  }
+  root.addEventListener('click',e=>{
+    const b=e.target.closest('[data-i]');if(b){const i=+b.dataset.i;bits[i]^=1;draw();$('[data-i="'+i+'"]',root).focus();return}
+    const p=e.target.closest('[data-p]');if(p){bits=p.dataset.p.split('').map(Number);draw()}
+  });
+  draw();
+}
+
+/* ===== Dílna: Turingův stroj ===== */
+function initTuring(root){
+  const RULES=[['q0','0','1','doprava','q0'],['q0','1','0','doprava','q0'],['q0','prázdná buňka','prázdná buňka','zůstane','konec']];
+  let st,timer=null;
+  root.innerHTML=`<div class="fld"><label>Dvojkové číslo na pásku <input type="text" inputmode="numeric" maxlength="8" value="1011" data-in aria-label="Dvojkové číslo na pásku, nejvýš osm číslic"></label><button type="button" class="btn quiet sm" data-a="set">Nastavit pásek</button></div><div class="head" data-h></div><div class="tape" data-t></div><div class="row" style="margin:10px 0"><button type="button" class="btn primary sm" data-a="step">Krok</button><button type="button" class="btn quiet sm" data-a="run" aria-pressed="false">Spustit</button><button type="button" class="btn quiet sm" data-a="reset">Znovu</button></div><div class="out" role="status" data-o></div><div class="tw"><table class="rules"><caption class="tiny" style="text-align:left">Tabulka pravidel</caption><thead><tr><th>Stav</th><th>Přečte</th><th>Zapíše</th><th>Posun</th><th>Nový stav</th></tr></thead><tbody data-r></tbody></table></div>`;
+  function init(s){const L=s.length+2;st={orig:s,tape:s.split('').concat(Array(2).fill('')),head:0,s:'q0',n:0,L};draw()}
+  function cur(){if(st.s==='konec')return -1;const sym=st.tape[st.head]===''?'prázdná buňka':st.tape[st.head];return RULES.findIndex(r=>r[0]===st.s&&r[1]===sym)}
+  function draw(){
+    const L=st.L;
+    $('[data-t]',root).style.setProperty('--n',L);$('[data-h]',root).style.setProperty('--n',L);
+    $('[data-t]',root).innerHTML=st.tape.map((x,i)=>`<div class="cell${i===st.head&&st.s!=='konec'?' h':''}">${x===''?'<span style="color:var(--ink3)">·</span>':x}</div>`).join('');
+    $('[data-h]',root).innerHTML=st.tape.map((x,i)=>`<span>${i===st.head&&st.s!=='konec'?'▲':''}</span>`).join('');
+    const ri=cur();
+    $('[data-r]',root).innerHTML=RULES.map((r,i)=>`<tr${i===ri?' aria-current="true"':''}>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');
+    $('[data-o]',root).innerHTML=st.s==='konec'?`<p><b>Hotovo.</b> Stroj se zastavil po ${st.n} krocích. Na pásku je ${st.tape.join('')}: každý bit je obrácený.</p>`:`<p>Stav: <b>${st.s}</b> · krok ${st.n}</p>`;
+    $('[data-a="run"]',root).textContent=timer?'Pozastavit':'Spustit';
+    $('[data-a="run"]',root).setAttribute('aria-pressed',timer?'true':'false');
+  }
+  function stop(){if(timer){clearInterval(timer);timer=null}}
+  function step(){
+    const ri=cur();if(ri<0){stop();draw();return}
+    const r=RULES[ri];st.tape[st.head]=r[2]==='prázdná buňka'?'':r[2];
+    if(r[3]==='doprava')st.head=Math.min(st.head+1,st.L-1);
+    st.s=r[4];st.n++;
+    if(st.s==='konec')stop();
+    draw();
+  }
+  root.addEventListener('click',e=>{
+    const a=e.target.closest('[data-a]');if(!a)return;
+    const k=a.dataset.a;
+    if(k==='set'){stop();let v=$('[data-in]',root).value.replace(/[^01]/g,'').slice(0,8);if(!v)v='1011';$('[data-in]',root).value=v;init(v)}
+    if(k==='reset'){stop();init(st.orig)}
+    if(k==='step'){stop();step()}
+    if(k==='run'){if(timer){stop();draw()}else if(st.s!=='konec'){timer=setInterval(step,REDUCED?900:550);draw()}}
+  });
+  init('1011');
+}
+
+/* ===== Dílna: Mooreův zákon ===== */
+function initMoore(root){
+  let T=2,year=1991;
+  root.innerHTML=`<div class="fld"><span id="mq" style="font-size:15px;color:var(--ink2)">Počet tranzistorů se zdvojnásobí každé</span><div class="seg" style="margin:0;flex:1 1 220px" role="group" aria-labelledby="mq"><button type="button" data-t="1" aria-pressed="false">1 rok</button><button type="button" data-t="2" aria-pressed="true">2 roky</button><button type="button" data-t="3" aria-pressed="false">3 roky</button></div></div><label style="display:block;font-size:15px;color:var(--ink2)">Rok: <b data-y class="mono" style="color:var(--ink)"></b><input type="range" min="1971" max="2031" step="1" value="1991" data-r aria-label="Rok"></label><div class="out" role="status" data-o></div><svg class="chart" viewBox="0 0 330 170" role="img" aria-label="Graf růstu počtu tranzistorů podle zvoleného roku" data-svg></svg><p class="tiny" style="margin:0">Výchozí bod: Intel 4004 (1971) s 2 300 tranzistory. Jde o odhad podle vzorce N = 2 300 · 2<sup>t/T</sup>, ne o skutečné údaje. Rychlost procesoru z toho přímo neplyne.</p>`;
+  const N=y=>2300*2**((y-1971)/T);
+  const short=n=>n>=1e12?`asi ${(n/1e12).toLocaleString('cs-CZ',{maximumFractionDigits:1})} bil.`:n>=1e9?`asi ${(n/1e9).toLocaleString('cs-CZ',{maximumFractionDigits:1})} mld.`:n>=1e6?`asi ${(n/1e6).toLocaleString('cs-CZ',{maximumFractionDigits:1})} mil.`:'';
+  function draw(){
+    const n=N(year);
+    $$('[data-t]',root).forEach(b=>b.setAttribute('aria-pressed',+b.dataset.t===T?'true':'false'));
+    $('[data-y]',root).textContent=year;
+    $('[data-o]',root).innerHTML=`<p>Rok ${year}: ${year-1971} let po roce 1971, tedy ${((year-1971)/T).toLocaleString('cs-CZ',{maximumFractionDigits:1})} zdvojnásobení</p><p class="big">${nf(n)}</p><p style="margin:0">tranzistorů${short(n)?' ('+short(n)+')':''}</p>`;
+    const X=x=>40+(x-1971)/60*280, Y=v=>140-(Math.min(Math.max(Math.log10(v),3),12)-3)/9*130;
+    let path='';for(let y=1971;y<=2031;y++){path+=(y===1971?'M':'L')+X(y).toFixed(1)+' '+Y(N(y)).toFixed(1)}
+    const ticks=[[3,'1 tis.'],[6,'1 mil.'],[9,'1 mld.'],[12,'1 bil.']].map(([e,t])=>`<line class="ax" x1="40" x2="320" y1="${Y(10**e).toFixed(1)}" y2="${Y(10**e).toFixed(1)}"/><text x="36" y="${(Y(10**e)+4).toFixed(1)}" text-anchor="end">${t}</text>`).join('');
+    $('[data-svg]',root).innerHTML=`${ticks}<path class="ln" d="${path}"/><circle class="pt" cx="${X(year).toFixed(1)}" cy="${Y(n).toFixed(1)}" r="6"/><text x="40" y="162">1971</text><text x="180" y="162" text-anchor="middle">2001</text><text x="320" y="162" text-anchor="end">2031</text>`;
+  }
+  root.addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b){T=+b.dataset.t;draw()}});
+  root.addEventListener('input',e=>{if(e.target.matches('[data-r]')){year=+e.target.value;draw()}});
+  draw();
+}
+
+/* ===== Start ===== */
+renderTabs();renderFilters();renderOsa();renderQ();renderMyths();renderTools();
+showQ(0);applyFilters();
+route();
+</script>
+</body>
+</html>
