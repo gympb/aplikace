@@ -211,6 +211,14 @@ svg.kr .arc{fill:none;stroke:var(--line2);stroke-width:4;stroke-linecap:round}
 svg.kr .bd{fill:var(--cu)}
 svg.kr .bt{font:700 13px var(--font);fill:var(--on);text-anchor:middle}
 svg.kr .mN{fill:var(--ink3)}svg.kr .mO{fill:var(--cu)}svg.kr .mI{fill:var(--ac)}
+.kview{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.kview .btn[aria-pressed=true]{border-color:var(--ink);background:var(--cu-bg);color:var(--ink);font-weight:700}
+.k3tools{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.k3box{position:relative;width:100%;max-width:700px;margin:0 auto}
+.k3box[hidden],.kbox[hidden],.k3tools[hidden],#k3hint[hidden]{display:none}
+#k3c{display:block;width:100%;border:1px solid var(--line2);border-radius:14px;background:radial-gradient(ellipse at 50% 42%,var(--card),var(--bg));cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+#k3c.drag{cursor:grabbing}
+#k3c:focus-visible{outline:3px solid var(--ac);outline-offset:3px}
 .kc{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:30%;max-width:200px;text-align:center;pointer-events:none;background:radial-gradient(var(--bg) 62%,transparent 100%);padding:10px 4px;line-height:1.25}
 .kc .yr{display:block;font-size:13.5px}
 .kc b{display:block;font-size:clamp(14px,2.2vw,18px)}
@@ -258,12 +266,16 @@ svg.kr .mN{fill:var(--ink3)}svg.kr .mO{fill:var(--cu)}svg.kr .mI{fill:var(--ac)}
   </section>
 
   <section class="panel" id="p-kruh" role="tabpanel" aria-labelledby="t-kruh" hidden>
-    <p class="muted" style="max-width:70ch">Všechny mezníky jsou na kruhu po směru hodinových ručiček podle kapitol. Šipka vede od mezníku k tomu, co z něj vyrostlo. Klepni na kruh, nebo si mezník vyber v seznamu či tlačítky.</p>
+    <p class="muted" style="max-width:70ch">Všechny mezníky jsou na kruhu po směru hodinových ručiček podle kapitol. Šipka vede od mezníku k tomu, co z něj vyrostlo. Klepni na kruh, nebo si mezník vyber v seznamu či tlačítky. Chceš-li to vidět jinak, přepni na Spirálu času: tytéž mezníky ve 3D, kterou otáčíš myší nebo prstem.</p>
     <div class="leg" aria-label="Legenda"><span><svg width="38" height="10" aria-hidden="true"><line x1="1" y1="5" x2="37" y2="5" stroke="var(--cu)" stroke-width="3"/></svg>co z vybraného vyrostlo</span><span><svg width="38" height="10" aria-hidden="true"><line x1="1" y1="5" x2="37" y2="5" stroke="var(--ac)" stroke-width="3" stroke-dasharray="6 4"/></svg>na co vybraný navazuje</span></div>
     <div class="kwrap">
       <div>
+        <div class="kview" role="group" aria-label="Způsob zobrazení"><button type="button" class="btn quiet sm" data-kview="2d" aria-pressed="true">Kruh</button><button type="button" class="btn quiet sm" data-kview="3d" aria-pressed="false">Spirála času 3D</button></div>
         <div class="kctl"><select id="ksel" aria-label="Vyber mezník"></select><button type="button" class="btn quiet sm" data-kstep="-1">← Předchozí</button><button type="button" class="btn quiet sm" data-kstep="1">Další →</button></div>
+        <div class="k3tools" id="k3tools" hidden><button type="button" class="btn quiet sm" id="k3auto">Zastavit otáčení</button><button type="button" class="btn quiet sm" id="k3zin" aria-label="Přiblížit">＋</button><button type="button" class="btn quiet sm" id="k3zout" aria-label="Oddálit">－</button><button type="button" class="btn quiet sm" id="k3reset">Výchozí pohled</button></div>
         <div class="kbox" id="kbox"><div id="ksvgwrap"></div><div class="kc" aria-hidden="true" id="kc"></div></div>
+        <div class="k3box" id="k3box" hidden><canvas id="k3c" tabindex="0" role="group" aria-label="Spirála času ve 3D. Mezníky leží na šroubovici, nejstarší dole, nejnovější nahoře. Otáčí se tažením, vybírá klepnutím; šipky otáčejí, plus a mínus přibližují." aria-describedby="k3hint"></canvas></div>
+        <p class="tiny" id="k3hint" hidden>Tažením otáčíš, kolečkem myši nebo dvěma prsty přibližuješ, klepnutím na bod vybereš mezník. Výška značí pořadí v čase, ne přesný počet let. Světelné tečky tečou směrem „co z toho vyrostlo“. Prstence s čísly značí začátky kapitol.</p>
       </div>
       <div class="card kp" id="kpanel" aria-live="polite"></div>
     </div>
@@ -648,7 +660,7 @@ function showTab(k){
     const on=n===k, b=$('#t-'+n), p=$('#p-'+n);
     b.setAttribute('aria-selected',on?'true':'false'); b.tabIndex=on?0:-1; p.hidden=!on;
   });
-  if(k==='kruh') requestAnimationFrame(kBuild);
+  if(k==='kruh'){requestAnimationFrame(kBuild);k3Kick()}
 }
 function goEl(el,focus){
   el.scrollIntoView({behavior:REDUCED?'auto':'smooth',block:'start'});
@@ -664,7 +676,7 @@ function route(){
     el.open=true; goEl(el,true); return;
   }
   if(h.startsWith('tool-')){showTab('dilna');const el=document.getElementById(h); if(el) goEl(el,true); return}
-  if(h.startsWith('kruh')){showTab('kruh');const id=h.slice(5);if(h.startsWith('kruh-')&&byId[id])kSelect(id);return}
+  if(h.startsWith('kruh')){showTab('kruh');if(h==='kruh3d'){kSetView('3d');return}const id=h.slice(5);if(h.startsWith('kruh-')&&byId[id])kSelect(id);return}
   if(h.startsWith('kap-')){showTab('osa');const el=document.getElementById(h); if(el&&!el.hidden) goEl(el,false); return}
   const map={osa:'osa',kruh:'kruh',otazky:'otazky',omyly:'omyly',dilna:'dilna'};
   if(map[h]) showTab(h);
@@ -890,8 +902,9 @@ function kBuild(){
   kPaint();
 }
 function kPaint(){
-  const svg=$('#ksvg'); if(!svg) return;
+  const svg=$('#ksvg');
   const m=byId[ksel];
+  if(svg){
   svg.classList.add('has');
   const eg=$('#kedges');
   $$('#kedges .e').forEach(e=>{
@@ -904,11 +917,13 @@ function kPaint(){
   $$('#knodes .nd').forEach(n=>{n.classList.toggle('s',n.dataset.id===ksel);n.classList.toggle('n',nb.has(n.dataset.id)&&n.dataset.id!==ksel)});
   $$('#ksvg .lb').forEach(l=>l.classList.toggle('s',l.dataset.id===ksel||nb.has(l.dataset.id)&&false));
   $('#kc').innerHTML=`<span class="yr">${m.y}</span><b>${SHORT[ksel]}</b>`;
+  }
   const tags=m.th.map(k=>THEMES[k]).join(' · ');
   const first=m.a.replace(/<[^>]+>/g,'').split(/(?<=\.)\s/)[0];
   const sel=ids=>ids&&ids.length?`<div class="chips">${ids.map(i=>`<button type="button" class="chip" data-ksel="${i}">${SHORT[i]}</button>`).join('')}</div>`:'<p class="tiny" style="margin:0">V tomto přehledu nic dalšího.</p>';
   $('#kpanel').innerHTML=`<span class="yr">${m.y}</span><h3>${m.t}</h3><p class="tg" style="margin:0 0 8px">${tags}</p><p>${first}</p><h4>Co z toho vyrostlo →</h4>${sel(m.n)}<h4>← Navazuje na</h4>${sel(prevOf[ksel])}<div class="cta"><a class="btn primary sm" href="#m-${ksel}">Otevřít celou kartu</a></div>`;
   $('#ksel').value=ksel;
+  k3Sync();
 }
 function kSelect(id){if(!byId[id])return;ksel=id;kPaint()}
 (function(){
@@ -922,6 +937,152 @@ function kSelect(id){if(!byId[id])return;ksel=id;kPaint()}
     kSelect(ORDER[Math.round(a/(2*Math.PI)*ORDER.length)%ORDER.length]);
   });
   new ResizeObserver(()=>kBuild()).observe($('#kbox'));
+})();
+
+/* ===== Spirála času (3D, bez knihoven) ===== */
+const K3={view:'2d',yaw:.5,pit:.32,zoom:1.05,auto:!REDUCED,tYaw:null,last:0,raf:0,W:0,H:0,k:100,dpr:1,drag:null,pts:new Map(),pd:0,moved:0,proj:[],lastSel:null,font:'sans-serif'};
+const K3N=ORDER.length,K3R=1.15,K3H=2.4,K3TURN=3.4,K3DEF={pit:.32,zoom:1.05};
+const K3POS=ORDER.map((id,i)=>{const a=i/(K3N-1)*K3TURN*2*Math.PI+.4;return{id,a,x:K3R*Math.cos(a),z:K3R*Math.sin(a),y:(i/(K3N-1)-.5)*K3H}});
+const K3IDX={};ORDER.forEach((id,i)=>{K3IDX[id]=i});
+const K3EDGES=EDGES.map(([a,b])=>{
+  const A=K3POS[K3IDX[a]],B=K3POS[K3IDX[b]];
+  const d=Math.min(1,Math.abs(K3IDX[a]-K3IDX[b])/(K3N*.5)),f=1-.9*Math.pow(d,.7);
+  const mx=(A.x+B.x)/2*f,my=(A.y+B.y)/2,mz=(A.z+B.z)/2*f,S=[];
+  for(let k=0;k<=20;k++){const t=k/20,u=1-t;S.push([u*u*A.x+2*u*t*mx+t*t*B.x,u*u*A.y+2*u*t*my+t*t*B.y,u*u*A.z+2*u*t*mz+t*t*B.z])}
+  return{a,b,S};
+});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function k3Col(){const cs=getComputedStyle(document.documentElement),g=n=>cs.getPropertyValue(n).trim();K3.font=getComputedStyle(document.body).fontFamily||'sans-serif';return{ink:g('--ink'),ink3:g('--ink3'),cu:g('--cu'),ac:g('--ac'),bg:g('--bg'),card:g('--card'),line2:g('--line2'),cuBg:g('--cu-bg')}}
+function k3P(x,y,z){
+  const cy=Math.cos(K3.yaw),sy=Math.sin(K3.yaw),cp=Math.cos(K3.pit),sp=Math.sin(K3.pit);
+  const x1=x*cy+z*sy,z1=-x*sy+z*cy,y2=y*cp-z1*sp,z2=y*sp+z1*cp;
+  const D=5,s=D/(D-z2),k=K3.k*K3.zoom;
+  return[K3.W/2+k*s*x1,K3.H/2-k*s*y2,z2,s];
+}
+function k3Resize(){
+  const box=$('#k3box'),c=$('#k3c');const W=box.clientWidth;if(!W)return;
+  K3.W=W;K3.H=W>=560?600:460;K3.dpr=Math.min(2,window.devicePixelRatio||1);
+  c.style.height=K3.H+'px';c.width=Math.round(W*K3.dpr);c.height=Math.round(K3.H*K3.dpr);
+  K3.k=Math.min(W/(2*K3R+1),K3.H/(K3H+1.4));
+  k3Kick();
+}
+function k3Draw(t){
+  const c=$('#k3c');if(!K3.W)return;
+  const ctx=c.getContext('2d'),C=k3Col(),big=K3.W>=560;
+  ctx.setTransform(K3.dpr,0,0,K3.dpr,0,0);ctx.clearRect(0,0,K3.W,K3.H);
+  const m=byId[ksel],outs=new Set(m.n||[]),ins=new Set(prevOf[ksel]||[]);
+  const dA=z=>.3+.7*clamp((z/K3R+1)/2,0,1);
+  K3.proj=K3POS.map(p=>{const q=k3P(p.x,p.y,p.z);return{id:p.id,x:q[0],y:q[1],z:q[2],s:q[3]}});
+  ctx.lineCap='round';ctx.lineJoin='round';
+  /* osa času a prstence kapitol */
+  const y0=-K3H/2-.2,y1=K3H/2+.25,a0=k3P(0,y0,0),a1=k3P(0,y1,0);
+  ctx.globalAlpha=.55;ctx.strokeStyle=C.ink3;ctx.lineWidth=1.5;ctx.setLineDash([2,6]);ctx.beginPath();ctx.moveTo(a0[0],a0[1]);ctx.lineTo(a1[0],a1[1]);ctx.stroke();ctx.setLineDash([]);
+  const rr=K3R*1.12,step=K3H/(K3N-1);
+  CHAPS.forEach(ch=>{
+    const f=ORDER.findIndex(id=>byId[id].c===ch.n),y=(f/(K3N-1)-.5)*K3H-step*.5;
+    ctx.beginPath();for(let k=0;k<=56;k++){const a=k/56*2*Math.PI,q=k3P(rr*Math.cos(a),y,rr*Math.sin(a));k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])}
+    ctx.globalAlpha=.8;ctx.strokeStyle=C.line2;ctx.lineWidth=1.5;ctx.stroke();
+    const an=K3POS[f].a,q=k3P(rr*1.08*Math.cos(an),y,rr*1.08*Math.sin(an));
+    ctx.globalAlpha=dA(q[2]);ctx.fillStyle=C.cu;ctx.beginPath();ctx.arc(q[0],q[1],10,0,7);ctx.fill();
+    ctx.fillStyle=C.card;ctx.font='700 13px '+K3.font;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(ch.n,q[0],q[1]+.5);
+  });
+  ctx.font='13px '+K3.font;ctx.textBaseline='alphabetic';ctx.fillStyle=C.ink3;ctx.globalAlpha=.9;ctx.textAlign='center';
+  ctx.fillText('nejnovější ↑',clamp(a1[0],50,K3.W-50),Math.max(16,a1[1]-8));ctx.fillText('nejstarší',clamp(a0[0],40,K3.W-40),Math.min(K3.H-6,a0[1]+18));
+  /* hrany a uzly podle hloubky */
+  const items=[],hl=[];
+  const arrow=(pr,col,h,gap)=>{const p=pr[20],q=pr[18],dx=p[0]-q[0],dy=p[1]-q[1],L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,tx=p[0]-ux*gap,ty=p[1]-uy*gap;
+    ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx-ux*h-uy*h*.5,ty-uy*h+ux*h*.5);ctx.lineTo(tx-ux*h+uy*h*.5,ty-uy*h-ux*h*.5);ctx.closePath();ctx.fill()};
+  K3EDGES.forEach(e=>{
+    const out=e.a===ksel,inn=e.b===ksel&&!out,pr=e.S.map(s=>k3P(s[0],s[1],s[2])),zm=pr[10][2];
+    if(out||inn){hl.push({e,pr,out});return}
+    items.push({z:zm,d(){ctx.globalAlpha=.26*dA(zm);ctx.strokeStyle=C.ink3;ctx.lineWidth=1.3;ctx.setLineDash([]);ctx.beginPath();pr.forEach((q,k)=>k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();arrow(pr,C.ink3,6*pr[20][3],8*pr[20][3])}});
+  });
+  K3.proj.forEach(p=>{if(p.id===ksel||outs.has(p.id)||ins.has(p.id))return;items.push({z:p.z,d(){ctx.globalAlpha=dA(p.z);ctx.fillStyle=C.card;ctx.strokeStyle=C.cu;ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,(big?7:6)*p.s,0,7);ctx.fill();ctx.stroke()}})});
+  items.sort((a,b)=>a.z-b.z).forEach(i=>i.d());
+  /* zvýrazněné hrany */
+  hl.forEach(({e,pr,out})=>{
+    const col=out?C.cu:C.ac,zm=pr[10][2];ctx.globalAlpha=Math.max(.7,dA(zm));ctx.strokeStyle=col;ctx.lineWidth=3.2*pr[10][3];ctx.setLineDash(out?[]:[8,6]);
+    ctx.beginPath();pr.forEach((q,k)=>k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();ctx.setLineDash([]);arrow(pr,col,11*pr[20][3],10*pr[20][3]);
+  });
+  /* světelné pulzy po zvýrazněných hranách */
+  if(!REDUCED){hl.forEach(({pr,out},n)=>{for(let j=0;j<2;j++){const u=((t/2400)+j*.5+n*.13)%1*20,i0=Math.min(19,Math.floor(u)),f=u-i0,q=[pr[i0][0]+(pr[i0+1][0]-pr[i0][0])*f,pr[i0][1]+(pr[i0+1][1]-pr[i0][1])*f,pr[i0][3]];
+    ctx.fillStyle=out?C.cu:C.ac;ctx.globalAlpha=.28;ctx.beginPath();ctx.arc(q[0],q[1],9*q[2],0,7);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=C.bg;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(q[0],q[1],4*q[2],0,7);ctx.fill();ctx.stroke()}})}
+  /* vybraný a sousední uzly navrch */
+  K3.proj.forEach(p=>{if(outs.has(p.id)||ins.has(p.id)){ctx.globalAlpha=1;ctx.fillStyle=C.cuBg;ctx.strokeStyle=outs.has(p.id)?C.cu:C.ac;ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,(big?8.5:7.5)*p.s,0,7);ctx.fill();ctx.stroke()}});
+  const sp=K3.proj[K3IDX[ksel]];ctx.globalAlpha=1;ctx.fillStyle=C.cu;ctx.strokeStyle=C.ink;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(sp.x,sp.y,(big?11:9.5)*sp.s,0,7);ctx.fill();ctx.stroke();
+  /* popisky bez překryvů */
+  const cand=[sp,...K3.proj.filter(p=>outs.has(p.id)||ins.has(p.id)),...(big?K3.proj.filter(p=>p.id!==ksel&&!outs.has(p.id)&&!ins.has(p.id)&&p.z>.15*K3R).sort((a,b)=>b.z-a.z):[])];
+  const rects=[];ctx.textBaseline='alphabetic';
+  cand.forEach(p=>{
+    const sel=p.id===ksel,near=sel||outs.has(p.id)||ins.has(p.id),txt=SHORT[p.id];
+    ctx.font=(sel?'700 ':'')+'13px '+K3.font;const w=ctx.measureText(txt).width,gap=(sel?13:10)*p.s+4;
+    let right=p.x+gap+w<K3.W-4,x=right?p.x+gap:p.x-gap-w;if(x<4){x=4}
+    const r=[x-2,p.y-11,x+w+2,p.y+6];
+    if(!near&&rects.some(q=>r[0]<q[2]&&r[2]>q[0]&&r[1]<q[3]&&r[3]>q[1]))return;
+    rects.push(r);ctx.textAlign='left';ctx.globalAlpha=near?1:dA(p.z);ctx.lineWidth=4;ctx.strokeStyle=C.bg;ctx.strokeText(txt,x,p.y+4.5);ctx.fillStyle=sel?C.ink:near?C.ink:C.ink3;ctx.fillText(txt,x,p.y+4.5);
+  });
+  ctx.globalAlpha=1;
+}
+function k3Frame(t){
+  K3.raf=0;
+  if(K3.view!=='3d'||$('#p-kruh').hidden||document.hidden)return;
+  const dt=Math.min(.05,(t-(K3.last||t))/1000);K3.last=t;
+  if(K3.tYaw!==null){const d=K3.tYaw-K3.yaw;if(REDUCED||Math.abs(d)<.003){K3.yaw=K3.tYaw;K3.tYaw=null}else K3.yaw+=d*Math.min(1,dt*5)}
+  else if(K3.auto&&!REDUCED&&!K3.pts.size)K3.yaw+=dt*.2;
+  k3Draw(t);
+  if(!REDUCED||K3.tYaw!==null)K3.raf=requestAnimationFrame(k3Frame);
+}
+function k3Kick(){if(K3.view==='3d'&&!K3.raf){K3.last=0;K3.raf=requestAnimationFrame(k3Frame)}}
+function k3Face(){const a=K3POS[K3IDX[ksel]].a-Math.PI/2;let d=(a-K3.yaw)%(2*Math.PI);d=((d+3*Math.PI)%(2*Math.PI))-Math.PI;K3.tYaw=K3.yaw+d}
+function k3Sync(){
+  if(K3.view!=='3d')return;
+  if(K3.lastSel!==ksel){K3.lastSel=ksel;K3.auto=false;k3AutoLbl();k3Face()}
+  k3Kick();
+}
+function k3AutoLbl(){$('#k3auto').textContent=K3.auto?'Zastavit otáčení':'Spustit otáčení'}
+function kSetView(v){
+  K3.view=v;const d=v==='3d';
+  $('#kbox').hidden=d;$('#k3box').hidden=!d;$('#k3tools').hidden=!d;$('#k3hint').hidden=!d;
+  $$('[data-kview]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.kview===v?'true':'false'));
+  if(d){K3.lastSel=ksel;if(REDUCED||!K3.auto)k3Face();k3AutoLbl();kPaint();k3Resize()}else{if(K3.raf){cancelAnimationFrame(K3.raf);K3.raf=0};kBuild()}
+}
+(function(){
+  const c=$('#k3c');
+  $$('[data-kview]').forEach(b=>b.addEventListener('click',()=>kSetView(b.dataset.kview)));
+  if(REDUCED)$('#k3auto').hidden=true;
+  const stop=()=>{K3.auto=false;k3AutoLbl()};
+  $('#k3auto').addEventListener('click',()=>{K3.auto=!K3.auto;K3.tYaw=null;k3AutoLbl();k3Kick()});
+  $('#k3zin').addEventListener('click',()=>{K3.zoom=clamp(K3.zoom*1.2,.6,2.6);k3Kick()});
+  $('#k3zout').addEventListener('click',()=>{K3.zoom=clamp(K3.zoom/1.2,.6,2.6);k3Kick()});
+  $('#k3reset').addEventListener('click',()=>{stop();K3.pit=K3DEF.pit;K3.zoom=K3DEF.zoom;k3Face();k3Kick()});
+  const dist=()=>{const p=[...K3.pts.values()];return Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1])};
+  c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);K3.pts.set(e.pointerId,[e.clientX,e.clientY]);if(K3.pts.size===1)K3.moved=0;else K3.pd=dist();stop();K3.tYaw=null;c.classList.add('drag')});
+  c.addEventListener('pointermove',e=>{
+    const o=K3.pts.get(e.pointerId);if(!o)return;
+    const dx=e.clientX-o[0],dy=e.clientY-o[1];K3.pts.set(e.pointerId,[e.clientX,e.clientY]);
+    if(K3.pts.size===1){K3.yaw+=dx*.009;K3.pit=clamp(K3.pit+dy*.006,-.5,1.25);K3.moved+=Math.abs(dx)+Math.abs(dy)}
+    else if(K3.pts.size===2){const n=dist();if(K3.pd)K3.zoom=clamp(K3.zoom*n/K3.pd,.6,2.6);K3.pd=n;K3.moved+=20}
+    k3Kick();
+  });
+  const up=e=>{
+    if(!K3.pts.delete(e.pointerId))return;
+    if(!K3.pts.size){c.classList.remove('drag');
+      if(e.type==='pointerup'&&K3.moved<6){
+        const r=c.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;let best=null,bd=1e9;
+        K3.proj.forEach(p=>{const d=Math.hypot(p.x-x,p.y-y)-p.z*2;if(Math.hypot(p.x-x,p.y-y)<=Math.max(24,10*p.s+8)&&d<bd){bd=d;best=p}});
+        if(best)kSelect(best.id);
+      }}
+    k3Kick();
+  };
+  c.addEventListener('pointerup',up);c.addEventListener('pointercancel',up);
+  c.addEventListener('wheel',e=>{e.preventDefault();stop();K3.zoom=clamp(K3.zoom*Math.exp(-e.deltaY*.0012),.6,2.6);k3Kick()},{passive:false});
+  c.addEventListener('keydown',e=>{
+    const k=e.key,M={ArrowLeft:()=>K3.yaw-=.15,ArrowRight:()=>K3.yaw+=.15,ArrowUp:()=>K3.pit=clamp(K3.pit-.1,-.5,1.25),ArrowDown:()=>K3.pit=clamp(K3.pit+.1,-.5,1.25),'+':()=>K3.zoom=clamp(K3.zoom*1.15,.6,2.6),'=':()=>K3.zoom=clamp(K3.zoom*1.15,.6,2.6),'-':()=>K3.zoom=clamp(K3.zoom/1.15,.6,2.6),Home:()=>{K3.pit=K3DEF.pit;K3.zoom=K3DEF.zoom;k3Face()}};
+    if(M[k]){e.preventDefault();stop();if(k!=='Home')K3.tYaw=null;M[k]();k3Kick()}
+  });
+  new ResizeObserver(()=>{if(K3.view==='3d')k3Resize()}).observe($('#k3box'));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)k3Kick()});
+  k3AutoLbl();
 })();
 
 /* ===== Start ===== */
