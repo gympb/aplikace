@@ -193,35 +193,21 @@ svg.chart .pt{fill:var(--cu);stroke:var(--card);stroke-width:2}
 .links{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:2px}
 .links a{display:inline-flex;align-items:center;min-height:44px}
 
-/* kruh vazeb */
+/* spirála času */
 .kwrap{display:grid;gap:16px;align-items:start}
 @media (min-width:980px){.kwrap{grid-template-columns:minmax(0,700px) minmax(300px,1fr)}}
-.kbox{position:relative;width:100%;max-width:700px;margin:0 auto}
-svg.kr{display:block;width:100%;height:auto;cursor:pointer;touch-action:manipulation}
-svg.kr .e{fill:none;stroke:var(--ink3);stroke-width:1.6;opacity:.55}
-svg.kr.has .e{opacity:.08}
-svg.kr .e.o{stroke:var(--cu);stroke-width:2.6;opacity:1}
-svg.kr .e.i{stroke:var(--ac);stroke-width:2.6;stroke-dasharray:6 4;opacity:1}
-svg.kr .nd{fill:var(--card);stroke:var(--cu);stroke-width:2}
-svg.kr .nd.n{fill:var(--cu-bg);stroke-width:2.5}
-svg.kr .nd.s{fill:var(--cu);stroke:var(--ink)}
-svg.kr .lb{font:13px var(--font);fill:var(--ink2);paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
-svg.kr .lb.s{font-weight:700;fill:var(--ink)}
-svg.kr .arc{fill:none;stroke:var(--line2);stroke-width:4;stroke-linecap:round}
-svg.kr .bd{fill:var(--cu)}
-svg.kr .bt{font:700 13px var(--font);fill:var(--on);text-anchor:middle}
-svg.kr .mN{fill:var(--ink3)}svg.kr .mO{fill:var(--cu)}svg.kr .mI{fill:var(--ac)}
-.kview{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
-.kview .btn[aria-pressed=true]{border-color:var(--ink);background:var(--cu-bg);color:var(--ink);font-weight:700}
 .k3tools{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
 .k3box{position:relative;width:100%;max-width:700px;margin:0 auto}
-.k3box[hidden],.kbox[hidden],.k3tools[hidden],#k3hint[hidden]{display:none}
 #k3c{display:block;width:100%;border:1px solid var(--line2);border-radius:14px;background:radial-gradient(ellipse at 50% 42%,var(--card),var(--bg));cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.k3cap{display:none}
+.k3stage.k3full{position:fixed;inset:0;z-index:60;background:var(--bg);padding:10px;display:flex;flex-direction:column;gap:8px}
+.k3stage.k3full .k3tools{margin:0}
+.k3stage.k3full .k3box{flex:1;min-height:0;max-width:none;margin:0}
+.k3stage.k3full #k3c{position:absolute;inset:0;width:100%;height:100%}
+.k3stage.k3full .k3cap{display:flex;align-items:center;gap:10px;justify-content:center}
+.k3cap span{font-size:16px;text-align:center}.k3cap .yr{font-size:14px;margin-right:6px}
 #k3c.drag{cursor:grabbing}
 #k3c:focus-visible{outline:3px solid var(--ac);outline-offset:3px}
-.kc{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:30%;max-width:200px;text-align:center;pointer-events:none;background:radial-gradient(var(--bg) 62%,transparent 100%);padding:10px 4px;line-height:1.25}
-.kc .yr{display:block;font-size:13.5px}
-.kc b{display:block;font-size:clamp(14px,2.2vw,18px)}
 .kctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
 .kctl select{flex:1 1 100%;min-width:0}
 .kp{position:sticky;top:12px}
@@ -266,16 +252,15 @@ svg.kr .mN{fill:var(--ink3)}svg.kr .mO{fill:var(--cu)}svg.kr .mI{fill:var(--ac)}
   </section>
 
   <section class="panel" id="p-kruh" role="tabpanel" aria-labelledby="t-kruh" hidden>
-    <p class="muted" style="max-width:70ch">Všechny mezníky jsou na kruhu po směru hodinových ručiček podle kapitol. Šipka vede od mezníku k tomu, co z něj vyrostlo. Klepni na kruh, nebo si mezník vyber v seznamu či tlačítky. Chceš-li to vidět jinak, přepni na Spirálu času: tytéž mezníky ve 3D, kterou otáčíš myší nebo prstem.</p>
+    <p class="muted" style="max-width:70ch">Všech 38 mezníků leží na spirále, která se vine časem nahoru. Šipka vede od mezníku k tomu, co z něj vyrostlo. Otáčej ji myší nebo prstem, nebo si mezník vyber v seznamu či tlačítky.</p>
     <div class="leg" aria-label="Legenda"><span><svg width="38" height="10" aria-hidden="true"><line x1="1" y1="5" x2="37" y2="5" stroke="var(--cu)" stroke-width="3"/></svg>co z vybraného vyrostlo</span><span><svg width="38" height="10" aria-hidden="true"><line x1="1" y1="5" x2="37" y2="5" stroke="var(--ac)" stroke-width="3" stroke-dasharray="6 4"/></svg>na co vybraný navazuje</span></div>
     <div class="kwrap">
       <div>
-        <div class="kview" role="group" aria-label="Způsob zobrazení"><button type="button" class="btn quiet sm" data-kview="2d" aria-pressed="true">Kruh</button><button type="button" class="btn quiet sm" data-kview="3d" aria-pressed="false">Spirála času 3D</button></div>
         <div class="kctl"><select id="ksel" aria-label="Vyber mezník"></select><button type="button" class="btn quiet sm" data-kstep="-1">← Předchozí</button><button type="button" class="btn quiet sm" data-kstep="1">Další →</button></div>
-        <div class="k3tools" id="k3tools" hidden><button type="button" class="btn quiet sm" id="k3auto">Zastavit otáčení</button><button type="button" class="btn quiet sm" id="k3zin" aria-label="Přiblížit">＋</button><button type="button" class="btn quiet sm" id="k3zout" aria-label="Oddálit">－</button><button type="button" class="btn quiet sm" id="k3reset">Výchozí pohled</button></div>
-        <div class="kbox" id="kbox"><div id="ksvgwrap"></div><div class="kc" aria-hidden="true" id="kc"></div></div>
-        <div class="k3box" id="k3box" hidden><canvas id="k3c" tabindex="0" role="group" aria-label="Spirála času ve 3D. Mezníky leží na šroubovici, nejstarší dole, nejnovější nahoře. Otáčí se tažením, vybírá klepnutím; šipky otáčejí, plus a mínus přibližují." aria-describedby="k3hint"></canvas></div>
-        <p class="tiny" id="k3hint" hidden>Tažením otáčíš, kolečkem myši nebo dvěma prsty přibližuješ, klepnutím na bod vybereš mezník. Výška značí pořadí v čase, ne přesný počet let. Světelné tečky tečou směrem „co z toho vyrostlo“. Prstence s čísly značí začátky kapitol.</p>
+        <div class="k3stage" id="k3stage"><div class="k3tools" id="k3tools"><button type="button" class="btn quiet sm" id="k3auto">Zastavit otáčení</button><button type="button" class="btn quiet sm" id="k3zin" aria-label="Přiblížit">＋</button><button type="button" class="btn quiet sm" id="k3zout" aria-label="Oddálit">－</button><button type="button" class="btn quiet sm" id="k3reset">Výchozí pohled</button><button type="button" class="btn quiet sm" id="k3full" aria-pressed="false">Celá obrazovka</button></div>
+        <div class="k3box" id="k3box"><canvas id="k3c" tabindex="0" role="group" aria-label="Spirála času ve 3D. Mezníky leží na šroubovici, nejstarší dole, nejnovější nahoře. Otáčí se tažením, vybírá klepnutím; šipky otáčejí, plus a mínus přibližují." aria-describedby="k3hint"></canvas></div>
+        <div class="k3cap" id="k3cap"><button type="button" class="btn quiet sm" data-kstep="-1" aria-label="Předchozí mezník">←</button><span id="k3capt" aria-live="polite"></span><button type="button" class="btn quiet sm" data-kstep="1" aria-label="Další mezník">→</button></div></div>
+        <p class="tiny" id="k3hint">Tažením otáčíš, kolečkem myši nebo dvěma prsty přibližuješ, klepnutím na bod vybereš mezník. Výška značí pořadí v čase, ne přesný počet let. Světelné tečky tečou směrem „co z toho vyrostlo“. Prstence s čísly značí začátky kapitol.</p>
       </div>
       <div class="card kp" id="kpanel" aria-live="polite"></div>
     </div>
@@ -597,7 +582,7 @@ function msHtml(m){
   if(m.n&&m.n.length) side+=`<div><h4>Co z toho vyrostlo</h4><div class="chips">${m.n.map(chip).join('')}</div></div>`;
   if(prevOf[m.id]) side+=`<div><h4>Navazuje na</h4><div class="chips">${prevOf[m.id].map(chip).join('')}</div></div>`;
   let more='';
-  more+=`<a class="chip" href="#kruh-${m.id}">Ukaž v kruhu vazeb</a>`;
+  more+=`<a class="chip" href="#kruh-${m.id}">Ukaž ve spirále času</a>`;
   if(m.tool) more+=`<a class="chip" href="#tool-${m.tool[0]}">${m.tool[1]}</a>`;
   if(m.app) more+=m.app.map(a=>`<a class="chip" href="../${a[0]}/">Aplikace: ${a[1]}</a>`).join('');
   if(IMG[m.id]) more+=`<a class="chip" href="${imgUrl(IMG[m.id])}" target="_blank" rel="noopener">Jak to vypadalo: obrázky ↗</a>`;
@@ -649,7 +634,7 @@ function renderTools(){
 }
 
 /* ===== Záložky a navigace ===== */
-const TABS=[['osa','Časová osa'],['kruh','Kruh vazeb'],['otazky','Pět otázek'],['omyly','Co se často plete'],['dilna','Dílna']];
+const TABS=[['osa','Časová osa'],['kruh','Spirála času'],['otazky','Pět otázek'],['omyly','Co se často plete'],['dilna','Dílna']];
 let curTab='osa';
 function renderTabs(){
   $('#tabs').innerHTML=TABS.map(([k,v])=>`<button type="button" role="tab" class="tab" id="t-${k}" data-tab="${k}" aria-controls="p-${k}" aria-selected="false" tabindex="-1">${v}</button>`).join('');
@@ -660,7 +645,7 @@ function showTab(k){
     const on=n===k, b=$('#t-'+n), p=$('#p-'+n);
     b.setAttribute('aria-selected',on?'true':'false'); b.tabIndex=on?0:-1; p.hidden=!on;
   });
-  if(k==='kruh'){requestAnimationFrame(kBuild);k3Kick()}
+  if(k==='kruh'){requestAnimationFrame(()=>{k3Resize();k3Kick()})}
 }
 function goEl(el,focus){
   el.scrollIntoView({behavior:REDUCED?'auto':'smooth',block:'start'});
@@ -676,7 +661,7 @@ function route(){
     el.open=true; goEl(el,true); return;
   }
   if(h.startsWith('tool-')){showTab('dilna');const el=document.getElementById(h); if(el) goEl(el,true); return}
-  if(h.startsWith('kruh')){showTab('kruh');if(h==='kruh3d'){kSetView('3d');return}const id=h.slice(5);if(h.startsWith('kruh-')&&byId[id])kSelect(id);return}
+  if(h.startsWith('kruh')){showTab('kruh');const id=h.slice(5);if(h.startsWith('kruh-')&&byId[id])kSelect(id);return}
   if(h.startsWith('kap-')){showTab('osa');const el=document.getElementById(h); if(el&&!el.hidden) goEl(el,false); return}
   const map={osa:'osa',kruh:'kruh',otazky:'otazky',omyly:'omyly',dilna:'dilna'};
   if(map[h]) showTab(h);
@@ -846,101 +831,29 @@ function initMoore(root){
 }
 
 
-/* ===== Kruh vazeb ===== */
+/* ===== Spirála času: výběr a panel ===== */
 const SHORT={abakus:'Abakus',antikythera:'Antikythéra',scot:'Sčot a počitadlo',logaritmy:'Logaritmy',pravitko:'Log. pravítko',schickard:'Schickard',pascal:'Pascaline',leibniz:'Leibniz',colmar:'Arithmometr',jacquard:'Jacquardův stav',babbage:'Babbage',lovelace:'Ada Lovelace',hollerith:'Hollerith',boole:'Boole',turing:'Turingův stroj',shannon:'Shannon',zuse:'Zuse Z3',colossus:'Colossus',mark1:'Harvard Mark I',eniac:'ENIAC',sapo:'SAPO',vonneumann:'Program v paměti',baby:'Baby a EDSAC',tranzistor:'Tranzistor',io:'Integrovaný obvod',s360:'System/360',moore:'Mooreův zákon',pdp8:'PDP-8',4004:'Intel 4004',altair:'Altair 8800',ibmpc:'IBM PC',gui:'Grafické rozhraní',arpanet:'ARPANET',web:'Web',mobil:'Chytré telefony',gpu:'Strojové učení',llm:'Generativní AI',kvant:'Kvantové počítače'};
 const ORDER=CHAPS.flatMap(c=>MS.filter(m=>m.c===c.n).sort((a,b)=>a.s-b.s).map(m=>m.id));
 const EDGES=[];MS.forEach(m=>(m.n||[]).forEach(t=>EDGES.push([m.id,t])));
-let ksel='vonneumann',kmode=null;
-const SVGNS='http://www.w3.org/2000/svg';
-function kBuild(){
-  const w=$('#kbox').clientWidth; if(!w) return;
-  const mode=w>=600?'big':'small';
-  if(mode===kmode) return;
-  kmode=mode;
-  const g=mode==='big'?{S:700,R:205,nr:9,lab:true,ah:10}:{S:360,R:136,nr:6,lab:false,ah:7};
-  const N=ORDER.length,C=g.S/2,step=2*Math.PI/N;
-  const th=i=>-Math.PI/2+i*step;
-  const pt=(i,r)=>[C+r*Math.cos(th(i)),C+r*Math.sin(th(i))];
-  const f1=n=>n.toFixed(1);
-  let o=`<svg id="ksvg" class="kr" viewBox="0 0 ${g.S} ${g.S}" role="img" aria-label="Kruhový přehled vazeb mezi mezníky. Ovládá se výběrem v seznamu nebo tlačítky Předchozí a Další."><defs>`;
-  [['N','mN'],['O','mO'],['I','mI']].forEach(([k,c])=>{o+=`<marker id="ka${k}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="${g.ah}" markerHeight="${g.ah}" markerUnits="userSpaceOnUse" orient="auto"><path class="${c}" d="M0 1 L10 5 L0 9 z"/></marker>`});
-  o+='</defs>';
-  /* oblouky kapitol */
-  CHAPS.forEach(c=>{
-    const idx=ORDER.map((id,i)=>byId[id].c===c.n?i:-1).filter(i=>i>=0);
-    const i0=idx[0],i1=idx[idx.length-1],ra=g.R+g.nr+5;
-    const a0=th(i0)-step*.38,a1=th(i1)+step*.38,span=a1-a0;
-    const P=a=>[C+ra*Math.cos(a),C+ra*Math.sin(a)];
-    const p0=P(a0),p1=P(a1),mid=P((a0+a1)/2);
-    o+=`<path class="arc" d="M${f1(p0[0])} ${f1(p0[1])} A${ra} ${ra} 0 ${span>Math.PI?1:0} 1 ${f1(p1[0])} ${f1(p1[1])}"/>`;
-    const bm=mode==='big'?[C+(ra+0)*Math.cos((a0+a1)/2),C+(ra+0)*Math.sin((a0+a1)/2)]:[mid[0],mid[1]];
-    o+=`<circle class="bd" cx="${f1(bm[0])}" cy="${f1(bm[1])}" r="${mode==='big'?10:8}"/><text class="bt" x="${f1(bm[0])}" y="${f1(bm[1]+4.5)}">${c.n}</text>`;
-  });
-  /* hrany */
-  o+='<g id="kedges">';
-  EDGES.forEach(([a,b])=>{
-    const ia=ORDER.indexOf(a),ib=ORDER.indexOf(b);
-    const A=pt(ia,g.R-g.nr-2),B=pt(ib,g.R-g.nr-4);
-    let d=Math.abs(ia-ib);d=Math.min(d,N-d)*step;
-    const f=1-.93*Math.pow(d/Math.PI,.8);
-    const mx=(A[0]+B[0])/2,my=(A[1]+B[1])/2;
-    const cx=C+(mx-C)*f,cy=C+(my-C)*f;
-    o+=`<path class="e" data-f="${a}" data-t="${b}" marker-end="url(#kaN)" d="M${f1(A[0])} ${f1(A[1])} Q${f1(cx)} ${f1(cy)} ${f1(B[0])} ${f1(B[1])}"/>`;
-  });
-  o+='</g><g id="knodes">';
-  ORDER.forEach((id,i)=>{const p=pt(i,g.R);o+=`<circle class="nd" data-id="${id}" cx="${f1(p[0])}" cy="${f1(p[1])}" r="${g.nr}"/>`});
-  o+='</g>';
-  if(g.lab){
-    ORDER.forEach((id,i)=>{
-      const a=th(i),r=g.R+g.nr+28,x=C+r*Math.cos(a),y=C+r*Math.sin(a),deg=a*180/Math.PI,right=Math.cos(a)>=-1e-6;
-      const rot=right?deg:deg+180;
-      o+=`<text class="lb" data-id="${id}" x="${f1(x)}" y="${f1(y+4.5)}" text-anchor="${right?'start':'end'}" transform="rotate(${f1(rot)} ${f1(x)} ${f1(y)})">${SHORT[id]}</text>`;
-    });
-  }
-  o+='</svg>';
-  $('#ksvgwrap').innerHTML=o;
-  kPaint();
-}
+let ksel='vonneumann';
 function kPaint(){
-  const svg=$('#ksvg');
   const m=byId[ksel];
-  if(svg){
-  svg.classList.add('has');
-  const eg=$('#kedges');
-  $$('#kedges .e').forEach(e=>{
-    const out=e.dataset.f===ksel,inn=e.dataset.t===ksel;
-    e.classList.toggle('o',out);e.classList.toggle('i',inn&&!out);
-    e.setAttribute('marker-end',`url(#ka${out?'O':inn?'I':'N'})`);
-    if(out||inn) eg.appendChild(e);
-  });
-  const nb=new Set([...(m.n||[]),...(prevOf[ksel]||[])]);
-  $$('#knodes .nd').forEach(n=>{n.classList.toggle('s',n.dataset.id===ksel);n.classList.toggle('n',nb.has(n.dataset.id)&&n.dataset.id!==ksel)});
-  $$('#ksvg .lb').forEach(l=>l.classList.toggle('s',l.dataset.id===ksel||nb.has(l.dataset.id)&&false));
-  $('#kc').innerHTML=`<span class="yr">${m.y}</span><b>${SHORT[ksel]}</b>`;
-  }
   const tags=m.th.map(k=>THEMES[k]).join(' · ');
   const first=m.a.replace(/<[^>]+>/g,'').split(/(?<=\.)\s/)[0];
   const sel=ids=>ids&&ids.length?`<div class="chips">${ids.map(i=>`<button type="button" class="chip" data-ksel="${i}">${SHORT[i]}</button>`).join('')}</div>`:'<p class="tiny" style="margin:0">V tomto přehledu nic dalšího.</p>';
   $('#kpanel').innerHTML=`<span class="yr">${m.y}</span><h3>${m.t}</h3><p class="tg" style="margin:0 0 8px">${tags}</p><p>${first}</p><h4>Co z toho vyrostlo →</h4>${sel(m.n)}<h4>← Navazuje na</h4>${sel(prevOf[ksel])}<div class="cta"><a class="btn primary sm" href="#m-${ksel}">Otevřít celou kartu</a></div>`;
   $('#ksel').value=ksel;
+  $('#k3capt').innerHTML=`<span class="yr">${m.y}</span><b>${m.t.split(':')[0]}</b>`;
   k3Sync();
 }
 function kSelect(id){if(!byId[id])return;ksel=id;kPaint()}
 (function(){
   $('#ksel').innerHTML=ORDER.map(id=>`<option value="${id}">${byId[id].y} · ${SHORT[id]}</option>`).join('');
   $('#ksel').addEventListener('change',e=>kSelect(e.target.value));
-  $('#kbox').addEventListener('click',e=>{
-    const svg=$('#ksvg');if(!svg)return;
-    const r=svg.getBoundingClientRect(),x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2);
-    if(Math.hypot(x,y)/(r.width/2)<.4)return;
-    let a=Math.atan2(y,x)+Math.PI/2;if(a<0)a+=2*Math.PI;
-    kSelect(ORDER[Math.round(a/(2*Math.PI)*ORDER.length)%ORDER.length]);
-  });
-  new ResizeObserver(()=>kBuild()).observe($('#kbox'));
 })();
 
 /* ===== Spirála času (3D, bez knihoven) ===== */
-const K3={view:'2d',yaw:.5,pit:.32,zoom:1.05,auto:!REDUCED,tYaw:null,last:0,raf:0,W:0,H:0,k:100,dpr:1,drag:null,pts:new Map(),pd:0,moved:0,proj:[],lastSel:null,font:'sans-serif'};
+const K3={view:'3d',yaw:.5,pit:.32,zoom:1.05,auto:!REDUCED,tYaw:null,last:0,raf:0,W:0,H:0,k:100,dpr:1,drag:null,pts:new Map(),pd:0,moved:0,proj:[],lastSel:null,font:'sans-serif'};
 const K3N=ORDER.length,K3R=1.15,K3H=2.4,K3TURN=3.4,K3DEF={pit:.32,zoom:1.05};
 const K3POS=ORDER.map((id,i)=>{const a=i/(K3N-1)*K3TURN*2*Math.PI+.4;return{id,a,x:K3R*Math.cos(a),z:K3R*Math.sin(a),y:(i/(K3N-1)-.5)*K3H}});
 const K3IDX={};ORDER.forEach((id,i)=>{K3IDX[id]=i});
@@ -961,8 +874,9 @@ function k3P(x,y,z){
 }
 function k3Resize(){
   const box=$('#k3box'),c=$('#k3c');const W=box.clientWidth;if(!W)return;
-  K3.W=W;K3.H=W>=560?600:460;K3.dpr=Math.min(2,window.devicePixelRatio||1);
-  c.style.height=K3.H+'px';c.width=Math.round(W*K3.dpr);c.height=Math.round(K3.H*K3.dpr);
+  const full=$('#k3stage').classList.contains('k3full');
+  K3.W=W;K3.H=full?box.clientHeight:(W>=560?600:460);K3.dpr=Math.min(2,window.devicePixelRatio||1);
+  c.style.height=full?'':K3.H+'px';c.width=Math.round(W*K3.dpr);c.height=Math.round(K3.H*K3.dpr);
   K3.k=Math.min(W/(2*K3R+1),K3.H/(K3H+1.4));
   k3Kick();
 }
@@ -1040,15 +954,8 @@ function k3Sync(){
   k3Kick();
 }
 function k3AutoLbl(){$('#k3auto').textContent=K3.auto?'Zastavit otáčení':'Spustit otáčení'}
-function kSetView(v){
-  K3.view=v;const d=v==='3d';
-  $('#kbox').hidden=d;$('#k3box').hidden=!d;$('#k3tools').hidden=!d;$('#k3hint').hidden=!d;
-  $$('[data-kview]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.kview===v?'true':'false'));
-  if(d){K3.lastSel=ksel;if(REDUCED||!K3.auto)k3Face();k3AutoLbl();kPaint();k3Resize()}else{if(K3.raf){cancelAnimationFrame(K3.raf);K3.raf=0};kBuild()}
-}
 (function(){
   const c=$('#k3c');
-  $$('[data-kview]').forEach(b=>b.addEventListener('click',()=>kSetView(b.dataset.kview)));
   if(REDUCED)$('#k3auto').hidden=true;
   const stop=()=>{K3.auto=false;k3AutoLbl()};
   $('#k3auto').addEventListener('click',()=>{K3.auto=!K3.auto;K3.tYaw=null;k3AutoLbl();k3Kick()});
@@ -1082,7 +989,17 @@ function kSetView(v){
   });
   new ResizeObserver(()=>{if(K3.view==='3d')k3Resize()}).observe($('#k3box'));
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)k3Kick()});
+  const stage=$('#k3stage'),fb=$('#k3full');let real=false;
+  const setFull=on=>{stage.classList.toggle('k3full',on);document.body.style.overflow=on?'hidden':'';fb.setAttribute('aria-pressed',on);fb.textContent=on?'Zavřít celou obrazovku':'Celá obrazovka';k3Resize();if(on)c.focus({preventScroll:true})};
+  fb.addEventListener('click',()=>{
+    if(stage.classList.contains('k3full')){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});real=false;setFull(false);return}
+    setFull(true);
+    if(stage.requestFullscreen)stage.requestFullscreen().then(()=>{real=true}).catch(()=>{});
+  });
+  document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&real){real=false;setFull(false)}else k3Resize()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&stage.classList.contains('k3full')&&!real)setFull(false)});
   k3AutoLbl();
+  K3.lastSel=ksel;if(REDUCED)k3Face();kPaint();
 })();
 
 /* ===== Start ===== */
