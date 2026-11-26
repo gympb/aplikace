@@ -57,7 +57,7 @@ input[type=number]{width:9.5em}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0;border-bottom:2px solid var(--line)}
 .tab{min-height:44px;padding:0 16px;border:2px solid var(--line);border-bottom:0;border-radius:8px 8px 0 0;background:var(--soft);color:var(--fg);font:inherit;font-weight:600;cursor:pointer}
 .tab[aria-selected=true]{background:var(--acc);color:#1d1a14}
-.panel{border:2px solid var(--line);border-top:0;background:var(--card);padding:6px 16px 16px;border-radius:0 0 8px 8px}
+.panel{border:2px solid var(--line);border-top:0;background:var(--card);padding:6px 16px 16px;border-radius:0 0 8px 8px;margin-bottom:8px}
 .panel[hidden]{display:none}
 .ok{color:var(--ok);font-weight:600}.bad{color:var(--bad);font-weight:600}
 .note{border-left:4px solid var(--acc);padding:4px 10px;background:var(--soft);border-radius:4px;margin:8px 0}
@@ -109,6 +109,13 @@ table.ex th{background:var(--soft)}
 <h1>Pascalina – počítací stroj Blaise Pascala (1642)</h1>
 <p class="lead">Simulátor šestimístné desítkové Pascaliny: ozubená kola, přenos desítky, okénka s doplňkem do 9 a odčítání přičítáním doplňku.</p>
 
+<div class="tabs" role="tablist" aria-label="Části aplikace">
+  <button class="tab" role="tab" id="tb-sim" aria-controls="p-sim" aria-selected="true">Simulátor</button>
+  <button class="tab" role="tab" id="tb-jak" aria-controls="p-jak" aria-selected="false">Jak to funguje</button>
+  <button class="tab" role="tab" id="tb-his" aria-controls="p-his" aria-selected="false">Historie</button>
+</div>
+
+<section class="panel" id="p-sim" role="tabpanel" aria-labelledby="tb-sim">
 <div class="goal"><b>Cíl:</b> po vyzkoušení dokážeš na Pascalině sečíst dvě čísla, odečíst je pomocí doplňku do 9 a vysvětlíš, kdy a proč se přenáší desítka. <span style="color:var(--muted)">Pro 1R–4R, samostatně i k projekci.</span></div>
 
 <div class="toolbar" role="toolbar" aria-label="Ovládání stroje">
@@ -173,13 +180,7 @@ table.ex th{background:var(--soft)}
   <p style="padding:0 12px 10px;color:var(--muted)">Červený kolík přenáší desítku. Při posledním dílku z 9 na 0 se páka zvedne a pak spadne, čímž posune vedlejší kolo (vlevo) o jeden dílek.</p>
 </details>
 
-<div class="tabs" role="tablist" aria-label="Části aplikace">
-  <button class="tab" role="tab" id="tb-ul" aria-controls="p-ul" aria-selected="true">Úlohy</button>
-  <button class="tab" role="tab" id="tb-jak" aria-controls="p-jak" aria-selected="false">Jak to funguje</button>
-  <button class="tab" role="tab" id="tb-his" aria-controls="p-his" aria-selected="false">Historie</button>
-</div>
-
-<section class="panel" id="p-ul" role="tabpanel" aria-labelledby="tb-ul">
+<div id="p-ul">
   <h2>Úlohy s předpovědí</h2>
   <p>Nejdřív odhadni, potom to vyzkoušej na stroji. Postup se ukládá jen v tomto prohlížeči.</p>
   <div class="tl" id="taskList" role="group" aria-label="Seznam úloh"></div>
@@ -188,6 +189,7 @@ table.ex th{background:var(--soft)}
     <div class="row"><input type="text" id="codeBox" style="min-height:44px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;padding:0 10px" size="14" aria-label="Kód zálohy">
     <button class="btn" id="btnCode" type="button">Načíst kód</button></div>
     <p style="color:var(--muted)">Kód si zapiš. Na jiném zařízení ho vlož a načti.</p></details>
+</div>
 </section>
 
 <section class="panel" id="p-jak" role="tabpanel" aria-labelledby="tb-jak" hidden>
@@ -694,6 +696,7 @@ $('#btnNumMin').addEventListener('click',()=>numIn('minu'));
 $('#numIn').addEventListener('keydown',e=>{if(e.key==='Enter')numIn(padKind());});
 document.addEventListener('keydown',e=>{
   const tg=e.target;if(tg.closest&&tg.closest('input,select,textarea'))return;
+  if($('#p-sim').hidden)return;
   if(e.ctrlKey||e.metaKey||e.altKey)return;
   if(/^[0-9]$/.test(e.key)&&!tg.closest('button.tab')){padDigit(+e.key);}
   else if(e.key==='ArrowLeft'&&!tg.closest('[role=tablist]')){selectWheel(st.sel+1);}
