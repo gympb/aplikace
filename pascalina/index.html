@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pascalina – počítací stroj Blaise Pascala | Školní aplikace GymPB</title>
+<meta name="description" content="Věrný simulátor Pascalovy počítací mechaniky z roku 1642: otočná kola s bodcem, přenos desítky pákou sautoir, okénka s doplňkem do 9 a odčítání přičítáním doplňku. Úlohy s předpovědí, pohled pod víko a režim celé obrazovky.">
+<meta name="author" content="Ivo Bešťák">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="gymplikace">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Pascalina – počítací stroj Blaise Pascala">
+<meta property="og:description" content="Věrný simulátor Pascalovy počítací mechaniky z roku 1642: otočná kola s bodcem, přenos desítky pákou sautoir, okénka s doplňkem do 9 a odčítání přičítáním doplňku. Úlohy s předpovědí, pohled pod víko a režim celé obrazovky.">
+<meta property="og:url" content="https://aplikace.gympb.cz/pascalina/">
+<meta property="og:image" content="https://aplikace.gympb.cz/pascalina/nahled.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#F4F1EA;--fg:#1d1a14;--card:#fff;--line:#1d1a14;--acc:#FF972E;--muted:#5f584a;--ok:#25702f;--bad:#a52f1b;--soft:#ebe5d6}
+:root[data-theme=dark]{--bg:#16130e;--fg:#f1ece0;--card:#211c14;--line:#d9d0bb;--muted:#b3aa95;--ok:#7fd48a;--bad:#ff9a85;--soft:#2b251a}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#16130e;--fg:#f1ece0;--card:#211c14;--line:#d9d0bb;--muted:#b3aa95;--ok:#7fd48a;--bad:#ff9a85;--soft:#2b251a}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:1240px;margin:0 auto;padding:10px 16px 28px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;border-bottom:2px solid var(--line);padding-bottom:8px}
+.back{color:var(--fg);font-weight:600;text-decoration:none;min-height:44px;display:inline-flex;align-items:center;border-bottom:2px solid var(--acc)}
+.top .sp{flex:1}
+h1{font-size:1.7rem;line-height:1.2;margin:14px 0 4px}
+h2{font-size:1.2rem;margin:18px 0 6px}
+h3{font-size:1.02rem;margin:14px 0 4px}
+p{margin:6px 0}
+.lead{color:var(--muted);margin:0 0 6px}
+.goal{border:2px solid var(--line);border-left:8px solid var(--acc);background:var(--card);padding:8px 12px;border-radius:8px;margin:10px 0}
+.btn{min-height:44px;min-width:44px;padding:0 14px;border:2px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;font:inherit;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--soft)}
+.btn[aria-pressed=true],.btn.on{background:var(--acc);color:#1d1a14}
+.btn:focus-visible,.hit:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #2a6fdb;outline-offset:2px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+#stageBox{position:relative;border:2px solid var(--line);border-radius:10px;overflow:hidden;background:#2b1b0d;touch-action:pan-y}
+#stage{display:block;width:100%;height:auto;max-height:78vh;user-select:none;-webkit-user-select:none}
+#stageBox.fs,#stageBox.pfs{display:flex;flex-direction:column;justify-content:center;align-items:center;width:100vw;height:100vh;border:0;border-radius:0;background:#14100a}
+#stageBox.pfs{position:fixed;inset:0;z-index:1000}
+#stageBox.fs #stage,#stageBox.pfs #stage{max-height:calc(100vh - 70px);height:calc(100vh - 70px);width:100%}
+.fsbar{display:none;gap:8px;padding:8px;justify-content:center;flex-wrap:wrap}
+#stageBox.fs .fsbar,#stageBox.pfs .fsbar{display:flex}
+.stat{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin:8px 0;padding:8px 12px;background:var(--card);border:2px solid var(--line);border-radius:8px}
+.stat b{font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.15rem;letter-spacing:.08em}
+.say{min-height:3em;color:var(--fg)}
+.pad{background:var(--card);border:2px solid var(--line);border-radius:8px;padding:10px 12px;margin:10px 0}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+.row label{font-weight:600}
+.dig{min-width:44px}
+input[type=number],select{min-height:44px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;padding:0 10px}
+input[type=number]{width:9.5em}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0;border-bottom:2px solid var(--line)}
+.tab{min-height:44px;padding:0 16px;border:2px solid var(--line);border-bottom:0;border-radius:8px 8px 0 0;background:var(--soft);color:var(--fg);font:inherit;font-weight:600;cursor:pointer}
+.tab[aria-selected=true]{background:var(--acc);color:#1d1a14}
+.panel{border:2px solid var(--line);border-top:0;background:var(--card);padding:6px 16px 16px;border-radius:0 0 8px 8px}
+.panel[hidden]{display:none}
+.ok{color:var(--ok);font-weight:600}.bad{color:var(--bad);font-weight:600}
+.note{border-left:4px solid var(--acc);padding:4px 10px;background:var(--soft);border-radius:4px;margin:8px 0}
+.opt{display:flex;gap:8px;align-items:center;min-height:44px;cursor:pointer}
+.opt input{width:22px;height:22px}
+.tl{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.tl .btn{min-width:44px}
+.tl .btn.done{border-color:var(--ok)}
+code,kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--soft);padding:0 5px;border-radius:4px}
+details.und{margin:10px 0;border:2px solid var(--line);border-radius:8px;background:var(--card)}
+details.und summary{min-height:44px;display:flex;align-items:center;padding:0 12px;cursor:pointer;font-weight:600}
+#under{display:block;width:100%;height:auto;background:#241709;border-radius:0 0 6px 6px}
+footer{margin-top:24px;padding-top:10px;border-top:2px solid var(--line);color:var(--muted);font-size:.9rem}
+footer a{color:inherit}
+.num{font:700 17px Georgia,"Times New Roman",serif;fill:#3a2909;text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:rgba(255,242,196,.55);stroke-width:.7px}
+.cnum{font:italic 700 11px Georgia,"Times New Roman",serif;fill:#80291a;text-anchor:middle;dominant-baseline:central}
+.wd{font:700 34px Georgia,"Times New Roman",serif;text-anchor:middle;dominant-baseline:central}
+.hit{fill:transparent;cursor:pointer}
+.hit:hover{fill:rgba(255,255,255,.25)}
+.bar{cursor:pointer}
+.sel{fill:none;stroke:#ff8a00;stroke-width:3;opacity:0}
+.wh.on .sel{opacity:.9}
+@media (max-width:700px){h1{font-size:1.4rem}.panel{padding:4px 10px 12px}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <span class="sp"></span>
+  <button class="btn" id="btnTheme" type="button" aria-label="Přepnout světlý a tmavý režim">◐ Režim</button>
+</div>
+
+<h1>Pascalina – počítací stroj Blaise Pascala (1642)</h1>
+<p class="lead">Simulátor šestimístné desítkové Pascaliny: ozubená kola, přenos desítky, okénka s doplňkem do 9 a odčítání přičítáním doplňku.</p>
+
+<div class="goal"><b>Cíl:</b> po vyzkoušení dokážeš na Pascalině sečíst dvě čísla, odečíst je pomocí doplňku do 9 a vysvětlíš, kdy a proč se přenáší desítka. <span style="color:var(--muted)">Pro 1R–4R, samostatně i k projekci.</span></div>
+
+<div class="toolbar" role="toolbar" aria-label="Ovládání stroje">
+  <button class="btn" id="btnBar" type="button" aria-pressed="false">Lišta: ukazují se čísla</button>
+  <button class="btn" id="btnZero" type="button">Vynulovat (přičtením doplňku)</button>
+  <button class="btn" id="btnFs" type="button" aria-pressed="false">⛶ Celá obrazovka</button>
+  <button class="btn" id="btnSnd" type="button" aria-pressed="false">Zvuk: vypnuto</button>
+</div>
+
+<div id="stageBox">
+  <svg id="stage" role="img" aria-label="Pascalina: šest otočných kol s okénky nad nimi" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div class="fsbar">
+    <button class="btn" data-act="bar" type="button">Přepnout lištu</button>
+    <button class="btn" data-act="zero" type="button">Vynulovat</button>
+    <button class="btn" data-act="exit" type="button">Zavřít celou obrazovku</button>
+  </div>
+</div>
+
+<div class="stat" aria-live="polite">
+  <span>Okénka: <b id="rdWin">000000</b> <span id="rdRow" style="color:var(--muted)"></span></span>
+  <span>Přenosů desítky: <b id="rdCar">0</b></span>
+  <span>Ztracené desítky (přetečení): <b id="rdOvf">0</b></span>
+</div>
+<div class="say" id="say" aria-live="polite">Klikni do otvoru na kole (nebo ho táhni po směru hodin až k zarážce). Tip: číslice zadáváš bodcem od nejnižšího řádu.</div>
+
+<div class="pad">
+  <h3 style="margin-top:0">Ovládání bez myši a na dotykovém displeji</h3>
+  <div class="row"><label for="selW">Kolo:</label>
+    <div class="row" id="wheelSel" role="group" aria-label="Výběr kola"></div></div>
+  <div class="row"><label>Číslice:</label><div class="row" id="digPad" role="group" aria-label="Číslice 0 až 9"></div></div>
+  <div class="row">
+    <label><input type="radio" name="kind" value="add" checked> přičítám (velká čísla, otáčím o <i>d</i> dílků)</label>
+    <label><input type="radio" name="kind" value="minu"> nastavuji menšenec (malé červené číslice, otáčím o 9 − <i>d</i>)</label>
+  </div>
+  <div class="row">
+    <label for="numIn">Zadat celé číslo:</label>
+    <input type="number" id="numIn" min="0" max="999999" step="1" inputmode="numeric" placeholder="0–999999">
+    <button class="btn" id="btnNumAdd" type="button">Přičíst</button>
+    <button class="btn" id="btnNumMin" type="button">Nastavit jako menšenec</button>
+  </div>
+  <p style="color:var(--muted);margin:4px 0 0">Klávesy: číslice 0–9 otočí vybrané kolo, ← → mění kolo, <kbd>M</kbd> přepne lištu, <kbd>F</kbd> celou obrazovku.</p>
+</div>
+
+<details class="und" id="undBox">
+  <summary>Pod víkem: přenos desítky (sautoir), schematicky</summary>
+  <svg id="under" viewBox="0 0 1200 190" role="img" aria-label="Schéma ozubených kol a přenosové páky sautoir"></svg>
+  <p style="padding:0 12px 10px;color:var(--muted)">Červený kolík přenáší desítku. Při posledním dílku z 9 na 0 se páka zvedne a pak spadne, čímž posune vedlejší kolo (vlevo) o jeden dílek.</p>
+</details>
+
+<div class="tabs" role="tablist" aria-label="Části aplikace">
+  <button class="tab" role="tab" id="tb-ul" aria-controls="p-ul" aria-selected="true">Úlohy</button>
+  <button class="tab" role="tab" id="tb-jak" aria-controls="p-jak" aria-selected="false">Jak stroj funguje</button>
+  <button class="tab" role="tab" id="tb-his" aria-controls="p-his" aria-selected="false">Historie a věrnost modelu</button>
+</div>
+
+<section class="panel" id="p-ul" role="tabpanel" aria-labelledby="tb-ul">
+  <h2>Úlohy s předpovědí</h2>
+  <p>Nejdřív odhadni, potom to vyzkoušej na stroji. Postup se ukládá jen v tomto prohlížeči.</p>
+  <div class="tl" id="taskList" role="group" aria-label="Seznam úloh"></div>
+  <div id="taskBody"></div>
+  <details style="margin-top:14px"><summary style="min-height:44px;display:flex;align-items:center;cursor:pointer">Kód zálohy postupu</summary>
+    <div class="row"><input type="text" id="codeBox" style="min-height:44px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;padding:0 10px" size="14" aria-label="Kód zálohy">
+    <button class="btn" id="btnCode" type="button">Načíst kód</button></div>
+    <p style="color:var(--muted)">Kód si zapiš. Na jiném zařízení ho vlož a načti.</p></details>
+</section>
+
+<section class="panel" id="p-jak" role="tabpanel" aria-labelledby="tb-jak" hidden>
+  <h2>Jak se stroj ovládá</h2>
+  <p><b>Zadání číslice.</b> Bodec zasuneš do otvoru označeného číslicí a kolem otočíš po směru hodin, až bodec narazí na zarážku. Kolo se tak otočí o tolik dílků, kolik je číslice. Kolem nejde točit zpět.</p>
+  <p><b>Okénka a lišta.</b> Nad každým kolem jsou dvě okénka. Spodní ukazuje číslici uloženou v kole, horní její doplněk do 9 (číslice odečtená od 9). Posuvná lišta vždy jednu řadu zakryje.</p>
+  <h2>Přenos desítky</h2>
+  <p>Když kolo přejde z 9 na 0, páka <i>sautoir</i> se zvedne a pak spadne a posune sousední kolo o jeden dílek. Pokud je tam také 9, přenos pokračuje dál jako padající domina. U úlohy 3 to uvidíš na šesti kolech.</p>
+  <h2>Odčítání přičítáním doplňku</h2>
+  <p>Stroj umí jen přičítat. Platí <code>a − b = 999 999 − ((999 999 − a) + b)</code>. Doplněk <code>999 999 − a</code> ukazuje horní řada okének, proto:</p>
+  <ol>
+    <li>Vynuluj stroj a přepni lištu na doplňky.</li>
+    <li>Menšenec <i>a</i> se zadá <b>malými červenými</b> číslicemi (kolo se otočí o 9 − <i>d</i>), takže okénka ukážou <i>a</i>.</li>
+    <li>Menšitel <i>b</i> se zadá běžně <b>velkými</b> číslicemi. Kola se točí stále stejným směrem a okénka ukážou rozdíl.</li>
+  </ol>
+  <p>Výsledek se vejde do šesti míst. Je-li <i>b</i> větší než <i>a</i>, okénka ukážou 1 000 000 − (<i>b</i> − <i>a</i>) a stroj ohlásí ztracenou desítku. Stejný trik se dodnes používá v počítačích při dvojkovém doplňku.</p>
+</section>
+
+<section class="panel" id="p-his" role="tabpanel" aria-labelledby="tb-his" hidden>
+  <h2>Historie</h2>
+  <p>Blaise Pascal (1623–1662) začal stroj navrhovat roku 1642 jako osmnáctiletý, aby ulehčil otci Étiennovi, správci daní v Rouenu. Po zhruba 50 prototypech ho roku 1645 představil veřejnosti. Roku 1649 získal královský privilegium, tedy výhradní právo stroje v celé Francii vyrábět a prodávat. Dochovalo se jich devět, většina je ve městských a technických muzeích v Evropě.</p>
+  <h2>Co model věrně zachycuje</h2>
+  <ul>
+    <li>Otočná kola s deseti otvory, bodec a zarážka, pohyb jen jedním směrem.</li>
+    <li>Přenos desítky pákou sautoir se sekvenčním šířením (domino) a ztrátou desítky z posledního kola.</li>
+    <li>Dvě řady okének (číslo a doplněk do 9) a posuvná lišta.</li>
+    <li>Šestimístný čistě desítkový stroj. Pozor, velká část dochovaných originálů má kola pro livry, soly a denáry (základy 20 a 12), tohle zjednodušení je nutné pro školní výuku.</li>
+  </ul>
+  <h2>Zjednodušení</h2>
+  <ul>
+    <li>Číselné kroužky na kolech jsou kvůli ovládání v modelu dvě (velké číslice a malé červené). Podoba a rozložení čísel se u dochovaných kusů liší. Mechanismus v části „Pod víkem“ je schematický.</li>
+    <li>Nulování provádí stroj přičtením doplňku. U originálu to dělal obsluha ručně stejným způsobem.</li>
+    <li>Pohled shora a tvary kol jsou zjednodušené, nejsou přesnou kopií žádného konkrétního exempláře.</li>
+  </ul>
+  <p style="color:var(--muted)">Zdroje: encyklopedické přehledy o Pascalině a o kalkulačce Blaise Pascala (Wikipedie), popis okének s doplňkem a lišty.</p>
+</section>
+
+<footer>
+  Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 26. 11. 2026
+</footer>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const N=6, STOP=225, STEPDEG=36;
+const PLACES=['jednotky','desítky','stovky','tisíce','desetitisíce','statisíce'];
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const mod=(a,n)=>((a%n)+n)%n;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const pol=(th,R)=>{const a=th*Math.PI/180;return [+(R*Math.sin(a)).toFixed(2),+(-R*Math.cos(a)).toFixed(2)];};
+const holeTheta=d=>STOP-STEPDEG*d;
+const sector=(r1,r2,a1,a2)=>{const p1=pol(a1,r2),p2=pol(a2,r2),p3=pol(a2,r1),p4=pol(a1,r1);return `M${p1}A${r2} ${r2} 0 0 1 ${p2}L${p3}A${r1} ${r1} 0 0 0 ${p4}Z`;};
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- stav ---------- */
+const st={
+  ang:Array(N).fill(0), target:Array(N).fill(0), drag:Array(N).fill(false),
+  stylus:Array(N).fill(null), lever:Array(N).fill(0),
+  barMode:0, barPos:0, barTarget:0,   // 0 = čísla (lišta kryje horní řadu), 1 = doplňky
+  carries:0, overflow:0, silent:0, sel:0, queue:[], sound:false, compact:false, speed:reduceMotion?18:6
+};
+const val=i=>mod(Math.floor(st.ang[i]+1e-6),10);
+const regValue=()=>{let v=0;for(let i=N-1;i>=0;i--)v=v*10+val(i);return v;};
+const windowDigits=()=>{const a=[];for(let i=N-1;i>=0;i--)a.push(st.barMode?9-val(i):val(i));return a;};
+const isIdle=()=>{
+  for(let i=0;i<N;i++){if(st.drag[i]||st.stylus[i]||Math.abs(st.ang[i]-st.target[i])>1e-6||st.lever[i]>0.01)return false;}
+  return Math.abs(st.barPos-st.barTarget)<1e-3;
+};
+
+/* ---------- zvuk (volitelný, výchozí vypnuto) ---------- */
+let actx=null;
+function beep(f,dur,vol,type){
+  if(!st.sound)return;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(),g=actx.createGain();
+    o.type=type||'square';o.frequency.value=f;
+    g.gain.setValueAtTime(vol,actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+dur);
+    o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+dur);
+  }catch(e){}
+}
+
+/* ---------- vyprávění ---------- */
+const sayEl=$('#say');
+const say=t=>{sayEl.textContent=t;};
+
+/* ---------- přenos ---------- */
+function carry(i){
+  if(!st.silent){st.carries++;}
+  if(i<N-1){
+    st.target[i+1]+=1;
+    if(!st.silent)say(`Přenos desítky: kolo ${PLACES[i]} přešlo z 9 na 0 a posunulo kolo ${PLACES[i+1]} o jeden dílek.`);
+    beep(130,.12,.18,'triangle');
+  }else{
+    if(!st.silent){st.overflow++;say('Přetečení: desítka z posledního kola se ztratila, stroj počítá modulo 1 000 000.');}
+  }
+}
+function setAng(i,na){
+  const pa=st.ang[i];st.ang[i]=na;
+  if(Math.floor(pa+1e-9)!==Math.floor(na+1e-9))beep(1700,.025,.05);
+  const c0=Math.floor((pa+1e-9)/10),c1=Math.floor((na+1e-9)/10);
+  for(let c=c0;c<c1;c++)carry(i);
+}
+
+/* ---------- fronta operací (jeden obsluhující) ---------- */
+function enqueue(op){st.queue.push(op);kick();}
+function runNext(){
+  if(!st.queue.length||!isIdle())return;
+  const op=st.queue.shift();
+  switch(op.t){
+    case 'dial':{
+      const i=op.i;let s=op.steps;
+      if(s<=0){if(op.say)say(`Kolo ${PLACES[i]}: číslice 0, kolo se neotočí.`);break;}
+      const start=Math.round(st.ang[i]);
+      st.stylus[i]={d:s,start,end:start+s,hold:0,op:true};
+      st.target[i]=start+s;
+      say(op.say||`Kolo ${PLACES[i]}: bodec v otvoru, otáčím o ${s} dílků k zarážce.`);
+      break;}
+    case 'zero':{
+      const s=mod(10-val(op.i),10);
+      if(s>0){const start=Math.round(st.ang[op.i]);st.stylus[op.i]={d:s,start,end:start+s,hold:0,op:true};st.target[op.i]=start+s;}
+      break;}
+    case 'bar':
+      st.barMode=op.m;st.barTarget=op.m;syncBarUI();
+      say(op.m?'Lišta zakryla spodní řadu. Okénka ukazují doplňky do 9.':'Lišta zakryla horní řadu. Okénka ukazují čísla uložená v kolech.');
+      break;
+    case 'silent':st.silent=op.v?1:0;break;
+    case 'resetStats':st.carries=0;st.overflow=0;break;
+    case 'fn':op.f();break;
+    case 'say':say(op.text);break;
+  }
+}
+function digitsOf(n){const a=[];for(let i=0;i<N;i++){a.push(n%10);n=Math.floor(n/10);}return a;}
+function queueNumber(n,kind){
+  const dg=digitsOf(n);
+  for(let i=0;i<N;i++){
+    const steps=kind==='minu'?9-dg[i]:dg[i];
+    enqueue({t:'dial',i,steps});
+  }
+}
+function queueZero(silent){
+  enqueue({t:'silent',v:true});
+  for(let i=0;i<N;i++)enqueue({t:'zero',i});
+  enqueue({t:'silent',v:false});
+  enqueue({t:'resetStats'});
+  enqueue({t:'say',text:'Stroj je vynulovaný: každé kolo dostalo doplněk do 10, takže se vrátilo na 0.'});
+}
+function setBarMode(m){enqueue({t:'bar',m});}
+
+/* ---------- smyčka ---------- */
+let last=0,running=false;
+function kick(){if(!running){running=true;last=performance.now();requestAnimationFrame(frame);}}
+function frame(t){
+  const dt=Math.min(.05,(t-last)/1000);last=t;
+  for(let i=0;i<N;i++){
+    if(!st.drag[i]&&st.ang[i]<st.target[i]-1e-9){
+      setAng(i,Math.min(st.target[i],st.ang[i]+st.speed*dt));
+    }
+    const sty=st.stylus[i];
+    if(sty){
+      sty.alpha=Math.min(1,(sty.alpha||0)+dt*8);
+      if(!st.drag[i]&&st.ang[i]>=st.target[i]-1e-9){sty.hold+=dt;if(sty.hold>.14)st.stylus[i]=null;}
+    }
+    const m=mod(st.ang[i],10),lift=m>=9?m-9:0;
+    if(lift>=st.lever[i])st.lever[i]=lift;else st.lever[i]=Math.max(lift,st.lever[i]-7*dt);
+  }
+  const bd=st.barTarget-st.barPos;
+  st.barPos=Math.abs(bd)<.004?st.barTarget:st.barPos+Math.sign(bd)*Math.min(Math.abs(bd),dt*5);
+  runNext();
+  render();
+  if(!isIdle()||st.queue.length)requestAnimationFrame(frame);else{running=false;render();tasksOnIdle();}
+}
+
+/* ---------- SVG: stavba ---------- */
+const stage=$('#stage'),under=$('#under');
+let L=null, refs=null;
+function layout(compact){
+  if(!compact){
+    const wheels=[],wins=[];
+    for(let j=0;j<N;j++){wheels.push({x:160+176*j,y:335,s:1});wins.push({x:160+176*j,y:78,w:76});}
+    return {W:1200,H:520,plate:{x:48,y:40,w:1104,h:440},wins,wheels,ah:46,gap:6,bar:{x:62,w:1076},compact:false};
+  }
+  const wheels=[],wins=[];
+  for(let j=0;j<N;j++){wins.push({x:60+96*j,y:76,w:84});}
+  for(let j=0;j<N;j++){wheels.push({x:105+195*(j%3),y:(j<3?318:538),s:1});}
+  return {W:600,H:660,plate:{x:14,y:14,w:572,h:632},wins,wheels,ah:46,gap:6,bar:{x:24,w:552},compact:true};
+}
+function screw(x,y,r){
+  return `<g transform="translate(${x} ${y})"><circle r="${r}" fill="url(#gScrew)" stroke="#5a3d0f" stroke-width="1"/><path d="M${-r*.65} ${-r*.2}L${r*.65} ${r*.2}" stroke="#3a2909" stroke-width="1.6"/></g>`;
+}
+function wheelMarkup(i,w){
+  let num='';
+  for(let d=0;d<10;d++){
+    const th=holeTheta(d),[nx,ny]=pol(th,71),[cx,cy]=pol(th,83);
+    num+=`<text class="num" x="${nx}" y="${ny}">${d}</text><text class="cnum" x="${cx}" y="${cy}">${9-d}</text>`;
+  }
+  let holes='',hits='';
+  for(let k=0;k<10;k++){
+    const th=holeTheta(k),[hx,hy]=pol(th,42);
+    holes+=`<circle cx="${hx}" cy="${hy}" r="6.6" fill="url(#gHole)" stroke="#5a3d0f" stroke-width="1.2"/><circle cx="${hx}" cy="${hy}" r="8" fill="none" stroke="rgba(255,244,200,.5)" stroke-width=".8"/>`;
+  }
+  for(let d=0;d<10;d++){
+    const th=holeTheta(d),[hx,hy]=pol(th,42);
+    hits+=`<circle class="hit" data-i="${i}" data-d="${d}" cx="${hx}" cy="${hy}" r="13" role="button" aria-label="Kolo ${PLACES[i]}, číslice ${d}"/>`;
+  }
+  let cut='';
+  for(let m=0;m<5;m++)cut+=`<path d="${sector(17,30,STOP+8+72*m,STOP+62+72*m)}" fill="#1b1209" stroke="#6b4a14" stroke-width="1"/>`;
+  const [sx,sy]=pol(STOP+9,46);
+  return `<g class="wh" data-i="${i}" transform="translate(${w.x} ${w.y}) scale(${w.s})">
+  <circle r="95" class="sel"/>
+  <circle r="91" fill="url(#gRing)" stroke="#6b4a14" stroke-width="1.4"/>
+  <circle r="91" fill="none" stroke="rgba(255,244,200,.45)" stroke-width="1" transform="scale(.985)"/>
+  <circle r="64.5" fill="#241708" stroke="#6b4a14" stroke-width="1"/>
+  ${num}
+  <g class="rot">
+    <circle r="60" fill="url(#gDisc)" stroke="#5a3d0f" stroke-width="1.6"/>
+    <circle r="57" fill="none" stroke="rgba(255,248,215,.6)" stroke-width="1"/>
+    ${cut}${holes}
+    <circle r="12" fill="url(#gDisc)" stroke="#5a3d0f" stroke-width="1.3"/>
+    <path d="M-7 0H7M0 -7V7" stroke="#4a3208" stroke-width="1.4"/>
+    <path d="M-3 -52 L3 -52 L0 -57Z" fill="#7a2a1a"/>
+  </g>
+  <g transform="rotate(${STOP+9})"><path d="M-3.2 -30 L3.2 -30 L3.2 -62 L-3.2 -62Z" fill="url(#gSteel)" stroke="#444" stroke-width=".8" transform="rotate(0)"/>
+  </g>
+  <g class="sty" opacity="0"><line x1="0" y1="0" x2="0" y2="-32" stroke="url(#gSteel)" stroke-width="3.4" stroke-linecap="round"/><circle cx="0" cy="-36" r="6" fill="none" stroke="#c9ccd1" stroke-width="2.4"/><circle r="3.8" fill="#9aa0a8" stroke="#555" stroke-width=".8"/></g>
+  ${hits}
+</g>`;
+}
+function winMarkup(j,w,ah){
+  return `<g class="win" transform="translate(${w.x} ${w.y})">
+  <rect x="${-w.w/2-4}" y="-4" width="${w.w+8}" height="${ah*2+L.gap+8}" rx="5" fill="#2b1c08" stroke="#6b4a14" stroke-width="1.4"/>
+  <rect x="${-w.w/2}" y="0" width="${w.w}" height="${ah}" rx="3" fill="url(#gPaper)" stroke="#1a1208" stroke-width="1.4"/>
+  <rect x="${-w.w/2}" y="${ah+L.gap}" width="${w.w}" height="${ah}" rx="3" fill="url(#gPaper)" stroke="#1a1208" stroke-width="1.4"/>
+  <text class="wd" data-k="u" x="0" y="${ah/2+1}" fill="#8a2a1a">9</text>
+  <text class="wd" data-k="l" x="0" y="${ah+L.gap+ah/2+1}" fill="#1c150a">0</text>
+  <rect x="${-w.w/2}" y="0" width="${w.w}" height="${ah*2+L.gap}" rx="3" fill="url(#gGloss)" pointer-events="none"/>
+</g>`;
+}
+function build(compact){
+  st.compact=compact;L=layout(compact);
+  const p=L.plate;
+  let wins='',wheels='';
+  L.wins.forEach((w,j)=>wins+=winMarkup(j,w,L.ah));
+  L.wheels.forEach((w,j)=>wheels+=wheelMarkup(N-1-j,w));
+  const barH=L.ah+8, ay=L.wins[0].y, b0=ay-4, b1=ay+L.ah+L.gap-4;
+  stage.setAttribute('viewBox',`0 0 ${L.W} ${L.H}`);
+  stage.innerHTML=`<defs>
+ <linearGradient id="gBrass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1de9e"/><stop offset=".3" stop-color="#d4ac4c"/><stop offset=".65" stop-color="#ab7f2d"/><stop offset="1" stop-color="#d9b663"/></linearGradient>
+ <radialGradient id="gDisc" cx=".33" cy=".28" r=".95"><stop offset="0" stop-color="#f6e6ac"/><stop offset=".5" stop-color="#d3a748"/><stop offset="1" stop-color="#8f6620"/></radialGradient>
+ <radialGradient id="gRing" cx=".5" cy=".5" r=".5"><stop offset=".7" stop-color="#bf9334"/><stop offset="1" stop-color="#a97d2c"/></radialGradient>
+ <radialGradient id="gHole" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#3a280c"/><stop offset="1" stop-color="#0d0803"/></radialGradient>
+ <radialGradient id="gScrew" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#f3e3a6"/><stop offset="1" stop-color="#8d651f"/></radialGradient>
+ <linearGradient id="gSteel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9299"/><stop offset=".5" stop-color="#eef0f2"/><stop offset="1" stop-color="#7b8087"/></linearGradient>
+ <linearGradient id="gPaper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4ead0"/><stop offset="1" stop-color="#e4d6ae"/></linearGradient>
+ <linearGradient id="gGloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".45" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+ <linearGradient id="gWood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5a3a1c"/><stop offset="1" stop-color="#3a2310"/></linearGradient>
+ <filter id="fWood" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.006 0.16" numOctaves="3" seed="7"/><feColorMatrix values="0 0 0 0 .13  0 0 0 0 .07  0 0 0 0 .02  0 0 0 1.1 -.35"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+ <filter id="fBrush" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.015 0.85" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .2  0 0 0 0 .12  0 0 0 0 .02  0 0 0 .9 -.32"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+ <clipPath id="clipPlate"><rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="10"/></clipPath>
+</defs>
+<rect width="${L.W}" height="${L.H}" fill="url(#gWood)"/>
+<rect width="${L.W}" height="${L.H}" fill="#000" filter="url(#fWood)"/>
+<rect x="4" y="4" width="${L.W-8}" height="${L.H-8}" rx="14" fill="none" stroke="rgba(255,220,160,.18)" stroke-width="2"/>
+<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="10" fill="url(#gBrass)" stroke="#4a3208" stroke-width="2.5"/>
+<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="10" fill="#fff" filter="url(#fBrush)"/>
+<rect x="${p.x+5}" y="${p.y+5}" width="${p.w-10}" height="${p.h-10}" rx="7" fill="none" stroke="rgba(255,248,215,.55)" stroke-width="1.2"/>
+<rect x="${p.x+9}" y="${p.y+9}" width="${p.w-18}" height="${p.h-18}" rx="5" fill="none" stroke="rgba(70,45,5,.5)" stroke-width="1"/>
+${screw(p.x+22,p.y+22,7)}${screw(p.x+p.w-22,p.y+22,7)}${screw(p.x+22,p.y+p.h-22,7)}${screw(p.x+p.w-22,p.y+p.h-22,7)}
+<rect x="${L.bar.x-4}" y="${b0-3}" width="${L.bar.w+8}" height="${b1-b0+barH+6}" rx="6" fill="#2b1c08" stroke="#6b4a14" stroke-width="1.2"/>
+${wins}
+<g class="bar" role="button" tabindex="0" aria-label="Lišta, přepíná okénka mezi čísly a doplňky">
+  <g class="barg"><rect x="${L.bar.x+2}" y="3" width="${L.bar.w}" height="${barH}" rx="4" fill="rgba(0,0,0,.35)"/>
+  <rect x="${L.bar.x}" y="0" width="${L.bar.w}" height="${barH}" rx="4" fill="url(#gBrass)" stroke="#4a3208" stroke-width="1.6"/>
+  <rect x="${L.bar.x}" y="0" width="${L.bar.w}" height="${barH}" rx="4" fill="#fff" filter="url(#fBrush)"/>
+  <path d="M${L.bar.x+8} ${barH-6}H${L.bar.x+L.bar.w-8}" stroke="rgba(70,45,5,.5)" stroke-width="1"/>
+  <circle cx="${L.bar.x+L.bar.w-18}" cy="${barH/2}" r="9" fill="url(#gScrew)" stroke="#5a3d0f"/><circle cx="${L.bar.x+18}" cy="${barH/2}" r="9" fill="url(#gScrew)" stroke="#5a3d0f"/></g>
+</g>
+${wheels}`;
+  refs={
+    rot:$$('.wh',stage).sort((a,b)=>a.dataset.i-b.dataset.i).map(g=>$('.rot',g)),
+    sty:$$('.wh',stage).sort((a,b)=>a.dataset.i-b.dataset.i).map(g=>$('.sty',g)),
+    wh:$$('.wh',stage).sort((a,b)=>a.dataset.i-b.dataset.i),
+    wu:$$('.win',stage).map(g=>$('[data-k=u]',g)),wl:$$('.win',stage).map(g=>$('[data-k=l]',g)),
+    bar:$('.barg',stage),b0,b1,cache:[]
+  };
+  render(true);
+}
+
+/* ---------- SVG: pod víkem ---------- */
+let ur=null;
+function buildUnder(){
+  let s='<defs><radialGradient id="uG" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#e7cd84"/><stop offset="1" stop-color="#8f6620"/></radialGradient></defs>';
+  ur={gear:[],lev:[]};
+  for(let j=0;j<N;j++){
+    const i=N-1-j,cx=160+176*j,cy=108;
+    let pins='';
+    for(let k=0;k<10;k++){const [px,py]=pol(holeTheta(k),44);pins+=`<circle cx="${px}" cy="${py}" r="${k===0?6.5:4.5}" fill="${k===0?'#c0392b':'#6b4a14'}" stroke="#2b1c08" stroke-width="1"/>`;}
+    s+=`<g transform="translate(${cx} ${cy})"><circle r="36" fill="url(#uG)" stroke="#4a3208" stroke-width="2"/><g class="ug">${pins}<path d="M-10 0H10M0 -10V10" stroke="#3a2909" stroke-width="2"/></g></g>`;
+    if(i<N-1){
+      s+=`<g class="ul" transform="translate(${cx-14} ${cy-60})"><rect x="-116" y="-3" width="118" height="6" rx="3" fill="#c9ccd1" stroke="#555"/><circle cx="-116" cy="0" r="7" fill="#9aa0a8" stroke="#444"/></g>`;
+    }
+    s+=`<text x="${cx}" y="${cy+78}" text-anchor="middle" font-size="16" fill="#e9d9ae" font-family="system-ui,sans-serif">${PLACES[i]}</text>`;
+  }
+  under.innerHTML=s;
+  ur.gear=$$('.ug',under);ur.lev=$$('.ul',under);
+  ur.gear.reverse=null;
+}
+function renderUnder(){
+  if(!ur)return;
+  for(let j=0;j<N;j++){
+    const i=N-1-j;
+    ur.gear[j].setAttribute('transform',`rotate(${st.ang[i]*STEPDEG})`);
+  }
+  let k=0;
+  for(let j=0;j<N;j++){
+    const i=N-1-j;if(i>=N-1)continue;
+    const cx=160+176*j,cy=108;
+    ur.lev[k].setAttribute('transform',`translate(${cx-14} ${cy-60}) rotate(${st.lever[i]*26})`);k++;
+  }
+}
+
+/* ---------- vykreslení ---------- */
+let stCache={};
+function render(force){
+  if(!refs)return;
+  for(let i=0;i<N;i++){
+    refs.rot[i].setAttribute('transform',`rotate(${(st.ang[i]*STEPDEG).toFixed(2)})`);
+    const s=st.stylus[i],g=refs.sty[i];
+    if(s){
+      const rem=clamp(s.end-st.ang[i],0,s.d),th=holeTheta(0)-0+STEPDEG*(0)- STEPDEG*rem+0;
+      const th2=STOP-STEPDEG*rem,[hx,hy]=pol(th2,42);
+      g.setAttribute('transform',`translate(${hx} ${hy}) rotate(${th2})`);
+      g.setAttribute('opacity',String(s.alpha==null?1:s.alpha));
+    }else g.setAttribute('opacity','0');
+  }
+  const wd=windowDigits();
+  for(let j=0;j<N;j++){
+    const i=N-1-j,n=val(i),c=9-n;
+    if(force||refs.cache[j]!==n){
+      refs.wl[j].textContent=n;refs.wu[j].textContent=c;refs.cache[j]=n;
+    }
+  }
+  const by=refs.b0+(refs.b1-refs.b0)*st.barPos;
+  refs.bar.setAttribute('transform',`translate(0 ${by.toFixed(1)})`);
+  refs.wh.forEach((g,i)=>g.classList.toggle('on',i===st.sel));
+  const txt=wd.join('');
+  if(stCache.w!==txt+st.barMode){stCache.w=txt+st.barMode;$('#rdWin').textContent=txt.replace(/^(\d{3})(\d{3})$/,'$1 $2');$('#rdRow').textContent=st.barMode?'(doplněk do 9)':'(čísla v kolech)';}
+  if(stCache.c!==st.carries){stCache.c=st.carries;$('#rdCar').textContent=st.carries;}
+  if(stCache.o!==st.overflow){stCache.o=st.overflow;$('#rdOvf').textContent=st.overflow;}
+  if($('#undBox').open)renderUnder();
+}
+function syncBarUI(){
+  const b=$('#btnBar');b.setAttribute('aria-pressed',String(!!st.barMode));
+  b.textContent=st.barMode?'Lišta: ukazují se doplňky':'Lišta: ukazují se čísla';
+}
+function selectWheel(i){
+  st.sel=clamp(i,0,N-1);
+  $$('#wheelSel .btn').forEach((b,k)=>{b.setAttribute('aria-pressed',String(+b.dataset.i===st.sel));});
+  render();
+}
+
+/* ---------- vstup: otvory na kolech ---------- */
+function svgPoint(e){const pt=stage.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(stage.getScreenCTM().inverse());}
+let drag=null;
+stage.addEventListener('pointerdown',e=>{
+  const bar=e.target.closest('.bar');
+  if(bar){setBarMode(st.barMode?0:1);return;}
+  const wh=e.target.closest('.wh');
+  if(wh)selectWheel(+wh.dataset.i);
+  const h=e.target.closest('.hit');
+  if(!h)return;
+  const i=+h.dataset.i,d=+h.dataset.d,w=L.wheels[N-1-i],p=svgPoint(e);
+  drag={i,d,id:e.pointerId,x:e.clientX,y:e.clientY,th0:Math.atan2(p.x-w.x,-(p.y-w.y))*180/Math.PI,w,active:false,start:0};
+  try{stage.setPointerCapture(e.pointerId);}catch(_){}
+  e.preventDefault();
+});
+stage.addEventListener('pointermove',e=>{
+  if(!drag||e.pointerId!==drag.id)return;
+  if(!drag.active){
+    if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<7)return;
+    if(!isIdle()||st.queue.length||drag.d===0){return;}
+    drag.active=true;const i=drag.i;
+    drag.start=Math.round(st.ang[i]);
+    st.drag[i]=true;st.stylus[i]={d:drag.d,start:drag.start,end:drag.start+drag.d,hold:0,alpha:1};
+    st.target[i]=drag.start;
+    say(`Kolo ${PLACES[i]}: točím bodcem v otvoru ${drag.d} po směru hodin až k zarážce.`);
+  }
+  const p=svgPoint(e),th=Math.atan2(p.x-drag.w.x,-(p.y-drag.w.y))*180/Math.PI;
+  let dl=th-drag.th0;dl=((dl+540)%360)-180;
+  const prog=clamp(dl/STEPDEG,0,drag.d);
+  setAng(drag.i,drag.start+Math.max(prog,st.ang[drag.i]-drag.start));
+  kick();render();
+});
+function endDrag(e){
+  if(!drag||(e&&e.pointerId!==drag.id))return;
+  const d=drag;drag=null;
+  if(d.active){
+    const i=d.i;st.drag[i]=false;
+    const steps=Math.round(st.ang[i]-d.start);
+    st.target[i]=d.start+steps;
+    if(st.stylus[i])st.stylus[i].end=d.start+d.d;
+    say(steps>=d.d?`Bodec dosáhl zarážky, kolo ${PLACES[i]} se otočilo o ${steps} dílků.`:`Kolo ${PLACES[i]} se otočilo jen o ${steps} dílků, bodec nedošel k zarážce.`);
+    kick();
+  }else{
+    enqueue({t:'dial',i:d.i,steps:d.d,say:d.d===0?`Kolo ${PLACES[d.i]}: číslice 0, kolo se neotočí.`:null});
+  }
+}
+stage.addEventListener('pointerup',endDrag);
+stage.addEventListener('pointercancel',endDrag);
+stage.addEventListener('keydown',e=>{
+  if(e.target.classList&&e.target.closest&&e.target.closest('.bar')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();setBarMode(st.barMode?0:1);}
+});
+
+/* ---------- ovládací prvky ---------- */
+function buildPad(){
+  const ws=$('#wheelSel');ws.innerHTML='';
+  for(let j=0;j<N;j++){const i=N-1-j;const b=document.createElement('button');b.className='btn';b.type='button';b.dataset.i=i;b.setAttribute('aria-pressed','false');b.textContent=PLACES[i];b.title='Kolo '+PLACES[i];ws.appendChild(b);}
+  ws.addEventListener('click',e=>{const b=e.target.closest('.btn');if(b)selectWheel(+b.dataset.i);});
+  const dp=$('#digPad');dp.innerHTML='';
+  for(let d=0;d<10;d++){const b=document.createElement('button');b.className='btn dig';b.type='button';b.dataset.d=d;b.textContent=d;b.setAttribute('aria-label','Číslice '+d);dp.appendChild(b);}
+  dp.addEventListener('click',e=>{const b=e.target.closest('.btn');if(b)padDigit(+b.dataset.d);});
+}
+const padKind=()=>$('input[name=kind]:checked').value;
+function padDigit(c){
+  const steps=padKind()==='minu'?9-c:c;
+  enqueue({t:'dial',i:st.sel,steps});
+}
+$('#btnBar').addEventListener('click',()=>setBarMode(st.barMode?0:1));
+$('#btnZero').addEventListener('click',()=>queueZero());
+$('#btnSnd').addEventListener('click',e=>{st.sound=!st.sound;e.target.setAttribute('aria-pressed',String(st.sound));e.target.textContent='Zvuk: '+(st.sound?'zapnuto':'vypnuto');if(st.sound)beep(900,.05,.05);});
+function numIn(kind){
+  const v=$('#numIn').value;const n=Math.floor(+v);
+  if(v===''||!isFinite(n)||n<0||n>999999){say('Zadej celé číslo od 0 do 999 999.');return;}
+  queueNumber(n,kind);
+}
+$('#btnNumAdd').addEventListener('click',()=>numIn('add'));
+$('#btnNumMin').addEventListener('click',()=>numIn('minu'));
+$('#numIn').addEventListener('keydown',e=>{if(e.key==='Enter')numIn(padKind());});
+document.addEventListener('keydown',e=>{
+  const tg=e.target;if(tg.closest&&tg.closest('input,select,textarea'))return;
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  if(/^[0-9]$/.test(e.key)&&!tg.closest('button.tab')){padDigit(+e.key);}
+  else if(e.key==='ArrowLeft'&&!tg.closest('[role=tablist]')){selectWheel(st.sel+1);}
+  else if(e.key==='ArrowRight'&&!tg.closest('[role=tablist]')){selectWheel(st.sel-1);}
+  else if(e.key==='m'||e.key==='M'){setBarMode(st.barMode?0:1);}
+  else if(e.key==='f'||e.key==='F'){toggleFs();}
+});
+$('#undBox').addEventListener('toggle',()=>{if($('#undBox').open){if(!ur)buildUnder();renderUnder();}});
+
+/* ---------- celá obrazovka ---------- */
+const box=$('#stageBox');
+const fsActive=()=>!!(document.fullscreenElement||document.webkitFullscreenElement)||box.classList.contains('pfs');
+function toggleFs(){
+  if(fsActive()){
+    if(document.fullscreenElement){document.exitFullscreen();}
+    else if(document.webkitFullscreenElement){document.webkitExitFullscreen();}
+    box.classList.remove('pfs','fs');afterFs();
+  }else{
+    const f=box.requestFullscreen||box.webkitRequestFullscreen;
+    if(f){
+      Promise.resolve(f.call(box)).then(()=>{box.classList.add('fs');afterFs();}).catch(()=>{box.classList.add('pfs');afterFs();});
+    }else{box.classList.add('pfs');afterFs();}
+  }
+}
+function afterFs(){
+  const on=fsActive();$('#btnFs').setAttribute('aria-pressed',String(on));
+  setTimeout(fit,60);
+}
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)box.classList.remove('fs');else box.classList.add('fs');afterFs();});
+document.addEventListener('webkitfullscreenchange',()=>{if(!document.webkitFullscreenElement)box.classList.remove('fs');else box.classList.add('fs');afterFs();});
+$('#btnFs').addEventListener('click',toggleFs);
+$('.fsbar').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  if(b.dataset.act==='bar')setBarMode(st.barMode?0:1);
+  else if(b.dataset.act==='zero')queueZero();
+  else if(b.dataset.act==='exit')toggleFs();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&box.classList.contains('pfs')){box.classList.remove('pfs');afterFs();}});
+
+function fit(){
+  const r=box.getBoundingClientRect();
+  const want=fsActive()?(r.width/Math.max(1,r.height)<1.1):r.width<760;
+  if(want!==st.compact||!refs)build(want);
+}
+new ResizeObserver(()=>fit()).observe(box);
+
+/* ---------- motiv ---------- */
+(function(){
+  let t=null;try{t=localStorage.getItem('pascalina-theme');}catch(e){}
+  if(t)document.documentElement.dataset.theme=t;
+  $('#btnTheme').addEventListener('click',()=>{
+    const cur=document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    const nx=cur==='dark'?'light':'dark';document.documentElement.dataset.theme=nx;
+    try{localStorage.setItem('pascalina-theme',nx);}catch(e){}
+  });
+})();
+
+/* ---------- záložky ---------- */
+$$('.tab').forEach(b=>b.addEventListener('click',()=>{
+  $$('.tab').forEach(x=>{const on=x===b;x.setAttribute('aria-selected',String(on));$('#'+x.getAttribute('aria-controls')).hidden=!on;});
+}));
+$('.tabs').addEventListener('keydown',e=>{
+  const t=$$('.tab'),i=t.indexOf(document.activeElement);if(i<0)return;
+  if(e.key==='ArrowRight'){t[(i+1)%t.length].focus();t[(i+1)%t.length].click();}
+  if(e.key==='ArrowLeft'){t[(i+t.length-1)%t.length].focus();t[(i+t.length-1)%t.length].click();}
+});
+
+/* ---------- úlohy ---------- */
+const TASKS=[
+ {id:'sc',title:'1 Sčítání bez přenosu',
+  goal:'Sečíst dvě čísla po řádech.',
+  text:'Přičti na stroji 241 a potom 358. Začni nulami.',
+  q:{t:'Kolikrát se při přičtení 241 a pak 358 přenese desítka?',o:['Ani jednou','Jednou','Dvakrát'],c:0,
+     e:'Jednotky 1 + 8 = 9, desítky 4 + 5 = 9 a stovky 2 + 3 = 5. Žádný součet řádu nepřekročí 9, takže se nic nepřenáší.'},
+  mode:0,expect:599,prep:()=>[],
+  hints:['Nejdřív přičti 241: na kolech jednotek, desítek a stovek zvol 1, 4 a 2.','Pak přičti 358 po řádech: 8, 5 a 3.','Okénka mají ukazovat 000 599. Můžeš použít „Zadat celé číslo“.'],
+  demo:()=>{queueNumber(241,'add');queueNumber(358,'add');}},
+ {id:'pr',title:'2 Přenos desítky',
+  goal:'Předpovědět, kde vznikne přenos.',
+  text:'Přičti 478 a potom 256. Sleduj, kde se kolo přehoupne z 9 na 0.',
+  q:{t:'Kolikrát se při přičtení 478 + 256 přenese desítka?',o:['Ani jednou','Jednou','Dvakrát'],c:2,
+     e:'Jednotky 8 + 6 = 14, takže zapíšeš 4 a přenese se 1. Desítky 7 + 5 + 1 = 13, takže zapíšeš 3 a přenese se 1. Stovky 4 + 2 + 1 = 7. Výsledek je 734 a přenos nastal dvakrát.'},
+  mode:0,expect:734,prep:()=>[],
+  hints:['Přičti 478: kola 8, 7 a 4.','Pak 256: 6, 5 a 2. Přenos stroj udělá sám, nic nepřičítáš ručně.','Okénka mají ukázat 000 734 a počítadlo přenosů 2.'],
+  demo:()=>{queueNumber(478,'add');queueNumber(256,'add');}},
+ {id:'do',title:'3 Domino přenosů',
+  goal:'Vysvětlit, proč přenos může projít celým strojem.',
+  text:'Stroj ukazuje 099 999. Přičti 1 na kolo jednotek a sleduj.',
+  q:{t:'Přičteš 1 ke stavu 099 999. Kolik kol se pohne?',o:['Jen kolo jednotek','Tři kola','Všech šest kol'],c:2,
+     e:'Jednotky přejdou z 9 na 0 a posunou desítky. Ty přejdou z 9 na 0 a posunou stovky, a tak dále, až desetitisíce a statisíce. Pohnou se všechna kola, protože se přenos šíří řádem po řádu. Pro páku sautoir je to velká zátěž, proto Pascal řešil přenos tak pečlivě.'},
+  mode:0,expect:100000,prep:()=>{queueNumber(99999,'add');},
+  hints:['Nejdřív stiskni „Připravit stav 099 999“.','Zvol kolo jednotek a bodcem v otvoru 1 ho otoč o jeden dílek.','Okénka mají ukázat 100 000 a počítadlo přenosů 5.'],
+  demo:()=>{enqueue({t:'dial',i:0,steps:1});},prepLabel:'Připravit stav 099 999'},
+ {id:'od',title:'4 Odčítání doplňkem',
+  goal:'Odečíst čísla pomocí doplňku do 9.',
+  text:'Vypočti 725 − 389. Přepni lištu na doplňky, menšenec zadej malými červenými číslicemi a menšitel velkými.',
+  q:{t:'Při odčítání na Pascalině se kola točí…',o:['opačným směrem než při sčítání','stejným směrem, jen se přičítá doplněk'],c:1,
+     e:'Kola se točí vždy jen jedním směrem. Odčítání se převede na přičítání doplňku: 725 − 389 = 999 999 − (999 274 + 389) = 336.'},
+  mode:1,expect:336,prep:()=>[],
+  hints:['Vynuluj stroj a přepni lištu na doplňky.','Menšenec 725 zadej přes „Nastavit jako menšenec“. Okénka pak ukážou 000 725.','Menšitel 389 přičti běžně („Přičíst“). Okénka ukážou 000 336.'],
+  demo:()=>{setBarMode(1);queueNumber(725,'minu');queueNumber(389,'add');}},
+ {id:'zp',title:'5 Záporný výsledek',
+  goal:'Vysvětlit, co stroj ukáže, když je menšitel větší.',
+  text:'Vypočti 120 − 250 stejným postupem jako v úloze 4.',
+  q:{t:'Co ukážou okénka s doplňky po výpočtu 120 − 250?',o:['−130','000 130','999 870'],c:2,
+     e:'Stroj nemá znaménko mínus. Počítá modulo 1 000 000, takže ukáže 1 000 000 − 130 = 999 870 a ztratí desítku z posledního kola. Obdobně počítají počítače s dvojkovým doplňkem.'},
+  mode:1,expect:999870,prep:()=>[],
+  hints:['Postupuj jako v úloze 4: lišta na doplňky, menšenec 120 malými číslicemi.','Pak přičti menšitel 250 běžně.','Okénka mají ukázat 999 870 a počítadlo ztracených desítek 1.'],
+  demo:()=>{setBarMode(1);queueNumber(120,'minu');queueNumber(250,'add');}}
+];
+const task={idx:0,phase:'predict',ans:null,conf:'1',hint:0,res:null,pending:false};
+let prog=0;
+try{prog=parseInt(localStorage.getItem('pascalina-prog')||'0',10)||0;}catch(e){}
+const saveProg=()=>{try{localStorage.setItem('pascalina-prog',String(prog));}catch(e){}$('#codeBox').value='PAS1-'+prog.toString(36);};
+const reading=()=>windowDigits().join('');
+function renderList(){
+  const tl=$('#taskList');tl.innerHTML='';
+  TASKS.forEach((t,k)=>{
+    const b=document.createElement('button');b.type='button';b.className='btn'+((prog>>k)&1?' done':'');b.dataset.k=k;
+    b.setAttribute('aria-pressed',String(k===task.idx));b.textContent=((prog>>k)&1?'✓ ':'')+t.title;tl.appendChild(b);
+  });
+}
+function renderTask(){
+  renderList();
+  const t=TASKS[task.idx],body=$('#taskBody');let h=`<h3>${t.title}</h3><p><b>Cíl úlohy:</b> ${t.goal}</p>`;
+  if(task.phase==='predict'){
+    h+=`<p><b>Nejdřív odhadni:</b> ${t.q.t}</p>`;
+    t.q.o.forEach((o,k)=>{h+=`<label class="opt"><input type="radio" name="ans" value="${k}"${task.ans===k?' checked':''}> ${o}</label>`;});
+    h+=`<div class="row"><label for="conf">Jak jsi si jistý/á?</label><select id="conf"><option value="0">Hádám</option><option value="1" selected>Spíš tuším</option><option value="2">Jsem si jistý/á</option></select>
+        <button class="btn" id="btnTip" type="button">Potvrdit tip</button></div>`;
+  }else{
+    const ok=task.ans===t.q.c;
+    h+=`<p>Tvůj tip: ${t.q.o[task.ans]} – <span class="${ok?'ok':'bad'}">${ok?'správně':'jinak'}</span>. Správně: ${t.q.o[t.q.c]}.</p><div class="note">${t.q.e}</div>`;
+    h+=`<p><b>Teď to proveď na stroji:</b> ${t.text}</p><div class="row">`;
+    h+=`<button class="btn" id="btnPrep" type="button">${t.prepLabel||'Vynulovat a začít'}</button>
+        <button class="btn" id="btnChk" type="button">Zkontrolovat</button>
+        <button class="btn" id="btnHint" type="button">Nápověda (${task.hint}/3)</button>
+        <button class="btn" id="btnDemo" type="button">Ukázat řešení na stroji</button></div>`;
+    for(let k=0;k<task.hint;k++)h+=`<div class="note"><b>Nápověda ${k+1}:</b> ${t.hints[k]}</div>`;
+    h+=`<div id="fb" aria-live="polite">${task.res||''}</div>`;
+  }
+  body.innerHTML=h;
+}
+$('#taskList').addEventListener('click',e=>{const b=e.target.closest('.btn');if(!b)return;Object.assign(task,{idx:+b.dataset.k,phase:'predict',ans:null,hint:0,res:null});renderTask();});
+$('#taskBody').addEventListener('click',e=>{
+  const t=TASKS[task.idx],id=e.target.id;
+  if(id==='btnTip'){
+    const r=$('input[name=ans]:checked');if(!r){$('#taskBody').insertAdjacentHTML('beforeend','<p class="bad">Vyber jednu odpověď.</p>');return;}
+    task.ans=+r.value;task.conf=$('#conf').value;task.phase='do';task.res=null;task.hint=0;
+    renderTask();
+  }else if(id==='btnPrep'){
+    queueZero();enqueue({t:'bar',m:0});
+    t.prep().forEach?0:0;
+    if(t.id==='do'||t.id==='zp'||t.id==='od'){}
+    if(t.id==='do'){enqueue({t:'silent',v:true});t.prep();enqueue({t:'silent',v:false});enqueue({t:'resetStats'});}
+    task.res='';$('#fb')&&($('#fb').textContent='');
+  }else if(id==='btnHint'){task.hint=Math.min(3,task.hint+1);renderTask();}
+  else if(id==='btnDemo'){
+    if(!st.queue.length&&isIdle()){queueZero();enqueue({t:'bar',m:0});if(t.id==='do'){enqueue({t:'silent',v:true});t.prep();enqueue({t:'silent',v:false});enqueue({t:'resetStats'});}t.demo();}
+  }else if(id==='btnChk'){check();}
+});
+function check(){
+  const t=TASKS[task.idx];let fb;
+  if(!isIdle()||st.queue.length){fb='<p>Počkej, až se stroj zastaví.</p>';}
+  else{
+    const rd=reading(),want=String(t.expect).padStart(6,'0'),modeOk=st.barMode===t.mode;
+    if(rd===want&&modeOk){
+      const conf=+task.conf,right=task.ans===t.q.c;
+      let extra='';
+      if(t.id==='pr')extra=` Přenosů jsi napočítal(a) ${st.carries}.`;
+      if(t.id==='do')extra=` Přenosů proběhlo ${st.carries}, pohnulo se všech 6 kol.`;
+      if(t.id==='zp')extra=` Ztracených desítek: ${st.overflow}.`;
+      fb=`<p class="ok">Správně: okénka ukazují ${want.replace(/^(\d{3})(\d{3})$/,'$1 $2')}.${extra}</p>`;
+      if(conf===2&&!right)fb+='<p>Poznámka: u tipu jsi byl(a) si jistý/á, ale odpověď byla jiná. Přečti si vysvětlení nahoře, často to jde o stejný druh omylu.</p>';
+      if(conf===0&&right)fb+='<p>Tip jsi hádal(a) a trefil(a) ses. Zkus teď vysvětlit proč, vlastními slovy.</p>';
+      prog|=1<<task.idx;saveProg();renderList();
+    }else if(rd===want&&!modeOk){
+      fb=`<p class="bad">Hodnota ${want} je správná, ale lišta ukazuje ${st.barMode?'doplňky':'čísla'}. ${t.mode?'V této úloze čteš výsledek v okénkách s doplňky.':'V této úloze čteš výsledek v řadě čísel.'}</p>`;
+    }else{
+      fb=`<p class="bad">Okénka ukazují ${rd.replace(/^(\d{3})(\d{3})$/,'$1 $2')}, očekává se ${want.replace(/^(\d{3})(\d{3})$/,'$1 $2')}.</p><p>Zkus nápovědu, nebo stroj vynuluj a zkus to znovu.</p>`;
+    }
+  }
+  task.res=fb;$('#fb').innerHTML=fb;
+}
+function tasksOnIdle(){}
+$('#btnCode').addEventListener('click',()=>{
+  const m=/^PAS1-([0-9a-z]+)$/i.exec($('#codeBox').value.trim());
+  if(!m){say('Kód zálohy má tvar PAS1-…');return;}
+  const v=parseInt(m[1],36);if(!isFinite(v)||v<0||v>=(1<<TASKS.length)){say('Neplatný kód zálohy.');return;}
+  prog=v;saveProg();renderList();say('Postup načten.');
+});
+
+/* ---------- start ---------- */
+buildPad();selectWheel(0);syncBarUI();saveProg();renderTask();
+fit();
+window.__pas={st,enqueue,queueNumber,queueZero,setBarMode,isIdle,reading,regValue,val};
+})();
+</script>
+</body>
+</html>
