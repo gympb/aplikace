@@ -96,6 +96,15 @@ footer a{color:inherit}
 table.ex{border-collapse:collapse;margin:8px 0;font-variant-numeric:tabular-nums}
 table.ex th,table.ex td{border:2px solid var(--line);padding:4px 10px;text-align:center}
 table.ex th{background:var(--soft)}
+.plus{display:inline-block;vertical-align:middle;margin-left:.4em;padding:.1em .5em;border-radius:4px;background:#1b2a4a;color:#fff;font:700 12px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;letter-spacing:.08em;white-space:nowrap}
+:root[data-theme=dark] .plus{background:#9db0d8;color:#0f161b}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .plus{background:#9db0d8;color:#0f161b}}
+.lvbox{border:2px solid var(--line);border-radius:10px;background:var(--card);padding:8px 10px;margin:10px 0}
+#lvSvg{display:block;width:100%;height:auto;max-height:520px;background:#241709;border-radius:8px}
+.lvph{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.lvph span{border:2px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.92rem;background:var(--bg);color:var(--muted)}
+.lvph span.on{background:var(--acc);color:#1d1a14;border-color:var(--line);font-weight:700}
+#lvCap{min-height:3em;margin:4px 0}
 </style>
 </head>
 <body>
@@ -116,7 +125,7 @@ table.ex th{background:var(--soft)}
 </div>
 
 <section class="panel" id="p-sim" role="tabpanel" aria-labelledby="tb-sim">
-<div class="goal"><b>Cíl:</b> po vyzkoušení dokážeš na Pascalině sečíst dvě čísla, odečíst je pomocí doplňku do 9 a vysvětlíš, kdy a proč se přenáší desítka. <span style="color:var(--muted)">Pro 1R–4R, samostatně i k projekci.</span></div>
+<div class="goal"><b>Cíl:</b> po vyzkoušení dokážeš na Pascalině sečíst dvě čísla a vysvětlíš, kdy a proč se přenáší desítka. <span style="color:var(--muted)">Pro 1R, samostatně i k projekci. Odčítání doplňkem a historie jsou označené <span class="plus">PLUS</span>: jdou nad rámec učiva přiřazených ročníků.</span></div>
 
 <div class="toolbar" role="toolbar" aria-label="Ovládání stroje">
   <button class="btn" id="btnBar" type="button" aria-pressed="false">Lišta: ukazují se čísla</button>
@@ -214,6 +223,20 @@ table.ex th{background:var(--soft)}
     <li><b>Přetečení.</b> Přenos z posledního kola nemá kam jít. Stroj proto počítá <i>modulo 1 000 000</i> (po 999 999 následuje 000 000).</li>
   </ul>
 
+  <div class="lvbox" id="lvBox">
+    <h3 style="margin-top:0">Animace: jak páka sautoir přenáší desítku</h3>
+    <p style="margin:2px 0 6px">Kolo jednotek je vpravo, kolo desítek vlevo. Červený kroužek na kole jednotek je čep, šedé kolečko na páce je závaží. Stiskni „Dílek“ a sleduj, co se stane při přechodu z 9 na 0. Zkus také zpomalit.</p>
+    <svg id="lvSvg" viewBox="60 0 640 410" role="img" aria-label="Animace páky sautoir: čep na kole jednotek zvedne páku, ta se uvolní, spadne a háčkem posune kolo desítek o jeden dílek"></svg>
+    <div class="lvph" id="lvPh" aria-hidden="true"><span data-k="1">1 Čep zvedá páku</span><span data-k="2">2 Páka se uvolní</span><span data-k="3">3 Páka padá vahou</span><span data-k="4">4 Háček táhne kolo desítek</span><span data-k="5">5 Desítka přičtena</span></div>
+    <div id="lvCap" aria-live="polite">Připraveno: jednotky 7, desítky 4. Stiskni „Dílek“.</div>
+    <div class="toolbar" role="group" aria-label="Ovládání animace">
+      <button class="btn" id="lvStep" type="button">Dílek (+1 na jednotkách)</button>
+      <button class="btn" id="lvPlay" type="button">▶ Přehrát celý přenos</button>
+      <button class="btn" id="lvReset" type="button">Znovu (7 a 4)</button>
+      <button class="btn" id="lvSlow" type="button" aria-pressed="false">Zpomaleně: vypnuto</button>
+    </div>
+  </div>
+
   <h2>Sčítání krok za krokem</h2>
   <p>Příklad 478 + 256 (stroj začíná na nule):</p>
   <table class="ex"><tr><th>krok</th><th>kolo</th><th>otočení</th><th>stav</th></tr>
@@ -225,7 +248,8 @@ table.ex th{background:var(--soft)}
   <tr><td>6</td><td>stovky</td><td>2</td><td>000 734</td></tr></table>
   <p>Výsledek 734 se přečte přímo z okének.</p>
 
-  <h2>Odčítání přičítáním doplňku</h2>
+  <h2>Odčítání přičítáním doplňku <span class="plus">PLUS</span></h2>
+  <p class="note"><span class="plus" style="margin:0">PLUS</span> Odčítání doplňkem jde nad rámec učiva přiřazených ročníků.</p>
   <p>Doplněk do 9 číslice <i>d</i> je 9 − <i>d</i>. Doplněk celého šestimístného čísla je <code>999 999 − a</code> (každá číslice se doplní zvlášť, bez půjčování). Platí:</p>
   <p style="text-align:center"><code>a − b = 999 999 − ((999 999 − a) + b)</code></p>
   <p>Stroj přičítá a okénka s doplňky ukazují 999 999 − (obsah kol). Postup pro 725 − 389:</p>
@@ -262,19 +286,20 @@ table.ex th{background:var(--soft)}
 
   <h2>Před Pascalinou a po ní</h2>
   <p>Pascalina nebyla ani první, ani poslední. Svislá osa ukazuje stroje a pomůcky, které s ní souvisejí. <span class="who">Roky jsou zaokrouhlené podle běžně uváděných údajů.</span></p>
+  <p class="note"><span class="plus" style="margin:0">PLUS</span> Položky s tímto štítkem jdou nad rámec učiva přiřazených ročníků. Bez štítku jsou Pascalina a Babbage.</p>
   <ol class="tline" aria-label="Svislá časová osa mechanických počítacích strojů">
-    <li><span class="yr">2.–1. století př. n. l.</span><b>Mechanismus z Antikythéry</b><p>Soustava ozubených kol počítající kalendář a pohyby těles. Nepočítá aritmetiku, ale ukazuje, že ozubená kola jako „počítač“ jsou stará.</p></li>
-    <li><span class="yr">1617</span><b>Napierovy kosti</b><p>John Napier (Skotsko): destičky s tabulkou násobilky usnadňují násobení. Ruční pomůcka, ne stroj.</p></li>
-    <li><span class="yr">1623</span><b>Schickardovy počítací hodiny</b><p>Wilhelm Schickard (Tübingen) navrhl a postavil první známý mechanický počítací stroj. Přenášel desítky a uměl přičítat i odčítat. Dochovaly se jen náčrtky a dopisy Keplerovi, podle nichž druhý stroj zničil požár. Stroj zůstal dlouho téměř neznámý.</p></li>
+    <li><span class="yr">2.–1. století př. n. l.</span><b>Mechanismus z Antikythéry</b> <span class="plus">PLUS</span><p>Soustava ozubených kol počítající kalendář a pohyby těles. Nepočítá aritmetiku, ale ukazuje, že ozubená kola jako „počítač“ jsou stará.</p></li>
+    <li><span class="yr">1617</span><b>Napierovy kosti</b> <span class="plus">PLUS</span><p>John Napier (Skotsko): destičky s tabulkou násobilky usnadňují násobení. Ruční pomůcka, ne stroj.</p></li>
+    <li><span class="yr">1623</span><b>Schickardovy počítací hodiny</b> <span class="plus">PLUS</span><p>Wilhelm Schickard (Tübingen) navrhl a postavil první známý mechanický počítací stroj. Přenášel desítky a uměl přičítat i odčítat. Dochovaly se jen náčrtky a dopisy Keplerovi, podle nichž druhý stroj zničil požár. Stroj zůstal dlouho téměř neznámý.</p></li>
     <li class="pas"><span class="yr">1642–1645</span><b>Pascalina (Blaise Pascal)</b><p>Přičítá a odčítá doplňkem, přenáší desítky pákou sautoir včetně řetězového přenosu. První počítací stroj, který se skutečně vyráběl a používal. Roku 1649 královské privilegium.</p></li>
-    <li><span class="yr">1666</span><b>Morlandův sčítací stroj</b><p>Samuel Morland (Anglie): sčítací stroj s kolečky, přenos desítky však obsluha řešila ručně pomocí pomocných číselníků.</p></li>
-    <li><span class="yr">1672–1694</span><b>Leibnizův stupňovitý válec</b><p>Gottfried Wilhelm Leibniz chtěl Pascalinu rozšířit o automatické násobení. Vymyslel válec se stupňovitými zuby („Leibnizovo kolo“), s nímž umí stroj všechny čtyři početní úkony. První stroj dokončil kolem roku 1694.</p></li>
-    <li><span class="yr">1820–1851</span><b>Aritmometr Thomase de Colmar</b><p>Použil Leibnizův válec a vytvořil první komerčně úspěšný a spolehlivý kancelářský počítací stroj. Do roku 1870 se vyrobilo asi 800 kusů.</p></li>
+    <li><span class="yr">1666</span><b>Morlandův sčítací stroj</b> <span class="plus">PLUS</span><p>Samuel Morland (Anglie): sčítací stroj s kolečky, přenos desítky však obsluha řešila ručně pomocí pomocných číselníků.</p></li>
+    <li><span class="yr">1672–1694</span><b>Leibnizův stupňovitý válec</b> <span class="plus">PLUS</span><p>Gottfried Wilhelm Leibniz chtěl Pascalinu rozšířit o automatické násobení. Vymyslel válec se stupňovitými zuby („Leibnizovo kolo“), s nímž umí stroj všechny čtyři početní úkony. První stroj dokončil kolem roku 1694.</p></li>
+    <li><span class="yr">1820–1851</span><b>Aritmometr Thomase de Colmar</b> <span class="plus">PLUS</span><p>Použil Leibnizův válec a vytvořil první komerčně úspěšný a spolehlivý kancelářský počítací stroj. Do roku 1870 se vyrobilo asi 800 kusů.</p></li>
     <li><span class="yr">1822</span><b>Babbageův Difference Engine</b><p>Charles Babbage navrhl obrovský mechanický stroj na tabulky hodnot. Za jeho života se nedokončil, ale myšlenka programovatelného stroje se tím posunula k počítači.</p></li>
-    <li><span class="yr">70. léta 19. století</span><b>Odhnerovo kolo</b><p>Menší a levnější stroj s „ozubeným kolem s výsuvnými zuby“. Kopírovaly ho desítky firem po celém světě.</p></li>
-    <li><span class="yr">1902</span><b>Daltonův stroj s klávesnicí</b><p>Mechanický sčítací stroj s deseti klávesami, obsluha je nejblíže dnešním kalkulačkám.</p></li>
-    <li><span class="yr">1948</span><b>Curta</b><p>Kapesní mechanická kalkulačka ve tvaru válce na pepř. Využívá Leibnizův válec ještě v 70. letech 20. století.</p></li>
-    <li><span class="yr">polovina 70. let 20. století</span><b>Konec mechanických kalkulaček</b><p>Elektronické kalkulačky je vytlačily. Myšlenka odčítání doplňkem žije dál ve dvojkovém doplňku v procesorech.</p></li>
+    <li><span class="yr">70. léta 19. století</span><b>Odhnerovo kolo</b> <span class="plus">PLUS</span><p>Menší a levnější stroj s „ozubeným kolem s výsuvnými zuby“. Kopírovaly ho desítky firem po celém světě.</p></li>
+    <li><span class="yr">1902</span><b>Daltonův stroj s klávesnicí</b> <span class="plus">PLUS</span><p>Mechanický sčítací stroj s deseti klávesami, obsluha je nejblíže dnešním kalkulačkám.</p></li>
+    <li><span class="yr">1948</span><b>Curta</b> <span class="plus">PLUS</span><p>Kapesní mechanická kalkulačka ve tvaru válce na pepř. Využívá Leibnizův válec ještě v 70. letech 20. století.</p></li>
+    <li><span class="yr">polovina 70. let 20. století</span><b>Konec mechanických kalkulaček</b> <span class="plus">PLUS</span><p>Elektronické kalkulačky je vytlačily. Myšlenka odčítání doplňkem žije dál ve dvojkovém doplňku v procesorech.</p></li>
   </ol>
 
   <h2>Čím byla Pascalina důležitá</h2>
@@ -790,7 +815,7 @@ const TASKS=[
   mode:0,expect:100000,prep:()=>{queueNumber(99999,'add');},
   hints:['Nejdřív stiskni „Připravit stav 099 999“.','Zvol kolo jednotek a bodcem v otvoru 1 ho otoč o jeden dílek.','Okénka mají ukázat 100 000 a počítadlo přenosů 5.'],
   demo:()=>{enqueue({t:'dial',i:0,steps:1});},prepLabel:'Připravit stav 099 999'},
- {id:'od',title:'4 Odčítání doplňkem',
+ {id:'od',plus:true,title:'4 Odčítání doplňkem',
   goal:'Odečíst čísla pomocí doplňku do 9.',
   text:'Vypočti 725 − 389. Přepni lištu na doplňky, menšenec zadej malými červenými číslicemi a menšitel velkými.',
   q:{t:'Při odčítání na Pascalině se kola točí…',o:['opačným směrem než při sčítání','stejným směrem, jen se přičítá doplněk'],c:1,
@@ -798,7 +823,7 @@ const TASKS=[
   mode:1,expect:336,prep:()=>[],
   hints:['Vynuluj stroj a přepni lištu na doplňky.','Menšenec 725 zadej přes „Nastavit jako menšenec“. Okénka pak ukážou 000 725.','Menšitel 389 přičti běžně („Přičíst“). Okénka ukážou 000 336.'],
   demo:()=>{setBarMode(1);queueNumber(725,'minu');queueNumber(389,'add');}},
- {id:'zp',title:'5 Záporný výsledek',
+ {id:'zp',plus:true,title:'5 Záporný výsledek',
   goal:'Vysvětlit, co stroj ukáže, když je menšitel větší.',
   text:'Vypočti 120 − 250 stejným postupem jako v úloze 4.',
   q:{t:'Co ukážou okénka s doplňky po výpočtu 120 − 250?',o:['−130','000 130','999 870'],c:2,
@@ -816,12 +841,12 @@ function renderList(){
   const tl=$('#taskList');tl.innerHTML='';
   TASKS.forEach((t,k)=>{
     const b=document.createElement('button');b.type='button';b.className='btn'+((prog>>k)&1?' done':'');b.dataset.k=k;
-    b.setAttribute('aria-pressed',String(k===task.idx));b.textContent=((prog>>k)&1?'✓ ':'')+t.title;tl.appendChild(b);
+    b.setAttribute('aria-pressed',String(k===task.idx));b.innerHTML=((prog>>k)&1?'✓ ':'')+t.title+(t.plus?' <span class="plus">PLUS</span>':'');tl.appendChild(b);
   });
 }
 function renderTask(){
   renderList();
-  const t=TASKS[task.idx],body=$('#taskBody');let h=`<h3>${t.title}</h3><p><b>Cíl úlohy:</b> ${t.goal}</p>`;
+  const t=TASKS[task.idx],body=$('#taskBody');let h=`<h3>${t.title}${t.plus?' <span class="plus">PLUS</span>':''}</h3>${t.plus?'<div class="note"><span class="plus" style="margin:0">PLUS</span> Tato úloha jde nad rámec učiva přiřazených ročníků. Je dobrovolná.</div>':''}<p><b>Cíl úlohy:</b> ${t.goal}</p>`;
   if(task.phase==='predict'){
     h+=`<p><b>Nejdřív odhadni:</b> ${t.q.t}</p>`;
     t.q.o.forEach((o,k)=>{h+=`<label class="opt"><input type="radio" name="ans" value="${k}"${task.ans===k?' checked':''}> ${o}</label>`;});
@@ -888,6 +913,134 @@ $('#btnCode').addEventListener('click',()=>{
   const v=parseInt(m[1],36);if(!isFinite(v)||v<0||v>=(1<<TASKS.length)){say('Neplatný kód zálohy.');return;}
   prog=v;saveProg();renderList();say('Postup načten.');
 });
+
+/* ---------- animace páky sautoir ---------- */
+(function(){
+  const NSV='http://www.w3.org/2000/svg';
+  const svg=$('#lvSvg');if(!svg)return;
+  const Pv={x:375,y:110},U={x:520,y:250},T={x:293,y:124},LA=135,RP=80,TH_REST=45;
+  const hookLocal=[-110,115];
+  const rad=d=>d*Math.PI/180;
+  const polr=(c,r,deg)=>[c.x+r*Math.sin(rad(deg)),c.y-r*Math.cos(rad(deg))];
+  function disc(c,id,label){
+    let g=`<g id="${id}" transform="rotate(0 ${c.x} ${c.y})">`;
+    g+=`<circle cx="${c.x}" cy="${c.y}" r="66" fill="#d3a748" stroke="#5a3d0f" stroke-width="3"/><circle cx="${c.x}" cy="${c.y}" r="58" fill="none" stroke="rgba(255,244,200,.5)" stroke-width="1.5"/>`;
+    for(let k=0;k<10;k++){
+      const a=-36*k,[tx,ty]=polr(c,47,a);
+      g+=`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" font-size="15" font-weight="700" font-family="Georgia,serif" fill="#3a2909" text-anchor="middle" dominant-baseline="central" transform="rotate(${a} ${tx.toFixed(1)} ${ty.toFixed(1)})">${k}</text>`;
+    }
+    g+=`<circle cx="${c.x}" cy="${c.y}" r="10" fill="#8f6620" stroke="#5a3d0f" stroke-width="2"/>`;
+    return g;
+  }
+  function fingers(c,base){
+    let g='';
+    for(let k=0;k<10;k++){
+      const a=base+36*k,p1=polr(c,66,a-5),p2=polr(c,84,a),p3=polr(c,66,a+5);
+      g+=`<path d="M${p1} L${p2} L${p3}Z" fill="#b98a2e" stroke="#5a3d0f" stroke-width="2"/>`;
+    }
+    return g;
+  }
+  // úhel prstu (ve směru hodin od vrchu) tak, aby při klidu ležel právě v poloze zubu háčku
+  function hookPos(th){const a=rad(th),[x,y]=hookLocal;return [Pv.x+x*Math.cos(a)-y*Math.sin(a),Pv.y+x*Math.sin(a)+y*Math.cos(a)];}
+  const H1=hookPos(28),fing0=Math.atan2(H1[0]-T.x,-(H1[1]-T.y))*180/Math.PI;
+  let m='';
+  m+=`<rect x="60" y="0" width="640" height="410" fill="#241709"/>`;
+  m+=`<g id="lvT">${disc(T,'lvTd')}${fingers(T,fing0)}</g></g>`.replace('</g></g>','</g>');
+  m=m.replace(/<g id="lvT">[\s\S]*$/,'');
+  m+=`<g id="lvTg">${disc(T,'lvTd').replace(/^<g id="lvTd"[^>]*>/,'')}${fingers(T,fing0)}</g>`;
+  const pinA=-18,[px,py]=polr(U,RP,pinA);
+  m+=`<g id="lvUg"><circle cx="${U.x}" cy="${U.y}" r="66" fill="#d3a748" stroke="#5a3d0f" stroke-width="3"/><circle cx="${U.x}" cy="${U.y}" r="58" fill="none" stroke="rgba(255,244,200,.5)" stroke-width="1.5"/>`;
+  for(let k=0;k<10;k++){const a=-36*k,[tx,ty]=polr(U,47,a);m+=`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" font-size="15" font-weight="700" font-family="Georgia,serif" fill="#3a2909" text-anchor="middle" dominant-baseline="central" transform="rotate(${a} ${tx.toFixed(1)} ${ty.toFixed(1)})">${k}</text>`;}
+  m+=`<circle cx="${U.x}" cy="${U.y}" r="10" fill="#8f6620" stroke="#5a3d0f" stroke-width="2"/>`;
+  m+=`<path d="M${polr(U,66,pinA)} L${px.toFixed(1)} ${py.toFixed(1)}" stroke="#7a2a1a" stroke-width="6" stroke-linecap="round"/><circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="8" fill="#c0392b" stroke="#2b0f08" stroke-width="2"/></g>`;
+  // páka
+  m+=`<g id="lvArm" transform="translate(${Pv.x} ${Pv.y}) rotate(${TH_REST})">
+    <path d="M-110 0 H${LA}" stroke="#c9ccd1" stroke-width="9" stroke-linecap="round"/>
+    <path d="M-110 0 H${LA}" stroke="#7b8087" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M-110 0 V${hookLocal[1]-6} q0 10 9 10" fill="none" stroke="#c9ccd1" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="${LA-30}" cy="16" r="17" fill="#6f747b" stroke="#2c2f33" stroke-width="3"/>
+    <text x="${LA-30}" y="17" font-size="11" fill="#fff" text-anchor="middle" dominant-baseline="central" font-family="system-ui,sans-serif">vaha</text>
+  </g>`;
+  m+=`<circle cx="${Pv.x}" cy="${Pv.y}" r="9" fill="#9aa0a8" stroke="#2c2f33" stroke-width="3"/><circle cx="${Pv.x}" cy="${Pv.y}" r="3" fill="#2c2f33"/>`;
+  // popisky
+  const lab=(x,y,t,a)=>`<text x="${x}" y="${y}" font-size="15" fill="#e9d9ae" text-anchor="${a||'middle'}" font-family="system-ui,sans-serif">${t}</text>`;
+  m+=lab(Pv.x+14,Pv.y-24,'páka sautoir','start');
+  m+=lab(hookPos(45)[0]-14,hookPos(45)[1]+34,'háček','end');
+  // okénka s číslicemi
+  const win=(c,id)=>`<rect x="${c.x-30}" y="352" width="60" height="50" rx="6" fill="#f1e2b8" stroke="#6b4a14" stroke-width="3"/><text id="${id}" x="${c.x}" y="378" font-size="34" font-weight="700" font-family="Georgia,serif" text-anchor="middle" dominant-baseline="central" fill="#1c150a">0</text>`;
+  m+=win(T,'lvTw')+win(U,'lvUw');
+  m+=lab(T.x,344,'kolo desítek')+lab(U.x,344,'kolo jednotek');
+  svg.innerHTML=m;
+
+  const st={Au:36*7,At:36*4,th:TH_REST,busy:false,slow:false,lastLift:null,phase:0};
+  const gU=$('#lvUg'),gT=$('#lvTg'),arm=$('#lvArm'),capEl=$('#lvCap');
+  const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+  const dig=a=>((Math.floor(a/36+1e-6)%10)+10)%10;
+  const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const sp=()=>(st.slow?0.4:1)*(rm?3:1);
+  function setPhase(k,text){
+    st.phase=k;
+    $$('#lvPh span').forEach(x=>x.classList.toggle('on',+x.dataset.k===k));
+    if(text)capEl.textContent=text;
+  }
+  function draw(){
+    gU.setAttribute('transform',`rotate(${st.Au.toFixed(2)} ${U.x} ${U.y})`);
+    gT.setAttribute('transform',`rotate(${st.At.toFixed(2)} ${T.x} ${T.y})`);
+    arm.setAttribute('transform',`translate(${Pv.x} ${Pv.y}) rotate(${st.th.toFixed(2)})`);
+    $('#lvUw').textContent=dig(st.Au);$('#lvTw').textContent=dig(st.At);
+  }
+  function contactTheta(Au){
+    const [x,y]=polr(U,RP,Au-18);
+    const d=Math.hypot(x-Pv.x,y-Pv.y);
+    if(d>LA)return null;
+    const t=Math.atan2(y-Pv.y,x-Pv.x)*180/Math.PI;
+    return t<TH_REST?t:null;
+  }
+  function seg(ms,fn){return new Promise(res=>{const t0=performance.now();(function f(now){const p=Math.min(1,(now-t0)/ms);fn(p);draw();if(p<1)requestAnimationFrame(f);else res();})(t0);});}
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  async function stepOnce(){
+    if(st.busy)return false;st.busy=true;
+    const a0=st.Au,carry=dig(a0)===9;st.lastLift=null;
+    setPhase(0,`Kolo jednotek se otáčí o jeden dílek (z ${dig(a0)} na ${(dig(a0)+1)%10}).`);
+    await seg(900/sp(),p=>{
+      st.Au=a0+36*ease(p);
+      const c=contactTheta(st.Au);
+      if(c!==null){st.th=c;st.lastLift=c;if(st.phase!==1)setPhase(1,'Čep zvedá páku. Ukládá se energie polohy, protože závaží stoupá.');}
+      else if(st.lastLift!==null){st.th=st.lastLift;if(st.phase!==2)setPhase(2,'Čep sklouzl z páky. Páka je uvolněná.');}
+      else st.th=TH_REST;
+    });
+    st.Au=a0+36;
+    if(carry){
+      const th0=st.lastLift??TH_REST,t0=st.At;
+      if(st.phase!==2)setPhase(2,'Čep sklouzl z páky. Páka je uvolněná.');
+      await wait(350/sp());
+      setPhase(3,'Páka padá vlastní vahou. Síla pádu nezávisí na tom, jak rychle jsi točil kolem.');
+      await seg(520/sp(),p=>{
+        const q=p*p;st.th=th0+(TH_REST-th0)*q;st.At=t0+36*q;
+        if(p>.35&&st.phase!==4)setPhase(4,'Háček zachytil zub a táhne kolo desítek o jeden dílek dopředu.');
+      });
+      st.th=TH_REST;st.At=t0+36;draw();
+      setPhase(5,`Hotovo: jednotky ${dig(st.Au)}, desítky ${dig(st.At)}. Přenos desítky proběhl.`);
+    }else{
+      st.th=TH_REST;draw();setPhase(0,`Jednotky ${dig(st.Au)}, desítky ${dig(st.At)}. Žádný přenos, páka zůstala klidná.`);
+      $$('#lvPh span').forEach(x=>x.classList.remove('on'));
+    }
+    st.busy=false;return true;
+  }
+  $('#lvStep').addEventListener('click',()=>{stepOnce();});
+  $('#lvPlay').addEventListener('click',async()=>{
+    if(st.busy)return;
+    st.Au=36*7;st.At=36*4;st.th=TH_REST;draw();await wait(250);
+    for(let i=0;i<3;i++){await stepOnce();await wait(450/sp());}
+  });
+  $('#lvReset').addEventListener('click',()=>{
+    if(st.busy)return;st.Au=36*7;st.At=36*4;st.th=TH_REST;draw();
+    $$('#lvPh span').forEach(x=>x.classList.remove('on'));capEl.textContent='Připraveno: jednotky 7, desítky 4. Stiskni „Dílek“.';
+  });
+  $('#lvSlow').addEventListener('click',e=>{st.slow=!st.slow;e.target.setAttribute('aria-pressed',String(st.slow));e.target.textContent='Zpomaleně: '+(st.slow?'zapnuto':'vypnuto');});
+  draw();
+  window.__lv={st,stepOnce,draw};
+})();
 
 /* ---------- start ---------- */
 buildPad();selectWheel(0);syncBarUI();saveProg();renderTask();
