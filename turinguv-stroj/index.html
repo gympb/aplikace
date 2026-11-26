@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turingův stroj – pásek, hlava a tabulka pravidel | Školní aplikace GymPB</title>
+<meta name="description" content="Simulátor Turingova stroje: pásek, čtecí hlava, stavy a tabulka pravidel. Úlohy s předpovědí, doplňování pravidel a psaní vlastních programů, výklad i historie od Hilberta po Turinga. Určeno pro počítač nebo větší displej.">
+<meta name="author" content="Ivo Bešťák">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="gymplikace">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Turingův stroj – pásek, hlava a tabulka pravidel">
+<meta property="og:description" content="Simulátor Turingova stroje: pásek, čtecí hlava, stavy a tabulka pravidel. Úlohy s předpovědí, doplňování pravidel a psaní vlastních programů, výklad i historie od Hilberta po Turinga. Určeno pro počítač nebo větší displej.">
+<meta property="og:url" content="https://aplikace.gympb.cz/turinguv-stroj/">
+<meta property="og:image" content="https://aplikace.gympb.cz/turinguv-stroj/nahled.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#F4F1EA;--fg:#1d1a14;--card:#fff;--line:#1d1a14;--acc:#FF972E;--muted:#5f584a;--ok:#25702f;--bad:#a52f1b;--soft:#ebe5d6;--hi:rgba(255,151,46,.38)}
+:root[data-theme=dark]{--bg:#16130e;--fg:#f1ece0;--card:#211c14;--line:#d9d0bb;--muted:#b3aa95;--ok:#7fd48a;--bad:#ff9a85;--soft:#2b251a;--hi:rgba(255,151,46,.32)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#16130e;--fg:#f1ece0;--card:#211c14;--line:#d9d0bb;--muted:#b3aa95;--ok:#7fd48a;--bad:#ff9a85;--soft:#2b251a;--hi:rgba(255,151,46,.32)}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:1240px;margin:0 auto;padding:10px 16px 28px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;border-bottom:2px solid var(--line);padding-bottom:8px}
+.back{color:var(--fg);font-weight:600;text-decoration:none;min-height:44px;display:inline-flex;align-items:center;border-bottom:2px solid var(--acc)}
+.top .sp{flex:1}
+h1{font-size:1.7rem;line-height:1.2;margin:14px 0 4px}
+h2{font-size:1.2rem;margin:18px 0 6px}
+h3{font-size:1.02rem;margin:14px 0 4px}
+p{margin:6px 0}
+.lead{color:var(--muted);margin:0 0 6px}
+.goal{border:2px solid var(--line);border-left:8px solid var(--acc);background:var(--card);padding:8px 12px;border-radius:8px;margin:10px 0}
+.btn{min-height:44px;min-width:44px;padding:0 14px;border:2px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;font:inherit;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--soft)}
+.btn[aria-pressed=true],.btn.on{background:var(--acc);color:#1d1a14}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #2a6fdb;outline-offset:2px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;align-items:center}
+.toolbar label{display:flex;align-items:center;gap:8px;font-weight:600}
+input[type=range]{min-height:44px;width:150px;accent-color:#c46a00}
+#stageBox{position:relative;border:2px solid var(--line);border-radius:10px;overflow:hidden;background:var(--soft)}
+#tape{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none}
+#stageBox.fs,#stageBox.pfs{display:flex;flex-direction:column;justify-content:center;align-items:center;width:100vw;height:100vh;border:0;border-radius:0;background:var(--bg)}
+#stageBox.pfs{position:fixed;inset:0;z-index:1000}
+#stageBox.fs #tape,#stageBox.pfs #tape{max-height:48vh}
+.fsbar{display:none;gap:8px;padding:8px;justify-content:center;flex-wrap:wrap}
+#stageBox.fs .fsbar,#stageBox.pfs .fsbar{display:flex}
+#capBig{display:none;font-size:1.6rem;line-height:1.35;text-align:center;padding:6px 24px;max-width:1100px}
+#stageBox.fs #capBig,#stageBox.pfs #capBig{display:block}
+.cell rect{fill:var(--card);stroke:var(--line);stroke-width:3}
+.cell.blank rect{fill:var(--soft)}
+.cell text.sy{font:700 34px ui-monospace,Menlo,Consolas,monospace;fill:var(--fg);text-anchor:middle;dominant-baseline:central}
+.cell text.ix{font:12px system-ui,sans-serif;fill:var(--muted);text-anchor:middle}
+#tp{transition:transform .22s ease}
+#headFrame{fill:none;stroke:var(--acc);stroke-width:7}
+#headArrow{fill:var(--acc);stroke:var(--line);stroke-width:2}
+#stBox{fill:var(--card);stroke:var(--line);stroke-width:3}
+#stTxt{font:700 26px ui-monospace,Menlo,Consolas,monospace;fill:var(--fg);text-anchor:middle;dominant-baseline:central}
+.stat{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin:8px 0;padding:8px 12px;background:var(--card);border:2px solid var(--line);border-radius:8px}
+.stat b{font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.15rem}
+.say{min-height:3.2em;color:var(--fg)}
+.pad{background:var(--card);border:2px solid var(--line);border-radius:8px;padding:10px 12px;margin:10px 0}
+.row{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin:6px 0}
+.row label{font-weight:600}
+input[type=text],select{min-height:44px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;padding:0 10px}
+input[type=text]{font-family:ui-monospace,Menlo,Consolas,monospace;width:15em;max-width:100%}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0;border-bottom:2px solid var(--line)}
+.tab{min-height:44px;padding:0 16px;border:2px solid var(--line);border-bottom:0;border-radius:8px 8px 0 0;background:var(--soft);color:var(--fg);font:inherit;font-weight:600;cursor:pointer}
+.tab[aria-selected=true]{background:var(--acc);color:#1d1a14}
+.tab:focus-visible{outline:3px solid #2a6fdb;outline-offset:2px}
+.panel{border:2px solid var(--line);border-top:0;background:var(--card);padding:6px 16px 16px;border-radius:0 0 8px 8px;margin-bottom:8px}
+.panel[hidden]{display:none}
+.ok{color:var(--ok);font-weight:600}.bad{color:var(--bad);font-weight:600}
+.note{border-left:4px solid var(--acc);padding:4px 10px;background:var(--soft);border-radius:4px;margin:8px 0}
+.tl{display:flex;flex-wrap:wrap;gap:6px 6px;margin:8px 0;align-items:center}
+.tl .grp{font-weight:700;color:var(--muted);margin:0 2px 0 10px;font-size:.92rem}
+.tl .grp:first-child{margin-left:0}
+.tl .btn.done2{border-color:var(--ok);box-shadow:inset 0 -4px 0 var(--ok)}
+.tl .btn.done1{border-color:var(--ok);border-style:dashed}
+code,kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--soft);padding:0 5px;border-radius:4px}
+details.und{margin:10px 0;border:2px solid var(--line);border-radius:8px;background:var(--card)}
+details.und summary{min-height:44px;display:flex;align-items:center;padding:0 12px;cursor:pointer;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chips span{border:2px solid var(--line);border-radius:999px;padding:2px 12px;font-size:.95rem;background:var(--bg);color:var(--muted)}
+.chips span.on{background:var(--acc);color:#1d1a14;font-weight:700}
+table.rules{border-collapse:collapse;margin:8px 0;width:100%;max-width:680px}
+table.rules th,table.rules td{border:2px solid var(--line);padding:3px 6px;text-align:center;font-family:ui-monospace,Menlo,Consolas,monospace}
+table.rules th{background:var(--soft);font-family:system-ui,sans-serif;font-size:.9rem}
+table.rules tr.next td{background:var(--hi)}
+table.rules tr.hole td:first-child{box-shadow:inset 6px 0 0 #2a6fdb}
+table.rules td.none{color:var(--muted)}
+table.rules select{min-height:44px;min-width:52px;padding:0 4px;font-family:ui-monospace,Menlo,Consolas,monospace}
+table.rules .sticky{position:sticky;top:0}
+.legend{color:var(--muted);font-size:.92rem}
+.hint{border-left:4px solid #2a6fdb;padding:4px 10px;background:var(--soft);border-radius:4px;margin:6px 0}
+.sw{border:2px solid var(--line);border-radius:8px;padding:6px 12px;background:var(--bg);margin:6px 0}
+footer{margin-top:24px;padding-top:10px;border-top:2px solid var(--line);color:var(--muted);font-size:.9rem}
+footer a{color:inherit}
+@media (max-width:700px){h1{font-size:1.4rem}.panel{padding:4px 10px 12px}input[type=text]{width:100%}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}#tp{transition:none}}
+.tline{list-style:none;margin:10px 0 6px;padding:0 0 0 30px;border-left:4px solid var(--line);position:relative}
+.tline li{position:relative;margin:0 0 14px;padding:8px 12px;background:var(--bg);border:2px solid var(--line);border-radius:8px}
+.tline li::before{content:"";position:absolute;left:-43px;top:14px;width:16px;height:16px;border-radius:50%;background:var(--card);border:3px solid var(--line)}
+.tline li.pas{background:var(--soft);border-color:var(--acc);border-width:3px}
+.tline li.pas::before{background:var(--acc);width:20px;height:20px;left:-45px;top:12px}
+.tline .yr{display:block;font-weight:800;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.tline p{margin:3px 0}
+.parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin:8px 0}
+.parts>div{border:2px solid var(--line);border-radius:8px;padding:6px 12px;background:var(--bg)}
+.parts h3{margin:4px 0}
+table.ex{border-collapse:collapse;margin:8px 0;font-variant-numeric:tabular-nums}
+table.ex th,table.ex td{border:2px solid var(--line);padding:4px 10px;text-align:center}
+table.ex th{background:var(--soft)}
+table.ex td.mono{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em}
+table.ex .hd{background:var(--acc);color:#1d1a14;padding:0 3px;border-radius:3px}
+.scroll{overflow-x:auto}
+.plus{display:inline-block;vertical-align:middle;margin-left:.4em;padding:.1em .5em;border-radius:4px;background:#1b2a4a;color:#fff;font:700 12px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;letter-spacing:.08em;white-space:nowrap}
+:root[data-theme=dark] .plus{background:#9db0d8;color:#0f161b}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .plus{background:#9db0d8;color:#0f161b}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+  <a class="back" href="../">← Všechny školní aplikace</a>
+  <span class="sp"></span>
+  <button class="btn" id="btnTheme" type="button" aria-label="Přepnout světlý a tmavý režim">◐ Režim</button>
+</div>
+
+<h1>Turingův stroj – pásek, hlava a tabulka pravidel</h1>
+<p class="lead">Simulátor myšlenkového stroje, kterým Alan Turing v roce 1936 přesně popsal, co znamená „počítat“.</p>
+
+<div class="tabs" role="tablist" aria-label="Části aplikace">
+  <button class="tab" role="tab" id="tb-sim" aria-controls="p-sim" aria-selected="true">Simulátor</button>
+  <button class="tab" role="tab" id="tb-jak" aria-controls="p-jak" aria-selected="false">Jak to funguje</button>
+  <button class="tab" role="tab" id="tb-his" aria-controls="p-his" aria-selected="false">Historie</button>
+</div>
+
+<section class="panel" id="p-sim" role="tabpanel" aria-labelledby="tb-sim">
+<div class="goal"><b>Cíl:</b> po vyzkoušení dokážeš z tabulky pravidel předpovědět, co Turingův stroj s páskem udělá, doplnit chybějící pravidla a napsat vlastní jednoduchý program. Vysvětlíš také, proč tak primitivní model stačí k popisu každého algoritmu. <span style="color:var(--muted)">Pro 4R, samostatně i k projekci. Turingův stroj jako formální model výpočtu jde nad rámec učiva informatiky, proto je celá aplikace označená <span class="plus">PLUS</span>.</span></div>
+
+<div class="tl" id="taskList" role="group" aria-label="Seznam úloh"></div>
+<div id="taskHead"></div>
+
+<div class="toolbar" role="toolbar" aria-label="Ovládání stroje">
+  <button class="btn" id="btnBack" type="button" title="Zpět o krok (←)">◀ Zpět</button>
+  <button class="btn" id="btnStep" type="button" title="Jeden krok (→)">Krok ▶</button>
+  <button class="btn" id="btnRun" type="button" aria-pressed="false" title="Spustit nebo pozastavit (mezerník)">▶▶ Spustit</button>
+  <button class="btn" id="btnReset" type="button" title="Vrátit pásek na začátek (R)">⟲ Znovu</button>
+  <label for="spd">Rychlost <input type="range" id="spd" min="1" max="5" value="3" aria-valuetext="střední"></label>
+  <button class="btn" id="btnFs" type="button" aria-pressed="false" title="Celá obrazovka pro projekci (F)">⛶ Projekce</button>
+</div>
+
+<div id="stageBox">
+  <svg id="tape" viewBox="0 0 1000 190" role="img" aria-label="Pásek Turingova stroje se čtecí hlavou" xmlns="http://www.w3.org/2000/svg">
+    <g id="tp"></g>
+    <rect id="headFrame" x="458" y="32" width="84" height="82" rx="8"/>
+    <polygon id="headArrow" points="500,128 486,144 514,144"/>
+    <rect id="stBox" x="440" y="144" width="120" height="40" rx="8"/>
+    <text id="stTxt" x="500" y="165"></text>
+  </svg>
+  <div id="capBig" aria-hidden="true"></div>
+  <div class="fsbar">
+    <button class="btn" data-act="back" type="button">◀ Zpět</button>
+    <button class="btn" data-act="step" type="button">Krok ▶</button>
+    <button class="btn" data-act="run" type="button">▶▶ Spustit</button>
+    <button class="btn" data-act="reset" type="button">⟲ Znovu</button>
+    <button class="btn" data-act="exit" type="button">Zavřít celou obrazovku</button>
+  </div>
+</div>
+
+<div class="stat" aria-live="off">
+  <span>Stav: <b id="rdState">q0</b></span>
+  <span>Pod hlavou: <b id="rdSym">_</b></span>
+  <span>Kroků: <b id="rdSteps">0</b></span>
+</div>
+<div class="say" id="say" aria-live="polite"></div>
+
+<details class="und" id="undBox" open>
+  <summary>Pod víkem: jeden krok stroje</summary>
+  <div style="padding:0 14px 10px">
+    <div class="chips" id="chips" aria-hidden="true"><span id="c1">① přečti symbol pod hlavou</span><span id="c2">② najdi pravidlo (stav, symbol)</span><span id="c3">③ zapiš, posuň, změň stav</span></div>
+    <p id="underTxt" style="margin:4px 0"></p>
+  </div>
+</details>
+
+<div class="pad" id="inputPad">
+  <h3 style="margin-top:0">Vstup na pásku</h3>
+  <div class="row">
+    <label for="inTape">Pásek:</label>
+    <input type="text" id="inTape" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="inLeg">
+    <button class="btn" id="btnSet" type="button">Nastavit pásek</button>
+    <button class="btn" id="btnRnd" type="button">Náhodný vstup</button>
+  </div>
+  <div class="row" id="presets" role="group" aria-label="Hotové vstupy"></div>
+  <p class="legend" id="inLeg"></p>
+</div>
+
+<div class="pad" id="predBox" hidden>
+  <h3 style="margin-top:0">Nejdřív odhadni</h3>
+  <p id="predQ"></p>
+  <div class="row">
+    <label for="predIn">Pásek na konci:</label>
+    <input type="text" id="predIn" maxlength="30" autocomplete="off" autocapitalize="off" spellcheck="false">
+  </div>
+  <div class="row" role="radiogroup" aria-label="Jak moc si jsi jistý(á)?">
+    <span style="font-weight:600">Jak moc jsi si jistý(á)?</span>
+    <button class="btn" type="button" role="radio" aria-checked="false" data-conf="j">Jistě</button>
+    <button class="btn" type="button" role="radio" aria-checked="false" data-conf="s">Spíš ano</button>
+    <button class="btn" type="button" role="radio" aria-checked="false" data-conf="h">Hádám</button>
+  </div>
+  <div class="row">
+    <button class="btn" id="btnPred" type="button">Zapsat odhad a odemknout stroj</button>
+    <button class="btn" id="btnSkip" type="button">Přeskočit odhad</button>
+  </div>
+  <div id="predFb"></div>
+</div>
+
+<h2 id="rulesH">Tabulka pravidel</h2>
+<div id="rulesWrap"></div>
+<p class="legend">Šipky: ◀ posun doleva, ▶ posun doprava, ● zůstat na místě. Znak <code>_</code> je prázdná buňka. Koncové stavy: <code>H</code> = konec, <code>ANO</code> a <code>NE</code> = odpověď na otázku.</p>
+
+<div class="pad" id="checkPad" hidden>
+  <h3 style="margin-top:0">Kontrola programu</h3>
+  <div class="row">
+    <button class="btn" id="btnCheck" type="button">Zkontrolovat program</button>
+    <button class="btn" id="btnHint" type="button">Nápověda (0/3)</button>
+    <button class="btn" id="btnSol" type="button" hidden>Ukázat řešení</button>
+  </div>
+  <div id="hintBox" aria-live="polite"></div>
+  <div id="checkFb" aria-live="polite"></div>
+</div>
+
+<div class="pad" id="dilnaPad" hidden>
+  <div class="row">
+    <label for="loadSel">Načíst hotový program do dílny:</label>
+    <select id="loadSel"></select>
+    <button class="btn" id="btnLoad" type="button">Načíst</button>
+    <button class="btn" id="btnClear" type="button">Vymazat tabulku</button>
+  </div>
+</div>
+
+<details style="margin-top:14px"><summary style="min-height:44px;display:flex;align-items:center;cursor:pointer">Postup a záloha</summary>
+  <p id="calLine" style="margin:6px 0"></p>
+  <div class="row"><input type="text" id="codeBox" size="14" aria-label="Kód zálohy">
+  <button class="btn" id="btnCode" type="button">Načíst kód</button></div>
+  <p style="color:var(--muted)">Postup se ukládá jen v tomto prohlížeči. Kód si zapiš, na jiném zařízení ho vlož a načti.</p></details>
+
+<h2>Jak ovládat tento model</h2>
+<p>Tlačítka <b>Krok</b> a <b>Zpět</b> posouvají výpočet po jednom pravidle, <b>Spustit</b> ho pustí samočinně rychlostí podle posuvníku. Klávesy: <kbd>→</kbd> krok, <kbd>←</kbd> zpět, mezerník spustit nebo pozastavit, <kbd>R</kbd> znovu, <kbd>F</kbd> celá obrazovka. V tabulce, kterou smíš upravovat, vybíráš ze seznamů; řádek, který stroj použije v příštím kroku, je podbarvený.</p>
+</section>
+
+<section class="panel" id="p-jak" role="tabpanel" aria-labelledby="tb-jak" hidden>
+  <h2>Myšlenka: nejjednodušší počítač, jaký lze vymyslet</h2>
+  <p>Turingův stroj <b>není přístroj</b>, který by někdo postavil. Je to <b>abstraktní myšlenkový model</b>: tak malý, že se o něm dá přesně uvažovat a něco dokazovat. Turing chtěl odpovědět na otázku „co všechno lze vypočítat?“ a k tomu potřeboval nejdřív přesně říct, co je výpočet. Vymyslel stroj, který si představíš ze čtyř částí.</p>
+  <div class="parts">
+    <div><h3>Pásek</h3><p>Nekonečně dlouhá řada buněk. V každé je jeden symbol z pevné abecedy (třeba <code>0</code>, <code>1</code>) nebo prázdno <code>_</code>. Na začátku je na pásku vstup a zbytek je prázdný. Pásek je paměť i vstup a výstup.</p></div>
+    <div><h3>Hlava</h3><p>Vidí vždy jedinou buňku. Může ji přepsat a pak se posunout o jednu buňku doleva nebo doprava (případně zůstat). Nic dalšího neumí, nevidí do dálky ani nemůže skočit.</p></div>
+    <div><h3>Stav</h3><p>Stroj si pamatuje jen to, v jakém z <b>konečně mnoha</b> stavů je (např. <code>q0</code>). Stav je jeho jediná „vnitřní paměť“, takže musí vyjadřovat roli, např. „jdu doprava na konec čísla“.</p></div>
+    <div><h3>Tabulka pravidel</h3><p>Je to program. Pro každou dvojici (stav, přečtený symbol) říká: <b>co zapsat</b>, <b>kam se posunout</b> a <b>do jakého stavu přejít</b>. Stroj končí v koncovém stavu.</p></div>
+  </div>
+
+  <h2>Jeden krok</h2>
+  <ol>
+    <li><b>Přečti</b> symbol, na kterém stojí hlava.</li>
+    <li><b>Najdi</b> v tabulce řádek pro dvojici (stav, symbol).</li>
+    <li><b>Zapiš</b> symbol z řádku, <b>posuň</b> hlavu a <b>přejdi</b> do nového stavu.</li>
+  </ol>
+  <p>Když pro dvojici pravidlo chybí, nemá stroj co dělat. V této aplikaci to bereme jako chybu programu (zastavení mimo koncový stav). Stroj je deterministický: v každé situaci je právě jedno pravidlo.</p>
+
+  <h2>Příklad: přičti 1 ke dvojkovému číslu</h2>
+  <p>Tabulka z úlohy Ukázka 3 přičte 1 k číslu <code>1011</code> (tedy 11 → 12). Stav <code>q0</code> jede doprava na konec čísla, stav <code>q1</code> jde zpět a řeší <b>přenos</b>: jedničky mění na nuly, dokud nenarazí na nulu nebo na prázdno, kam zapíše 1.</p>
+  <div class="scroll"><table class="ex" id="traceTbl" aria-label="Stopa výpočtu přičtení 1 k číslu 1011"></table></div>
+  <p class="legend">Stopa vznikla spuštěním skutečné tabulky. Hlava je zvýrazněná.</p>
+  <p class="note"><b>Tip pro psaní programů:</b> každému stavu dej slovní roli (např. „q1 = nesu přenos“) dřív, než začneš vyplňovat tabulku. Je to totéž, co pojmenovat proměnnou.</p>
+
+  <h2>Proč tak jednoduchý model stačí? <span class="plus">PLUS</span></h2>
+  <p><b>Churchova–Turingova teze</b> tvrdí: cokoli lze spočítat nějakým algoritmem, lze spočítat Turingovým strojem. Není to věta k dokázání, protože „algoritmus“ je v ní nepřesný pojem. Opírá se o to, že všechny navržené přesné modely (λ-kalkul, rekurzivní funkce, Postovy systémy i dnešní programovací jazyky) vyšly stejně silné. Turingův stroj je přitom velmi pomalý, ale otázka „co lze spočítat“ na rychlosti nezávisí.</p>
+
+  <h2>Program jako data: univerzální stroj <span class="plus">PLUS</span></h2>
+  <p>Tabulku pravidel lze zapsat na pásek jako text. Turing ukázal, že existuje <b>jediný</b> stroj <i>U</i>, který přečte popis libovolného stroje <i>M</i> spolu s jeho vstupem <i>w</i> a výpočet <i>M</i> na <i>w</i> napodobí. Dnešní počítač je takový univerzální stroj: program leží v paměti vedle dat a procesor ho vykonává. Rozdíl je jen v tom, že skutečný počítač má paměť konečnou.</p>
+
+  <h2>Co žádný program nespočítá: problém zastavení <span class="plus">PLUS</span></h2>
+  <p>Lze napsat program <i>H</i>, který pro libovolný program <i>P</i> a vstup <i>x</i> správně řekne, zda <i>P</i> na <i>x</i> někdy skončí? <b>Nelze.</b> Skica důkazu: předpokládejme, že <i>H</i> existuje. Sestavíme program <i>D</i>, který dostane program <i>P</i>, zeptá se <i>H</i>, zda <i>P</i> skončí na vstupu <i>P</i>, a když <i>H</i> řekne „skončí“, <i>D</i> se zacyklí; když řekne „neskončí“, <i>D</i> skončí. Co udělá <i>D</i>, když dostane sám sebe? Skončí právě tehdy, když neskončí. To je spor, takže <i>H</i> existovat nemůže. Ukazuje to, že hranice výpočtu jsou dané matematicky, ne slabým hardwarem.</p>
+
+  <h2>Co model zjednodušuje</h2>
+  <ul>
+    <li><b>Nekonečný pásek neexistuje.</b> Skutečný počítač má konečnou paměť. Aplikace vypadá, že pásek roste podle potřeby, ale jen do paměti prohlížeče.</li>
+    <li><b>Hlava chodí po buňkách.</b> Skutečná paměť umí skočit na adresu. Proto jsou programy pro Turingův stroj dlouhé a pomalé; to u otázky „lze to spočítat?“ nevadí, u otázky „jak rychle?“ ano.</li>
+    <li><b>Abeceda i stavy jsou konečné</b> a stroj je deterministický. Existují i varianty (více pásek, nedeterministický stroj), které nic nového vypočítat nedokážou.</li>
+    <li><b>Aplikace</b> omezuje délku vstupu na 24 symbolů a výpočet na 20 000 kroků, aby se nezacyklila prohlížeči.</li>
+  </ul>
+</section>
+
+<section class="panel" id="p-his" role="tabpanel" aria-labelledby="tb-his" hidden>
+  <h2>Jak Turingův stroj vznikl</h2>
+  <p><b>Otázka.</b> Na přelomu 19. a 20. století chtěli matematici dát matematice jisté základy. David Hilbert se ptal, zda existuje postup, který o libovolném logickém tvrzení rozhodne, jestli je platné. Tomu se říká <i>Entscheidungsproblem</i> („problém rozhodnutí“), v dnešní podobě ho Hilbert a Ackermann zformulovali roku 1928. Nikdo ale přesně neřekl, co je „postup“.</p>
+  <p><b>Překážka.</b> Roku 1931 Kurt Gödel dokázal, že v dostatečně bohaté matematice existují pravdivá tvrzení, která nejde dokázat. Naděje na úplný, mechanický systém matematiky tím dostala první ránu.</p>
+  <p><b>Odpověď.</b> Alan Turing byl tehdy mladý matematik v Cambridgi. V článku <i>On Computable Numbers, with an Application to the Entscheidungsproblem</i> (1936) popsal stroj z pásku, hlavy a tabulky pravidel a ukázal, že obecný postup rozhodování neexistuje. Ve stejné době k témuž došel jinou cestou americký logik Alonzo Church (λ-kalkul). Turing pak dokázal, že obě cesty vedou k témuž. Název „Turingův stroj“ použil poprvé Church.</p>
+  <p><b>Co z toho vzešlo.</b> Model dal přesnou definici algoritmu a ukázal, že existují problémy, které žádný program nevyřeší. Idea univerzálního stroje se po válce potkala s konstrukcemi skutečných počítačů.</p>
+
+  <h2>Časová osa</h2>
+  <p class="note"><span class="plus" style="margin:0">PLUS</span> Celá aplikace jde nad rámec učiva. Štítek mají jen ty položky, které nejsou nutné k pochopení Turingova stroje samotného.</p>
+  <ol class="tline" aria-label="Svislá časová osa od Hilberta po Turingovu cenu">
+    <li><span class="yr">1928</span><b>Hilbertův problém rozhodnutí</b> <span class="plus">PLUS</span><p>David Hilbert a Wilhelm Ackermann formulují otázku, zda existuje postup, který o libovolném tvrzení logiky rozhodne, jestli je platné.</p></li>
+    <li><span class="yr">1931</span><b>Gödelovy věty o neúplnosti</b> <span class="plus">PLUS</span><p>Kurt Gödel ukazuje meze dokazování v matematice. Pro Turinga je to důležitý kontext.</p></li>
+    <li><span class="yr">1936</span><b>Churchův λ-kalkul a Postův model</b> <span class="plus">PLUS</span><p>Alonzo Church dokazuje, že problém rozhodnutí nemá řešení. Emil Post ve stejné době popisuje vlastní stroj, v podstatě totožný s Turingovým.</p></li>
+    <li class="pas"><span class="yr">1936–1937</span><b>On Computable Numbers (Alan Turing)</b><p>Turing popisuje stroj s páskem, hlavou a tabulkou pravidel, univerzální stroj a ukazuje, že problém zastavení nelze rozhodnout. Dokazuje i rovnocennost se systémem Alonza Churche.</p></li>
+    <li><span class="yr">1938</span><b>Doktorát v Princetonu</b> <span class="plus">PLUS</span><p>Turing studuje v USA u Alonza Churche.</p></li>
+    <li><span class="yr">1939–1945</span><b>Bletchley Park</b> <span class="plus">PLUS</span><p>Turing patří do týmu, který ve válce luští německé šifry, především námořní Enigmu. Nebyl sám, šlo o práci stovek lidí. Souvisí s ní aplikace <a href="../enigma/">Enigma</a>.</p></li>
+    <li><span class="yr">1945</span><b>Program v paměti vedle dat</b> <span class="plus">PLUS</span><p>John von Neumann popisuje v zprávě o počítači EDVAC architekturu, kde jsou program i data ve společné paměti. Myšlenka univerzálního stroje se tak stává konstrukční zásadou. Turing téhož roku navrhuje počítač ACE.</p></li>
+    <li><span class="yr">1950</span><b>Může stroj myslet?</b> <span class="plus">PLUS</span><p>Turing publikuje článek <i>Computing Machinery and Intelligence</i> s „hrou na napodobování“, dnes zvanou <i>Turingův test</i>. Turingův stroj a Turingův test jsou dvě různé věci.</p></li>
+    <li><span class="yr">1952–1954</span><b>Poslední roky</b> <span class="plus">PLUS</span><p>Roku 1952 byl Turing v Británii odsouzen podle tehdejšího zákona proti homosexuálním vztahům. Zemřel v červnu 1954 ve věku 41 let. Královskou milost obdržel posmrtně roku 2013.</p></li>
+    <li><span class="yr">od 1966</span><b>Turingova cena</b> <span class="plus">PLUS</span><p>Americká asociace ACM uděluje „Turingovu cenu“, často nazývanou Nobelova cena informatiky.</p></li>
+  </ol>
+
+  <h2>Nejčastější omyly</h2>
+  <ul>
+    <li><b>„Turing postavil Turingův stroj.“</b> Ne, stroj je myšlenkový model. Skutečné počítače vznikly z jiných inženýrských cest, i když na stejné myšlence univerzálnosti.</li>
+    <li><b>„Turing vynalezl počítač sám.“</b> Ne, na vývoji se podílela řada lidí (Babbage, Zuse, Eckert, Mauchly, von Neumann, Flowers a další).</li>
+    <li><b>„Turingův test je totéž co Turingův stroj.“</b> Ne. Stroj je model výpočtu z roku 1936, test je myšlenkový experiment o strojové inteligenci z roku 1950.</li>
+  </ul>
+  <p style="color:var(--muted)">Zdroje: A. M. Turing, On Computable Numbers (Proc. London Math. Soc., 1936–37); Stanford Encyclopedia of Philosophy (Turing machines; The Church–Turing Thesis); MacTutor History of Mathematics (A. Turing); Wikipedie (Alan Turing, Entscheidungsproblem). Roky a formulace podle běžně uváděných údajů.</p>
+</section>
+
+<footer>
+  Autor: Ivo Bešťák · Licence CC BY 4.0 · Aktualizace: 26. 11. 2026
+</footer>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const NS='http://www.w3.org/2000/svg';
+const BL='_', CW=70, LIM=20000, TESTLIM=5000;
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MV={L:'◀',R:'▶',S:'●'}, MVW={L:'doleva',R:'doprava',S:'zůstane'};
+const HN={H:'konec',ANO:'ANO',NE:'NE'};
+const sname=s=>s==='_'?'prázdno':s;
+const el=(n,a={},t)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;return e;};
+
+/* ---------- jádro: stroj ---------- */
+const key=(s,c)=>s+'|'+c;
+const mkProg=rules=>{const p={};rules.forEach(r=>{p[key(r[0],r[1])]={w:r[2],m:r[3],n:r[4]};});return p;};
+const tapeFrom=str=>{const t=new Map();[...str].forEach((c,i)=>{if(c!==BL)t.set(i,c);});return t;};
+function tapeStr(t){
+  if(!t.size)return '';
+  const ks=[...t.keys()],a=Math.min(...ks),b=Math.max(...ks);let s='';
+  for(let i=a;i<=b;i++)s+=t.get(i)||BL;
+  return s;
+}
+function runHeadless(prog,input,halt,limit){
+  const t=tapeFrom(input);let s='q0',h=0,n=0;
+  for(;;){
+    if(halt.includes(s))return{ok:true,state:s,tape:t,steps:n};
+    if(n>=limit)return{ok:false,why:'limit',state:s,tape:t,steps:n};
+    const c=t.get(h)||BL,r=prog[key(s,c)];
+    if(!r)return{ok:false,why:'missing',state:s,sym:c,tape:t,steps:n};
+    if(r.w===BL)t.delete(h);else t.set(h,r.w);
+    h+=r.m==='R'?1:r.m==='L'?-1:0;s=r.n;n++;
+  }
+}
+
+/* ---------- úlohy ---------- */
+const BIN=['0','1','_'];
+const incRules=[['q0','0','0','R','q0'],['q0','1','1','R','q0'],['q0','_','_','L','q1'],['q1','1','0','L','q1'],['q1','0','1','S','H'],['q1','_','1','S','H']];
+const parRules=[['q0','0','0','R','q0'],['q0','1','1','R','q1'],['q0','_','0','S','H'],['q1','0','0','R','q1'],['q1','1','1','R','q0'],['q1','_','1','S','H']];
+const palRules=[
+ ['q0','0','_','R','q1'],['q0','1','_','R','q2'],['q0','_','_','S','ANO'],
+ ['q1','0','0','R','q1'],['q1','1','1','R','q1'],['q1','_','_','L','q3'],
+ ['q2','0','0','R','q2'],['q2','1','1','R','q2'],['q2','_','_','L','q4'],
+ ['q3','0','_','L','q5'],['q3','1','1','S','NE'],['q3','_','_','S','ANO'],
+ ['q4','1','_','L','q5'],['q4','0','0','S','NE'],['q4','_','_','S','ANO'],
+ ['q5','0','0','L','q5'],['q5','1','1','L','q5'],['q5','_','_','R','q0']];
+const rndBin=(a,b)=>{const n=a+Math.floor(Math.random()*(b-a+1));let s='';for(let i=0;i<n;i++)s+=Math.random()<.5?'0':'1';return s;};
+const rndNoLead=(a,b)=>{const s=rndBin(a,b);return s[0]==='0'&&s.length>1?'1'+s.slice(1):s;};
+const isPal=s=>s===[...s].reverse().join('');
+const ones=s=>[...s].filter(c=>c==='1').length;
+const binInc=s=>(parseInt(s,2)+1).toString(2);
+const unaSum=s=>{const[a,b]=s.split('+');return '1'.repeat(a.length+b.length);};
+const invert=s=>[...s].map(c=>c==='0'?'1':c==='1'?'0':c).join('');
+
+const TASKS=[
+ {id:'dilna',typ:'d',zkr:'Dílna',nazev:'Dílna: zkoušej a vymýšlej',
+  cil:'Volně si vyzkoušej, co stroj umí. Vlastní tabulku můžeš sestavit od nuly nebo si načíst hotový program a upravit ho.',
+  abc:['0','1','_','X'],stavy:['q0','q1','q2','q3','q4','q5'],halt:['H','ANO','NE'],res:'tape',vstupy:['1011','0110'],all:true},
+ {id:'u1',typ:'u',zkr:'Ukázka 1',nazev:'Co dělá tento stroj? (inverze bitů)',
+  cil:'Přečti tabulku a předpověz, co bude na pásku po skončení.',
+  abc:BIN,stavy:['q0'],halt:['H'],res:'tape',rules:[['q0','0','1','R','q0'],['q0','1','0','R','q0'],['q0','_','_','S','H']],
+  vstupy:['1011','00110','1'],rnd:[4,8],
+  why:'Stroj má jediný stav, q0 = „čtu a převracím“. Na každé číslici zapíše opak a posune se doprava, na prázdné buňce za vstupem skončí. Tabulka má tři řádky a stačí pro vstup libovolné délky: program se neprodlužuje, jen se opakuje.'},
+ {id:'u2',typ:'u',zkr:'Ukázka 2',nazev:'Co dělá tento stroj? (sčítání čárek)',
+  cil:'Čísla jsou zapsaná čárkami (unárně). Předpověz, co stroj z pásku vyrobí.',
+  abc:['1','+','_'],stavy:['q0','q1','q2'],halt:['H'],res:'tape',rules:[['q0','1','1','R','q0'],['q0','+','1','R','q1'],['q1','1','1','R','q1'],['q1','_','_','L','q2'],['q2','1','_','S','H']],
+  vstupy:['111+11','1+1','11+1111'],
+  why:'Stroj změní „+“ na další čárku (tím se obě čísla spojí), dojde na konec a jednu čárku smaže, protože spojením vznikla o jednu čárku víc, než má být. Stav q0 hledá plus, q1 běží na konec, q2 maže. Takhle stroj „sčítá“ bez jakékoli aritmetiky, jen přepisováním symbolů.'},
+ {id:'u3',typ:'u',zkr:'Ukázka 3',nazev:'Co dělá tento stroj? (přičti 1)',
+  cil:'Dvojkové číslo na pásku stroj nějak změní. Předpověz výsledek a pak zjisti, jak to dělá.',
+  abc:BIN,stavy:['q0','q1'],halt:['H'],res:'tape',rules:incRules,vstupy:['1011','111','1001'],rnd:[3,7],noLead:true,
+  why:'Stav q0 jede na konec čísla. Stav q1 jde zpět a nese přenos: každou 1 změní na 0 a pokračuje doleva, první 0 (nebo prázdno před číslem) změní na 1 a skončí. Je to stejný postup, jaký znáš ze psaného sčítání, jen zprava doleva a po jednom znaku.'},
+ {id:'d1',typ:'f',zkr:'Doplň 1',nazev:'Doplň pravidla: přičti 1 ke dvojkovému číslu',
+  cil:'V tabulce chybí dvě pravidla pro stav q1 (přenos). Doplň je a zkontroluj.',
+  abc:BIN,stavy:['q0','q1'],halt:['H'],res:'tape',rules:incRules,holes:['q1|1','q1|_'],vstupy:['1011','111','0'],
+  fn:binInc,tests:['0','1','10','11','101','111','1011','1111','11011'],gen:()=>rndNoLead(1,8),
+  hints:['Stav q0 jen jede doprava na konec čísla. Stav q1 pak jde zpět doleva a řeší přenos: dokud je v q1, „nese“ jedničku, kterou přičítá.',
+   null,null],
+  holeInfo:{'q1|1':'Stroj je ve stavu q1 (nese přenos) a čte 1. Je 1 + 1 = 10, takže na tomto místě zůstane 0 a přenos jde o řád doleva (zůstaň ve stavu q1).',
+            'q1|_':'Přenos došel před první číslici, tedy za celé číslo, a pořád se má přičíst 1. Co se s číslem stane, když je 111 + 1 = 1000? Zapiš novou číslici a skonči.'},
+  why:'Stav q1 je přenos: 1 se mění na 0 a přenos jde dál, první 0 (nebo prázdno) se změní na 1 a výpočet končí. Číslo se může o jednu číslici prodloužit (111 → 1000).'},
+ {id:'d2',typ:'f',zkr:'Doplň 2',nazev:'Doplň pravidla: paritní bit',
+  cil:'Stroj má za vstupem připsat bit, který udělá počet jedniček sudým. Doplň tři pravidla.',
+  abc:BIN,stavy:['q0','q1'],halt:['H'],res:'tape',rules:parRules,holes:['q0|1','q1|1','q1|_'],vstupy:['1011','110','0'],
+  fn:s=>s+(ones(s)%2?'1':'0'),tests:['0','1','11','101','0110','1111','10101','1011'],gen:()=>rndBin(1,8),
+  hints:['Stav je zde paměť: q0 = „zatím sudý počet jedniček“, q1 = „zatím lichý“. Nula na tom nic nemění, jednička stav přepne. Na konci se připíše bit, který počet doplní na sudý.',null,null],
+  holeInfo:{'q0|1':'Dosud byl počet jedniček sudý a přišla další. Je teď sudý, nebo lichý? Podle toho zvol nový stav; symbol ponech a jdi doprava.',
+            'q1|1':'Počet jedniček byl lichý a přišla další. Jaký je teď? Symbol ponech a jdi doprava.',
+            'q1|_':'Konec vstupu a počet jedniček je lichý. Který bit je potřeba připsat, aby byl sudý? Pak skonči (zůstaň na místě, stav H).'},
+  why:'Stroj si v jediném místě paměti (stavu) pamatuje, zda je dosud počet jedniček sudý, nebo lichý. Tomu se říká <i>konečný automat</i>; Turingův stroj ho umí a umí i mnohem víc, protože může psát na pásek a vracet se.'},
+ {id:'d3',typ:'f',zkr:'Doplň 3',nazev:'Doplň pravidla: je to palindrom? (výzva)',
+  cil:'Stroj odpoví ANO, pokud se vstup čte stejně zleva i zprava (např. 0110). Chybí čtyři pravidla.',
+  abc:BIN,stavy:['q0','q1','q2','q3','q4','q5'],halt:['ANO','NE'],res:'decide',rules:palRules,holes:['q0|_','q3|0','q4|1','q5|_'],vstupy:['0110','010','011'],
+  fn:s=>isPal(s)?'ANO':'NE',tests:['0','1','00','01','010','011','0110','1001','10101','1100','0111'],gen:()=>{const h=rndBin(1,4);return Math.random()<.5?h+(Math.random()<.5?'':'0')+[...h].reverse().join(''):rndBin(2,7);},
+  hints:['Stroj porovnává první a poslední symbol, oba smaže a opakuje. q0 přečte a smaže první symbol (q1 si pamatuje „byla 0“, q2 „byla 1“), q1 a q2 jdou na konec, q3 a q4 zkontrolují poslední symbol, q5 se vrací na začátek.',null,null],
+  holeInfo:{'q0|_':'Na pásku nezůstal žádný symbol, všechny dvojice si odpovídaly. Co to znamená pro vstup?',
+            'q3|0':'První smazaný symbol byl 0 a poslední je také 0: dvojice sedí. Smaž ji (zapiš prázdno) a vrať se na začátek (stav q5, doleva).',
+            'q4|1':'Totéž pro jedničky: první byla 1 a poslední je také 1. Smaž a vrať se.',
+            'q5|_':'Vracíš se doleva a narazil jsi na prázdnou buňku, tedy před zbytek vstupu. Posuň se o buňku doprava a začni další kolo ve stavu q0.'},
+  why:'Stroj opakovaně smaže první a poslední symbol a porovná je. Kdyby se někdy lišily, skončí NE; když nic nezbyde (nebo zbyde jediný symbol), skončí ANO. Takový stroj ukazuje, že Turingův stroj umí odpovídat na otázky ano/ne, tedy rozhodovat, což je přesně Hilbertův problém rozhodnutí.'},
+ {id:'n1',typ:'n',zkr:'Napiš 1',nazev:'Napiš program: vynásob dvojkové číslo dvěma',
+  cil:'Napiš tabulku pravidel, která ke dvojkovému číslu na pásku připíše 0 na konec (tím se číslo zdvojnásobí). Můžeš použít stavy q0 a q1.',
+  abc:BIN,stavy:['q0','q1'],halt:['H'],res:'tape',vstupy:['1011','110'],
+  sol:[['q0','0','0','R','q0'],['q0','1','1','R','q0'],['q0','_','0','S','H']],
+  fn:s=>s+'0',tests:['1','10','11','101','1011','1111','110'],gen:()=>rndNoLead(1,8),
+  hints:['Stačí jediný stav: projdi číslo doprava a na konci udělej jednu změnu.','Na číslicích 0 i 1 stroj nic nemění a posouvá se doprava. Co zapsat na první prázdnou buňku a kam přejít, aby výpočet skončil?',null],
+  solTxt:'q0: čtu 0 → zapíšu 0, ▶, q0. q0: čtu 1 → zapíšu 1, ▶, q0. q0: čtu _ → zapíšu 0, ●, H.',
+  why:'Připsání nuly vpravo je v dvojkové soustavě totéž, co vynásobit dvěma (jako připsání nuly v desítkové znamená vynásobit deseti).'},
+ {id:'n2',typ:'n',zkr:'Napiš 2',nazev:'Napiš program: je počet jedniček sudý?',
+  cil:'Napiš tabulku, která skončí ve stavu ANO, když je ve vstupu sudý počet jedniček, jinak ve stavu NE. Máš stavy q0, q1 a q2.',
+  abc:BIN,stavy:['q0','q1','q2'],halt:['ANO','NE'],res:'decide',vstupy:['1011','0110','111'],
+  sol:[['q0','0','_','R','q0'],['q0','1','_','R','q1'],['q0','_','_','S','ANO'],['q1','0','_','R','q1'],['q1','1','_','R','q0'],['q1','_','_','S','NE']],
+  fn:s=>ones(s)%2?'NE':'ANO',tests:['0','1','11','101','1010','0110','111','1111','10101'],gen:()=>rndBin(1,8),
+  hints:['Stačí si pamatovat jedinou věc: je dosud počet jedniček sudý, nebo lichý? To jsou dva stavy (třetí nemusíš použít).','Nula stav nemění. Jednička ho přepne. Na konci (prázdná buňka) rozhodne stav: sudý → ANO, lichý → NE. Symboly můžeš ponechat nebo mazat, na výsledku nezáleží.',null],
+  solTxt:'q0 (zatím sudý): čtu 0 → ▶ q0; čtu 1 → ▶ q1; čtu _ → ANO. q1 (zatím lichý): čtu 0 → ▶ q1; čtu 1 → ▶ q0; čtu _ → NE.',
+  why:'Obě možnosti („sudý“, „lichý“) pojmenovaly dva stavy. Tohle je nejmenší příklad, kdy stav stroje nese informaci o doposud přečteném vstupu.'}
+];
+const TBY=Object.fromEntries(TASKS.map(t=>[t.id,t]));
+const TRACK=TASKS.filter(t=>t.id!=='dilna').map(t=>t.id);
+
+/* ---------- stav aplikace ---------- */
+const S={task:null,prog:{},init:'',tape:new Map(),pos:0,state:'q0',steps:0,hist:[],halted:false,crash:null,running:false,timer:null,
+  pred:null,helped:{},hintLv:{},saved:null};
+let prog={st:{},cal:[0,0,0,0,0,0]};
+try{const j=JSON.parse(localStorage.getItem('turinguv-stroj-prog')||'null');if(j&&j.st&&Array.isArray(j.cal)&&j.cal.length===6)prog=j;}catch(e){}
+const saveProg=()=>{try{localStorage.setItem('turinguv-stroj-prog',JSON.stringify(prog));}catch(e){}$('#codeBox').value=makeCode();renderCal();};
+const makeCode=()=>'TUR1-'+TRACK.map(id=>prog.st[id]||0).join('')+'-'+prog.cal.map(n=>n.toString(36)).join('-');
+const saveEdit=()=>{const t=S.task;if(!t||!(t.typ==='n'||t.typ==='d'||t.typ==='f'))return;try{localStorage.setItem('turinguv-stroj-p-'+t.id,JSON.stringify(Object.entries(S.prog).map(([k,r])=>[k,r.w,r.m,r.n])));}catch(e){}};
+const loadEdit=t=>{try{const j=JSON.parse(localStorage.getItem('turinguv-stroj-p-'+t.id)||'null');if(Array.isArray(j)){const p={};j.forEach(a=>{p[a[0]]={w:a[1],m:a[2],n:a[3]};});return p;}}catch(e){}return null;};
+
+/* ---------- pásek (SVG) ---------- */
+const tp=$('#tp'),cells=new Map();
+function cellEl(i){
+  let g=cells.get(i);
+  if(!g){
+    g=el('g',{class:'cell',transform:`translate(${i*CW},0)`});
+    g.appendChild(el('rect',{x:-33,y:0,width:66,height:66,rx:6}));
+    const t=el('text',{class:'sy',x:0,y:34},'');g.appendChild(t);
+    g.appendChild(el('text',{class:'ix',x:0,y:80},String(i)));
+    tp.appendChild(g);cells.set(i,g);
+  }
+  return g;
+}
+function drawTape(animate){
+  const lo=S.pos-9,hi=S.pos+9;
+  for(let i=lo;i<=hi;i++){
+    const g=cellEl(i),c=S.tape.get(i)||BL;
+    g.classList.toggle('blank',c===BL);
+    const t=g.querySelector('.sy');const v=c===BL?'':c;if(t.textContent!==v)t.textContent=v;
+  }
+  const d=animate&&!reduceMotion?Math.min(.22,Math.max(.03,speedMs()/1000*.7)):0;
+  tp.style.transitionDuration=d+'s';
+  tp.setAttribute('transform',`translate(${500-S.pos*CW},40)`);
+  tp.style.transform=`translate(${500-S.pos*CW}px,40px)`;
+}
+function fitView(){const w=$('#stageBox').clientWidth<700?460:1000;$('#tape').setAttribute('viewBox',`${(1000-w)/2} 0 ${w} 190`);}
+new ResizeObserver(fitView).observe($('#stageBox'));fitView();
+function resetCells(){while(tp.firstChild)tp.removeChild(tp.firstChild);cells.clear();}
+
+/* ---------- řízení stroje ---------- */
+const speedMs=()=>[900,520,260,110,28][(+$('#spd').value||3)-1];
+const phase=['střední'];
+function setMachine(input){
+  stopRun();S.init=input;S.tape=tapeFrom(input);S.pos=0;S.state='q0';S.steps=0;S.hist=[];S.halted=false;S.crash=null;
+  resetCells();drawTape(false);ui();
+}
+const curRule=()=>S.prog[key(S.state,S.tape.get(S.pos)||BL)];
+function stepOnce(){
+  if(S.halted||S.crash||!canRun())return false;
+  if(S.task.halt.includes(S.state)){S.halted=true;ui();return false;}
+  const c=S.tape.get(S.pos)||BL,r=S.prog[key(S.state,c)];
+  if(!r){S.crash={state:S.state,sym:c};ui();return false;}
+  if(S.steps>=LIM){S.crash={limit:true};ui();return false;}
+  S.hist.push({s:S.state,p:S.pos,c,at:S.pos,used:{...r},last:{state:S.state,sym:c}});
+  if(r.w===BL)S.tape.delete(S.pos);else S.tape.set(S.pos,r.w);
+  S.pos+=r.m==='R'?1:r.m==='L'?-1:0;S.state=r.n;S.steps++;
+  S.lastStep={state:S.hist[S.hist.length-1].s,sym:c,r};
+  if(S.task.halt.includes(S.state))S.halted=true;
+  drawTape(true);ui();
+  if(S.halted)onHalt();
+  return !S.halted;
+}
+function undoOnce(){
+  if(!S.hist.length)return;
+  stopRun();const h=S.hist.pop();
+  if(h.c===BL)S.tape.delete(h.at);else S.tape.set(h.at,h.c);
+  S.state=h.s;S.pos=h.p;S.steps--;S.halted=false;S.crash=null;
+  S.lastStep=S.hist.length?(()=>{const q=S.hist[S.hist.length-1];return{state:q.s,sym:q.c,r:q.used};})():null;
+  drawTape(true);ui();
+}
+function stopRun(){S.running=false;if(S.timer){clearTimeout(S.timer);S.timer=null;}$('#btnRun').setAttribute('aria-pressed','false');$('#btnRun').textContent='▶▶ Spustit';$('#say').setAttribute('aria-live','polite');}
+function startRun(){
+  if(!canRun()||S.halted||S.crash)return;
+  S.running=true;$('#btnRun').setAttribute('aria-pressed','true');$('#btnRun').textContent='❚❚ Pozastavit';$('#say').setAttribute('aria-live','off');
+  const tick=()=>{if(!S.running)return;const more=stepOnce();if(more&&S.running){S.timer=setTimeout(tick,speedMs());}else stopRun();};
+  tick();
+}
+const canRun=()=>!S.task.predict||(S.pred&&S.pred.for===S.init&&S.pred.answered);
+
+/* ---------- popisy ---------- */
+function ruleText(r){return `zapsat ${r.w===BL?'prázdno (_)':r.w}, ${MV[r.m]} ${MVW[r.m]}, nový stav ${r.n}`;}
+function lastText(){
+  if(!S.lastStep||!S.steps)return '';
+  const l=S.lastStep;return `Krok ${S.steps}: ve stavu ${l.state} jsem četl ${sname(l.sym)} → ${ruleText(l.r)}.`;
+}
+function resultStr(){return tapeStr(S.tape).replace(/^_+|_+$/g,'');}
+function message(){
+  if(S.crash&&S.crash.limit)return `Stroj udělal ${LIM} kroků a nezastavil se. Pravděpodobně se zacyklil. Zkus Zpět a najdi, kde se začne opakovat.`;
+  if(S.crash)return `Stroj se zastavil, protože tabulka nemá pravidlo pro stav ${S.crash.state} a symbol ${sname(S.crash.sym)}. Skončil mimo koncový stav, takže to bereme jako chybu programu.`;
+  if(S.halted){
+    const f=S.task.res==='decide'?`Odpověď stroje: <b>${S.state}</b>.`:`Na pásku je: <b>${resultStr()||'(prázdno)'}</b>.`;
+    return `Stroj skončil ve stavu <b>${S.state}</b> po ${S.steps} krocích. ${f}`;
+  }
+  const c=S.tape.get(S.pos)||BL,r=S.prog[key(S.state,c)];
+  const nxt=r?`Teď: stav ${S.state}, čtu ${sname(c)} → ${ruleText(r)}.`:`Teď: stav ${S.state}, čtu ${sname(c)}, ale pravidlo v tabulce chybí.`;
+  return (lastText()?lastText()+' ':'')+nxt;
+}
+function ui(){
+  const c=S.tape.get(S.pos)||BL;
+  $('#rdState').textContent=S.state;$('#rdSym').textContent=c;$('#rdSteps').textContent=S.steps;
+  $('#stTxt').textContent=S.state;
+  const msg=message();$('#say').innerHTML=msg;$('#capBig').innerHTML=msg;
+  $('#btnBack').disabled=!S.hist.length;
+  const lock=!canRun();$('#btnStep').disabled=lock||S.halted||!!S.crash;$('#btnRun').disabled=lock||S.halted||!!S.crash;
+  $$('.fsbar [data-act]').forEach(b=>{const a=b.dataset.act;if(a==='step')b.disabled=$('#btnStep').disabled;if(a==='run')b.disabled=$('#btnRun').disabled;if(a==='back')b.disabled=$('#btnBack').disabled;});
+  const fr=$('.fsbar [data-act=run]');if(fr)fr.textContent=S.running?'❚❚ Pozastavit':'▶▶ Spustit';
+  // pod víkem
+  const r=(S.halted||S.crash)?null:S.prog[key(S.state,c)];
+  $('#c1').className=!S.halted&&!S.crash?'on':'';$('#c2').className=r?'on':'';$('#c3').className=S.steps&&!S.running?'on':'';
+  $('#underTxt').innerHTML=S.halted?'Stroj je v koncovém stavu, další krok už neexistuje.':
+    (r?`Hlava čte <b>${sname(c)}</b>, stav je <b>${S.state}</b>. Řádek tabulky říká: zapsat <b>${r.w===BL?'prázdno':r.w}</b>, posun <b>${MV[r.m]} ${MVW[r.m]}</b>, nový stav <b>${r.n}</b>.`:
+      `Hlava čte <b>${sname(c)}</b> ve stavu <b>${S.state}</b>. Pro tuto dvojici není v tabulce pravidlo.`);
+  // podbarvení řádku
+  $$('#rulesWrap tr').forEach(tr=>tr.classList.remove('next'));
+  if(!S.halted&&!S.crash){const tr=document.getElementById('r-'+S.state+'-'+S.task.abc.indexOf(c));if(tr)tr.classList.add('next');}
+}
+
+/* ---------- tabulka pravidel ---------- */
+function rowsFor(t){
+  const rows=[];
+  if(t.all||t.typ==='n'){t.stavy.forEach(s=>t.abc.forEach(a=>rows.push([s,a])));}
+  else{t.rules.forEach(r=>rows.push([r[0],r[1]]));}
+  return rows;
+}
+const opt=(v,txt,sel)=>`<option value="${v}"${sel?' selected':''}>${txt}</option>`;
+function renderRules(){
+  const t=S.task,rows=rowsFor(t),edit=t.all||t.typ==='n';
+  let h='<div class="scroll"><table class="rules"><thead><tr><th>Stav</th><th>Čtu</th><th>Zapíšu</th><th>Posun</th><th>Nový stav</th></tr></thead><tbody>';
+  const nexts=[...t.stavy,...t.halt];
+  rows.forEach(([s,a])=>{
+    const k=key(s,a),r=S.prog[k],hole=t.holes&&t.holes.includes(k),ed=edit||hole,ai=t.abc.indexOf(a);
+    const id=`r-${s}-${ai}`;
+    if(ed){
+      const w=r?r.w:'—',m=r?r.m:'R',n=r?r.n:nexts[0];
+      h+=`<tr id="${id}" data-k="${k}"${hole?' class="hole"':''}><td>${s}</td><td>${a}</td>`+
+      `<td><select class="sw-w" aria-label="Stav ${s}, čtu ${sname(a)}: co zapsat">${opt('—','—',w==='—')}${t.abc.map(x=>opt(x,x,w===x)).join('')}</select></td>`+
+      `<td><select class="sw-m" aria-label="Stav ${s}, čtu ${sname(a)}: kam se posunout"${w==='—'?' disabled':''}>${['L','R','S'].map(x=>opt(x,MV[x],m===x)).join('')}</select></td>`+
+      `<td><select class="sw-n" aria-label="Stav ${s}, čtu ${sname(a)}: nový stav"${w==='—'?' disabled':''}>${nexts.map(x=>opt(x,x,n===x)).join('')}</select></td></tr>`;
+    }else{
+      h+=`<tr id="${id}" data-k="${k}"><td>${s}</td><td>${a}</td>`+(r?`<td>${r.w}</td><td title="${MVW[r.m]}">${MV[r.m]}</td><td>${r.n}</td>`:`<td class="none" colspan="3">— žádné pravidlo —</td>`)+'</tr>';
+    }
+  });
+  h+='</tbody></table></div>';
+  $('#rulesWrap').innerHTML=h;
+}
+$('#rulesWrap').addEventListener('change',e=>{
+  const tr=e.target.closest('tr[data-k]');if(!tr)return;
+  const w=tr.querySelector('.sw-w').value,m=tr.querySelector('.sw-m'),n=tr.querySelector('.sw-n');
+  m.disabled=n.disabled=(w==='—');
+  if(w==='—')delete S.prog[tr.dataset.k];else S.prog[tr.dataset.k]={w,m:m.value,n:n.value};
+  saveEdit();setMachine(S.init);
+});
+
+/* ---------- úlohy: vykreslení ---------- */
+function renderList(){
+  const L=$('#taskList');L.innerHTML='';
+  const grp=(x)=>{const s=document.createElement('span');s.className='grp';s.textContent=x;L.appendChild(s);};
+  const add=t=>{
+    const b=document.createElement('button');b.type='button';b.className='btn';b.dataset.id=t.id;
+    const st=prog.st[t.id]||0;if(st===2)b.classList.add('done2');if(st===1)b.classList.add('done1');
+    b.textContent=t.zkr+(st===2?' ✓':st===1?' ~':'');
+    b.setAttribute('aria-label',t.zkr+(st===2?' (splněno samostatně)':st===1?' (splněno s pomocí)':''));
+    if(S.task&&S.task.id===t.id)b.setAttribute('aria-current','true');
+    b.addEventListener('click',()=>loadTask(t.id));L.appendChild(b);
+  };
+  add(TASKS[0]);
+  grp('Ukázka:');TASKS.filter(t=>t.typ==='u').forEach(add);
+  grp('Doplň:');TASKS.filter(t=>t.typ==='f').forEach(add);
+  grp('Napiš:');TASKS.filter(t=>t.typ==='n').forEach(add);
+}
+function legendText(t){return 'Na pásek smíš napsat znaky: '+t.abc.map(c=>c===BL?'_ (prázdná buňka)':c).join(', ')+'. Hlava stojí na prvním znaku.';}
+function loadTask(id){
+  const t=TBY[id];stopRun();S.task=t;S.lastStep=null;
+  // program
+  S.prog={};
+  if(t.rules)S.prog=mkProg(t.rules);
+  if(t.holes)t.holes.forEach(k=>delete S.prog[k]);
+  const sv=loadEdit(t);if(sv&&(t.typ==='n'||t.all||t.typ==='f')){if(t.typ==='f'){t.holes.forEach(k=>{if(sv[k])S.prog[k]=sv[k];});}else S.prog=sv;}
+  S.hintLv[id]=S.hintLv[id]||0;
+  $('#taskHead').innerHTML=`<h2 style="margin-top:12px">${t.nazev}</h2><p>${t.cil}</p>`;
+  $('#predBox').hidden=!(t.typ==='u');t.predict=(t.typ==='u');
+  $('#checkPad').hidden=!(t.typ==='f'||t.typ==='n');
+  $('#dilnaPad').hidden=!t.all;
+  $('#btnRnd').hidden=!(t.rnd||(t.gen&&false));
+  $('#inLeg').textContent=legendText(t);
+  const pr=$('#presets');pr.innerHTML='';
+  (t.vstupy||[]).forEach(v=>{const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=v||'(prázdný)';b.setAttribute('aria-label','Vstup '+v);b.addEventListener('click',()=>{$('#inTape').value=v;newInput(v);});pr.appendChild(b);});
+  $('#rulesH').textContent=t.typ==='n'||t.all?'Tabulka pravidel (vyplň ji)':t.typ==='f'?'Tabulka pravidel (doplň podbarvené řádky s modrým okrajem)':'Tabulka pravidel';
+  renderRules();renderHint();$('#checkFb').innerHTML='';
+  if(t.all){const sel=$('#loadSel');sel.innerHTML=TASKS.filter(x=>x.rules).map(x=>`<option value="${x.id}">${x.zkr}: ${x.nazev.replace(/^Co dělá tento stroj\? /,'').replace(/^Doplň pravidla: /,'')}</option>`).join('');}
+  const first=t.vstupy[0];$('#inTape').value=first;
+  S.pred=null;newInput(first,true);renderList();
+  if(t.typ==='u')setPredUI();
+}
+function newInput(v,fresh){
+  if(![...v].every(c=>S.task.abc.includes(c))){
+    $('#say').textContent='Na pásek lze psát jen: '+S.task.abc.join(' ')+' (znak _ je prázdná buňka).';return;
+  }
+  setMachine(v);
+  if(S.task.typ==='u')setPredUI();
+}
+
+/* ---------- předpověď ---------- */
+let conf=null;
+function setPredUI(){
+  const t=S.task;
+  if(!S.pred||S.pred.for!==S.init)S.pred={for:S.init,answered:false,done:false};
+  $('#predQ').innerHTML=`Na pásku je teď <code>${S.init||'(prázdný)'}</code>. Podle tabulky dole předpověz, co na něm zůstane po skončení stroje. Znak <code>_</code> je prázdná buňka.`;
+  conf=null;$$('#predBox [role=radio]').forEach(b=>b.setAttribute('aria-checked','false'));
+  $('#predIn').value='';$('#predIn').disabled=S.pred.answered;$('#predFb').innerHTML=S.pred.fb||'';
+  $('#btnPred').disabled=S.pred.answered;$('#btnSkip').disabled=S.pred.answered;
+  $$('#predBox [role=radio]').forEach(b=>b.disabled=S.pred.answered);
+  ui();
+}
+$$('#predBox [role=radio]').forEach(b=>b.addEventListener('click',()=>{conf=b.dataset.conf;$$('#predBox [role=radio]').forEach(x=>x.setAttribute('aria-checked',String(x===b)));}));
+$('#btnPred').addEventListener('click',()=>{
+  const g=$('#predIn').value.replace(/\s/g,'');
+  if(!conf){$('#predFb').innerHTML='<p class="bad">Nejdřív vyber, jak moc jsi si jistý(á). Pomáhá to poznat, kdy si můžeš věřit.</p>';return;}
+  S.pred.answered=true;S.pred.guess=g;S.pred.conf=conf;S.pred.fb='<p>Odhad zapsán. Spusť stroj a porovnej.</p>';
+  $('#predIn').disabled=true;$('#btnPred').disabled=true;$('#btnSkip').disabled=true;$$('#predBox [role=radio]').forEach(b=>b.disabled=true);
+  $('#predFb').innerHTML=S.pred.fb;ui();
+});
+$('#btnSkip').addEventListener('click',()=>{S.pred.answered=true;S.pred.skipped=true;S.pred.fb='<p>Odhad přeskočen. Příště zkus nejdřív tipovat, líp si to zapamatuješ.</p>';$('#predFb').innerHTML=S.pred.fb;$('#predIn').disabled=true;$('#btnPred').disabled=true;$('#btnSkip').disabled=true;$$('#predBox [role=radio]').forEach(b=>b.disabled=true);ui();});
+const norm=s=>s.replace(/\s/g,'').replace(/^_+|_+$/g,'');
+function onHalt(){
+  const t=S.task;if(t.typ!=='u'||!S.pred||S.pred.done)return;
+  S.pred.done=true;const res=resultStr();
+  let fb;
+  if(S.pred.skipped){fb=`<p>Výsledek: <b>${res}</b>.</p><p class="note"><b>Proč:</b> ${t.why}</p>`;prog.st[t.id]=Math.max(prog.st[t.id]||0,1);}
+  else{
+    const ok=norm(S.pred.guess)===res;
+    const ci={j:0,s:2,h:4}[S.pred.conf];prog.cal[ci+1]++;if(ok)prog.cal[ci]++;
+    if(ok){prog.st[t.id]=2;fb=`<p class="ok">Správně, výsledek je ${res}.</p><p class="note"><b>Proč:</b> ${t.why}</p>`;}
+    else{prog.st[t.id]=Math.max(prog.st[t.id]||0,1);fb=`<p class="bad">Stroj dopadl jinak: na pásku je <b>${res}</b>, tys odhadl(a) <b>${S.pred.guess||'(nic)'}</b>.</p><p>Vrať se tlačítkem <b>Zpět</b> nebo <b>Znovu</b> a krokuj, kde se odhad rozešel s tabulkou.</p><p class="note"><b>Proč:</b> ${t.why}</p>`;}
+  }
+  S.pred.fb=fb;$('#predFb').innerHTML=fb;saveProg();renderList();
+}
+function renderCal(){
+  const c=prog.cal,n=['Jistě','Spíš ano','Hádám'];
+  const parts=[0,1,2].map(i=>c[i*2+1]?`${n[i]}: ${c[i*2]} z ${c[i*2+1]} správně`:null).filter(Boolean);
+  $('#calLine').textContent=parts.length?'Kalibrace odhadů – '+parts.join('; ')+'. Když napíšeš „Jistě“, mělo by to vycházet skoro vždy.':'Kalibrace odhadů se ukáže po prvních úlohách s předpovědí.';
+}
+
+/* ---------- kontrola a nápovědy ---------- */
+function evalTest(t,p,input){
+  const r=runHeadless(p,input,t.halt,TESTLIM);
+  if(!r.ok)return{ok:false,input,why:r.why,state:r.state,sym:r.sym,steps:r.steps};
+  const exp=t.fn(input);
+  if(t.res==='decide')return r.state===exp?{ok:true,steps:r.steps}:{ok:false,input,why:'wrong',got:r.state,exp,steps:r.steps};
+  const got=tapeStr(r.tape).replace(/^_+|_+$/g,'');
+  return got===exp?{ok:true,steps:r.steps}:{ok:false,input,why:'wrong',got,exp,steps:r.steps};
+}
+$('#btnCheck').addEventListener('click',()=>{
+  const t=S.task,tests=[...t.tests];for(let i=0;i<8;i++){const g=t.gen();if(!tests.includes(g))tests.push(g);}
+  let max=0;
+  for(const inp of tests){
+    const r=evalTest(t,S.prog,inp);
+    if(!r.ok){showFail(t,r);return;}
+    max=Math.max(max,r.steps);
+  }
+  const helped=S.helped[t.id];
+  prog.st[t.id]=helped?Math.max(prog.st[t.id]||0,1):2;saveProg();renderList();
+  $('#checkFb').innerHTML=`<p class="ok">Program prošel všech ${tests.length} testů (nejdelší běh ${max} kroků).${helped?' Splněno s pomocí nápovědy.':' Splněno samostatně.'}</p><p class="note"><b>Proč to funguje:</b> ${t.why}</p>`;
+});
+function showFail(t,r){
+  let m;
+  if(r.why==='missing')m=`stroj se zastavil na vstupu <code>${r.input}</code>, protože chybí pravidlo pro stav ${r.state} a symbol ${sname(r.sym)}`;
+  else if(r.why==='limit')m=`na vstupu <code>${r.input}</code> se stroj ani po ${TESTLIM} krocích nezastavil (zacyklil se?)`;
+  else m=`na vstupu <code>${r.input}</code> stroj skončil s výsledkem <b>${r.got||'(prázdno)'}</b>, správně má být <b>${r.exp}</b>`;
+  $('#checkFb').innerHTML=`<p class="bad">Ještě to nejde: ${m}.</p><div class="row"><button class="btn" id="btnShow" type="button">Ukaž tento běh na pásku</button></div>`;
+  $('#btnShow').addEventListener('click',()=>{$('#inTape').value=r.input;newInput(r.input);$('#tape').scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});});
+}
+function firstWrong(t){return t.holes.find(k=>{const s=t.rules.find(r=>key(r[0],r[1])===k),c=S.prog[k];return!c||c.w!==s[2]||c.m!==s[3]||c.n!==s[4];});}
+function renderHint(){
+  const t=S.task;if(!(t.typ==='f'||t.typ==='n')){$('#hintBox').innerHTML='';return;}
+  const lv=S.hintLv[t.id]||0;$('#btnHint').textContent=`Nápověda (${Math.min(lv,3)}/3)`;
+  $('#btnSol').hidden=lv<3;
+  let h='';
+  if(lv>=1)h+=`<div class="hint"><b>1.</b> ${t.hints[0]}</div>`;
+  if(lv>=2){
+    if(t.typ==='f'){const k=firstWrong(t);h+=k?`<div class="hint"><b>2.</b> ${t.holeInfo[k]}</div>`:`<div class="hint"><b>2.</b> Všechna chybějící pravidla už máš doplněná.</div>`;}
+    else h+=`<div class="hint"><b>2.</b> ${t.hints[1]}</div>`;
+  }
+  if(lv>=3){
+    if(t.typ==='f')h+=`<div class="hint"><b>3.</b> Další kliknutí na Nápovědu vyplní jedno chybějící pravidlo za tebe. Úloha se pak započítá jako splněná s pomocí.</div>`;
+    else h+=`<div class="hint"><b>3.</b> ${t.solTxt}</div>`;
+  }
+  $('#hintBox').innerHTML=h;
+}
+$('#btnHint').addEventListener('click',()=>{
+  const t=S.task,lv=S.hintLv[t.id]||0;
+  if(lv>=3&&t.typ==='f'){const k=firstWrong(t);if(k){const s=t.rules.find(r=>key(r[0],r[1])===k);S.prog[k]={w:s[2],m:s[3],n:s[4]};S.helped[t.id]=true;saveEdit();renderRules();setMachine(S.init);}renderHint();return;}
+  if(lv>=3){S.helped[t.id]=true;renderHint();return;}
+  S.hintLv[t.id]=lv+1;if(lv+1>=3&&t.typ==='n')S.helped[t.id]=true;renderHint();
+});
+$('#btnSol').addEventListener('click',()=>{
+  const t=S.task;S.helped[t.id]=true;
+  if(t.typ==='n'){S.prog=mkProg(t.sol);}
+  else{t.holes.forEach(k=>{const s=t.rules.find(r=>key(r[0],r[1])===k);S.prog[k]={w:s[2],m:s[3],n:s[4]};});}
+  saveEdit();renderRules();setMachine(S.init);
+  $('#checkFb').innerHTML='<p class="note">Řešení je v tabulce. Spusť stroj na vstupu a zkus se přesvědčit, že rozumíš každému řádku. Úloha se započítá jako splněná s pomocí.</p>';
+});
+
+/* ---------- dílna ---------- */
+$('#btnLoad').addEventListener('click',()=>{const x=TBY[$('#loadSel').value];S.prog=mkProg(x.rules);saveEdit();renderRules();setMachine(S.init);});
+$('#btnClear').addEventListener('click',()=>{S.prog={};saveEdit();renderRules();setMachine(S.init);});
+
+/* ---------- vstup, ovládání ---------- */
+$('#btnSet').addEventListener('click',()=>newInput($('#inTape').value.trim()));
+$('#inTape').addEventListener('keydown',e=>{if(e.key==='Enter')newInput($('#inTape').value.trim());});
+$('#btnRnd').addEventListener('click',()=>{const t=S.task;const v=t.noLead?rndNoLead(t.rnd[0],t.rnd[1]):rndBin(t.rnd[0],t.rnd[1]);$('#inTape').value=v;newInput(v);});
+$('#btnStep').addEventListener('click',()=>{stopRun();stepOnce();});
+$('#btnBack').addEventListener('click',undoOnce);
+$('#btnRun').addEventListener('click',()=>{S.running?stopRun():startRun();});
+$('#btnReset').addEventListener('click',()=>{setMachine(S.init);});
+$('#spd').addEventListener('input',()=>{$('#spd').setAttribute('aria-valuetext',['velmi pomalu','pomalu','středně','rychle','velmi rychle'][$('#spd').value-1]);});
+document.addEventListener('keydown',e=>{
+  const tg=e.target;if(tg.closest&&tg.closest('input,select,textarea'))return;
+  if($('#p-sim').hidden||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(tg.closest&&tg.closest('[role=tablist]'))return;
+  const onBtn=tg.closest&&tg.closest('button');
+  if(e.key==='ArrowRight'){e.preventDefault();stopRun();stepOnce();}
+  else if(e.key==='ArrowLeft'){e.preventDefault();undoOnce();}
+  else if(e.key===' '&&!onBtn){e.preventDefault();S.running?stopRun():startRun();}
+  else if(e.key==='r'||e.key==='R'){setMachine(S.init);}
+  else if(e.key==='f'||e.key==='F'){toggleFs();}
+});
+
+/* ---------- celá obrazovka ---------- */
+const box=$('#stageBox');
+const fsActive=()=>!!(document.fullscreenElement||document.webkitFullscreenElement)||box.classList.contains('pfs');
+function toggleFs(){
+  if(fsActive()){
+    if(document.fullscreenElement)document.exitFullscreen();else if(document.webkitFullscreenElement)document.webkitExitFullscreen();
+    box.classList.remove('pfs','fs');afterFs();
+  }else{
+    const f=box.requestFullscreen||box.webkitRequestFullscreen;
+    if(f){Promise.resolve(f.call(box)).then(()=>{box.classList.add('fs');afterFs();}).catch(()=>{box.classList.add('pfs');afterFs();});}
+    else{box.classList.add('pfs');afterFs();}
+  }
+}
+function afterFs(){$('#btnFs').setAttribute('aria-pressed',String(fsActive()));}
+document.addEventListener('fullscreenchange',()=>{box.classList.toggle('fs',!!document.fullscreenElement);afterFs();});
+document.addEventListener('webkitfullscreenchange',()=>{box.classList.toggle('fs',!!document.webkitFullscreenElement);afterFs();});
+$('#btnFs').addEventListener('click',toggleFs);
+$('.fsbar').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
+  if(a==='step'){stopRun();stepOnce();}else if(a==='back')undoOnce();else if(a==='run'){S.running?stopRun():startRun();ui();}
+  else if(a==='reset')setMachine(S.init);else if(a==='exit')toggleFs();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&box.classList.contains('pfs')){box.classList.remove('pfs');afterFs();}});
+
+/* ---------- motiv a záložky ---------- */
+(function(){
+  let t=null;try{t=localStorage.getItem('turinguv-stroj-theme');}catch(e){}
+  if(t)document.documentElement.dataset.theme=t;
+  $('#btnTheme').addEventListener('click',()=>{
+    const cur=document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    const nx=cur==='dark'?'light':'dark';document.documentElement.dataset.theme=nx;
+    try{localStorage.setItem('turinguv-stroj-theme',nx);}catch(e){}
+  });
+})();
+$$('.tab').forEach(b=>b.addEventListener('click',()=>{
+  $$('.tab').forEach(x=>{const on=x===b;x.setAttribute('aria-selected',String(on));$('#'+x.getAttribute('aria-controls')).hidden=!on;});
+  if(b.id!=='tb-sim')stopRun();
+}));
+$('.tabs').addEventListener('keydown',e=>{
+  const t=$$('.tab'),i=t.indexOf(document.activeElement);if(i<0)return;
+  if(e.key==='ArrowRight'){t[(i+1)%t.length].focus();t[(i+1)%t.length].click();}
+  if(e.key==='ArrowLeft'){t[(i+t.length-1)%t.length].focus();t[(i+t.length-1)%t.length].click();}
+});
+
+/* ---------- záloha ---------- */
+$('#btnCode').addEventListener('click',()=>{
+  const m=/^TUR1-([0-2]+)-([0-9a-z]+(?:-[0-9a-z]+){5})$/i.exec($('#codeBox').value.trim());
+  if(!m||m[1].length!==TRACK.length){$('#say').textContent='Kód zálohy má tvar TUR1-…';return;}
+  const cal=m[2].split('-').map(x=>parseInt(x,36));if(cal.some(n=>!isFinite(n)||n<0)){$('#say').textContent='Neplatný kód zálohy.';return;}
+  prog={st:{},cal};[...m[1]].forEach((c,i)=>{if(+c)prog.st[TRACK[i]]=+c;});saveProg();renderList();$('#say').textContent='Postup načten.';
+});
+
+/* ---------- stopa výpočtu (Jak to funguje) ---------- */
+(function(){
+  const p=mkProg(incRules);let t=tapeFrom('1011'),s='q0',h=0,n=0,rows=[];
+  const snap=()=>{let o='';for(let i=-1;i<=5;i++){const c=t.get(i)||BL;o+=(i===h?`<span class="hd">${c}</span>`:c);}return o;};
+  rows.push([0,s,snap(),'']);
+  while(s!=='H'&&n<40){const c=t.get(h)||BL,r=p[key(s,c)];if(!r)break;
+    if(r.w===BL)t.delete(h);else t.set(h,r.w);h+=r.m==='R'?1:r.m==='L'?-1:0;n++;
+    rows.push([n,r.n,snap(),`čteno ${sname(c)}: zapsat ${r.w===BL?'_':r.w}, ${MV[r.m]}, ${r.n}`]);s=r.n;}
+  $('#traceTbl').innerHTML='<thead><tr><th>Krok</th><th>Stav po kroku</th><th>Pásek (buňky −1 až 5)</th><th>Použité pravidlo</th></tr></thead><tbody>'+
+    rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="mono">${r[2]}</td><td>${r[3]||'začátek'}</td></tr>`).join('')+'</tbody>';
+})();
+
+/* ---------- start ---------- */
+renderCal();$('#codeBox').value=makeCode();
+loadTask('u1');
+})();
+</script>
+</body>
+</html>
