@@ -72,7 +72,8 @@ dialog.cr p{margin:0 0 12px;font-size:15px;color:var(--ink2)}
 .btn[disabled]{opacity:.4;cursor:default}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:16px 0 14px}
-@media (min-width:760px){.tabs{grid-template-columns:repeat(5,1fr)}}
+@media (min-width:600px){.tabs{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:1000px){.tabs{grid-template-columns:repeat(6,1fr)}}
 .tab{appearance:none;font:inherit;font-weight:700;font-size:15.5px;min-height:48px;padding:4px 8px;border-radius:12px;border:2px solid var(--line2);background:var(--card);color:var(--ink2);cursor:pointer;line-height:1.2}
 .tab[aria-selected="true"]{border-color:var(--ink);background:var(--ink);color:var(--on)}
 .panel[hidden]{display:none}
@@ -193,6 +194,26 @@ svg.chart .pt{fill:var(--cu);stroke:var(--card);stroke-width:2}
 .links{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:2px}
 .links a{display:inline-flex;align-items:center;min-height:44px}
 
+/* karty mezníků */
+.kchain{display:flex;flex-wrap:wrap;gap:6px 4px;align-items:center;margin:0 0 14px}
+.kc-b{appearance:none;font:inherit;font-size:15px;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:4px 12px 4px 6px;border-radius:999px;border:1.5px solid var(--line2);background:var(--card);color:var(--ink2);cursor:pointer}
+.kc-b b{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--cu);color:var(--on);font-size:14px}
+.kc-b[aria-pressed="true"]{border-color:var(--ink);background:var(--ac-bg);color:var(--ink);font-weight:700}
+.kc-ar{color:var(--ink3);font-size:15px}
+.kcard h3{font-size:clamp(20px,3.4vw,26px);margin:2px 0 6px}
+details.kq{border:1.5px solid var(--line2);border-radius:12px;margin:0 0 8px;background:var(--card)}
+details.kq[open]{border-color:var(--ac)}
+details.kq>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 12px;font-weight:700}
+details.kq>summary::-webkit-details-marker{display:none}
+details.kq>summary::after{content:"";margin-left:auto;flex:none;width:11px;height:11px;border-right:3px solid var(--ink3);border-bottom:3px solid var(--ink3);transform:rotate(45deg);margin-bottom:4px}
+details.kq[open]>summary::after{transform:rotate(-135deg);margin-bottom:-2px}
+.kqn{flex:none;display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--cu-bg);border:1.5px solid var(--cu);color:var(--ink);font:700 14px var(--mono)}
+details.kq .ans{margin:0 12px 12px}
+details.kz{border-color:var(--warn);background:var(--warn-bg)}
+details.kz .ans{background:var(--card)}
+details.kz .kqn{background:var(--warn);color:var(--card);border-color:var(--warn)}
+.knext{margin:14px 0 0;padding:10px 12px;border-left:4px solid var(--cu);background:var(--cu-bg);border-radius:0 10px 10px 0}
+.knext p{margin:0}
 /* spirála času */
 .kwrap{display:grid;gap:16px;align-items:start}
 @media (min-width:980px){.kwrap{grid-template-columns:minmax(0,700px) minmax(300px,1fr)}}
@@ -264,6 +285,12 @@ svg.chart .pt{fill:var(--cu);stroke:var(--card);stroke-width:2}
       </div>
       <div class="card kp" id="kpanel" aria-live="polite"></div>
     </div>
+  </section>
+
+  <section class="panel" id="p-karty" role="tabpanel" aria-labelledby="t-karty" hidden>
+    <p class="muted" style="max-width:70ch">Jedenáct karet, ke každé kapitole jedna (devátá je rozdělená na tři). Každá má čtyři stejné otázky: co se stalo, jaké omezení to překonalo, co to nově umělo a co zbylo jako problém. Právě ten čtvrtý bod vede k další kartě, takže karty tvoří řetěz. U většiny je navíc záludná otázka. Nic se nehodnotí, odpovědi si odkrýváš, až chceš.</p>
+    <div class="kchain" id="kchain" role="group" aria-label="Vyber kartu"></div>
+    <div id="kcardbox"></div>
   </section>
 
   <section class="panel" id="p-otazky" role="tabpanel" aria-labelledby="t-otazky" hidden>
@@ -593,7 +620,7 @@ function msHtml(m){
 function renderOsa(){
   $('#osa').innerHTML=CHAPS.map(c=>{
     const items=MS.filter(m=>m.c===c.n).sort((a,b)=>a.s-b.s);
-    return `<section class="chap" id="kap-${c.n}" aria-labelledby="kh-${c.n}"><header><span class="kn" aria-hidden="true">${c.n}</span><h2 id="kh-${c.n}">${c.t}</h2><p class="intro">${c.i}</p></header>${c.x?`<div class="chap-extra">${c.x}</div>`:''}<div class="rail">${items.map(msHtml).join('')}</div></section>`;
+    return `<section class="chap" id="kap-${c.n}" aria-labelledby="kh-${c.n}"><header><span class="kn" aria-hidden="true">${c.n}</span><h2 id="kh-${c.n}">${c.t}</h2><p class="intro">${c.i}</p><p style="margin:8px 0 0"><a class="chip" href="#karta-${c.n===9?9:c.n}">Karta mezníků ke kapitole</a></p></header>${c.x?`<div class="chap-extra">${c.x}</div>`:''}<div class="rail">${items.map(msHtml).join('')}</div></section>`;
   }).join('');
   $('#kapnav').innerHTML=CHAPS.map(c=>`<button type="button" data-kap="${c.n}" aria-label="Kapitola ${c.n}: ${c.t}" title="${c.t}">${c.n}</button>`).join('');
 }
@@ -634,7 +661,7 @@ function renderTools(){
 }
 
 /* ===== Záložky a navigace ===== */
-const TABS=[['osa','Časová osa'],['kruh','Spirála času'],['otazky','Pět otázek'],['omyly','Co se často plete'],['dilna','Dílna']];
+const TABS=[['osa','Časová osa'],['kruh','Spirála času'],['karty','Karty mezníků'],['otazky','Pět otázek'],['omyly','Co se často plete'],['dilna','Dílna']];
 let curTab='osa';
 function renderTabs(){
   $('#tabs').innerHTML=TABS.map(([k,v])=>`<button type="button" role="tab" class="tab" id="t-${k}" data-tab="${k}" aria-controls="p-${k}" aria-selected="false" tabindex="-1">${v}</button>`).join('');
@@ -661,9 +688,10 @@ function route(){
     el.open=true; goEl(el,true); return;
   }
   if(h.startsWith('tool-')){showTab('dilna');const el=document.getElementById(h); if(el) goEl(el,true); return}
+  if(h.startsWith('karta-')){showTab('karty');const n=parseInt(h.slice(6),10);if(n>=1&&n<=KARTY.length)showKarta(n-1);return}
   if(h.startsWith('kruh')){showTab('kruh');const id=h.slice(5);if(h.startsWith('kruh-')&&byId[id])kSelect(id);return}
   if(h.startsWith('kap-')){showTab('osa');const el=document.getElementById(h); if(el&&!el.hidden) goEl(el,false); return}
-  const map={osa:'osa',kruh:'kruh',otazky:'otazky',omyly:'omyly',dilna:'dilna'};
+  const map={osa:'osa',kruh:'kruh',karty:'karty',otazky:'otazky',omyly:'omyly',dilna:'dilna'};
   if(map[h]) showTab(h);
 }
 
@@ -841,7 +869,7 @@ function kPaint(){
   const tags=m.th.map(k=>THEMES[k]).join(' · ');
   const first=m.a.replace(/<[^>]+>/g,'').split(/(?<=\.)\s/)[0];
   const sel=ids=>ids&&ids.length?`<div class="chips">${ids.map(i=>`<button type="button" class="chip" data-ksel="${i}">${SHORT[i]}</button>`).join('')}</div>`:'<p class="tiny" style="margin:0">V tomto přehledu nic dalšího.</p>';
-  $('#kpanel').innerHTML=`<span class="yr">${m.y}</span><h3>${m.t}</h3><p class="tg" style="margin:0 0 8px">${tags}</p><p>${first}</p><h4>Co z toho vyrostlo →</h4>${sel(m.n)}<h4>← Navazuje na</h4>${sel(prevOf[ksel])}<div class="cta"><a class="btn primary sm" href="#m-${ksel}">Otevřít celou kartu</a></div>`;
+  $('#kpanel').innerHTML=`<span class="yr">${m.y}</span><h3>${m.t}</h3><p class="tg" style="margin:0 0 8px">${tags}</p><p>${first}</p><h4>Co z toho vyrostlo →</h4>${sel(m.n)}<h4>← Navazuje na</h4>${sel(prevOf[ksel])}<div class="cta"><a class="btn primary sm" href="#m-${ksel}">Otevřít celou kartu</a> <a class="btn quiet sm" href="#karta-${m.c}">Karta kapitoly</a></div>`;
   $('#ksel').value=ksel;
   $('#k3capt').innerHTML=`<span class="yr">${m.y}</span><b>${m.t.split(':')[0]}</b>`;
   k3Sync();
@@ -1002,8 +1030,107 @@ function k3AutoLbl(){$('#k3auto').textContent=K3.auto?'Zastavit otáčení':'Spu
   K3.lastSel=ksel;if(REDUCED)k3Face();kPaint();
 })();
 
+/* ===== Karty mezníků ===== */
+const KQ=['Co se stalo a kdy?','Jaké omezení předchozí technologie to překonalo?','Co to umělo, co předtím ne?','Co zbylo jako problém a proč vzniklo další řešení?'];
+const KARTY=[
+{n:1,c:1,s:'První pomůcky',t:'První výpočetní pomůcky',m:'Abakus (asi 2700–2300 př. n. l.), sčot, Napierovy logaritmy (1614), logaritmické pravítko (asi 1622)',ms:['abakus','scot','logaritmy','pravitko'],
+ a:[`Kolem 2700–2300 př. n. l. se v Mezopotámii objevily počítací desky se sloupci pro řády. Z nich vznikl abakus a později ruský sčot (16. století). V roce 1614 zveřejnil Napier logaritmy a kolem roku 1622 Oughtred sestrojil logaritmické pravítko.`,
+ `Počítání z hlavy, na prstech nebo s kamínky bez systému. Poziční zápis na abakusu (hodnotu určuje sloupec) umožnil pracovat s velkými čísly. Logaritmy převedly pracné násobení na snadné sečítání.`,
+ `Abakus a sčot uchovávají mezivýsledky a umožňují rychle sečítat a odčítat. Logaritmické pravítko umělo přibližně násobit a dělit (na 3 až 4 platné cifry), takže stačilo inženýrům až do 70. let 20. století.`,
+ `Každý krok výpočtu pořád řídí člověk a násobení či dělení na abakusu je zdlouhavé. Vzniká touha po stroji, který by počítal sám, tedy po mechanických kalkulátorech.`],
+ z:{q:`„Abakus počítá za člověka.“ Pravda, nebo ne?`,r:`Ne. Abakus jen uchovává mezivýsledky, každý krok rozhoduje člověk.`}},
+{n:2,c:2,s:'Mechanické kalkulátory',t:'Mechanické kalkulátory',m:'Schickardovy počítací hodiny (1623), Pascaline (1642), Leibnizovo kolo (1673), arithmometr (1820)',ms:['schickard','pascal','leibniz','colmar'],
+ a:[`1623: Schickard postavil počítací hodiny. 1642: Pascal vytvořil Pascaline s přenosem desítek. 1673: Leibniz představil stroj se stupňovým válcem, který násobil a dělil, a v roce 1703 popsal dvojkovou soustavu. 1820: de Colmar patentoval arithmometr, který se začal vyrábět sériově.`,
+ `Ruční sečítání, které je pomalé a náchylné k chybám. Ozubená kola dokázala sečítat a mechanicky přenášet desítky (přechod z 9 na 0 posune sousední kolo). Odčítání se řešilo doplňkem.`,
+ `Sečítat, odčítat a (Leibniz, arithmometr) násobit a dělit opakovaným sečítáním. Arithmometr byl spolehlivý a stal se běžnou kancelářskou pomůckou v bankách a pojišťovnách.`,
+ `Omezením byla přesnost výroby a rychlost, každá operace vyžadovala fyzický pohyb kol. Hlavně však každý krok zadával člověk a stroj nevěděl, co dělat dál. Chyběl program.`],
+ z:{q:`Kdo vynalezl první mechanický kalkulátor?`,r:`Schickard, o dvacet let dříve než Pascal. Pascal je známější, protože jeho stroje se dochovaly a vyrábělo se jich víc.`}},
+{n:3,c:3,s:'Programovatelné stroje',t:'Programovatelné stroje a zpracování dat',m:'Jacquardův stav (1801), Babbageův analytický stroj (1837), první program Ady Lovelace (1843), Hollerithův tabulátor (1890)',ms:['jacquard','babbage','lovelace','hollerith'],
+ a:[`1801: Jacquard řídil tkalcovský stav děrnými štítky. 1837: Babbage začal navrhovat analytický stroj (aritmetická jednotka, paměť, štítky, větvení a cykly). 1843: Lovelace popsala první publikovaný program (Bernoulliho čísla). 1890: Hollerith zpracoval sčítání lidu na děrných štítcích; z jeho firmy vznikla IBM.`,
+ `Stroj uměl dělat jedinou věc a změna znamenala přestavbu. Data se zpracovávala ručně (sčítání lidu z roku 1880 trvalo asi sedm let).`,
+ `Poprvé se program oddělil od stroje: změna vzoru znamenala výměnu štítků. Babbage navrhl univerzální programovatelný stroj a Lovelace si všimla, že stroj může pracovat s libovolnými symboly. Hollerithovy stroje četly, třídily a počítaly štítky.`,
+ `Všechno bylo mechanické a závislé na přesnosti výroby; Babbageův stroj se nikdy nepostavil. Pro rychlejší a spolehlivější stroje bylo třeba použít elektřinu a teoreticky popsat, co výpočet je.`],
+ z:{q:`„Babbage postavil první počítač.“ Pravda, nebo ne?`,r:`Ne. Analytický stroj zůstal na papíře, vyrobily se jen jeho části. Myšlenka předběhla technologii o celé století.`}},
+{n:4,c:4,s:'Logika a teorie',t:'Logika a teorie za počítači',m:'Booleova algebra (1854), Turingův stroj (1936), Shannonova práce o spínačích (1937)',ms:['boole','turing','shannon'],
+ a:[`1854: Boole vydal algebru logických hodnot s operacemi AND, OR a NOT. 1936: Turing popsal myšlenkový stroj a univerzální stroj. 1937: Shannon ve své diplomové práci ukázal, že spínače a relé se řídí pravidly Booleovy algebry.`,
+ `Nebylo přesně jasné, co je výpočet, ani jak logiku vyrobit ze součástek, které mají jen dva stavy.`,
+ `Výpočet se dal popsat přesně (Turingův stroj) a logické výrazy realizovat obvody: spínače za sebou odpovídají AND, vedle sebe OR. Turing ukázal, že jeden univerzální stroj zvládne libovolný program, a že existují neřešitelné úlohy (např. zastavení programu).`,
+ `Teorie sama stroj nepostaví: chyběla rychlá a spolehlivá součástka a program uložený ve stroji. Turingův stroj je jen model a o praktickém počítači nic neříká.`],
+ z:{q:`„Turing rozluštil Enigmu sám.“ Pravda, nebo ne?`,r:`Ne. Šlo o práci týmu stovek lidí v Bletchley Parku, který navázal na výsledky polských matematiků.`}},
+{n:5,c:5,s:'Relé a elektronky',t:'Od relé k elektronkám',m:'Zuse Z3 (1941), Colossus (1943–1944), Harvard Mark I (1944), ENIAC (1945–1946)',ms:['zuse','colossus','mark1','eniac'],
+ a:[`1941: Zuse postavil Z3 (relé, dvojková soustava, děrný film). 1943–1944: Colossus s více než tisícem elektronek luštil šifru Lorenz. 1944: Mark I. 1945–1946: ENIAC s asi 18 000 elektronkami.`,
+ `Mechanika je pomalá a relé jsou pomalá a hlučná. Elektronka je skleněná trubice bez pohyblivých částí a spíná řádově tisíckrát rychleji než relé.`,
+ `ENIAC zvládal asi 5 000 sečítání za sekundu, tedy zhruba tisíckrát víc než Mark I. Z3 pracoval dvojkově a řídil se programem. Colossus ukázal, že se dají stavět velké elektronické stroje.`,
+ `Elektronky se často pálily a spotřebovávaly hodně energie (poruchu čekáme v průměru za desítky minut). Přepojování kabelů u ENIACu trvalo dny. Řešením byl program uložený v paměti a menší, spolehlivější součástky.`],
+ z:{q:`„ENIAC byl první počítač.“ Kdy to platí a kdy ne?`,r:`Záleží na kritériu. Z3 byl programovatelný dříve a ENIAC byl sice elektronický, ale desítkový, programoval se kabely a program v paměti neměl.`}},
+{n:6,c:6,s:'Von Neumann',t:'Von Neumannova architektura',m:'Zpráva o EDVACu (1945), Manchester Baby (1948), EDSAC (1949)',ms:['vonneumann','baby'],
+ a:[`Červen 1945: von Neumann sepsal zprávu o EDVACu (myšlenky týmu kolem Eckerta a Mauchlyho). 21. června 1948: Manchester Baby spustil první program uložený v elektronické paměti. 1949: EDSAC byl první prakticky použitelný stroj tohoto typu. EDVAC byl dokončen až v roce 1951.`,
+ `Program byl součástí zapojení stroje, ne dat. Změna úlohy znamenala přepojit kabely.`,
+ `Program se uloží do paměti stejně jako data, takže změna úlohy znamená jen nahrát jiný program. Programy lze kopírovat, ukládat a vytvářet jinými programy (překladač, operační systém). Počítač má paměť, ALU, řadič a vstupy/výstupy.`,
+ `Společná paměť je úzké hrdlo (procesor nenačte instrukci a data zároveň), proto vznikla mezipaměť. Pořád se používaly pomalé a nespolehlivé součástky, proto přišel tranzistor a integrovaný obvod.`],
+ z:{q:`„ENIAC byl první stroj s von Neumannovou architekturou.“ Pravda, nebo ne?`,r:`Ne. Roku 1946 se program zadával kabely. Program v paměti získal ENIAC až po přestavbě v roce 1948.`}},
+{n:7,c:7,s:'Generace a Moore',t:'Generace počítačů a Mooreův zákon',m:'Tranzistor (1947), integrovaný obvod (1958–1959), IBM System/360 (1964), Mooreův zákon (1965)',ms:['tranzistor','io','s360','moore'],
+ a:[`1947: tranzistor v Bellových laboratořích. 1958 a 1959: Kilby a Noyce vyrobili integrovaný obvod. 1964: IBM System/360. 1965: Moore si všiml, že se počet součástek na čipu zdvojnásobuje zhruba každý rok; roku 1975 upravil odhad na dva roky.`,
+ `Elektronky byly velké, žravé a nespolehlivé. Tranzistor je malý a úsporný a integrovaný obvod umožnil vyrobit mnoho součástek najednou na jednom čipu.`,
+ `Menší, rychlejší a spolehlivější stroje, rodiny kompatibilních počítačů (System/360) a postupné zlevňování. Počet tranzistorů odhadneme jako N = N₀ · 2^(t/2).`,
+ `Rozměry součástek se blíží několika atomům a čipy se přehřívají. Takt procesorů přestal růst kolem roku 2005, proto se výkon zvyšuje přidáváním jader a specializovanými čipy.`],
+ z:{q:`„Mooreův zákon říká, že se každé dva roky zdvojnásobí rychlost počítače.“ Pravda, nebo ne?`,r:`Ne. Zdvojnásobuje se počet tranzistorů na čipu, ne rychlost. Navíc nejde o fyzikální zákon, ale o pozorování.`}},
+{n:8,c:8,s:'Mikroprocesor a PC',t:'Mikroprocesor a osobní počítače',m:'Intel 4004 (1971), Altair 8800 (1975), Apple II (1977), IBM PC (1981), Macintosh (1984)',ms:['4004','altair','ibmpc','gui'],
+ a:[`1971: Intel uvedl mikroprocesor 4004 (4 bity, 2 300 tranzistorů). 1975: Altair 8800. 1977: Apple II. 1981: IBM PC s procesorem Intel 8088. 1984: Apple Macintosh s grafickým rozhraním.`,
+ `Počítače byly velké a drahé a patřily institucím. Procesor se skládal z mnoha součástek.`,
+ `Celý procesor na jednom čipu umožnil počítač zmenšit a zlevnit pro domácnosti. Otevřená architektura IBM PC vedla ke vzniku klonů a spolu s MS-DOS vytvořila de facto standard celého odvětví.`,
+ `Ovládání textovými příkazy a izolované počítače. Řešením se staly grafická rozhraní (Macintosh, Windows) a propojování počítačů do sítí.`],
+ z:{q:`„IBM vynalezla osobní počítač.“ Pravda, nebo ne?`,r:`Ne. Osobní počítače existovaly už před IBM PC (Altair 1975, Apple II 1977). IBM PC se ale stalo průmyslovým standardem.`}},
+{n:9,c:9,s:'Síť a web',t:'Od ARPANETu po umělou inteligenci: síť a web',m:'ARPANET (1969), TCP/IP (1983), World Wide Web (1989–1991)',ms:['arpanet','web'],
+ a:[`29. října 1969: první zpráva v síti ARPANET (paketový přenos). 1983: přechod na TCP/IP, vznikl internet jako síť sítí. 1989: Berners-Lee v CERN navrhl web, 1991 se otevřel veřejnosti, 1993 Mosaic.`,
+ `Počítače byly izolované a různé sítě se nedorozuměly. Informace nebyly pro laiky snadno dostupné.`,
+ `Paketový přenos obejde výpadek linky, TCP/IP propojí různé sítě a web (HTTP, HTML, URL) zpřístupnil informace s grafickým rozhraním.`,
+ `Připojení bylo vázané na stolní počítač. Vznikla rizika (soukromí, phishing), proto se data šifrují (HTTPS).`],
+ z:{q:`„Internet a web jsou to samé.“ Pravda, nebo ne?`,r:`Ne. Internet je celosvětová síť sítí s pravidly TCP/IP, web je jedna ze služeb, které na něm běží. E-mail nebo online hry používají internet bez webu.`}},
+{n:10,c:9,s:'Mobil a cloud',t:'Od ARPANETu po umělou inteligenci: mobilní zařízení a cloud',m:'Chytrý telefon (iPhone 2007, Android 2008), Amazon Web Services (2006)',ms:['mobil'],
+ a:[`1994: telefon Simon od IBM. 2006: Amazon spustil AWS a začal pronajímat výkon a úložiště přes internet. 2007: iPhone. 2008: Android a obchody s aplikacemi.`,
+ `Počítač byl vázaný na stůl a každý musel mít vlastní výkon a úložiště.`,
+ `Počítač v kapse s dotykovým displejem, kamerou, GPS a stálým připojením. Cloud (IaaS, PaaS, SaaS) umožňuje platit jen za použitý výkon a snadno ho zvyšovat nebo snižovat.`,
+ `Závislost na připojení a poskytovateli a otázka, kde jsou data uložena (GDPR). Rostoucí nároky na výpočty vedly k potřebě výkonných specializovaných čipů, tedy k GPU.`]},
+{n:11,c:9,s:'GPU a strojové učení',t:'Od ARPANETu po umělou inteligenci: GPU a strojové učení',m:'Perceptron (1958), AlexNet (2012), Transformer (2017), ChatGPT (2022)',ms:['gpu','llm'],
+ a:[`1956: pojem umělá inteligence na konferenci v Dartmouthu. 1958: perceptron. 2012: AlexNet zvítězil v soutěži v rozpoznávání obrázků. 2017: architektura Transformer. Listopad 2022: ChatGPT zpřístupnil generativní AI veřejnosti.`,
+ `Neuronovým sítím dlouho chyběl výkon a data. Běžný procesor provádí operace převážně po jedné.`,
+ `Grafické procesory (GPU) provádějí paralelně obrovské množství jednoduchých operací (násobení matic), což je přesně potřeba k trénování hlubokých sítí. Modely umějí rozpoznávat obrázky a generovat text.`,
+ `Model nechápe svět jako člověk: může s jistotou říct nepravdu (halucinace), přebírá zkreslení z dat a trénování spotřebuje hodně energie. Výstup je proto nutné ověřovat.`]}
+];
+let kcur=0;
+function renderKarty(){
+  $('#kchain').innerHTML=KARTY.map((k,i)=>`<button type="button" class="kc-b" data-kk="${i}" aria-pressed="false"><b>${k.n}</b><span>${k.s}</span></button>`).join('<span class="kc-ar" aria-hidden="true">→</span>');
+}
+function showKarta(i,fromCard){
+  kcur=Math.max(0,Math.min(KARTY.length-1,i));
+  const k=KARTY[kcur],nx=KARTY[kcur+1],pv=KARTY[kcur-1];
+  $$('#kchain .kc-b').forEach((b,j)=>b.setAttribute('aria-pressed',j===kcur?'true':'false'));
+  const det=(num,q,a,cls)=>`<details class="kq${cls||''}"><summary><span class="kqn" aria-hidden="true">${num}</span><span>${q}</span></summary><p class="ans">${a}</p></details>`;
+  $('#kcardbox').innerHTML=`<article class="card kcard" aria-labelledby="kct">
+    <p class="yr">Karta ${k.n} z ${KARTY.length} · kapitola ${k.c}</p>
+    <h3 id="kct" tabindex="-1">${k.t}</h3>
+    <p class="tg" style="margin:0 0 12px"><b>Mezníky:</b> ${k.m}</p>
+    <p class="tiny" style="margin:0 0 8px">Nejdřív si odpověz po svém, třeba jen v duchu. Potom otevři vzorovou odpověď. Tvoje znění se klidně může lišit.</p>
+    ${k.a.map((a,j)=>det(j+1,KQ[j],a)).join('')}
+    ${k.z?det('?',`Záludná otázka: ${k.z.q}`,k.z.r,' kz'):''}
+    <div class="row" style="margin:8px 0 0"><button type="button" class="btn quiet sm" data-kall="1">Odkrýt vše</button><button type="button" class="btn quiet sm" data-kall="0">Zakrýt vše</button></div>
+    <h4>Ukaž ve spirále času</h4>
+    <div class="chips">${k.ms.map(id=>`<a class="chip" href="#kruh-${id}">${SHORT[id]}</a>`).join('')}<a class="chip" href="#kap-${k.c}">Kapitola v časové ose</a></div>
+    ${nx?`<div class="knext"><p><b>Co zbylo, vedlo dál →</b> ${nx.t.replace(/^Od ARPANETu po umělou inteligenci: /,'Další část kapitoly 9: ')}</p></div>`:''}
+    <div class="cta" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${pv?`<button type="button" class="btn quiet sm" data-kk="${kcur-1}" data-fc="1">← Karta ${pv.n}</button>`:''}${nx?`<button type="button" class="btn primary sm" data-kk="${kcur+1}" data-fc="1">Karta ${nx.n}: ${nx.s} →</button>`:''}</div>
+  </article>`;
+  if(fromCard){const h=$('#kct');h.focus({preventScroll:true});goEl($('#kchain'),false)}
+}
+(function(){
+  $('#p-karty').addEventListener('click',e=>{
+    const b=e.target.closest('[data-kk]');if(b){const n=+b.dataset.kk;showKarta(n,!!b.dataset.fc);history.replaceState(null,'','#karta-'+(n+1));return}
+    const a=e.target.closest('[data-kall]');if(a){$$('#kcardbox details.kq').forEach(d=>d.open=a.dataset.kall==='1')}
+  });
+})();
+
 /* ===== Start ===== */
-renderTabs();renderFilters();renderOsa();renderQ();renderMyths();renderTools();
+renderTabs();renderKarty();showKarta(0);renderFilters();renderOsa();renderQ();renderMyths();renderTools();
 showQ(0);applyFilters();
 route();
 </script>
