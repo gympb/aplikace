@@ -75,13 +75,27 @@ footer a{color:inherit}
 .num{font:700 17px Georgia,"Times New Roman",serif;fill:#3a2909;text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:rgba(255,242,196,.55);stroke-width:.7px}
 .cnum{font:italic 700 11px Georgia,"Times New Roman",serif;fill:#80291a;text-anchor:middle;dominant-baseline:central}
 .wd{font:700 34px Georgia,"Times New Roman",serif;text-anchor:middle;dominant-baseline:central}
-.hit{fill:transparent;cursor:pointer}
+.hit{fill:transparent;cursor:grab}
 .hit:hover{fill:rgba(255,255,255,.25)}
 .bar{cursor:pointer}
 .sel{fill:none;stroke:#ff8a00;stroke-width:3;opacity:0}
 .wh.on .sel{opacity:.9}
 @media (max-width:700px){h1{font-size:1.4rem}.panel{padding:4px 10px 12px}}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+.tline{list-style:none;margin:10px 0 6px;padding:0 0 0 30px;border-left:4px solid var(--line);position:relative}
+.tline li{position:relative;margin:0 0 14px;padding:8px 12px;background:var(--bg);border:2px solid var(--line);border-radius:8px}
+.tline li::before{content:"";position:absolute;left:-43px;top:14px;width:16px;height:16px;border-radius:50%;background:var(--card);border:3px solid var(--line)}
+.tline li.pas{background:var(--soft);border-color:var(--acc);border-width:3px}
+.tline li.pas::before{background:var(--acc);width:20px;height:20px;left:-45px;top:12px}
+.tline .yr{display:block;font-weight:800;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.tline .who{color:var(--muted);font-size:.92rem}
+.tline p{margin:3px 0}
+.parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:8px 0}
+.parts>div{border:2px solid var(--line);border-radius:8px;padding:6px 12px;background:var(--bg)}
+.parts h3{margin:4px 0}
+table.ex{border-collapse:collapse;margin:8px 0;font-variant-numeric:tabular-nums}
+table.ex th,table.ex td{border:2px solid var(--line);padding:4px 10px;text-align:center}
+table.ex th{background:var(--soft)}
 </style>
 </head>
 <body>
@@ -118,7 +132,22 @@ footer a{color:inherit}
   <span>Přenosů desítky: <b id="rdCar">0</b></span>
   <span>Ztracené desítky (přetečení): <b id="rdOvf">0</b></span>
 </div>
-<div class="say" id="say" aria-live="polite">Klikni do otvoru na kole (nebo ho táhni po směru hodin až k zarážce). Tip: číslice zadáváš bodcem od nejnižšího řádu.</div>
+<div class="say" id="say" aria-live="polite">Klikni do otvoru na kole, nebo myš v otvoru stiskni a veď po kruhu po směru hodin až k zarážce. Číslice zadávej od jednotek.</div>
+
+<details class="und" id="mouseHelp" open>
+  <summary>Návod: jak ovládat stroj myší</summary>
+  <div style="padding:0 14px 10px">
+    <ol style="margin:6px 0;padding-left:20px">
+      <li><b>Klik do otvoru</b> na kole: bodec se zasune do otvoru s danou číslicí a stroj kolem sám otočí k zarážce. Číslici čteš u otvoru na prstenci kola. Rychlé zadání.</li>
+      <li><b>Tažení myší:</b> stiskni tlačítko myši v otvoru, drž a veď kurzor <b>po kruhu po směru hodin</b> (od otvoru dolů k zarážce) a pusť. Bodec jde jen kupředu, proti směru se kolo netočí. Číslice 6 až 9 vyžadují delší oblouk, tak táhni plynule dál podél kola.</li>
+      <li><b>Pořadí:</b> číslice zadávej od jednotek (kolo úplně vpravo) k vyšším řádům. Dalším kolem můžeš točit, až se stroj zastaví.</li>
+      <li><b>Kolo vybereš</b> klepnutím na jeho prstenec, oranžový kroužek ukazuje vybrané kolo (pro číslice na klávesnici nebo tlačítkách níže).</li>
+      <li><b>Lišta:</b> klikni na ni (nebo stiskni <kbd>M</kbd>), přepne okénka mezi čísly a doplňky do 9.</li>
+      <li><b>Celá obrazovka:</b> tlačítko nebo <kbd>F</kbd>, ukončení <kbd>Esc</kbd>.</li>
+    </ol>
+    <p style="color:var(--muted);margin:4px 0 0">Když tažení nejde, stačí kliknout do otvoru, nebo použít tlačítka a políčko „Zadat celé číslo“ níže.</p>
+  </div>
+</details>
 
 <div class="pad">
   <h3 style="margin-top:0">Ovládání bez myši a na dotykovém displeji</h3>
@@ -146,8 +175,8 @@ footer a{color:inherit}
 
 <div class="tabs" role="tablist" aria-label="Části aplikace">
   <button class="tab" role="tab" id="tb-ul" aria-controls="p-ul" aria-selected="true">Úlohy</button>
-  <button class="tab" role="tab" id="tb-jak" aria-controls="p-jak" aria-selected="false">Jak stroj funguje</button>
-  <button class="tab" role="tab" id="tb-his" aria-controls="p-his" aria-selected="false">Historie a věrnost modelu</button>
+  <button class="tab" role="tab" id="tb-jak" aria-controls="p-jak" aria-selected="false">Jak to funguje</button>
+  <button class="tab" role="tab" id="tb-his" aria-controls="p-his" aria-selected="false">Historie</button>
 </div>
 
 <section class="panel" id="p-ul" role="tabpanel" aria-labelledby="tb-ul">
@@ -162,38 +191,97 @@ footer a{color:inherit}
 </section>
 
 <section class="panel" id="p-jak" role="tabpanel" aria-labelledby="tb-jak" hidden>
-  <h2>Jak se stroj ovládá</h2>
-  <p><b>Zadání číslice.</b> Bodec zasuneš do otvoru označeného číslicí a kolem otočíš po směru hodin, až bodec narazí na zarážku. Kolo se tak otočí o tolik dílků, kolik je číslice. Kolem nejde točit zpět.</p>
-  <p><b>Okénka a lišta.</b> Nad každým kolem jsou dvě okénka. Spodní ukazuje číslici uloženou v kole, horní její doplněk do 9 (číslice odečtená od 9). Posuvná lišta vždy jednu řadu zakryje.</p>
-  <h2>Přenos desítky</h2>
-  <p>Když kolo přejde z 9 na 0, páka <i>sautoir</i> se zvedne a pak spadne a posune sousední kolo o jeden dílek. Pokud je tam také 9, přenos pokračuje dál jako padající domina. U úlohy 3 to uvidíš na šesti kolech.</p>
+  <h2>Celý stroj najednou</h2>
+  <p>Pascalina je plochá mosazná skříňka. Na horní desce je řada otočných <b>kol</b> (u tohoto modelu šest, každé pro jeden řád čísla), nad nimi <b>okénka</b> s číslicemi a přes okénka přesuvná <b>lišta</b>. Číslo se do stroje „zapisuje“ otáčením kol bodcem. Všechno ostatní (uložení čísla, přenos desítky, zobrazení výsledku) dělá mechanika uvnitř. Stroj <b>sám jen přičítá</b>. Odčítání, násobení i dělení se převádějí na přičítání.</p>
+  <div class="parts">
+    <div><h3>1 Vstupní kolo</h3><p>Disk s deseti otvory, kolem něj pevný prstenec s číslicemi 0 až 9. Číslice je u otvoru, do kterého zasuneš bodec. Pod kolem je pevná <b>zarážka</b>.</p></div>
+    <div><h3>2 Číselný válec</h3><p>Pod každým kolem se otáčí válec s dvěma řadami číslic. Okénka ukazují jednu řadu: uloženou číslici nebo její <b>doplněk do 9</b>.</p></div>
+    <div><h3>3 Lišta</h3><p>Posuvná lišta zakrývá jednu z řad okének. Horní poloha ukazuje čísla, dolní doplňky. Přepíná se mezi sčítáním a odčítáním.</p></div>
+    <div><h3>4 Sautoir</h3><p>Páka s vlastní vahou mezi sousedními koly. Čepy na kole ji zvednou a ona <b>spadne</b> a posune další kolo o jeden dílek. Takto se přenáší desítka.</p></div>
+  </div>
+
+  <h2>Jak se zadává číslo</h2>
+  <p>Bodec zasuneš do otvoru označeného číslicí a kolo otočíš <b>po směru hodin</b> až k zarážce. Kolo se tak otočí o tolik dílků (36° na dílek), kolik je číslice. Zadáváš po řádech, <b>od jednotek</b>. Zpět se kolo točit nedá, proto stroj nemůže nic omylem „odečíst“.</p>
+  <p>Při otočení se zároveň otočí válec pod okénkem, takže se v okénku přičte číslice k tomu, co tam už bylo.</p>
+
+  <h2>Přenos desítky (sautoir)</h2>
+  <p>Když kolo přejde z 9 na 0, musí se přičíst 1 k řádu vlevo. U Pascaliny to dělá <i>sautoir</i> (francouzsky „skokan“). Čep na kole páku postupně zvedá. Při přechodu z 9 na 0 se páka uvolní a vlastní vahou spadne. Úder posune sousední kolo o jeden dílek.</p>
+  <ul>
+    <li><b>Proč páka padá a netlačí?</b> Síla pádu je stejná, ať točíš kolem jemně, nebo rychle. Přenos proto nezávisí na obsluze a nepřetěžuje ruku. To byla Pascalova největší vychytávka.</li>
+    <li><b>Řetězový přenos.</b> Je-li v sousedním kole 9, přehoupne se také a pošle desítku dál. Při přičtení 1 ke stavu 099 999 tak spadne pět pák po sobě jako domina. Zkus úlohu 3.</li>
+    <li><b>Přetečení.</b> Přenos z posledního kola nemá kam jít. Stroj proto počítá <i>modulo 1 000 000</i> (po 999 999 následuje 000 000).</li>
+  </ul>
+
+  <h2>Sčítání krok za krokem</h2>
+  <p>Příklad 478 + 256 (stroj začíná na nule):</p>
+  <table class="ex"><tr><th>krok</th><th>kolo</th><th>otočení</th><th>stav</th></tr>
+  <tr><td>1</td><td>jednotky</td><td>8</td><td>000 008</td></tr>
+  <tr><td>2</td><td>desítky</td><td>7</td><td>000 078</td></tr>
+  <tr><td>3</td><td>stovky</td><td>4</td><td>000 478</td></tr>
+  <tr><td>4</td><td>jednotky</td><td>6</td><td>000 484 (jednotky přešly 9→0, přenos +1 do desítek: 8)</td></tr>
+  <tr><td>5</td><td>desítky</td><td>5</td><td>000 534 (desítky 8+5 přešly 9→0, přenos +1 do stovek)</td></tr>
+  <tr><td>6</td><td>stovky</td><td>2</td><td>000 734</td></tr></table>
+  <p>Výsledek 734 se přečte přímo z okének.</p>
+
   <h2>Odčítání přičítáním doplňku</h2>
-  <p>Stroj umí jen přičítat. Platí <code>a − b = 999 999 − ((999 999 − a) + b)</code>. Doplněk <code>999 999 − a</code> ukazuje horní řada okének, proto:</p>
+  <p>Doplněk do 9 číslice <i>d</i> je 9 − <i>d</i>. Doplněk celého šestimístného čísla je <code>999 999 − a</code> (každá číslice se doplní zvlášť, bez půjčování). Platí:</p>
+  <p style="text-align:center"><code>a − b = 999 999 − ((999 999 − a) + b)</code></p>
+  <p>Stroj přičítá a okénka s doplňky ukazují 999 999 − (obsah kol). Postup pro 725 − 389:</p>
   <ol>
-    <li>Vynuluj stroj a přepni lištu na doplňky.</li>
-    <li>Menšenec <i>a</i> se zadá <b>malými červenými</b> číslicemi (kolo se otočí o 9 − <i>d</i>), takže okénka ukážou <i>a</i>.</li>
-    <li>Menšitel <i>b</i> se zadá běžně <b>velkými</b> číslicemi. Kola se točí stále stejným směrem a okénka ukážou rozdíl.</li>
+    <li>Vynuluj stroj a přesuň lištu tak, aby okénka ukazovala doplňky.</li>
+    <li>Menšenec 725 zadej <b>doplňkově</b>: každé kolo otoč o 9 − <i>d</i> (malé červené číslice). Kola pak obsahují 999 274 a okénka ukazují 000 725.</li>
+    <li>Menšitel 389 přičti <b>běžně</b>. Kola obsahují 999 663 a okénka ukazují doplněk, tedy <b>000 336</b>.</li>
   </ol>
-  <p>Výsledek se vejde do šesti míst. Je-li <i>b</i> větší než <i>a</i>, okénka ukážou 1 000 000 − (<i>b</i> − <i>a</i>) a stroj ohlásí ztracenou desítku. Stejný trik se dodnes používá v počítačích při dvojkovém doplňku.</p>
+  <p>Je-li menšitel větší než menšenec, okénka ukážou 1 000 000 − rozdíl (například 999 870 místo −130) a stroj ztratí desítku z posledního kola. Znaménko mínus stroj nemá. Totéž dělají dnešní počítače ve dvojkovém doplňku.</p>
+
+  <h2>Násobení, dělení, nulování</h2>
+  <ul>
+    <li><b>Násobení</b> je opakované přičítání (3 × 214 = 214 + 214 + 214), případně s posunem o řád.</li>
+    <li><b>Dělení</b> je opakované odčítání doplňkem a počítání, kolikrát se menšitel vešel.</li>
+    <li><b>Nulování.</b> Kola nejdou točit zpět, proto se každé kolo otočí o doplněk do 10, dokud se nevrátí na 0. Tlačítko „Vynulovat“ to dělá za tebe.</li>
+  </ul>
+
+  <h2>Jak ovládat tento model</h2>
+  <p>Klik do otvoru kolo otočí sám. Chceš-li to udělat ručně, stiskni v otvoru tlačítko myši a táhni po kruhu po směru hodin, dokud se kolo nezastaví o zarážku. Na dotykovém displeji nebo klávesnicí použij tlačítka a políčko pod strojem. Lištu přepíná klik na ni nebo klávesa <kbd>M</kbd>. Podrobný návod je pod strojem.</p>
+
+  <h2>Co model věrně zachycuje a co zjednodušuje</h2>
+  <ul>
+    <li><b>Věrně:</b> otočná kola s deseti otvory, bodec a zarážka, pohyb jen jedním směrem; přenos desítky pákou, řetězově až do posledního kola, se ztrátou desítky na konci; dvě řady okének (číslo a doplněk do 9) a lišta; odčítání doplňkem.</li>
+    <li><b>Zjednodušeno:</b> model je čistě desítkový a šestimístný. Řada dochovaných originálů má kola pro livry, soly a denáry (základy 20 a 12) a bývají osmimístné. Uložení číslic a tvary kol se u dochovaných kusů liší. Pohled „Pod víkem“ je schematický, nejde o přesný výkres žádného konkrétního exempláře.</li>
+  </ul>
 </section>
 
 <section class="panel" id="p-his" role="tabpanel" aria-labelledby="tb-his" hidden>
-  <h2>Historie</h2>
-  <p>Blaise Pascal (1623–1662) začal stroj navrhovat roku 1642 jako osmnáctiletý, aby ulehčil otci Étiennovi, správci daní v Rouenu. Po zhruba 50 prototypech ho roku 1645 představil veřejnosti. Roku 1649 získal královský privilegium, tedy výhradní právo stroje v celé Francii vyrábět a prodávat. Dochovalo se jich devět, většina je ve městských a technických muzeích v Evropě.</p>
-  <h2>Co model věrně zachycuje</h2>
+  <h2>Jak Pascalina vznikla</h2>
+  <p><b>Proč.</b> Blaise Pascal se narodil roku 1623 v Clermontu. Jeho otec Étienne byl královský úředník a byl pověřen uspořádat výběr daní v Normandii. V Rouenu proto celé dny sčítal dlouhé sloupce čísel. Syn mu chtěl práci ulehčit a okolo roku 1642 začal navrhovat stroj, který by počítal za něj. Bylo mu tehdy asi devatenáct let.</p>
+  <p><b>Zkoušení.</b> Pascal zkoušel různé konstrukce a nechal je vyrábět rouenské hodináře, protože na stroji byla potřeba přesná ozubená kola. Podle běžně uváděných údajů prošel přibližně padesáti prototypy. Nejtěžší byl přenos desítky: potřeboval mechanismus, který přenese desítku i přes samé devítky a nepřetíží obsluhu. Vyřešil to pákou sautoir poháněnou vlastní vahou.</p>
+  <p><b>Veřejnost.</b> Roku 1645 vydal krátký spis, v němž stroj popsal a věnoval ho kancléři Pierru Séguierovi. Jeden stroj kancléři daroval. Roku 1649 získal od krále královské privilegium, tedy výhradní právo takové stroje ve Francii vyrábět a prodávat. Stroj poslal i švédské královně Kristýně.</p>
+  <p><b>Konec snu o výrobě.</b> Pascal vyrobil kolem dvaceti dalších strojů, často s různým počtem kol. Stroj byl ale drahý, složitý a mechanici ho těžko udržovali. Uměl jen přičítat, odčítání bylo zdlouhavé. Hromadnou výrobu se rozjet nepodařilo. Dochovalo se jen několik kusů (obvykle se uvádí devět), mimo jiné v pařížském Musée des Arts et Métiers (CNAM) a v muzeu v Clermont-Ferrandu. Přesto šlo o první stroj, který spolehlivě přenášel desítky.</p>
+
+  <h2>Před Pascalinou a po ní</h2>
+  <p>Pascalina nebyla ani první, ani poslední. Svislá osa ukazuje stroje a pomůcky, které s ní souvisejí. <span class="who">Roky jsou zaokrouhlené podle běžně uváděných údajů.</span></p>
+  <ol class="tline" aria-label="Svislá časová osa mechanických počítacích strojů">
+    <li><span class="yr">2.–1. století př. n. l.</span><b>Mechanismus z Antikythéry</b><p>Soustava ozubených kol počítající kalendář a pohyby těles. Nepočítá aritmetiku, ale ukazuje, že ozubená kola jako „počítač“ jsou stará.</p></li>
+    <li><span class="yr">1617</span><b>Napierovy kosti</b><p>John Napier (Skotsko): destičky s tabulkou násobilky usnadňují násobení. Ruční pomůcka, ne stroj.</p></li>
+    <li><span class="yr">1623</span><b>Schickardovy počítací hodiny</b><p>Wilhelm Schickard (Tübingen) navrhl a postavil první známý mechanický počítací stroj. Přenášel desítky a uměl přičítat i odčítat. Dochovaly se jen náčrtky a dopisy Keplerovi, podle nichž druhý stroj zničil požár. Stroj zůstal dlouho téměř neznámý.</p></li>
+    <li class="pas"><span class="yr">1642–1645</span><b>Pascalina (Blaise Pascal)</b><p>Přičítá a odčítá doplňkem, přenáší desítky pákou sautoir včetně řetězového přenosu. První počítací stroj, který se skutečně vyráběl a používal. Roku 1649 královské privilegium.</p></li>
+    <li><span class="yr">1666</span><b>Morlandův sčítací stroj</b><p>Samuel Morland (Anglie): sčítací stroj s kolečky, přenos desítky však obsluha řešila ručně pomocí pomocných číselníků.</p></li>
+    <li><span class="yr">1672–1694</span><b>Leibnizův stupňovitý válec</b><p>Gottfried Wilhelm Leibniz chtěl Pascalinu rozšířit o automatické násobení. Vymyslel válec se stupňovitými zuby („Leibnizovo kolo“), s nímž umí stroj všechny čtyři početní úkony. První stroj dokončil kolem roku 1694.</p></li>
+    <li><span class="yr">1820–1851</span><b>Aritmometr Thomase de Colmar</b><p>Použil Leibnizův válec a vytvořil první komerčně úspěšný a spolehlivý kancelářský počítací stroj. Do roku 1870 se vyrobilo asi 800 kusů.</p></li>
+    <li><span class="yr">1822</span><b>Babbageův Difference Engine</b><p>Charles Babbage navrhl obrovský mechanický stroj na tabulky hodnot. Za jeho života se nedokončil, ale myšlenka programovatelného stroje se tím posunula k počítači.</p></li>
+    <li><span class="yr">70. léta 19. století</span><b>Odhnerovo kolo</b><p>Menší a levnější stroj s „ozubeným kolem s výsuvnými zuby“. Kopírovaly ho desítky firem po celém světě.</p></li>
+    <li><span class="yr">1902</span><b>Daltonův stroj s klávesnicí</b><p>Mechanický sčítací stroj s deseti klávesami, obsluha je nejblíže dnešním kalkulačkám.</p></li>
+    <li><span class="yr">1948</span><b>Curta</b><p>Kapesní mechanická kalkulačka ve tvaru válce na pepř. Využívá Leibnizův válec ještě v 70. letech 20. století.</p></li>
+    <li><span class="yr">polovina 70. let 20. století</span><b>Konec mechanických kalkulaček</b><p>Elektronické kalkulačky je vytlačily. Myšlenka odčítání doplňkem žije dál ve dvojkovém doplňku v procesorech.</p></li>
+  </ol>
+
+  <h2>Čím byla Pascalina důležitá</h2>
   <ul>
-    <li>Otočná kola s deseti otvory, bodec a zarážka, pohyb jen jedním směrem.</li>
-    <li>Přenos desítky pákou sautoir se sekvenčním šířením (domino) a ztrátou desítky z posledního kola.</li>
-    <li>Dvě řady okének (číslo a doplněk do 9) a posuvná lišta.</li>
-    <li>Šestimístný čistě desítkový stroj. Pozor, velká část dochovaných originálů má kola pro livry, soly a denáry (základy 20 a 12), tohle zjednodušení je nutné pro školní výuku.</li>
+    <li>Ukázala, že aritmetiku lze svěřit stroji, který se nemýlí při přenosu desítky.</li>
+    <li>Leibniz na Pascalinu navázal a chtěl ji rozšířit o automatické násobení. Tak vznikl jeho stupňovitý válec.</li>
+    <li>Odčítání doplňkem stejným principem pokračuje v dnešní výpočetní technice.</li>
   </ul>
-  <h2>Zjednodušení</h2>
-  <ul>
-    <li>Číselné kroužky na kolech jsou kvůli ovládání v modelu dvě (velké číslice a malé červené). Podoba a rozložení čísel se u dochovaných kusů liší. Mechanismus v části „Pod víkem“ je schematický.</li>
-    <li>Nulování provádí stroj přičtením doplňku. U originálu to dělal obsluha ručně stejným způsobem.</li>
-    <li>Pohled shora a tvary kol jsou zjednodušené, nejsou přesnou kopií žádného konkrétního exempláře.</li>
-  </ul>
-  <p style="color:var(--muted)">Zdroje: encyklopedické přehledy o Pascalině a o kalkulačce Blaise Pascala (Wikipedie), popis okének s doplňkem a lišty.</p>
+  <p style="color:var(--muted)">Zdroje: Wikipedie (Pascal's calculator, Mechanical calculator, Leibniz wheel), Arithmeum Uni Bonn, Heinz Nixdorf MuseumsForum, ACM (400 let mechanických počítacích strojů), MacTutor (Schickard), historyofinformation.com. Některé roky a počty kusů se v literatuře liší.</p>
 </section>
 
 <footer>
@@ -534,7 +622,9 @@ stage.addEventListener('pointerdown',e=>{
   const h=e.target.closest('.hit');
   if(!h)return;
   const i=+h.dataset.i,d=+h.dataset.d,w=L.wheels[N-1-i],p=svgPoint(e);
-  drag={i,d,id:e.pointerId,x:e.clientX,y:e.clientY,th0:Math.atan2(p.x-w.x,-(p.y-w.y))*180/Math.PI,w,active:false,start:0};
+  const th0=Math.atan2(p.x-w.x,-(p.y-w.y))*180/Math.PI;
+  drag={i,d,id:e.pointerId,x:e.clientX,y:e.clientY,th0,prev:th0,tot:0,w,active:false,start:0};
+  stage.style.cursor='grabbing';
   try{stage.setPointerCapture(e.pointerId);}catch(_){}
   e.preventDefault();
 });
@@ -542,7 +632,9 @@ stage.addEventListener('pointermove',e=>{
   if(!drag||e.pointerId!==drag.id)return;
   if(!drag.active){
     if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<7)return;
-    if(!isIdle()||st.queue.length||drag.d===0){return;}
+    drag.moved=true;
+    if(!isIdle()||st.queue.length){say('Počkej, až se stroj zastaví, pak můžeš točit dál.');return;}
+    if(drag.d===0){say('Číslice 0 se netočí: kolo zůstane, jak je.');return;}
     drag.active=true;const i=drag.i;
     drag.start=Math.round(st.ang[i]);
     st.drag[i]=true;st.stylus[i]={d:drag.d,start:drag.start,end:drag.start+drag.d,hold:0,alpha:1};
@@ -550,22 +642,22 @@ stage.addEventListener('pointermove',e=>{
     say(`Kolo ${PLACES[i]}: točím bodcem v otvoru ${drag.d} po směru hodin až k zarážce.`);
   }
   const p=svgPoint(e),th=Math.atan2(p.x-drag.w.x,-(p.y-drag.w.y))*180/Math.PI;
-  let dl=th-drag.th0;dl=((dl+540)%360)-180;
-  const prog=clamp(dl/STEPDEG,0,drag.d);
+  let dl=th-drag.prev;dl=((dl+540)%360)-180;drag.prev=th;drag.tot+=dl;
+  const prog=clamp(drag.tot/STEPDEG,0,drag.d);
   setAng(drag.i,drag.start+Math.max(prog,st.ang[drag.i]-drag.start));
   kick();render();
 });
 function endDrag(e){
   if(!drag||(e&&e.pointerId!==drag.id))return;
-  const d=drag;drag=null;
+  const d=drag;drag=null;stage.style.cursor='';
   if(d.active){
     const i=d.i;st.drag[i]=false;
-    const steps=Math.round(st.ang[i]-d.start);
+    const steps=Math.min(d.d,Math.max(0,Math.ceil(st.ang[i]-d.start-1e-6)));
     st.target[i]=d.start+steps;
     if(st.stylus[i])st.stylus[i].end=d.start+d.d;
     say(steps>=d.d?`Bodec dosáhl zarážky, kolo ${PLACES[i]} se otočilo o ${steps} dílků.`:`Kolo ${PLACES[i]} se otočilo jen o ${steps} dílků, bodec nedošel k zarážce.`);
     kick();
-  }else{
+  }else if(!d.moved){
     enqueue({t:'dial',i:d.i,steps:d.d,say:d.d===0?`Kolo ${PLACES[d.i]}: číslice 0, kolo se neotočí.`:null});
   }
 }
