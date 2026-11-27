@@ -216,6 +216,17 @@ portfolio/
 
 **Kontrola a seznam prací.** Skript `nastroje/portfolio-index.py` (spouští se automaticky po každé změně ve složce `portfolio/`, ručně `python3 nastroje/portfolio-index.py`) ověří strukturu a názvy, velikost, přítomnost `index.html` a cizí zdroje, doplní `noindex` a sestaví `portfolio/index.json`. Práci s chybou ani s varováním (cizí zdroj) neuvede v seznamu. Varování může vyučující potvrdit přidáním cesty práce do `portfolio/povolene.json`. `portfolio/index.json` se nikdy nepíše ručně.
 
+## 12. Odkazy na aplikace jiných tvůrců
+
+Zajímavé aplikace a stránky jiných tvůrců se uvádějí na samostatné stránce `odkazy/` (https://aplikace.gympb.cz/odkazy/). Nepatří do `katalog.json`, nepočítají se mezi naše aplikace a na úvodní stránce na ně vede jen odkaz v patičce.
+
+- Údaje jsou **pouze** v souboru `odkazy.json` v kořeni repozitáře (`{"aktualizace", "odkazy": [...]}`). Platí pro něj stejná pravidla úpravy jako pro `katalog.json` (bod 2): měň jen dotčený záznam, UTF-8, odsazení 2 mezery, platný JSON.
+- Pole záznamu: `nazev`, `autor`, `url` (úplná adresa `https://…`), `popis` (1–2 věty vlastními slovy, nikdy ne zkopírovaný text z cizího webu), `predmet` (jako v bodě 5), `rocnik` (jen štítky z bodu 4), `jazyk` (seznam kódů, např. `cs`, `en`, `de`), `pridano` a `overeno` (`RRRR-MM-DD`), `stav` (`aktivni`, `nedostupny`, `skryty`). Volitelně `licence` (licence cílového obsahu, jen pokud ji autor uvádí).
+- `pridano` se nastaví jednou a nemění se, `overeno` se mění při každé kontrole, že odkaz funguje. Stav `nedostupny` se na stránce označí, `skryty` se nezobrazí.
+- Na stránce je vždy viditelné upozornění, že odkazy vedou mimo web gymplikace a že se na jejich obsah nevztahuje licence CC BY 4.0, pod kterou jsou naše aplikace. Každý odkaz je označen jako externí, ukazuje doménu a otevírá se v novém okně s `rel="noopener noreferrer"`. Upozornění ani označení se neodstraňují.
+- Z cizích webů se nic nenačítá a nekopíruje: žádné ikony, náhledy, snímky, písma ani vložený obsah, jen text a odkaz (bod 8).
+- Zveřejňovat smí jen správce katalogu a pověření učitelé. Do seznamu se nepřidávají stránky s osobními údaji žáků ani stránky, které vyžadují přihlášení nebo platbu, aniž by to bylo v popisu uvedeno.
+
 ## Kontrolní seznam pro novou aplikaci
 
 1. Složka `slug/` s `index.html`, `karta.svg`, `nahled.png`, `qr.png`.
