@@ -243,7 +243,9 @@ footer.ver{text-align:center;font-size:11.5px;color:var(--muted);padding:4px 16p
 .xr .xn small{display:block;color:var(--muted);font-size:12.5px}
 .xr .xz{color:var(--muted);font-size:13px;white-space:nowrap}
 .xr.fold .xz{font-size:22px;color:#C5CAD2}
-.chosen .xr{background:var(--stage);grid-template-columns:32px minmax(0,1fr) auto}
+.chosen .xr{background:var(--stage);grid-template-columns:32px minmax(0,1fr) auto auto}
+.rng{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin:0}.rng input{width:104px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:600 14px var(--body);text-align:center;background:#fff}.rng input.bad{border-color:var(--accent);background:#FDECEC}
+@media(max-width:560px){.rng span{display:none}.rng input{width:76px}}
 .xmsg{color:var(--muted);text-align:center;padding:18px;margin:0}.xmsg.err{color:var(--accent)}
 .xfoot{display:flex;gap:12px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
 .xsel{flex:1;font-size:14px;max-height:72px;overflow:auto;line-height:2}
@@ -885,7 +887,8 @@ $('fImp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)r
 /* ===================== editor varianty ===================== */
 const LDESC={'1':'Lehká – základní pojmy, definice, značky a názvy. Za správnou odpověď 1 pole.','2':'Střední – porozumění a jednoduché vztahy. Za správnou odpověď 2 pole.','3':'Těžší – použití v nové situaci, propojení poznatků, jednoduchý výpočet. 3 pole.','4':'Nejtěžší – vícekroková úvaha, výjimky, jemné rozdíly. 4 pole.','z':'Žebříková otázka – dostane ji hráč, který stojí u žebříku. Když ji zvládne, vyšplhá nahoru.'};
 let ED=null;
-function openEdit(v,isNew){ED={v:normVar(clone(v)),lvl:'1',isNew:!!isNew,busy:false,saved:true};show('sEdit');hsub('Úprava hry');renderEdit()}
+function openEdit(v,isNew){ED={v:normVar(clone(v)),lvl:'1',isNew:!!isNew,busy:false,saved:true};show('sEdit');hsub('Úprava hry');renderEdit();
+  if(!ED.v.demo){const f=fixOrder(ED.v);if(f.length){renderTabs();renderList();dirty();est('Správné odpovědi jsem přesunul na A ('+f.join(', ')+'). Při hře se pořadí možností míchá náhodně.','ok')}}}
 function renderEdit(){const v=ED.v;
   $('sEdit').innerHTML=`<div class="etop"><button class="btn" id="eBack">← Moje hry</button><h2>${ED.isNew&&!v.title?'Nová hra':'Úprava hry'}</h2><span class="saved" id="eSaved"></span><button class="btn" id="eExp">Exportovat</button><button class="btn primary hnew" id="ePlay"><span class="hplus" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M7.8 5.5v13l10.5-6.5z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>Hrát</button></div>
   <div class="egrid"><div style="display:grid;gap:14px">
@@ -988,7 +991,7 @@ function rules(v){return structRules(v)+focusRules(v)+`Pravidla:
 - e = jedna krátká věta, proč je správná odpověď správně (nejvýš 140 znaků)
 - vzorce piš prostým textem s číslicemi (H2SO4, C2H5OH, Ca(OH)2); náboj iontu jako ^{2-}, ^{+} (SO4^{2-}); jiný horní index jako ^{} (1s^{2}, 10^{-3}); počet elektronů u bloků prvků a v konfiguracích VŽDY horním indexem, i jedničku: prvky s^{1}, s^{2}, p^{6}, d^{10}, ns^{2} np^{6}, nikdy s1, p6 ani ns2; jiný dolní index jako _{} (x_{A})
 - obecné vzorce s písmeny v indexu piš s _{}: C_{n}H_{2n+2}, C_{n}H_{2n}, C_{n}H_{2n-2}, (C_{6}H_{10}O_{5})_{n}; nikdy ne CnH2n+2
-- terminologie: ribozom, kodón, stop kodón, rezonanční struktura; pro třídění piš „klasifikace“ nebo „třídění“, ne „dělení“; u bakteriofága „ocásek“, nikdy „bičík“; corpus callosum je „kalózní těleso (corpus callosum)“, nikdy „mozolovité těleso“; obecně používej odborné české termíny, ne doslovné laické překlady; pokud se to vejde do limitu znaků, připiš za český odborný název do závorky odborný latinský název, např. „kalózní těleso (corpus callosum)“, „slezina (lien)“ – latinský název přidávej u anatomických a biologických pojmů, ne u každého slova; v chemii piš „atom“ před názvem prvku, když jde o atomy (atom uhlíku tvoří čtyři vazby)`}
+- terminologie: ribozom, kodón, stop kodón, rezonanční struktura; pro třídění piš „klasifikace“ nebo „třídění“, ne „dělení“; u bakteriofága „ocásek“, nikdy „bičík“; corpus callosum je „kalózní těleso (corpus callosum)“, nikdy „mozolovité těleso“; obecně používej odborné české termíny, ne doslovné laické překlady; pokud se to vejde do limitu znaků, připiš za český odborný název do závorky odborný latinský název, např. „kalózní těleso (corpus callosum)“, „slezina (lien)“ – latinský název přidávej u anatomických a biologických pojmů, ne u každého slova; reakce formuluj „X reaguje s Y za vzniku Z“ (CaO reaguje s vodou za vzniku Ca(OH)2), nikdy „X reaguje s Y na Z“; u elektrolýzy vodných roztoků piš, že se na katodě redukují ionty H^{+} (H3O^{+}) za vzniku vodíku (2 H^{+} + 2 e^{-} → H2), nikdy „redukce vody“ ani 2 H2O + 2 e^{-} → H2 + 2 OH^{-}; v chemii piš „atom“ před názvem prvku, když jde o atomy (atom uhlíku tvoří čtyři vazby)`}
 /* Co Vondrys ve svých testech skutečně zkouší (nastudováno z _Testy 2020–2026) */
 const FOCUS=[
  [/aminokysel|peptid|bílkovin|protein/i,'charakter postranního řetězce aminokyselin (nepolární, polární, kyselý, zásaditý) se zdůvodněním; pI a převažující iontová forma při daném pH; elektroforéza; peptidová vazba (částečně dvojná, rovinná), N- a C-konec; biologicky významné peptidy (glutathion, oxytocin, aspartam) a jejich funkce; struktury bílkovin, fibrilární × globulární (keratin, myoglobin); denaturace a její příčiny; cystein → cystin (disulfidový můstek)'],
@@ -1059,7 +1062,10 @@ function fixQ(q){if(!q||typeof q!=='object')return null;const o=Array.isArray(q.
   /* značky vzorců musí být v databázi; převedou se na přesný název */
   let bad=false;const canon=t=>t.replace(/\{\{([^{}]+)\}\}/g,(m,x)=>{const k=VZA(x);if(!k)bad=true;return k?'{{'+k+'}}':m});
   const q2=canon(qq),o2=oo.map(canon),e2=String(q.e||q.explanation||'').trim().replace(/\{\{([^{}]+)\}\}/g,'$1');if(bad||new Set(o2).size<4)return null;
-  let a=+q.a;if(!(a>=0&&a<=3))a=0;return{q:q2,o:o2,a:a|0,e:e2}}
+  let a=+q.a;if(!(a>=0&&a<=3))a=0;return toA({q:q2,o:o2,a:a|0,e:e2})}
+/* v úpravách je správná odpověď vždy A; při hře se pořadí možností pokaždé náhodně zamíchá */
+function toA(q){const a=Math.max(0,Math.min(3,q.a|0));if(!a)return{...q,a:0};const o=[q.o[a],...q.o.filter((_,i)=>i!==a)];return{...q,o,a:0}}
+function fixOrder(v){const fixed=[];for(const k of LK){const arr=v.q[k]||[];if(arr.some(q=>q.a)){v.q[k]=arr.map(toA);fixed.push(k==='z'?'žebříkové':'úrovně '+k)}}return fixed}
 async function askLevel(v,k,n,existing,docs){const p=promptLevel(v,k,n,existing,docs);let d;
   try{d=await SAMPLER.json(p,{modelTier:'default'})}catch(e){if(e&&e.code)throw e;const r=await SAMPLER(p);d=parseAI(r.text)}
   d=parseAI(d);const arr=(d&&(d.questions||d.otazky))||(Array.isArray(d)?d:[]);const seen=new Set(existing.map(s=>s.toLowerCase()));
@@ -1070,7 +1076,7 @@ const SRC_BUDGET=150000;
 const SRCST=new Map();
 async function getDocs(v){if(!MCP||!(v.src||[]).length)return[];const docs=[];
   for(const o of v.src){gst(`Čtu ${o.name}…`);const st=SRCST.get(o.uri)||{};SRCST.set(o.uri,st);
-    try{const t=await readSource(o);st.pages=o.pages;st.chars=t.length;st.err=false;docs.push({o,st,name:o.name,text:t})}catch(e){st.err=true}renderChosen()}
+    try{const t=await readSource(o);st.pages=o.pages;st.chars=t.length;st.err=false;docs.push({o,st,name:o.name+(fmtRange(o.range)?` (${pageWord(o.name)} ${fmtRange(o.range)})`:''),text:t})}catch(e){st.err=true}renderChosen()}
   /* spravedlivé dělení: krátké soubory celé, zbytek rovným dílem mezi dlouhé */
   let left=SRC_BUDGET,rest=[...docs].sort((a,b)=>a.text.length-b.text.length);
   rest.forEach((d,k)=>{const share=Math.floor(left/(rest.length-k));d.use=Math.min(d.text.length,share);left-=d.use;d.st.used=d.text.length?d.use/d.text.length:1});
@@ -1110,15 +1116,24 @@ async function m365(tool,input){const r=await MCP.callTool(M365,tool,input),out=
   if(!out.length&&r&&r.payload!=null)out.push(r.payload);return out}
 const ext=n=>(n.match(/\.(\w+)$/)||[,''])[1].toLowerCase();
 const fold=t=>String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-async function readSource(o){if(TXT.has(o.uri))return TXT.get(o.uri);
-  /* čte všechny stránky – dlouhé prezentace vrací konektor po částech */
-  let text='',start=1;
-  for(let call=0;call<8&&start;call++){const inp={uri:o.uri};if(start>1)inp.startPage=start;
-    const t=(await m365('read_resource',inp)).map(x=>typeof x==='string'?x:JSON.stringify(x)).join('\n');start=0;
-    const m=t.match(/\[truncated: pages? \d+\s*[–-]\s*(\d+) of (\d+)[^\]]*?startPage=(\d+)/);if(m){start=+m[3];o.pages=+m[2]}
-    const pm=t.match(/\[pages? \d+\s*[–-]\s*\d+ of (\d+)\]/);if(pm)o.pages=+pm[1];
-    text+='\n'+t.replace(/\[(truncated|pages?)[^\]]*\]/g,'')}
-  text=text.replace(/[ \t ]+/g,' ').replace(/ ?\n ?/g,'\n').replace(/\n{3,}/g,'\n\n').trim();o.chars=text.length;TXT.set(o.uri,text);return text}
+/* rozsah snímků/stran: „85-125“, „1-10, 40-50“, „85-“, „-20“, „7“ */
+function parseRange(r){r=String(r||'').replace(/[–—]/g,'-').replace(/\s+/g,'');if(!r)return null;const out=[];
+  for(const p of r.split(/[,;]/)){if(!p)continue;const m=p.match(/^(\d*)-(\d*)$/)||p.match(/^(\d+)$/);if(!m)return'bad';
+    let a=+m[1]||1,b=m.length>2?(m[2]?+m[2]:0):+m[1];if(b&&b<a)[a,b]=[b,a];out.push([a,b])}
+  return out.length?out:null}
+const fmtRange=r=>{const p=parseRange(r);return!p||p==='bad'?'':p.map(([a,b])=>a===b?''+a:a+'–'+(b||'konec')).join(', ')};
+const pageWord=n=>/^(pptx?|odp)$/.test(ext(n))?'snímky':'strany';
+async function readSource(o){const key=o.uri+'|'+(o.range||'');if(TXT.has(key))return TXT.get(key);
+  /* čte všechny stránky (nebo jen zvolený rozsah snímků) – dlouhé prezentace vrací konektor po částech */
+  const rg=parseRange(o.range),ranges=rg&&rg!=='bad'?rg:[[1,0]];let text='';
+  for(const [a,b] of ranges){let start=a;if(rg&&rg!=='bad')text+=`\n[${pageWord(o.name)} ${a}–${b||'konec'}]\n`;
+    for(let call=0;call<8&&start&&(!b||start<=b);call++){const inp={uri:o.uri};if(start>1||b)inp.startPage=start;if(b)inp.endPage=b;
+      const t=(await m365('read_resource',inp)).map(x=>typeof x==='string'?x:JSON.stringify(x)).join('\n');start=0;
+      const m=t.match(/\[truncated: pages? \d+\s*[–-]\s*(\d+) of (\d+)[^\]]*?startPage=(\d+)/);if(m){start=+m[3];o.pages=+m[2]}
+      const pm=t.match(/\[pages? \d+\s*[–-]\s*\d+ of (\d+)\]/);if(pm)o.pages=+pm[1];
+      const om=t.match(/\bof (\d+)\b/);if(!o.pages&&om)o.pages=+om[1];
+      text+='\n'+t.replace(/\[(truncated|pages?)[^\]]*\]/g,'')}}
+  text=text.replace(/[ \t ]+/g,' ').replace(/ ?\n ?/g,'\n').replace(/\n{3,}/g,'\n\n').trim();o.chars=text.length;TXT.set(key,text);return text}
 async function spSearch(query,fileType){const inp={query,limit:50,offset:0};if(fileType)inp.fileType=fileType;
   return(await m365('sharepoint_search',inp)).flat().filter(o=>o&&typeof o==='object'&&o.uri&&o.name)}
 /* ---------- prohlížeč OneDrivu ve stylu Průzkumníka ---------- */
@@ -1195,10 +1210,15 @@ async function openExplorer(){if(!MCP)return;const v=ED.v;
   catch(err){$('xList').innerHTML=`<p class="xmsg err">${esc(mcpMsg(err)||String(err.message||err))}</p>`}
   selBar();setTimeout(()=>$('xList').focus(),50)}
 function renderChosen(){const el=$('eChosen');if(!el||!ED)return;const src=ED.v.src||[];
-  el.innerHTML=src.length?src.map(s=>{const st=SRCST.get(s.uri)||{};const inf=st.err?'nepodařilo se načíst':st.chars==null?'':(st.pages?st.pages+' str. · ':'')+(st.used==null||st.used>=.999?'použito celé':'použito '+Math.round(st.used*100)+' %');
-    return`<div class="xr on" style="cursor:default">${ficon(s.name)}<span class="xn">${esc(s.name)}<small>${esc(s.path||'OneDrive')}${inf?` · <b style="color:${st.err?'var(--accent)':'var(--ok)'};font-weight:600">${esc(inf)}</b>`:''}</small></span><button class="btn sm" data-rmsrc="${esc(s.uri)}" aria-label="Odebrat podklad" title="Odebrat">✕</button></div>`}).join('')
+  el.innerHTML=src.length?src.map(s=>{const st=SRCST.get(s.uri)||{};const fr=fmtRange(s.range),pw=pageWord(s.name);
+    const inf=st.err?'nepodařilo se načíst':st.chars==null?'':(fr?pw+' '+fr+(st.pages?' z '+st.pages:'')+' · ':st.pages?st.pages+' str. · ':'')+(st.used==null||st.used>=.999?'použito celé':'použito '+Math.round(st.used*100)+' %');
+    const paged=/^(pptx?|odp|pdf|docx?|odt)$/.test(ext(s.name));
+    return`<div class="xr on" style="cursor:default">${ficon(s.name)}<span class="xn">${esc(s.name)}<small>${esc(s.path||'OneDrive')}${inf?` · <b style="color:${st.err?'var(--accent)':'var(--ok)'};font-weight:600">${esc(inf)}</b>`:''}</small></span>${paged?`<label class="rng" title="Jen vybrané ${pw}, např. 85-125 nebo 1-10, 40-50. Prázdné = celý soubor."><span>${pw}</span><input type="text" inputmode="numeric" data-rng="${esc(s.uri)}" value="${esc(s.range||'')}" placeholder="vše" aria-label="Rozsah – ${pw}"></label>`:'<span></span>'}<button class="btn sm" data-rmsrc="${esc(s.uri)}" aria-label="Odebrat podklad" title="Odebrat">✕</button></div>`}).join('')
     :`<p class="mut" style="margin:0;font-size:14.5px">${esc(nb('Bez podkladů – Vondrys vymyslí otázky z vlastních znalostí. Pro otázky přesně podle tvých hodin vyber prezentace.'))}</p>`;
   qsa('[data-rmsrc]',el).forEach(b=>b.onclick=()=>{ED.v.src=src.filter(s=>s.uri!==b.dataset.rmsrc);renderChosen();dirty()});
+  qsa('[data-rng]',el).forEach(i=>{i.oninput=()=>i.classList.toggle('bad',parseRange(i.value)==='bad');
+    i.onchange=()=>{const s=src.find(x=>x.uri===i.dataset.rng);if(!s)return;const p=parseRange(i.value);if(p==='bad'){i.classList.add('bad');return}
+      const nv=p?p.map(([a,b])=>a===b?''+a:a+'-'+(b||'')).join(', '):'';if(nv===(s.range||''))return;if(nv)s.range=nv;else delete s.range;SRCST.delete(s.uri);renderChosen();dirty()}});
   const info=$('eSrcInfo');if(info)info.textContent=src.length>5?'Hodně souborů – z každého se vejde jen část.':''}
 function mcpMsg(e){const c=e&&e.code;return c==='server_not_connected'?'Konektor Microsoft 365 není připojený.':c==='needs_reauth'?'Přihlášení k Microsoft 365 vypršelo.':c==='not_in_manifest'||c==='approval_required'||c==='consent_required'?'Přístup k OneDrivu pro tuto aplikaci není povolený.':c==='server_unavailable'?'OneDrive teď neodpovídá.':'Podklady se nepodařilo načíst.'}
 
