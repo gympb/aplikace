@@ -225,6 +225,7 @@ Zajímavé aplikace a stránky jiných tvůrců se uvádějí na samostatné str
 - `pridano` se nastaví jednou a nemění se, `overeno` se mění při každé kontrole, že odkaz funguje. Stav `nedostupny` se na stránce označí, `skryty` se nezobrazí.
 - Na stránce je vždy viditelné upozornění, že odkazy vedou mimo web gymplikace a že se na jejich obsah nevztahuje licence CC BY 4.0, pod kterou jsou naše aplikace. Každý odkaz je označen jako externí, ukazuje doménu a otevírá se v novém okně s `rel="noopener noreferrer"`. Upozornění ani označení se neodstraňují.
 - Z cizích webů se nic nenačítá a nekopíruje: žádné ikony, náhledy, snímky, písma ani vložený obsah, jen text a odkaz (bod 8).
+- Odkazy se spravují v administraci Macaly (záložka Odkazy, průvodce o třech krocích) nebo přímo v souboru. Administrace zapisuje stejný formát jako web čte: pevné pořadí polí, 2 mezery, každý prvek pole na vlastním řádku.
 - Zveřejňovat smí jen správce katalogu a pověření učitelé. Do seznamu se nepřidávají stránky s osobními údaji žáků ani stránky, které vyžadují přihlášení nebo platbu, aniž by to bylo v popisu uvedeno.
 
 ## Kontrolní seznam pro novou aplikaci
