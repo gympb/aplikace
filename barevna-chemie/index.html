@@ -399,6 +399,7 @@ main{padding-top:12px}
 
 .chip{display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .chip.hb{border-color:var(--pri);color:var(--pri)}.chip.hb.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.sndb{width:40px;height:40px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);display:grid;place-items:center;cursor:pointer;padding:0;flex:none}.sndb:hover{background:var(--bg)}.sndb svg{width:20px;height:20px}.sndb.off{color:var(--mut)}
 
 </style>
 </head>
@@ -1225,7 +1226,8 @@ function buzz(ok){try{navigator.vibrate&&navigator.vibrate(ok?15:[40,40,40])}cat
  else{const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.setValueAtTime(320,t);o.frequency.exponentialRampToValueAtTime(200,t+.2);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.16,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.22);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.25)}}catch(e){}}
 function fanfare(){if(!SND)return;try{getAC();const t=AC.currentTime+.03,N=(f,at,d,v)=>{tone(f,t+at,d,'sawtooth',(v||.12)*.5);tone(f,t+at,d,'triangle',(v||.12))};
  [392,523.25,659.25].forEach((f,i)=>N(f,i*.15,.18));N(783.99,.45,.4);[261.63,523.25,659.25,783.99,1046.5].forEach(f=>N(f,.95,1.2,.09))}catch(e){}}
-const sndBtn=()=>{const b=h('button',{cls:'chip snd','aria-label':'Zvuky'});const u=()=>{b.innerHTML=(SND?IC.snd:IC.mute)+(SND?' Zvuky zapnuty':' Zvuky vypnuty')};b.onclick=()=>{SND=!SND;store.set('snd',SND);u();if(SND)buzz(true)};u();return b};
+const ICON_SND_ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>',ICON_SND_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
+const sndBtn=()=>{const b=h('button',{cls:'sndb'});const u=()=>{b.innerHTML=SND?ICON_SND_ON:ICON_SND_OFF;b.title=SND?'Zvuk zapnutý':'Zvuk vypnutý';b.setAttribute('aria-label',b.title);b.classList.toggle('off',!SND)};b.onclick=()=>{SND=!SND;store.set('snd',SND);u();if(SND)buzz(true)};u();return b};
 
 /* ---------- maskot ---------- */
 const mw=$('#mw'),bub=$('#bub');let tipT,tipI=0;
