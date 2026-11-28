@@ -569,7 +569,7 @@ const SUB=[
  {id:'f2',f:'F₂',n:'fluor',st:'g',c:'#ece58a',al:.35,cn:'světle žlutá',m:'mol',ab:[8],lam:'absorbuje hlavně ultrafialové záření a okraj fialové oblasti',
   w:'Fluor absorbuje hlavně ultrafialové záření a jen okraj fialové oblasti, proto je světle žlutý.|V řadě F₂ → Cl₂ → Br₂ → I₂ se rozdíl energetických hladin zmenšuje, absorbuje se delší vlnová délka a barva tmavne.'},
  {id:'cl2',f:'Cl₂',n:'chlor',st:'g',c:'#c9d63f',al:.65,cn:'žlutozelená',m:'mol',ab:[8],lam:'absorbuje fialové a blízké ultrafialové záření (maximum asi 330 nm)',
-  w:'Molekula Cl₂ absorbuje fialové a blízké ultrafialové záření. Vidíme komplementární žlutozelenou.|Odtud název chlor (řecky chlóros = žlutozelený).'},
+  w:'Molekula Cl₂ absorbuje fialové a blízké ultrafialové záření. Zbylé světlo vnímáme jako žlutozelenou barvu.|Odtud název chlor (řecky chlóros = žlutozelený).'},
  {id:'br2g',f:'Br₂(g)',n:'páry bromu',st:'g',c:'#b5501f',al:.75,cn:'červenohnědá',m:'mol',ab:[8,7],lam:'absorbuje fialové a modré světlo (asi 415 nm)',
   w:'Páry bromu absorbují fialovou a modrou část spektra a jsou červenohnědé.'},
  {id:'i2g',f:'I₂(g)',n:'páry jodu',st:'g',c:'#9b3fbf',al:.75,cn:'fialová',m:'mol',ab:[4,3],lam:'absorbuje zelené a žlutozelené světlo (asi 520 nm)',
@@ -1372,7 +1372,7 @@ function viewIons(q){app.className='wide';const k=q.startsWith('ion-')?q.slice(4
   if(ph<=0)return I.d===0?'V d‑orbitalech není žádný elektron (d⁰). Klepni na <b>Posviť světlem</b>.':I.d===10?'Všechny d‑orbitaly jsou zaplněné (d¹⁰). Klepni na <b>Posviť světlem</b>.':'Šest molekul vody rozštěpí d‑orbitaly na nižší a vyšší hladinu. Klepni na <b>Posviť světlem</b>.';
   if(mode==='pass')return ph<.75?'Fotony viditelného světla procházejí…':(I.d===0?'<span class="r">Není žádný elektron k excitaci.</span> Bez d‑elektronu se viditelné světlo neabsorbuje, '+(I.k==='Ti4'||I.k==='Sc3'?'sloučeniny jsou bílé a roztoky bezbarvé.':'látka je bezbarvá.'):'<span class="r">Elektron se nemá kam excitovat.</span> Vyšší hladina je plná, viditelné světlo se neabsorbuje. Sloučeniny jsou bílé, roztoky bezbarvé.');
   if(mode==='forb')return ph<.2?'Přilétá foton…':ph<.6?'Elektron by musel při excitaci <span class="r">obrátit spin</span>. Takový přechod je zakázaný…':'…a tak se foton absorbuje jen výjimečně. Barva je velmi bledá.';
-  if(ph<.3)return 'Přilétá foton <span class="r">'+gen(I.ab)+'</span> barvy s energií rovnou Δ…';if(ph<.55)return 'Elektron absorbuje foton a excituje se z nižší hladiny na vyšší: <span class="r">d–d přechod</span>.';if(ph<.8)return 'Absorbovaná barva v prošlém světle chybí. Vidíme komplementární barvu: <b>'+s.cn+'</b>.';return 'Elektron se vrací zpět a energie se uvolní jako teplo.'};
+  if(ph<.3)return 'Přilétá foton <span class="r">'+gen(I.ab)+'</span> barvy s energií rovnou Δ…';if(ph<.55)return 'Elektron absorbuje foton a excituje se z nižší hladiny na vyšší: <span class="r">d–d přechod</span>.';if(ph<.8)return 'Absorbovaná část spektra v prošlém světle chybí. Zbylé světlo vnímáme jako <b>'+cnAcc(s.cn)+'</b> barvu.';return 'Elektron se vrací zpět a energie se uvolní jako teplo.'};
  const drawS=ph=>{sv0.innerHTML=isCT?GR.ctSVG(I,ph):GR.splitSVG(I,ph,mode);cap.innerHTML=capOf(ph)};
  let raf=0;const play=()=>{cancelAnimationFrame(raf);const t0=performance.now(),D=5200;const st=()=>{const p=(performance.now()-t0)/D;if(p>=1){drawS(0);cap.innerHTML=capOf(.99);return}drawS(p);raf=requestAnimationFrame(st)};st()};
  cleanup=()=>cancelAnimationFrame(raf);drawS(0);
@@ -1409,7 +1409,7 @@ function viewWheel(){app.className='wide';let sel=store.get('wsel',7),lam=null;
   const ex=SUB.filter(s=>s.ab.length&&s.ab.length<=3&&s.ab.includes(sel));
   info.innerHTML='';
   info.append(h('div',{cls:'row',style:'justify-content:flex-start;gap:10px;margin-bottom:6px',html:'<span style="font-size:14px;color:var(--mut)">Absorbovaná:</span>'+sw(WH[sel].c,1)+'<b style="font-size:18px">'+WH[sel].n+'</b><span style="font-size:14px;color:var(--mut);margin-left:6px">Vidíme:</span>'+sw(WH[o].c,1)+'<b style="font-size:18px">'+WH[o].n+'</b>'}),
-   P(sel===9?'Purpurová není ve spektru, je to směs červené a fialové. Látka, která absorbuje červenou i fialovou část spektra, propouští hlavně zelenou: purpurová a zelená jsou komplementární.':'Látka absorbuje <b>'+WH[sel].n.replace(/á$/,'é')+'</b> světlo ('+lamTxt(sel)+'). Zbytek bílého světla se k nám dostane a oko ho vnímá jako <b>'+WH[o].n.replace(/á$/,'ou')+'</b> barvu, která leží v kruhu naproti.','margin:0 0 6px'),
+   P(sel===9?'Purpurová není ve spektru, je to směs červené a fialové. Látka, která absorbuje červenou i fialovou část spektra, propouští hlavně zelenou: purpurová a zelená jsou komplementární.':'Látka absorbuje <b>'+WH[sel].n.replace(/á$/,'ou')+'</b> část spektra ('+lamTxt(sel)+'). Zbylé světlo vnímáme jako <b>'+WH[o].n.replace(/á$/,'ou')+'</b> barvu, která leží v kruhu naproti.','margin:0 0 6px'),
    ex.length?h('div',{},h('div',{cls:'lab'},'Látky, které absorbují hlavně '+WH[sel].n.replace(/á$/,'ou')+' barvu'),h('div',{cls:'ex hs'},ex.map(s=>h('button',{cls:'chip',on:{click:()=>go('latka-'+s.id)},html:sw(s.c)+s.f})))):null)}
  rng.addEventListener('input',()=>{lam=+rng.value;sel=lamSec(lam);upd()});
  app.append(backBtn(),h('h2',{},'Barevný kruh'),
@@ -1442,7 +1442,7 @@ function viewBasics(q){app.className='wide';const tab=(BTABS.find(t=>'zaklady-'+
  if(tab==='vznik'){
   const ex=[['cuaq','CuSO₄'],['kmno4aq','KMnO₄'],['cro4aq','K₂CrO₄'],['niaq','NiSO₄'],['znaq','ZnSO₄']];let cur=store.get('vznik','cuaq');
   const fw=h('div',{cls:'flow'}),cap=h('p',{style:'margin:10px 0 0'}),exb=h('div',{cls:'fil',style:'margin-bottom:10px'});
-  const upd=()=>{const s=SUBI[cur];fw.innerHTML=GR.flow({abs:s.ab,c:s.c,al:s.al,seen:s.c});cap.innerHTML=s.ab.length?'Roztok '+s.f+' absorbuje '+acc(s.ab)+' světlo. Do oka dojde zbytek, který vnímáme jako <b>'+s.cn+'</b>.':'Roztok '+s.f+' viditelné světlo neabsorbuje. Projde všechno, roztok je <b>bezbarvý</b>.';
+  const upd=()=>{const s=SUBI[cur];fw.innerHTML=GR.flow({abs:s.ab,c:s.c,al:s.al,seen:s.c});cap.innerHTML=s.ab.length?'Roztok '+s.f+' absorbuje '+acc(s.ab)+' část spektra světla. Zbylé světlo vnímáme jako <b>'+cnAcc(s.cn)+'</b> barvu.':'Roztok '+s.f+' viditelné světlo neabsorbuje. Projde všechno, roztok je <b>bezbarvý</b>.';
    exb.innerHTML='';ex.forEach(([k,n])=>exb.append(h('button',{cls:'chip'+(k===cur?' on':''),on:{click:()=>{cur=k;store.set('vznik',k);upd()}},html:sw(SUBI[k].c)+n})))};upd();
   const W=['znaq','tio2','cuo'].map(k=>SUBI[k]);
   body=[card(H3('Vidíme to, co látka neabsorbovala'),P('Světlo, které dopadne na látku, se může odrazit, projít, nebo se absorbovat (absorbovat). Barvu vnímáme podle světla, které doputuje k našemu oku, tedy podle toho, co látka <b>neabsorbovala</b>.'),exb,fw,cap),
@@ -1515,12 +1515,13 @@ function runQuiz(key,title,intro,items){let k=0,score=0,at=0;const wrong=[],prog
    at=setTimeout(adv,ms);if(ok)mood('spark',600);fb.scrollIntoView({block:'nearest',behavior:'smooth'})});
   box.append(h('div',{cls:'qcard'+(q.fig?' wf':'')},q.fig?h('div',{cls:'card figc qfig',html:q.fig}):null,card(h('div',{cls:'lab',style:'margin-top:0'},'Otázka '+(k+1)+' z '+items.length),h('h3',{style:'margin:0 0 12px',html:q.q}),h('div',{cls:'qz'},opts)),fb))}
  app.className='wide';app.append(backBtn('testy','Všechny testy'),h('h2',{},title),h('p',{cls:'mut',style:'margin:-4px 2px 12px;font-size:15px'},intro),prog,box);draw()}
-const swn=i=>'<span class="opt-sw">'+sw(WH[i].c)+WH[i].n+'</span>';
+const swn=(i,f)=>'<span class="opt-sw">'+sw(WH[i].c)+(f?WH[i].n.replace(/á$/,f):WH[i].n)+'</span>';
+const cnAcc=c=>c.replace(/á(?=[\s,)]|$)/g,'ou');
 function itemsKruh(){const out=[];shuf([0,1,2,3,4,5,6,7,8,0,2,4,7,8]).slice(0,8).forEach((i,j)=>{const o=opp(i);
   if(j%2===0){const d=shuf([...new Set([i,(o+1)%10,(o+9)%10,(i+3)%10])].filter(x=>x!==o)).slice(0,3);
-   out.push({q:'Látka absorbuje '+swn(i)+' světlo ('+lamTxt(i)+'). Jakou barvu má?',o:[swn(o),...d.map(swn)],a:0,e:WH[i].n[0].toUpperCase()+WH[i].n.slice(1)+' a '+WH[o].n+' leží v barevném kruhu naproti sobě.',rv:'Absorbuje '+WH[i].n+' →',g:'kruh'})}
+   out.push({q:'Látka absorbuje '+swn(i,'ou')+' část spektra ('+lamTxt(i)+'). Jakou má barvu?',o:[swn(o),...d.map(x=>swn(x))],a:0,e:WH[i].n[0].toUpperCase()+WH[i].n.slice(1)+' a '+WH[o].n+' leží v barevném kruhu naproti sobě.',rv:'Absorbuje '+WH[i].n+' →',g:'kruh'})}
   else{const d=shuf([...new Set([o,(i+1)%10,(i+9)%10,(o+2)%10])].filter(x=>x!==i)).slice(0,3);
-   out.push({q:'Roztok má barvu '+swn(o)+'. Kterou část spektra hlavně absorbuje?',o:[swn(i),...d.map(swn)],a:0,e:'Vidíme komplementární barvu k absorbované. K barvě '+WH[o].n+' je komplementární '+WH[i].n+'.',rv:'Roztok je '+WH[o].n+', absorbuje:',g:'kruh'})}});return out}
+   out.push({q:'Roztok má '+swn(o,'ou')+' barvu. Kterou část spektra hlavně absorbuje?',o:[swn(i),...d.map(x=>swn(x))],a:0,e:'Vidíme barvu komplementární k absorbované. Komplementární barvou k '+WH[o].n.replace(/á$/,'é')+' je '+WH[i].n+'.',rv:'Roztok je '+WH[o].n+', absorbuje:',g:'kruh'})}});return out}
 function itemsDn(){const L=ION.filter(I=>I.t==='dd'||I.t==='d0'||I.t==='d10');return shuf(L).slice(0,8).map(I=>{const a=AT[I.el],n=a[3];
   const ok=I.d>0&&I.d<10;const vt=d=>(d>0&&d<10)?'barevný':'bezbarvý';
   const cf=(d,s)=>a[0]+' '+n+'d'+GR.sup(d)+(s?' '+(n+1)+'s'+GR.sup(s):'');
