@@ -401,6 +401,12 @@ main{padding-top:12px}
 .chip.hb{border-color:var(--pri);color:var(--pri)}.chip.hb.on{background:var(--pri);border-color:var(--pri);color:#fff}
 .sndb{width:40px;height:40px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);display:grid;place-items:center;cursor:pointer;padding:0;flex:none}.sndb:hover{background:var(--bg)}.sndb svg{width:20px;height:20px}.sndb.off{color:var(--mut)}
 
+.bigil .nv{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:21px;border:0;background:#20262F2e;color:#fff;display:grid;place-items:center;cursor:pointer;padding:0;transition:background .15s}
+.bigil .nv:hover{background:#20262F66}.bigil .nv svg{width:22px;height:22px}
+.bigil .nv.l{left:8px}.bigil .nv.r{right:8px}
+.bigil .cnt2{position:absolute;right:12px;bottom:10px;font-size:12px;font-weight:600;color:#5b6472;background:#ffffffb3;border-radius:10px;padding:2px 8px}
+.swh{font-size:12.5px;text-align:center;margin:6px 0 0}
+
 </style>
 </head>
 <body>
@@ -1314,8 +1320,17 @@ function viewSub(id){const s=SUBI[id];if(!s)return go('galerie');app.className='
  const seen=store.get('seen',[]);if(!seen.includes(id)){seen.push(id);store.set('seen',seen)}
  let L=galList();if(!L.includes(s))L=SUB;const i=L.indexOf(s),pv=L[(i-1+L.length)%L.length],nx=L[(i+1)%L.length];
  const I=s.ion?IONI[s.ion]:null,M=MECH[s.m];
- const big=h('div',{cls:'bigil',html:GR.ill(s,{anim:true})},h('span',{cls:'st'},ST[s.st]));
- const left=h('div',{},big,h('div',{cls:'nav2',style:'margin-top:10px'},h('button',{cls:'btn s',on:{click:()=>go('latka-'+pv.id)}},'← '+pv.f),h('button',{cls:'btn s',on:{click:()=>go('latka-'+nx.id)}},nx.f+' →')));
+ const goP=()=>go('latka-'+pv.id),goN=()=>go('latka-'+nx.id);
+ const big=h('div',{cls:'bigil',html:GR.ill(s,{anim:true})},h('span',{cls:'st'},ST[s.st]),
+  h('button',{cls:'nv l','aria-label':'Předchozí látka',title:'Předchozí látka',on:{click:goP},html:IC.prev}),
+  h('button',{cls:'nv r','aria-label':'Další látka',title:'Další látka',on:{click:goN},html:IC.next}),
+  h('span',{cls:'cnt2'},(i+1)+' / '+L.length));
+ let tx=null,ty=null;
+ big.addEventListener('touchstart',e=>{const t=e.touches[0];tx=t.clientX;ty=t.clientY},{passive:true});
+ big.addEventListener('touchend',e=>{if(tx==null)return;const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;tx=null;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.3)(dx<0?goN:goP)()},{passive:true});
+ const kd=e=>{if(e.target.closest&&e.target.closest('input,textarea'))return;if(e.key==='ArrowLeft')goP();else if(e.key==='ArrowRight')goN()};
+ document.addEventListener('keydown',kd);cleanup=()=>document.removeEventListener('keydown',kd);
+ const left=h('div',{},big,h('p',{cls:'mut swh'},'Další látku zobrazíš šipkou nebo přejetím prstem po obrázku.'));
  const colorless=!s.ab.length;
  const wcard=card(H3(colorless?'Co absorbuje?':'Co absorbuje a co vidíme'),
   h('div',{cls:'wm'},h('div',{html:GR.wheel({abs:s.ab,center:s.c,cname:shortCn(s.cn)})}),
